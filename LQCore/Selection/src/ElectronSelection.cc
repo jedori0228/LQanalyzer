@@ -105,8 +105,11 @@ void ElectronSelection::HNLooseElectronSelection(std::vector<KElectron>& leptonC
 
     bool pass_selection = true;
     ElectronID = PassUserID(EGAMMA_FAKELOOSE, *el, rho);
-    
+
     ///List of cuts
+
+
+
     if(!ElectronID) {
       pass_selection = false;
       if(m_debug)  cout << "HNLooseElectronSelection:Fail ID Cut" <<endl; 
@@ -116,7 +119,7 @@ void ElectronSelection::HNLooseElectronSelection(std::vector<KElectron>& leptonC
       pass_selection = false;
       if(m_debug)  cout << "HNLooseElectronSelection:Fail Eta Cut" <<endl;
     }
-    if((el->Pt() < 15.)){
+    if((el->Pt() < 10.)){  // default is 15.
       pass_selection = false;
       if(m_debug)  cout << "HNLooseElectronSelection:Fail Pt Cut" <<endl;
     }

@@ -1,24 +1,24 @@
 #!/bin/sh
 
 ###### SET WHAT JOBS TO RUN
-runMC=false
-runDoubleMuon=true
+runMC=true
+runDoubleMuon=false
 
 if [[ $runMC  == "true" ]]; 
 then
     source functions.sh
     cycle="ExampleAnalyzerDiMuon"
     skinput="True"
-    useskim="DiLep"
+    useskim=""
     outputdir=$LQANALYZER_DIR"/data/output/Muon/"
     #### JOB CONFIGURATION
     njobs=1
     data_lumi="AtoD"
     loglevel="INFO"
     logstep=1000
-    nevents=100000
+    nevents=-1
     #declare -a input_samples=("DY10to50" "DY50plus" "ttbar" "Wjets" "WZ" "ZZ" "WW" "QCD_mumu")
-    declare -a input_samples=("DY50plus")
+    declare -a input_samples=("HN200_mumumu_new")
     source submit.sh $1
 fi
     

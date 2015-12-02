@@ -209,31 +209,34 @@ void MuonSelection::HNLooseMuonSelection(std::vector<KMuon>& leptonColl , bool m
     if (muit->Pt() > 0.01)      LeptonRelIso = (muit->SumIsoCHDR03() + std::max(0.0, muit->SumIsoNHDR03() + muit->SumIsoPHDR03() - 0.5* muit->SumPUIsoR03()))/muit->Pt() ;
     else LeptonRelIso = 9999.;
     if (LeptonRelIso<0) LeptonRelIso=0.0001;
-    
+
+
     //// Muon Loose selection
-    if(( muit->Pt() < 15. )) {
+
+    if(( muit->Pt() < 10. )) {  // default is 15. In lll channel, we've been using 10.
       pass_selection = false;
       if(m_debug) cout << "HNLooseMuonSelection Fail chi2 cut" << endl;
     }
-    if(!(fabs(muit->Eta()) < 2.4)) pass_selection =false;
+   	if(!(fabs(muit->Eta()) < 2.4)) pass_selection =false;
     if(!PassID(MUON_LOOSE, *muit, m_debug)) pass_selection =false;
-    if(!( LeptonRelIso < 0.4)) pass_selection = false;
-    if(!(muit->IsGlobal()==1      )) pass_selection = false;
-    if( muit->validHits() == 0     ) pass_selection = false;
-    if( muit->validPixHits() == 0)   pass_selection = false;
-    if( muit->validStations() <= 1 ) pass_selection = false;
-    if( muit->ActiveLayer() <= 5   ) pass_selection = false;
-    if( fabs(muit->dXY())    >= 0.2) pass_selection = false;
-    if( fabs(muit->dZ())    >= 0.1)  pass_selection = false;
-    if(!(muit->GlobalChi2() < 50.)) pass_selection = false;
-
+    // iso 0.4->0.1
+		if(!( LeptonRelIso < 0.1)) pass_selection = false;  // default is 0.4
+    if(!(muit->IsGlobal()==1      )) pass_selection = false; // default is 1
+    if( muit->validHits() == 0     ) pass_selection = false; // default is 0
+    if( muit->validPixHits() == 0)   pass_selection = false; // default is 0
+    if( muit->validStations() <= 1 ) pass_selection = false; // default is 1
+    if( muit->ActiveLayer() <= 5   ) pass_selection = false;  // default is 5
+    if( fabs(muit->dXY())    >= 0.2) pass_selection = false; // default is 0.2
+    if( fabs(muit->dZ())    >= 0.1)  pass_selection = false; // default is 0.1
+    if(!(muit->GlobalChi2() < 50.)) pass_selection = false; // default is 50.0
 
     /// ENERGY DEPOSIT
     (muit->IsoHcalVeto() < 6.0 &&
      muit->IsoEcalVeto() < 4.0 ) ? DepositVeto=true : DepositVeto=false;
     if(!DepositVeto) pass_selection = false;
-  
 
+		/// nocut option ///
+		//pass_selection = true;
 
     //// Make Loose selection
     if(pass_selection)leptonColl.push_back(*muit);    

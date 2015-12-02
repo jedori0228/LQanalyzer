@@ -29,7 +29,7 @@ AnalyzerCore::AnalyzerCore() : LQCycleBase(), MCweight(-999.) {
   // If running on LQNtuples this is not important.
   // If creating an SKTree ntuple this controls what triggers are accessible
   
-  // To have the correct name in the log:                                                                                                                            
+	// To have the correct name in the log:                                                                                                                            
   SetLogName("AnalyzerCore");
 
   Message("In AnalyzerCore constructor", INFO);
@@ -265,7 +265,10 @@ AnalyzerCore::~AnalyzerCore(){
   }
   maphist2D.clear();
 
-
+	for(map<TString, TNtupleD*>::iterator it = mapntp.begin(); it!= mapntp.end(); it++){
+		delete it->second;
+	}
+	mapntp.clear();
 
   for(map<TString, MuonPlots*>::iterator it = mapCLhistMu.begin(); it != mapCLhistMu.end(); it++){
     delete it->second;
@@ -457,7 +460,7 @@ void AnalyzerCore::MakeHistograms(){
   //// Additional plots to make                                                                                
   maphist.clear();
   maphist2D.clear();
-
+	mapntp.clear();
     
 }
 
@@ -473,6 +476,11 @@ void AnalyzerCore::MakeHistograms(TString hname, int nbins, float xmin, float xm
 void AnalyzerCore::MakeHistograms2D(TString hname, int nbinsx, float xmin, float xmax, int nbinsy, float ymin, float ymax) {
 
   maphist2D[hname] =  new TH2F(hname.Data(),hname.Data(),nbinsx,xmin,xmax, nbinsy,ymin,ymax);
+}
+
+void AnalyzerCore::MakeNtp(TString hname, TString myvar){
+
+	mapntp[hname] =  new TNtupleD(hname.Data(),hname.Data(),myvar.Data());
 }
 
 bool AnalyzerCore::PassBasicEventCuts(){
@@ -587,6 +595,15 @@ void AnalyzerCore::FillHist(TString histname, float value, float w){
   return;
 }
 
+void AnalyzerCore::FillNtp(TString hname, Double_t myinput[]){
+
+	if (GetNtp(hname)) GetNtp(hname)->Fill(myinput);
+	else m_logger << INFO << hname << " was NOT found. Check you ntp. " << LQLogger::endmsg;
+
+	return;
+}
+
+
 void AnalyzerCore::FillCLHist(histtype type, TString hist, vector<snu::KMuon> muons, double w){
 
   if(type==muhist){
@@ -655,6 +672,7 @@ void AnalyzerCore::WriteHistograms() throw (LQError){
   // This function is called after the cycle is ran. It wrues all histograms to the output file. This function is not used by user. But by the contrioller code.
   WriteHists();
   WriteCLHists();
+	WriteNtp();
 }
 
   
@@ -713,6 +731,18 @@ void AnalyzerCore::WriteHists(){
   return;
 }
 
+void AnalyzerCore::WriteNtp(){
+
+  /// Open Output rootfile
+  m_outputFile->cd();
+
+  for(map<TString, TNtupleD*>::iterator mapit = mapntp.begin(); mapit != mapntp.end(); mapit++){
+	  mapit->second->Write();
+  }
+
+  return;
+}
+
 TH1* AnalyzerCore::GetHist(TString hname){
 
   TH1* h = NULL;
@@ -723,7 +753,15 @@ TH1* AnalyzerCore::GetHist(TString hname){
   return h;
 }
 
+TNtupleD* AnalyzerCore::GetNtp(TString hname){
 
+	TNtupleD* n = NULL;
+	std::map<TString, TNtupleD*>::iterator mapit = mapntp.find(hname);
+	if (mapit != mapntp.end()) return mapit->second;
+	else m_logger << INFO << hname << " was not found in map" << LQLogger::endmsg;	
+
+	return n;
+}
 
 TH2* AnalyzerCore::GetHist2D(TString hname){
 

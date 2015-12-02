@@ -102,8 +102,8 @@ SKHNmue500_nocut         23208151.52     /data1/LocalNtuples/Tag27_CMSSW_5_3_14/
 ##### LEPTON SKIMS
 #######################################################################################################################################
 #######################################################################################################################################
-##### 1 LEPTON > 15 GeV
-##### 2 LEPTON > 10 GeV
+#####     1 LEPTON > 15 GeV
+##### or  2 LEPTON > 10 GeV
 #######################################################################################################################################
 # channel    period	Path ##########################################################################################
 #######################################################################################################################################
@@ -149,33 +149,48 @@ SKDYee            1.             /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/
 SKDYmm            1.             /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/DYmm/
 SKDYtt            1.             /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/DYtt/
 
-SKZ1Jets          43081.069      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/Z1Jets/
-SKZ2Jets          120296.22      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/Z2Jets/
-SKZ3Jets          215566.44      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/Z3Jets/
-SKZ4Jets          277455.84      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/Z4Jets/
-
+#SKZ1Jets          43081.069      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/Z1Jets/
+#SKZ2Jets          120296.22      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/Z2Jets/
+#SKZ3Jets          215566.44      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/Z3Jets/
+#SKZ4Jets          277455.84      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/Z4Jets/
+SKZ1Jets          43081.069      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/May14/MC/Z1Jets/
+SKZ2Jets          120296.22      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/May14/MC/Z2Jets/
+SKZ3Jets          215566.44      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/May14/MC/Z3Jets/
+SKZ4Jets          277455.84      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/May14/MC/Z4Jets/
 
 ### Wjets ###
 SKWjets           1538.562       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/Wjets/
 SKWbb             517443.59      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/Wbb/
-SKW1Jets          3781.307       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/W1Jets/
-SKW2Jets          18803.881      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/W2Jets/
-SKW3Jets          29514.73       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/W3Jets/
-SKW4Jets          62889.11       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/W4Jets/
-
-
+#SKW1Jets          3781.307       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/W1Jets/
+#SKW2Jets          18803.881      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/W2Jets/
+#SKW3Jets          29514.73       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/W3Jets/
+#SKW4Jets          62889.11       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/W4Jets/
+SKW1Jets          3781.307       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/May14/MC/W1Jets/
+SKW2Jets          18803.881      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/May14/MC/W2Jets/
+SKW3Jets          29514.73       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/May14/MC/W3Jets/
+SKW4Jets          62889.11       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/May14/MC/W4Jets/
 
 ### Top ###
-SKttbar           29588.256      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/ttbar/
-SKstbar_sch       79530.6821     /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/stbar_sch/
-SKstbar_tch       63031.661      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/stbar_tch/
-SKstbar_tW        44455.856      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/stbar_tW/
-SKst_sch          68591.293      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/st_tch/
-SKst_tch          66635.23       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/st_tch/
-SKst_tW           44834.054      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/st_tW/
-SKtopDIL          461277.43      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/topDIL/
-SKtopHAD          460656.55      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/topHAD/
-SKtopLJ           93722.93       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/topLJ/
+#SKttbar	        29588.256       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/ttbar/
+#SKstbar_sch	    79530.6821      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/stbar_sch/
+#SKstbar_tch	    63031.661       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/stbar_tch/
+#SKstbar_tW	      44455.856       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/stbar_tW/
+#SKst_sch	        68591.293       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/st_tch/
+#SKst_tch	        66635.23        /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/st_tch/
+#SKst_tW	        44834.054       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/st_tW/
+#SKtopDIL	        461277.43       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/topDIL/
+#SKtopHAD	        460656.55       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/topHAD/
+#SKtopLJ	        93722.93        /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/topLJ/
+SKttbar	         29588.256       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/May14/MC/ttbar/
+SKstbar_sch    	 79530.6821      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/May14/MC/stbar_sch/
+SKstbar_tch	     63031.661       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/May14/MC/stbar_tch/
+SKstbar_tW	     44455.856       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/May14/MC/stbar_tW/
+SKst_sch	       68591.293       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/May14/MC/st_tch/
+SKst_tch	       66635.23        /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/May14/MC/st_tch/
+SKst_tW	         44834.054       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/May14/MC/st_tW/
+SKtopDIL	       461277.43       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/May14/MC/topDIL/
+SKtopHAD	       460656.55       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/May14/MC/topHAD/
+SKtopLJ	         93722.93        /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/May14/MC/topLJ/
 
 ### Diboson ###
 ### PYTHIA
@@ -200,7 +215,8 @@ SKZZtotttt        10719880.38     /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees
 
 ### higgs ###
 SKggHtoZZ         18990782.44      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/ggHtoZZ/
-SKHtoZZ           15652260.        /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/HtoZZ/
+#SKHtoZZ           15652260.        /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/HtoZZ/
+SKHtoZZ           15637781.        /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/Aug15/MC/HtoZZ/
 SKHtoTauTau       5478020.         /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/HtoTauTau/
 SKHtoWW           769720.          /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/HtoWW/
 
@@ -604,9 +620,60 @@ HNmue225       627546.73          /data1/DATA/LQNtuples_5_3_14_snu27/MC/Majorana
 HNmue250       979699.29          /data1/DATA/LQNtuples_5_3_14_snu27/MC/MajoranaNeutrinoToMuE_M-250_TuneZ2star_8TeV-alpgen/
 HNmue275       1476651.80         /data1/DATA/LQNtuples_5_3_14_snu27/MC/MajoranaNeutrinoToMuE_M-275_TuneZ2star_8TeV-alpgen/
 HNmue300       2153700.35         /data1/DATA/LQNtuples_5_3_14_snu27/MC/MajoranaNeutrinoToMuE_M-300_TuneZ2star_8TeV-alpgen/
-HNmue325       3063798.49         /data1/DATA/LQNtuples_5_3_14_snu27/MC/MajoranaNeutrinoToMuE_M-325_TuneZ2star_8TeV-alpgen/
-HNmue350       4271251.60         /data1/DATA/LQNtuples_5_3_14_snu27/MC/MajoranaNeutrinoToMuE_M-350_TuneZ2star_8TeV-alpgen/
-HNmue375       5826499.35         /data1/DATA/LQNtuples_5_3_14_snu27/MC/MajoranaNeutrinoToMuE_M-375_TuneZ2star_8TeV-alpgen/
-HNmue400       7879056.73         /data1/DATA/LQNtuples_5_3_14_snu27/MC/MajoranaNeutrinoToMuE_M-400_TuneZ2star_8TeV-alpgen/
-HNmue500       23208151.52        /data1/DATA/LQNtuples_5_3_14_snu27/MC/MajoranaNeutrinoToMuE_M-500_TuneZ2star_8TeV-alpgen/
+
+HN40    662251.65    /data2/MC/HN_3L/HN40/
+HN50    277777.77    /data2/MC/HN_3L/HN50/
+HN60    169491.52    /data2/MC/HN_3L/HN60/
+
+SKHN40    662251.65	/data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/May14_TopRefSel/MC/HN40/
+SKHN50    277777.77	/data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/May14_TopRefSel/MC/HN50/
+SKHN60    169491.52	/data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/May14_TopRefSel/MC/HN60/
+
+
+#w_llln
+w_mumumunu   				25933.60 /data1/DATA/LQNtuples_5_3_14_snu27/MC/w_mumumunu/
+SKw_mumumunu 25933.60 /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/w_mumumunu/
+
+Wtollln						12979.30 /data1/DATA/LQNtuples_5_3_14_snu27/MC/Wtollln_MadGraph_8TeV_noPU/
+SKWtollln 	12979.30 /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/Wtollln/
+
+Wtollln_new 12979.30 /data1/DATA/LQNtuples_5_3_14_snu27/MC/Wtollln_MadGraph_8TeV_PU/ 
+SKWtollln_new 12979.30 /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/Wtollln_new/
+
+HN40_lep					82987.55 /data1/DATA/LQNtuples_5_3_14_snu27/MC/HN40ee_MadGraph_8TeV_noPU/ 
+SKHN40_lep	82987.55 /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN40_lep/
+
+#CAT
+test_DY	1. /data1/DATA/LQNtuples_5_3_14_snu27/MC/CATtest_DY/
+
+#HNtri > 80 GeV samples
+HN100	87719.29	/data1/DATA/LQNtuples_5_3_14_snu27/MC/HNtri100_MadGraph_8TeV_mumumu_no_PU/ 
+
+#new HNtri samples
+HN40_mumumu_new	209.59	/data1/DATA/LQNtuples_5_3_14_snu27/MC/HNtri40_MadGraph_8TeV_mumumu_PU/
+HN40_eee_new		209.59	/data1/DATA/LQNtuples_5_3_14_snu27/MC/HNtri40_MadGraph_8TeV_eee_PU/
+HN50_mumumu_new	289.85	/data1/DATA/LQNtuples_5_3_14_snu27/MC/HNtri50_MadGraph_8TeV_mumumu_PU/
+HN50_eee_new 		289.85	/data1/DATA/LQNtuples_5_3_14_snu27/MC/HNtri50_MadGraph_8TeV_eee_PU/
+HN60_mumumu_new	512.29	/data1/DATA/LQNtuples_5_3_14_snu27/MC/HNtri60_MadGraph_8TeV_mumumu_PU/
+HN60_eee_new 		512.29	/data1/DATA/LQNtuples_5_3_14_snu27/MC/HNtri60_MadGraph_8TeV_eee_PU/
+
+SKHN40_mumumu_new	209.59	/data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN40_mumumu_new/
+SKHN40_eee_new 		209.59  /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN40_eee_new/
+SKHN50_mumumu_new	289.85	/data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN50_mumumu_new/
+SKHN50_eee_new 		289.85  /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN50_eee_new/
+SKHN60_mumumu_new	512.29	/data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN60_mumumu_new/
+SKHN60_eee_new 		512.29  /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN50_eee_new/
+
+SKHN70_mumumu_new 3907.78 /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN70_mumumu_new/
+SKHN90_mumumu_new 42337.00 /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN90_mumumu_new/
+SKHN100_mumumu_new 88888.88  /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN100_new/
+SKHN150_mumumu_new 732600.73 /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN150_new/
+SKHN200_mumumu_new 2361832.78  /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN200_new/
+SKHN300_mumumu_new 11446886.44 /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN300_new/
+SKHN400_mumumu_new 36049026.67 /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN400_new/
+SKHN500_mumumu_new 91996320.14 /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN500_new/
+SKHN700_mumumu_new 414937759.33  /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN700_new/
+SKHN1000_mumumu_new 2393489707.99  /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN1000_new/
+
+
 

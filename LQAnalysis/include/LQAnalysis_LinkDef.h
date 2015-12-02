@@ -18,5 +18,9 @@
 #pragma link C++ class SKTreeMakerNoCut+;
 #pragma link C++ class ElectronCF+;
 #pragma link C++ class HNElectronOptimisation+;
+#pragma link C++ class trilepton_eemu+;
+#pragma link C++ class trilepton_mumue+;
+#pragma link C++ class trilepton_mumumu+;
+#pragma link C++ class trilepton_eee+;
 
 #endif // __CINT__
