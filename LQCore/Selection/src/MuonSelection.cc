@@ -25,16 +25,16 @@ void MuonSelection::BasicSelection( std::vector<KMuon>& leptonColl, bool m_debug
 
       /// ONLY CUT ON PT/ETA/LOOSE ID
       if( muit->Pt() < pt_cut_min ) {
-	pass_selection = false;
-	if(m_debug) cout << "BasicSelection:: Muon Fails Pt cut " << endl; 
+  pass_selection = false;
+  if(m_debug) cout << "BasicSelection:: Muon Fails Pt cut " << endl; 
       }
       if( fabs(muit->Eta()) > eta_cut){
-	pass_selection =false;
-	if(m_debug) cout << "BasicSelection:: Muon Fails Eta cut " << endl; 
+  pass_selection =false;
+  if(m_debug) cout << "BasicSelection:: Muon Fails Eta cut " << endl; 
       }
       if(! (PassID(MUON_LOOSE, *muit, m_debug))){
-	pass_selection =false;
-	if(m_debug) cout << "BasicSelection:: Muon Fails Loose Selection" << endl;
+  pass_selection =false;
+  if(m_debug) cout << "BasicSelection:: Muon Fails Loose Selection" << endl;
       }
       
       if(pass_selection) leptonColl.push_back(*muit);
@@ -119,7 +119,7 @@ void MuonSelection::Selection( std::vector<KMuon>& leptonColl, bool m_debug) {
       (muit->IsoHcalVeto() < HCalDeposit_max && 
        muit->IsoEcalVeto() < ECalDeposit_max && 
        (muit->IsoHcalVeto() >= HCalDeposit_min || 
-	muit->IsoEcalVeto() >= ECalDeposit_min) ) ? DepositVeto=true : DepositVeto=false;
+  muit->IsoEcalVeto() >= ECalDeposit_min) ) ? DepositVeto=true : DepositVeto=false;
       
       if(apply_deposit && !DepositVeto) pass_selection = false;
       if(m_debug&&apply_deposit && !DepositVeto) cout << "Fails DepositVeto " << endl;
@@ -217,10 +217,10 @@ void MuonSelection::HNLooseMuonSelection(std::vector<KMuon>& leptonColl , bool m
       pass_selection = false;
       if(m_debug) cout << "HNLooseMuonSelection Fail chi2 cut" << endl;
     }
-   	if(!(fabs(muit->Eta()) < 2.4)) pass_selection =false;
+     if(!(fabs(muit->Eta()) < 2.4)) pass_selection =false;
     if(!PassID(MUON_LOOSE, *muit, m_debug)) pass_selection =false;
     // iso 0.4->0.1
-		if(!( LeptonRelIso < 0.1)) pass_selection = false;  // default is 0.4
+    if(!( LeptonRelIso < 0.1)) pass_selection = false;  // default is 0.4
     if(!(muit->IsGlobal()==1      )) pass_selection = false; // default is 1
     if( muit->validHits() == 0     ) pass_selection = false; // default is 0
     if( muit->validPixHits() == 0)   pass_selection = false; // default is 0
@@ -235,8 +235,8 @@ void MuonSelection::HNLooseMuonSelection(std::vector<KMuon>& leptonColl , bool m
      muit->IsoEcalVeto() < 4.0 ) ? DepositVeto=true : DepositVeto=false;
     if(!DepositVeto) pass_selection = false;
 
-		/// nocut option ///
-		//pass_selection = true;
+    /// nocut option ///
+    //pass_selection = true;
 
     //// Make Loose selection
     if(pass_selection)leptonColl.push_back(*muit);    
@@ -451,9 +451,9 @@ bool MuonSelection::PassID(ID id, snu::KMuon mu, bool m_debug){
     if(!(mu.IsGlobal()==1 || mu.IsTracker() == 1 )){
       passID = false; 
       if(m_debug){
-	cout << "PassID: Fail isGlobal||isTracker" << endl;
-	cout << "PassID: mu.IsGlobal()=  " << mu.IsGlobal() << endl;
-	cout << "PassID: mu.IsTracker()= " << mu.IsTracker() << endl;
+  cout << "PassID: Fail isGlobal||isTracker" << endl;
+  cout << "PassID: mu.IsGlobal()=  " << mu.IsGlobal() << endl;
+  cout << "PassID: mu.IsTracker()= " << mu.IsTracker() << endl;
       }
     }
   }
