@@ -158,6 +158,7 @@ bool MuonSelection::PassUserID(ID id, snu::KMuon mu){
   if ( id == MUON_TOP_VETO) return TopVetoMuonSelection(mu);
   if ( id == MUON_TOP_LOOSE) return TopLooseMuonSelection(mu);
   if ( id == MUON_TOP_TIGHT) return TopTightMuonSelection(mu);
+  if ( id == MUON_HN_TRI) return HNtriMuonSelection(mu);
   return false;
   
 }
@@ -198,6 +199,28 @@ bool MuonSelection::HNLooseMuonSelection(KMuon mu) {
   if( fabs(mu.dZ())    >= 0.1)  pass_selection = false;
   if(!(mu.GlobalChi2() < 50.)) pass_selection = false;
   
+  return pass_selection;
+
+}
+
+bool MuonSelection::HNtriMuonSelection(KMuon mu) {
+
+  bool pass_selection(true);
+
+  LeptonRelIso = mu.RelIso03();
+
+  if(!PassID(MUON_POG_LOOSE, mu))  pass_selection =false;
+
+  if(!( LeptonRelIso < 0.1)) pass_selection = false;
+  if(!(mu.IsGlobal()==1      )) pass_selection = false;
+  if( mu.validHits() == 0     ) pass_selection = false;
+  if( mu.validPixHits() == 0)   pass_selection = false;
+  if( mu.validStations() <= 1 ) pass_selection = false;
+  if( mu.ActiveLayer() <= 5   ) pass_selection = false;
+  if( fabs(mu.dXY())    >= 0.2) pass_selection = false;
+  if( fabs(mu.dZ())    >= 0.1)  pass_selection = false;
+  if(!(mu.GlobalChi2() < 50.)) pass_selection = false;
+
   return pass_selection;
 
 }
