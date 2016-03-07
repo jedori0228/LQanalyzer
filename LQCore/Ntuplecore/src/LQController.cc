@@ -567,10 +567,15 @@ void LQController::ExecuteCycle() throw( LQError ) {
     cycle->SetCatVersion(SetNTCatVersion(catversion_lq));
 
     //// Connect chain to Data class                                                                                                                                        
-    cycle->Init(chain);
+    if(inputType!=NOTSET) {
+      if(inputType == data) cycle->SetLQNtupleInputType(1 );
+      else if(inputType == mc)  cycle->SetLQNtupleInputType(2 );
+    }
+    else cycle->SetLQNtupleInputType(3 );
+
 
     GetMemoryConsumption("Connected All Active Branches");
-    
+    cycle->Init(chain); 
     /// We can now check 
     // a) is this Data?
     // b) how many events in sample
@@ -595,6 +600,7 @@ void LQController::ExecuteCycle() throw( LQError ) {
       cycle->SetDataType(alt_isdata);
       GetMemoryConsumption("Accessed branch to specify isData");
     }
+
 
     cycle->SetNPStatus(runnp);
     cycle->SetCFStatus(runcf);
@@ -672,7 +678,6 @@ void LQController::ExecuteCycle() throw( LQError ) {
       for (Long64_t jentry = n_ev_to_skip; jentry < nevents_to_process; jentry++ ) {
 	cycle->GetEntry(jentry);	
 	if(!(jentry%50000)) m_logger << INFO << "Processing event " << jentry << " " << cycle->GetEventNumber() << LQLogger::endmsg;
-
 	if(cycle->GetEventNumber() == single_ev){
 	  cycle->SetUpEvent(jentry, ev_weight,k_period);
 	  cycle->ClearOutputVectors();

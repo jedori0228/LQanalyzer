@@ -41,7 +41,7 @@ ExampleAnalyzerDiMuon::ExampleAnalyzerDiMuon() :  AnalyzerCore(), out_muons(0)  
   MakeCleverHistograms(trilephist,"TriMuon_noB");
   MakeCleverHistograms(trilephist,"TriMuon_nomet");
   MakeCleverHistograms(trilephist,"TriMuonEl");
-  
+
 }
 
 
@@ -56,9 +56,14 @@ void ExampleAnalyzerDiMuon::InitialiseAnalysis() throw( LQError ) {
   
   Message("Making clever hists for Z ->ll test code", INFO);
   
-  //// default is silver, excpept in v7-6-2 ... set to gold if you use gold json in analysis
   /// only available in v7-6-X branch and newer
-  //lumimask = snu::KEvent::gold;
+  //// default lumimask is silver ////
+  //// In v7-6-2-(current) the default is changed to gold (since METNoHF bug)
+  ///When METNoHF isfixed the default will be back to silver
+  /// set to gold if you want to use gold json in analysis
+  /// To set uncomment the line below:
+  //ResetLumiMask(snu::KEvent::gold);
+
 
   return;
 }
@@ -66,6 +71,8 @@ void ExampleAnalyzerDiMuon::InitialiseAnalysis() throw( LQError ) {
 
 void ExampleAnalyzerDiMuon::ExecuteEvents()throw( LQError ){
 
+  eventbase->GetEvent().SetJSON(lumimask);
+  
   /// Apply the gen weight 
   weight*=MCweight;
   
@@ -166,10 +173,10 @@ void ExampleAnalyzerDiMuon::ExecuteEvents()throw( LQError ){
    if (!k_isdata) {
      // check if catversion is empty. i.ie, v-7-4-X in which case use reweight class to get weight. In v-7-6-X+ pileupweight is stored in KEvent class, for silver/gold json
      if(eventbase->GetEvent().CatVersion().empty()) pileup_reweight = reweightPU->GetWeight(int(eventbase->GetEvent().nVertices()), k_mcperiod);
-     else if(!eventbase->GetEvent().CatVersion().find("v7-6")) pileup_reweight = reweightPU->GetWeight(int(eventbase->GetEvent().nVertices()), k_mcperiod);
-     else pileup_reweight = eventbase->GetEvent().PileUpWeight(lumimask);
+     else if(eventbase->GetEvent().CatVersion().find("v7-4") !=std::string::npos)  pileup_reweight = reweightPU->GetWeight(int(eventbase->GetEvent().nVertices()), k_mcperiod);
+     else   pileup_reweight = eventbase->GetEvent().PileUpWeight(lumimask,snu::KEvent::central);
    }
-
+   
    FillHist("PileupWeight" ,  pileup_reweight,weight,  0. , 50., 10);
    
    if (Zcandidate(muonTightColl, 20., true)){
