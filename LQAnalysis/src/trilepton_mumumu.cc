@@ -144,8 +144,8 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   if (!k_isdata) {
     // check if catversion is empty. i.ie, v-7-4-X in which case use reweight class to get weight. In v-7-6-X+ pileupweight is stored in KEvent class, for silver/gold json
     if(eventbase->GetEvent().CatVersion().empty()) pileup_reweight = reweightPU->GetWeight(int(eventbase->GetEvent().nVertices()), k_mcperiod);
-    else if(!eventbase->GetEvent().CatVersion().find("v7-6")) pileup_reweight = reweightPU->GetWeight(int(eventbase->GetEvent().nVertices()), k_mcperiod);
-    else pileup_reweight = eventbase->GetEvent().PileUpWeight(lumimask);
+    else if(eventbase->GetEvent().CatVersion().find("v7-4") !=std::string::npos)  pileup_reweight = reweightPU->GetWeight(int(eventbase->GetEvent().nVertices()), k_mcperiod);
+    else   pileup_reweight = eventbase->GetEvent().PileUpWeight(lumimask,snu::KEvent::central);
   }
 
   FillHist("PileupWeight" ,  pileup_reweight,weight,  0. , 50., 10);
