@@ -60,7 +60,7 @@ WW_doublescattering  844954.0 844954.0 1.6 515215.8  /data2/DATA/cattoflat/MC/v7
 WW_pythia8  988418.0 988418.0 113.8 8683.6  /data2/DATA/cattoflat/MC/v7-6-3/WW_TuneCUETP8M1_13TeV-pythia8/
 WZ_lllnu_MCatNLO  12542004.0 8248027.5 5.3 1568066.1  /data2/DATA/cattoflat/MC/v7-6-3/WZJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/
 WZ_llqq_MCatNLO  21285766.0 12749017.0 5.6 2278644.8  /data2/DATA/cattoflat/MC/v7-6-3/WZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8/
-WN_lllnu_powheg  2000000.0 2000000.0 4.4 451502.9  /data2/DATA/cattoflat/MC/v7-6-3/WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8/
+WZ_lllnu_powheg  2000000.0 2000000.0 4.4 451502.9  /data2/DATA/cattoflat/MC/v7-6-3/WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8/
 WZZ_MCatNLO  249800.0 218986.0 0.1 3935058.5  /data2/DATA/cattoflat/MC/v7-6-3/WZZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8/
 WZ_pythia8  1000000.0 1000000.0 47.1 21217.9  /data2/DATA/cattoflat/MC/v7-6-3/WZ_TuneCUETP8M1_13TeV-pythia8/
 WpWp_madgraph  145800.0 145800.0 0.0 7063953.5  /data2/DATA/cattoflat/MC/v7-6-3/WpWpJJ_EWK_TuneCUETP8M1_13TeV-madgraph-pythia8/
@@ -128,7 +128,7 @@ SKWW_doublescattering  844954.0 844954.0 1.6 515215.8 /data2/CatNtuples/v7-6-3/S
 SKWW_pythia8  988418.0 988418.0 113.8 8683.6 /data2/CatNtuples/v7-6-3/SKTrees/MC/WW_pythia8/
 SKWZ_lllnu_MCatNLO  12542004.0 8248027.5 5.3 1568066.1 /data2/CatNtuples/v7-6-3/SKTrees/MC/WZ_lllnu_MCatNLO/
 SKWZ_llqq_MCatNLO  21285766.0 12749017.0 5.6 2278644.8 /data2/CatNtuples/v7-6-3/SKTrees/MC/WZ_llqq_MCatNLO/
-SKWN_lllnu_powheg  2000000.0 2000000.0 4.4 451502.9 /data2/CatNtuples/v7-6-3/SKTrees/MC/WN_lllnu_powheg/
+SKWZ_lllnu_powheg  2000000.0 2000000.0 4.4 451502.9 /data2/CatNtuples/v7-6-3/SKTrees/MC/WZ_lllnu_powheg/
 SKWZZ_MCatNLO  249800.0 218986.0 0.1 3935058.5 /data2/CatNtuples/v7-6-3/SKTrees/MC/WZZ_MCatNLO/
 SKWZ_pythia8  1000000.0 1000000.0 47.1 21217.9 /data2/CatNtuples/v7-6-3/SKTrees/MC/WZ_pythia8/
 SKWpWp_madgraph  145800.0 145800.0 0.0 7063953.5 /data2/CatNtuples/v7-6-3/SKTrees/MC/WpWp_madgraph/
@@ -196,7 +196,7 @@ SKWW_doublescattering_dilep  844954.0 844954.0 1.6 515215.8 /data2/CatNtuples/v7
 SKWW_pythia8_dilep  988418.0 988418.0 113.8 8683.6 /data2/CatNtuples/v7-6-3/SKTrees/MCDiLep/WW_pythia8/
 SKWZ_lllnu_MCatNLO_dilep  12542004.0 8248027.5 5.3 1568066.1 /data2/CatNtuples/v7-6-3/SKTrees/MCDiLep/WZ_lllnu_MCatNLO/
 SKWZ_llqq_MCatNLO_dilep  21285766.0 12749017.0 5.6 2278644.8 /data2/CatNtuples/v7-6-3/SKTrees/MCDiLep/WZ_llqq_MCatNLO/
-SKWN_lllnu_powheg_dilep  2000000.0 2000000.0 4.4 451502.9 /data2/CatNtuples/v7-6-3/SKTrees/MCDiLep/WN_lllnu_powheg/
+SKWZ_lllnu_powheg_dilep  2000000.0 2000000.0 4.4 451502.9 /data2/CatNtuples/v7-6-3/SKTrees/MCDiLep/WZ_lllnu_powheg/
 SKWZZ_MCatNLO_dilep  249800.0 218986.0 0.1 3935058.5 /data2/CatNtuples/v7-6-3/SKTrees/MCDiLep/WZZ_MCatNLO/
 SKWZ_pythia8_dilep  1000000.0 1000000.0 47.1 21217.9 /data2/CatNtuples/v7-6-3/SKTrees/MCDiLep/WZ_pythia8/
 SKWpWp_madgraph_dilep  145800.0 145800.0 0.0 7063953.5 /data2/CatNtuples/v7-6-3/SKTrees/MCDiLep/WpWp_madgraph/
@@ -325,7 +325,7 @@ DATASET: TT_scaleup_MCatNLO   /TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-scaleup-py
 DATASET: TT_scaleup_powheg   /TT_TuneCUETP8M1_13TeV-powheg-scaleup-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/MINIAODSIM
 DATASET: WG_lnuG_madgraph   /WGToLNuG_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/MINIAODSIM
 DATASET: WJets_MCatNLO   /WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/MINIAODSIM
-DATASET: WN_lllnu_powheg   /WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/MINIAODSIM
+DATASET: WZ_lllnu_powheg   /WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/MINIAODSIM
 DATASET: WW_MCatNLO   /WWZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/MINIAODSIM
 DATASET: WW_doublescattering   /WW_DoubleScattering_13TeV-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/MINIAODSIM
 DATASET: WW_llnn_powheg   /WWTo2L2Nu_13TeV-powheg/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/MINIAODSIM
