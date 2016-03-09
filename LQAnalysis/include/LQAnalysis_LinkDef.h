@@ -24,5 +24,6 @@
 #pragma link C++ class HN_FakeStudies+;
 #pragma link C++ class ElectronSF+;
 #pragma link C++ class HNEMu+;
+#pragma link C++ class trilepton_mumumu+;
 
 #endif // __CINT__

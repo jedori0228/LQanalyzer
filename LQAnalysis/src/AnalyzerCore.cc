@@ -3147,7 +3147,7 @@ void AnalyzerCore::CorrectMuonMomentum(vector<snu::KMuon>& k_muons){
   }
 }
 
- float AnalyzerCore::Get_DataDrivenWeightMC_EM(vector<snu::KMuon> k_muons, vector<snu::KElectron> k_electrons, double rho, TString tag){
+float AnalyzerCore::Get_DataDrivenWeightMC_EM(vector<snu::KMuon> k_muons, vector<snu::KElectron> k_electrons, double rho, TString tag){
 
    float em_weight = 0.;
    if(k_muons.size()==1 && k_electrons.size()==1){
@@ -3289,7 +3289,6 @@ float  AnalyzerCore::Get_DataDrivenWeight_E(vector<snu::KElectron> k_electrons, 
   }
   return 0.;
 }
-    
 
 
 vector<TLorentzVector> AnalyzerCore::MakeTLorentz(vector<snu::KElectron> el){
