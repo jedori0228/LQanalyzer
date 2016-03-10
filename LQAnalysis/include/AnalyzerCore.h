@@ -8,6 +8,7 @@ class MuonPlots;
 class ElectronPlots;
 class JetPlots;
 class SignalPlots;
+class TriLeptonPlots;
 class EventBase;
 
 #include "LQCycleBase.h"
@@ -102,7 +103,7 @@ class AnalyzerCore : public LQCycleBase {
   vector<TLorentzVector> MakeTLorentz( vector<snu::KMuon> mu);
   vector<TLorentzVector> MakeTLorentz( vector<snu::KJet> jet);
   // enum for plotting functions/classes
-  enum histtype {muhist, elhist, jethist, sighist};
+  enum histtype {muhist, elhist, jethist, sighist, trilephist};
   
   
   //
@@ -146,10 +147,12 @@ class AnalyzerCore : public LQCycleBase {
   std::vector<TString> triggerlist;
 
   //// Making cleaver hist maps
+  map<TString, TriLeptonPlots*> mapCLhistTriLep;
   map<TString, SignalPlots*> mapCLhistSig;
   map<TString, ElectronPlots*> mapCLhistEl;
   map<TString, MuonPlots*> mapCLhistMu;
   map<TString, JetPlots*> mapCLhistJet;
+
   
   //
   // Function that closes rootfile

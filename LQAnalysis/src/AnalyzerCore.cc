@@ -16,6 +16,7 @@
 #include "ElectronPlots.h"
 #include "JetPlots.h"
 #include "SignalPlots.h"
+#include "TriLeptonPlots.h"
 
 // STD includes
 #include <iostream>
@@ -2478,6 +2479,8 @@ void AnalyzerCore::MakeCleverHistograms(histtype type, TString clhistname ){
   if(type==jethist) mapCLhistJet[clhistname] = new JetPlots(clhistname);
   /// Signal plots                                                                                             
   if(type==sighist)  mapCLhistSig[clhistname] = new SignalPlots(clhistname);
+
+  if(type==trilephist)  mapCLhistTriLep[clhistname] = new TriLeptonPlots(clhistname);
       
   return;
 }
@@ -2674,7 +2677,18 @@ void AnalyzerCore::FillCLHist(histtype type, TString hist, vector<snu::KJet> jet
 
 void AnalyzerCore::FillCLHist(histtype type, TString hist, snu::KEvent ev,vector<snu::KMuon> muons, vector<snu::KElectron> electrons, vector<snu::KJet> jets,double w){
 
-  if(type==sighist){
+  if(type==trilephist){
+
+    map<TString, TriLeptonPlots*>::iterator trilepit = mapCLhistTriLep.find(hist);
+    if(trilepit !=mapCLhistTriLep.end()) trilepit->second->Fill(ev, muons, electrons, jets,w);
+    else {
+      mapCLhistTriLep[hist] = new TriLeptonPlots(hist);
+      trilepit = mapCLhistTriLep.find(hist);
+      trilepit->second->Fill(ev, muons, electrons, jets,w);
+    }
+  }
+
+  else if(type==sighist){
 
     map<TString, SignalPlots*>::iterator sigpit = mapCLhistSig.find(hist);
     if(sigpit !=mapCLhistSig.end()) sigpit->second->Fill(ev, muons, electrons, jets,w, 0.);
@@ -2758,6 +2772,13 @@ void AnalyzerCore::WriteCLHists(){
     Dir = m_outputFile->mkdir(sigpit->first);
     m_outputFile->cd( Dir->GetName() );
     sigpit->second->Write();
+    m_outputFile->cd();
+  }
+  for(map<TString, TriLeptonPlots*>::iterator trilepit = mapCLhistTriLep.begin(); trilepit != mapCLhistTriLep.end(); trilepit++){
+
+    //Dir = m_outputFile->mkdir(trilepit->first);
+    //m_outputFile->cd( Dir->GetName() );
+    trilepit->second->Write();
     m_outputFile->cd();
   }
 
