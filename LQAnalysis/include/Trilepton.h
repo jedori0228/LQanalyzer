@@ -35,4 +35,6 @@ void SetNeutrinoPz(TLorentzVector *nu, double Pz);
 /////////////////////////
 double XYAngle(TLorentzVector a, TLorentzVector b);
 
+int find_mlmet_closest_to_W(TLorentzVector* lep, TLorentzVector MET);
+
 #endif

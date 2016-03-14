@@ -19,18 +19,21 @@ TriLeptonPlots::TriLeptonPlots(TString name): StdPlots(name){
   map_sig["h_l2jjmass"]               =     new TH1F("h_l2jjmass_"          + name,"Invariant mass of the two leading jets and second electron",100,0,1000);
   map_sig["h_dijetmass"]               =     new TH1F("h_dijetmass_"          + name,"Invariant mass of the two leading jets" ,100,0,1000);
 
-  map_sig["h_LeptonEta"]              =     new TH1F("h_LeptonEta_"         + name,"leading lepton eta",60,-3.,3.);
-  map_sig["h_LeptonPt"]               =     new TH1F("h_LeptonPt_"          + name,"lepton pt",100,0,500);
-  map_sig["h_leadingLeptonPt"]        =     new TH1F("h_leadingLeptonPt_"   + name,"leading lepton pt",100,0,500);
-  map_sig["h_secondLeptonPt"]         =     new TH1F("h_secondLeptonPt_"    + name,"secondary lepton pt",60,0,300);
-  map_sig["h_thirdLeptonPt"]         =     new TH1F("h_thirdLeptonPt_"    + name,"thirdary lepton pt",60,0,300);
-  map_sig["h_leadingLeptonEta"]       =     new TH1F("h_leadingLeptonEta_"  + name,"leading lepton eta",60,-3.,3.);
-  map_sig["h_secondLeptonEta"]        =     new TH1F("h_secondLeptonEta_"   + name,"second lepton eta",60,-3.,3.);
-  map_sig["h_thirdLeptonEta"]        =     new TH1F("h_thirdLeptonEta_"   + name,"third lepton eta",60,-3.,3.);
+  map_sig["h_Lepton_Eta"]              =     new TH1F("h_Lepton_Eta_"         + name,"leading lepton eta",60,-3.,3.);
+  map_sig["h_Lepton_Pt"]               =     new TH1F("h_Lepton_Pt_"          + name,"lepton pt",100,0,500);
+  map_sig["h_leadingLepton_Pt"]        =     new TH1F("h_leadingLepton_Pt_"   + name,"leading lepton pt",100,0,500);
+  map_sig["h_secondLepton_Pt"]         =     new TH1F("h_secondLepton_Pt_"    + name,"secondary lepton pt",60,0,300);
+  map_sig["h_thirdLepton_Pt"]         =     new TH1F("h_thirdLepton_Pt_"    + name,"thirdary lepton pt",60,0,300);
+  map_sig["h_leadingLepton_Eta"]       =     new TH1F("h_leadingLepton_Eta_"  + name,"leading lepton eta",60,-3.,3.);
+  map_sig["h_secondLepton_Eta"]        =     new TH1F("h_secondLepton_Eta_"   + name,"second lepton eta",60,-3.,3.);
+  map_sig["h_thirdLepton_Eta"]        =     new TH1F("h_thirdLepton_Eta_"   + name,"third lepton eta",60,-3.,3.);
   
 
   map_sig["h_PFMET"]                  =     new TH1F("h_PFMET_"               + name,"Missing Et",100,0.0,500.0);
   map_sig["h_PFMET_phi"]              =     new TH1F("h_PFMET_phi_"           + name,"Missing Et",100,0.0,500.0);
+
+
+
 
   map_sig["h_nVertices"]              =     new TH1F("h_nVertices_"         + name,"number of even vertices",60,0.0,60.0);
   /// Charge plot
@@ -40,7 +43,23 @@ TriLeptonPlots::TriLeptonPlots(TString name): StdPlots(name){
   map_sig["h_Nmuons"]                 =     new TH1F("h_Nmuons_"           + name,"number of mu",5,0,5);
   map_sig["h_Nelectrons"]             =     new TH1F("h_Nelectrons_"           + name,"number of el",5,0,5);
 
-
+  // id variables
+  map_sig["h_LeptonRelIso"] = new TH1F("h_LeptonRelIso_"+name, "lepton LeptonRelIso03", 100, 0, 0.5);
+  map_sig["h_leadingLepton_LeptonRelIso"] = new TH1F("h_leadingLepton_LeptonRelIso_"+name, "leading lepton LeptonRelIso03", 100, 0, 0.5);
+  map_sig["h_secondLepton_LeptonRelIso"] = new TH1F("h_secondLepton_LeptonRelIso_"+name, "secondary lepton LeptonRelIso03", 100, 0, 0.5);
+  map_sig["h_thirdLepton_LeptonRelIso"] = new TH1F("h_thirdLepton_LeptonRelIso_"+name, "thirdary lepton LeptonRelIso03", 100, 0, 0.5);
+  map_sig["h_dXY"] = new TH1F("h_dXY_"+name, "lepton dXY", 1000, 0, 0.1);
+  map_sig["h_leadingLepton_dXY"] = new TH1F("h_leadingLepton_dXY_"+name, "leading lepton dXY", 1000, 0, 0.1);
+  map_sig["h_secondLepton_dXY"] = new TH1F("h_secondLepton_dXY_"+name, "secondary lepton dXY", 1000, 0, 0.1);
+  map_sig["h_thirdLepton_dXY"] = new TH1F("h_thirdLepton_dXY_"+name, "thirdary lepton dXY", 1000, 0, 0.1);
+  map_sig["h_dZ"] = new TH1F("h_dZ_"+name, "lepton dZ", 1000, 0, 0.1);
+  map_sig["h_leadingLepton_dZ"] = new TH1F("h_leadingLepton_dZ_"+name, "leading lepton dZ", 1000, 0, 0.1);
+  map_sig["h_secondLepton_dZ"] = new TH1F("h_secondLepton_dZ_"+name, "secondary lepton dZ", 1000, 0, 0.1);
+  map_sig["h_thirdLepton_dZ"] = new TH1F("h_thirdLepton_dZ_"+name, "thirdary lepton dZ", 1000, 0, 0.1);
+  map_sig["h_GlobalChi2"] = new TH1F("h_GlobalChi2_"+name, "lepton GlobalChi2", 100, 0, 100);
+  map_sig["h_leadingLepton_GlobalChi2"] = new TH1F("h_leadingLepton_GlobalChi2_"+name, "leading lepton GlobalChi2", 100, 0, 100);
+  map_sig["h_secondLepton_GlobalChi2"] = new TH1F("h_secondLepton_GlobalChi2_"+name, "secondary lepton GlobalChi2", 100, 0, 100);
+  map_sig["h_thirdLepton_GlobalChi2"] = new TH1F("h_thirdLepton_GlobalChi2_"+name, "thirdary_lepton GlobalChi2", 100, 0, 100);
 
 
 }
@@ -73,19 +92,36 @@ void TriLeptonPlots::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std::v
     if(muons[1].Charge() != muons[2].Charge())    Fill("h_osllmass", (muons[1]+muons[2]).M(),weight);
     int imu=0;
     for(std::vector<snu::KMuon>::iterator muit = muons.begin(); muit != muons.end(); muit++, imu++){
-      Fill("h_LeptonPt", muit->Pt(),weight);
-      Fill("h_LeptonEta",muit->Eta(),weight);
+      float LeptonRelIso = (muit->SumIsoCHDR03() + std::max(0.0, muit->SumIsoNHDR03() + muit->SumIsoPHDR03() - 0.5* muit->SumPUIsoR03()))/muit->Pt() ;
+      Fill("h_Lepton_Pt", muit->Pt(),weight);
+      Fill("h_Lepton_Eta",muit->Eta(),weight);
+      Fill("h_LeptonRelIso", LeptonRelIso, weight);
+      Fill("h_dXY", muit->dXY(), weight);
+      Fill("h_dZ", muit->dZ(), weight);
+      Fill("h_GlobalChi2", muit->GlobalChi2(), weight);
       if(imu ==0) {
-	Fill("h_leadingLeptonPt", muit->Pt(),weight);
-	Fill("h_leadingLeptonEta",muit->Eta(),weight);
+        Fill("h_leadingLepton_Pt", muit->Pt(),weight);
+        Fill("h_leadingLepton_Eta",muit->Eta(),weight);
+        Fill("h_leadingLepton_LeptonRelIso", LeptonRelIso, weight);
+        Fill("h_leadingLepton_dXY", muit->dXY(), weight);
+        Fill("h_leadingLepton_dZ", muit->dZ(), weight);
+        Fill("h_leadingLepton_GlobalChi2", muit->GlobalChi2(), weight);
       }
       if(imu ==1) {
-        Fill("h_secondLeptonPt", muit->Pt(),weight);
-        Fill("h_secondLeptonEta",muit->Eta(),weight);
+        Fill("h_secondLepton_Pt", muit->Pt(),weight);
+        Fill("h_secondLepton_Eta",muit->Eta(),weight);
+        Fill("h_secondLepton_LeptonRelIso", LeptonRelIso, weight);
+        Fill("h_secondLepton_dXY", muit->dXY(), weight);
+        Fill("h_secondLepton_dZ", muit->dZ(), weight);
+        Fill("h_secondLepton_GlobalChi2", muit->GlobalChi2(), weight);
       }
       if(imu ==2) {
-        Fill("h_thirdLeptonPt", muit->Pt(),weight);
-        Fill("h_thirdLeptonEta",muit->Eta(),weight);
+        Fill("h_thirdLepton_Pt", muit->Pt(),weight);
+        Fill("h_thirdLepton_Eta",muit->Eta(),weight);
+        Fill("h_thirdLepton_LeptonRelIso", LeptonRelIso, weight);
+        Fill("h_thirdLepton_dXY", muit->dXY(), weight);
+        Fill("h_thirdLepton_dZ", muit->dZ(), weight);
+        Fill("h_thirdLepton_GlobalChi2", muit->GlobalChi2(), weight);
       }
       
     }
@@ -108,19 +144,19 @@ void TriLeptonPlots::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std::v
     if(electrons[1].Charge() != electrons[2].Charge())    Fill("h_osllmass", (electrons[1]+electrons[2]).M(),weight);
     int imu=0;
     for(std::vector<snu::KElectron>::iterator muit = electrons.begin(); muit != electrons.end(); muit++, imu++){
-      Fill("h_LeptonPt", muit->Pt(),weight);
-      Fill("h_LeptonEta",muit->Eta(),weight);
+      Fill("h_Lepton_Pt", muit->Pt(),weight);
+      Fill("h_Lepton_Eta",muit->Eta(),weight);
       if(imu ==0) {
-        Fill("h_leadingLeptonPt", muit->Pt(),weight);
-        Fill("h_leadingLeptonEta",muit->Eta(),weight);
+        Fill("h_leadingLepton_Pt", muit->Pt(),weight);
+        Fill("h_leadingLepton_Eta",muit->Eta(),weight);
       }
       if(imu ==1) {
-        Fill("h_secondLeptonPt", muit->Pt(),weight);
-        Fill("h_secondLeptonEta",muit->Eta(),weight);
+        Fill("h_secondLepton_Pt", muit->Pt(),weight);
+        Fill("h_secondLepton_Eta",muit->Eta(),weight);
       }
       if(imu ==2) {
-        Fill("h_thirdLeptonPt", muit->Pt(),weight);
-	Fill("h_thirdLeptonEta",muit->Eta(),weight);
+        Fill("h_thirdLepton_Pt", muit->Pt(),weight);
+  Fill("h_thirdLepton_Eta",muit->Eta(),weight);
       }
 
     }

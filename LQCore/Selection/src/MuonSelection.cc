@@ -248,7 +248,7 @@ void MuonSelection::HNLooseMuonSelection(std::vector<KMuon>& leptonColl , bool m
   return;
 }
 
-void MuonSelection::HNtriMuonSelection(std::vector<KMuon>& leptonColl , bool m_debug) {
+void MuonSelection::HNtriTightMuonSelection(std::vector<KMuon>& leptonColl , bool m_debug) {
 
   //### THIS SELECTION IS USED FOR MUON FAKES STUDIES
   std::vector<KMuon> allmuons = k_lqevent.GetMuons();
@@ -275,8 +275,8 @@ void MuonSelection::HNtriMuonSelection(std::vector<KMuon>& leptonColl , bool m_d
     if( muit->validStations() <= 1 ) pass_selection = false;
     if( muit->ActiveLayer() <= 5   ) pass_selection = false;
     if( fabs(muit->dXY())    >= 0.2) pass_selection = false;
-    if( fabs(muit->dZ())    >= 0.1)  pass_selection = false;
-    if(!(muit->GlobalChi2() < 50.)) pass_selection = false;
+    if( fabs(muit->dZ())    >= 0.5)  pass_selection = false;
+    if(!(muit->GlobalChi2() < 10.)) pass_selection = false;
 
 
     /// ENERGY DEPOSIT
@@ -292,7 +292,49 @@ void MuonSelection::HNtriMuonSelection(std::vector<KMuon>& leptonColl , bool m_d
   return;
 }
 
+void MuonSelection::HNtriLooseMuonSelection(std::vector<KMuon>& leptonColl , bool m_debug) {
 
+  //### THIS SELECTION IS USED FOR MUON FAKES STUDIES
+  std::vector<KMuon> allmuons = k_lqevent.GetMuons();
+  for (std::vector<KMuon>::iterator muit = allmuons.begin(); muit!=allmuons.end(); muit++){
+
+    bool pass_selection(true);
+
+    if(muit->Pt() == 0.) continue;
+    if (muit->Pt() > 0.01)      LeptonRelIso = (muit->SumIsoCHDR03() + std::max(0.0, muit->SumIsoNHDR03() + muit->SumIsoPHDR03() - 0.5* muit->SumPUIsoR03()))/muit->Pt() ;
+    else LeptonRelIso = 9999.;
+    if (LeptonRelIso<0) LeptonRelIso=0.0001;
+
+    //// Muon Loose selection
+    if(( muit->Pt() < 10. )) {
+      pass_selection = false;
+      if(m_debug) cout << "HNLooseMuonSelection Fail chi2 cut" << endl;
+    }
+    if(!(fabs(muit->Eta()) < 2.4)) pass_selection =false;
+    if(!PassID(MUON_LOOSE, *muit, m_debug)) pass_selection =false;
+    if(!( LeptonRelIso < 0.6)) pass_selection = false;
+    if(!(muit->IsGlobal()==1      )) pass_selection = false;
+    if( muit->validHits() == 0     ) pass_selection = false;
+    if( muit->validPixHits() == 0)   pass_selection = false;
+    if( muit->validStations() <= 1 ) pass_selection = false;
+    if( muit->ActiveLayer() <= 5   ) pass_selection = false;
+    if( fabs(muit->dXY())    >= 0.2) pass_selection = false;
+    if( fabs(muit->dZ())    >= 0.5)  pass_selection = false;
+    if(!(muit->GlobalChi2() < 10.)) pass_selection = false;
+
+
+    /// ENERGY DEPOSIT
+    (muit->IsoHcalVeto() < 6.0 &&
+     muit->IsoEcalVeto() < 4.0 ) ? DepositVeto=true : DepositVeto=false;
+    if(!DepositVeto) pass_selection = false;
+
+
+
+    //// Make Loose selection
+    if(pass_selection)leptonColl.push_back(*muit);
+  }
+  return;
+}
 
 void MuonSelection::HNLooseMuonSelection03(std::vector<KMuon>& leptonColl , bool m_debug) {
 

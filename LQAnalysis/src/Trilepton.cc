@@ -84,3 +84,12 @@ double XYAngle(TLorentzVector a, TLorentzVector b){
   b_temp.SetPxPyPzE(b.Px(), b.Py(), 0, 0);
   return a_temp.Angle(b_temp.Vect());
 }
+
+int find_mlmet_closest_to_W(TLorentzVector* lep, TLorentzVector MET){
+
+  double m_diff[3];
+  for(int i=0; i<3; i++) m_diff[i] = fabs( (lep[i]+MET).M() - 80.4 );
+  double m_diff_min = TMath::Min( m_diff[0] , TMath::Min( m_diff[1], m_diff[2] ) );
+  for(int i=0; i<3; i++) if( m_diff_min == m_diff[i] ) return i;
+
+}

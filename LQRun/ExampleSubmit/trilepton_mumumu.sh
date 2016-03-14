@@ -1,8 +1,8 @@
 #!/bin/sh
 
 ###### SET WHAT JOBS TO RUN
-runMC=true
-runDoubleMuon=false
+runMC=false
+runDoubleMuon=true
 
 if [[ $runMC  == "true" ]]; 
 then
@@ -17,8 +17,8 @@ then
     loglevel="INFO"
     logstep=1000
     nevents=-1
-    declare -a input_samples=("ZZtollnn_mg" "ggHtoZZ")
-    #declare -a input_samples=("DY10to50" "DY50plus" "topDIL" "Wbb" "ttW" "ttZ" "WWW" "TTWW" "TTG" "ZZZ" "WZZ" "WWZ" "WWG" "WW_mg" "WZtollqq_mg" "WZtoqqln_mg" "WZtollln_mg" "ZZtollnn_mg" "ZZtollqq_mg" "ZZtollll_mg" "Zbb" "HtoWW" "Wtollln_new" "HN40_mumumu_new" "HN50_mumumu_new" "HN60_mumumu_new")
+    #declare -a input_samples=("ggHtoZZ")
+    declare -a input_samples=("DY10to50" "DY50plus" "topDIL" "Wbb" "ttW" "ttZ" "WWW" "TTWW" "TTG" "ZZZ" "WZZ" "WWZ" "WWG" "WW_mg" "WZtollqq_mg" "WZtoqqln_mg" "WZtollln_mg" "ZZtollnn_mg" "ZZtollqq_mg" "ZZtollll_mg" "Zbb" "HtoWW" "ggHtoZZ" "Wtollln_new" "HN40_mumumu_new" "HN50_mumumu_new" "HN60_mumumu_new")
     source submit.sh $1
 fi
     
@@ -31,7 +31,7 @@ then
     skinput="True"
     stream="muon"
     useskim="DiLep"
-    outputdir=$LQANALYZER_DIR"/data/output/trilepton/mumumu/"
+    outputdir=$LQANALYZER_DIR"/data/output/trilepton/mumumu/test/"
     #### JOB CONFIGURATION
     njobs=30
     data_lumi="AtoD"
