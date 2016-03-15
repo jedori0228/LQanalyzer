@@ -237,7 +237,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   ////////// m(HN) > 80 GeV region //////////
   ///////////////////////////////////////////
 
-  snu::KParticle W_pri_highmass, nu_highmass, W_sec[2];
+  snu::KParticle W_pri_highmass, nu_highmass, W_sec;
   nu_highmass.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, 0);
   int l_2_index = find_mlmet_closest_to_W(lep, nu_highmass);
   double pz_sol_highmass[2]; 
@@ -259,29 +259,17 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   // [class4]
   // m(HN) : 200 ~ 1000 GeV - primary lepton has smaller pT
 
-  W_sec[0] = lep[l_2_index] + nu_highmass; // [class3]
-  W_sec[1] = lep[l_2_index] + nu_highmass; // [class4]
+  W_sec = lep[l_2_index] + nu_highmass;
 
   if(l_2_index == OppSign){
      
-    HN[2] = W_sec[0] + lep[SameSign[1]]; // [class3]
-    HN[3] = W_sec[1] + lep[SameSign[0]]; // [class4]
+    HN[2] = W_sec + lep[SameSign[1]]; // [class3]
+    HN[3] = W_sec + lep[SameSign[0]]; // [class4]
  
   }
   else{
-
-    vector<int> lep_remainder;
-    for(int i=0; i<3; i++) if(i != l_2_index) lep_remainder.push_back(i);
-    
-    if( lep[l_2_index].Charge() != lep[ lep_remainder.at(0) ].Charge() ){
-      HN[2] = W_sec[0] + lep[ lep_remainder.at(0) ]; // [class3]
-      HN[3] = W_sec[1] + lep[ lep_remainder.at(0) ]; // [class4]
-    }
-    else{
-      HN[2] = W_sec[0] + lep[ lep_remainder.at(1) ]; // [class3]
-      HN[3] = W_sec[1] + lep[ lep_remainder.at(1) ]; // [class4]
-    }
-
+      HN[2] = W_sec + lep[OppSign]; // [class3]
+      HN[3] = W_sec + lep[OppSign]; // [class4]
   }
 
   bool is_deltaR_OS_min_0p5 = deltaR_OS_min > 0.5;
@@ -291,6 +279,8 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   // No PU
   FillHist("HN_mass_class1_cut0", HN[0].M(), weight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
   FillHist("HN_mass_class2_cut0", HN[1].M(), weight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
+  FillHist("HN_mass_class3_cut0", HN[2].M(), weight, 0, 500, 50);//
+  FillHist("HN_mass_class4_cut0", HN[3].M(), weight, 0, 1000, 100);//
   FillHist("W_pri_lowmass_mass_cut0", W_pri_lowmass.M(), weight, W_pri_lowmass_x_min, W_pri_lowmass_x_max, (W_pri_lowmass_x_max-W_pri_lowmass_x_min)/W_pri_lowmass_dx);
   FillHist("deltaR_OS_min_cut0", deltaR_OS_min, weight, 0, 5, 5./0.1);
   FillHist("gamma_star_mass_cut0", gamma_star.M(), weight, gamma_star_x_min, gamma_star_x_max, (gamma_star_x_max-gamma_star_x_min)/gamma_star_dx);
@@ -300,6 +290,8 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   // PU
   FillHist("HN_mass_class1_cut0_PU", HN[0].M(), weight*pileup_reweight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
   FillHist("HN_mass_class2_cut0_PU", HN[1].M(), weight*pileup_reweight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
+  FillHist("HN_mass_class3_cut0_PU", HN[2].M(), weight*pileup_reweight, 0, 500, 50);//
+  FillHist("HN_mass_class4_cut0_PU", HN[3].M(), weight*pileup_reweight, 0, 1000, 100);//
   FillHist("W_pri_lowmass_mass_cut0_PU", W_pri_lowmass.M(), weight*pileup_reweight, W_pri_lowmass_x_min, W_pri_lowmass_x_max, (W_pri_lowmass_x_max-W_pri_lowmass_x_min)/W_pri_lowmass_dx);
   FillHist("deltaR_OS_min_cut0_PU", deltaR_OS_min, weight*pileup_reweight, 0, 5, 5./0.1);
   FillHist("gamma_star_mass_cut0_PU", gamma_star.M(), weight*pileup_reweight, gamma_star_x_min, gamma_star_x_max, (gamma_star_x_max-gamma_star_x_min)/gamma_star_dx);
@@ -311,6 +303,8 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     // No PU
     FillHist("HN_mass_class1_cutdR", HN[0].M(), weight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
     FillHist("HN_mass_class2_cutdR", HN[1].M(), weight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
+    FillHist("HN_mass_class3_cutdR", HN[2].M(), weight, 0, 500, 50);//
+    FillHist("HN_mass_class4_cutdR", HN[3].M(), weight, 0, 1000, 100);//
     FillHist("W_pri_lowmass_mass_cutdR", W_pri_lowmass.M(), weight, W_pri_lowmass_x_min, W_pri_lowmass_x_max, (W_pri_lowmass_x_max-W_pri_lowmass_x_min)/W_pri_lowmass_dx);
     FillHist("deltaR_OS_min_cutdR", deltaR_OS_min, weight, 0, 5, 5./0.1);
     FillHist("gamma_star_mass_cutdR", gamma_star.M(), weight, gamma_star_x_min, gamma_star_x_max, (gamma_star_x_max-gamma_star_x_min)/gamma_star_dx);
@@ -320,6 +314,8 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     // PU
     FillHist("HN_mass_class1_cutdR_PU", HN[0].M(), weight*pileup_reweight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
     FillHist("HN_mass_class2_cutdR_PU", HN[1].M(), weight*pileup_reweight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
+    FillHist("HN_mass_class3_cutdR_PU", HN[2].M(), weight*pileup_reweight, 0, 500, 50);//
+    FillHist("HN_mass_class4_cutdR_PU", HN[3].M(), weight*pileup_reweight, 0, 1000, 100);//
     FillHist("W_pri_lowmass_mass_cutdR_PU", W_pri_lowmass.M(), weight*pileup_reweight, W_pri_lowmass_x_min, W_pri_lowmass_x_max, (W_pri_lowmass_x_max-W_pri_lowmass_x_min)/W_pri_lowmass_dx);
     FillHist("deltaR_OS_min_cutdR_PU", deltaR_OS_min, weight*pileup_reweight, 0, 5, 5./0.1);
     FillHist("gamma_star_mass_cutdR_PU", gamma_star.M(), weight*pileup_reweight, gamma_star_x_min, gamma_star_x_max, (gamma_star_x_max-gamma_star_x_min)/gamma_star_dx);
