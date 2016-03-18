@@ -127,8 +127,12 @@ std::vector<snu::KJet> AnalyzerCore::GetJets(TString label){
     eventbase->GetJetSel()->SetEta(2.5);
     eventbase->GetJetSel()->JetSelectionLeptonVeto(jetColl, GetMuons("veto"), GetElectrons(false,false, "veto"));
   }
-  
-  
+  else  if(label.Contains("fakerate")){
+		eventbase->GetJetSel()->SetID(BaseSelection::PFJET_LOOSE);
+		eventbase->GetJetSel()->SetPt(40.);
+		eventbase->GetJetSel()->SetEta(3.0);
+		eventbase->GetJetSel()->JetSelectionLeptonVeto(jetColl, GetMuons("veto"), GetElectrons(false,false, "veto"));
+  }
   else  if(label.Contains("ApplyLeptonVeto")){
     eventbase->GetJetSel()->SetID(BaseSelection::PFJET_LOOSE);
     eventbase->GetJetSel()->SetPt(20.);

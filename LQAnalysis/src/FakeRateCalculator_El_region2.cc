@@ -1043,7 +1043,7 @@ void FakeRateCalculator_El_region2::ExecuteEvents()throw( LQError ){
 
   
   // Dilepton CR
-  if(PassTrigger(triggerslist_diel, prescale)){
+/*  if(PassTrigger(triggerslist_diel, prescale)){
     if(electronLooseColl.size() ==2){
       if(jetColl_lepveto20.size() > 0){
 	if(jetColl_lepveto20.at(0).Pt() > 30.){
@@ -1052,7 +1052,7 @@ void FakeRateCalculator_El_region2::ExecuteEvents()throw( LQError ){
       }
     }
     
-  }
+  }*/
   
   if(muonLooseColl.size() > 0) return;
 
