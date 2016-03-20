@@ -178,6 +178,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   } // Find l2 and assign l1&l3 in ptorder 
   FillCutFlow("2SS1OS", weight);
 
+  if(k_sample_name.Contains("HN")) gen_matching();
 
   ///////////////////////////////////////////
   ////////// m(HN) < 80 GeV region //////////
@@ -481,4 +482,180 @@ void trilepton_mumumu::SetBinInfo(int cut){
   }
 
 }
+
+void trilepton_mumumu::gen_matching(){
+
+  std::vector<snu::KTruth> truthColl;
+  eventbase->GetTruthSel()->Selection(truthColl);
+
+  // l_1 : lepton from first W
+  // l_2 : lepton from HN
+  // l_3 : lepton from second W
+  // W_pri : on-shell W (First W for low mass, second W for high mass)
+  
+  int truthmax = truthColl.size();
+  int gen_W_pri_index, gen_l_1_index, gen_HN_index, gen_l_2_index, gen_W_sec_index, gen_l_3_index, gen_nu_index;
+  snu::KParticle gen_nu, gen_W_pri, gen_HN, gen_W_sec;
+  snu::KParticle gen_l_1, gen_l_2, gen_l_3;
+  bool W_sec_in_truth=false, isLowMass = true;
+  
+  // check if this is low/high mass region //
+  // find HN index
+  for(int i=2;i<truthmax;i++){
+    if(truthColl.at(i).PdgId() == 80000002){
+      if(truthColl.at(i).M() > 80) isLowMass = false;
+      gen_HN_index = i;
+      gen_HN = truthColl.at(i);
+      break;
+    }
+  }
+  
+  // low mass region //
+  if(isLowMass){
+    // for low mass, W_pri is on-shell
+    // so we can find them in gen particle collections
+    // find W_pri index
+    for(int i=2;i<truthmax;i++){
+      if(abs(truthColl.at(i).PdgId()) == 24){
+        gen_W_pri_index = i;
+        gen_W_pri = truthColl.at(i);
+        break;
+      }
+    }
+    // if W_sec is virtual, it may not appear in the gen particle collections
+    // check W_sec exists
+    for(int i=2;i<truthmax;i++){
+      if(fabs(truthColl.at(i).PdgId()) == 24 && truthColl.at(truthColl.at(i).IndexMother()).PdgId() == 80000002){
+        gen_W_sec_index = i;
+        gen_W_sec = truthColl.at(i);
+        W_sec_in_truth = true;
+        break;
+      }
+    }
+    // no W_sec in truthColl index case
+    if(!W_sec_in_truth){
+      // find l_1 at gen. level
+      for(int i=2;i<truthmax;i++){
+        if(abs(truthColl.at(i).PdgId()) == 13 && truthColl.at(i).IndexMother() == gen_W_pri_index){
+          gen_l_1 = truthColl.at(i);
+          gen_l_1_index = i;
+          break;
+        }
+      }
+      // find nu at gen. level
+      for(int i=2;i<truthmax;i++){
+        if(abs(truthColl.at(i).PdgId()) == 14 && truthColl.at(i).IndexMother() == gen_HN_index){
+          gen_nu = truthColl.at(i);
+          break;
+        }
+      }
+      // find l_3 at gen. level
+      for(int i=2;i<truthmax;i++){
+        if(truthColl.at(i).PdgId() == truthColl.at(gen_l_1_index).PdgId() && truthColl.at(i).IndexMother() == gen_HN_index){
+          gen_l_3 = truthColl.at(i);
+          break;
+        }
+      }
+      // find l_2 at gen. level
+      for(int i=2;i<truthmax;i++){
+        if(truthColl.at(i).PdgId() == -truthColl.at(gen_l_1_index).PdgId() && truthColl.at(i).IndexMother() == gen_HN_index){
+          gen_l_2 = truthColl.at(i);
+          break;
+        }
+      }
+    }
+    // W_sec in truthColl index case
+    else{
+      // find l_1 at gen. level
+      for(int i=2;i<truthmax;i++){
+        if(abs(truthColl.at(i).PdgId()) == 13 && truthColl.at(i).IndexMother() == gen_W_pri_index){
+          gen_l_1 = truthColl.at(i);
+          gen_l_1_index = i;
+          break;
+        }
+      }
+      // find nu at gen. level
+      for(int i=2;i<truthmax;i++){
+        if(abs(truthColl.at(i).PdgId()) == 14 && truthColl.at(i).IndexMother() == gen_W_sec_index){
+          gen_nu = truthColl.at(i);
+          break;
+        }
+      }
+      // find l_3 at gen. level
+      for(int i=2;i<truthmax;i++){
+        if(fabs(truthColl.at(i).PdgId()) == fabs(truthColl.at(gen_l_1_index).PdgId()) && truthColl.at(i).IndexMother() == gen_W_sec_index){
+          gen_l_3 = truthColl.at(i);
+          gen_l_3_index = i;
+          break;
+        }
+      }
+      // find l_2 at gen. level
+      for(int i=2;i<truthmax;i++){
+        if(fabs(truthColl.at(i).PdgId()) == fabs(truthColl.at(gen_l_1_index).PdgId()) && truthColl.at(i).IndexMother() == gen_HN_index){
+          gen_l_2 = truthColl.at(i);
+        }
+      }
+      if(truthColl.at(gen_l_3_index).PdgId() == -truthColl.at(gen_l_1_index).PdgId()){
+        snu::KParticle gen_temp = gen_l_2;
+        gen_l_2 = gen_l_3;
+        gen_l_3 = gen_temp;
+      }
+    }
+  }
+  // high mass region //
+  else{
+    // find l_1 at gen. level
+    for(int i=2;i<truthmax;i++){
+      if(abs(truthColl.at(i).PdgId()) == 13 && truthColl.at(i).IndexMother() == truthColl.at(gen_HN_index).IndexMother()){
+        gen_l_1 = truthColl.at(i);
+        gen_l_1_index = i;
+        break;
+      }
+    }
+    // fine l_2 at gen. level
+    for(int i=2;i<truthmax;i++){
+      if(abs(truthColl.at(i).PdgId()) == 13 && truthColl.at(i).IndexMother() == gen_HN_index ){
+        gen_l_2 = truthColl.at(i);
+        gen_l_2_index = i;
+      }
+    }
+    // find W_sec
+    for(int i=2;i<truthmax;i++){
+      if(abs(truthColl.at(i).PdgId()) == 24 && truthColl.at(i).IndexMother() == truthColl.at(gen_l_2_index).IndexMother()){
+        gen_W_sec = truthColl.at(i);
+        gen_W_sec_index =i;
+        break;
+      }
+    }
+    // find nu at gen. level
+    for(int i=2;i<truthmax;i++){
+      if(abs(truthColl.at(i).PdgId()) == 14){
+        gen_nu_index = i;
+        gen_nu = truthColl.at(i) ;
+        break;
+      }
+    }
+    // find l_3 at gen. level
+    for(int i=2;i<truthmax;i++){
+      if(abs(truthColl.at(i).PdgId()) == 13 && truthColl.at(i).IndexMother() == truthColl.at(gen_nu_index).IndexMother()){
+        gen_l_3 = truthColl.at(i);
+        gen_l_3_index = i;
+        break;
+      }
+    }
+  }
+
+  // histograms
+  
+  snu::KParticle gen_l_SS;
+  if( gen_l_1.Charge() == gen_l_2.Charge() ) gen_l_SS = gen_l_2;
+  else gen_l_SS = gen_l_3;
+  if( gen_l_1.Pt() > gen_l_SS.Pt() ) FillHist("pri_lep_pt_greater_check", 1, 1, 0, 2, 2);
+  else FillHist("pri_lep_pt_greater_check", 0, 1, 0, 2, 2);
+
+
+}
+
+
+
 

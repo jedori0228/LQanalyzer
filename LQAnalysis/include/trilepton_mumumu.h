@@ -28,6 +28,7 @@ class trilepton_mumumu : public AnalyzerCore {
          dR_x_min, dR_x_max, dR_dx,
          gamma_star_x_min, gamma_star_x_max, gamma_star_dx,
          z_candidate_x_min, z_candidate_x_max, z_candidate_dx;
+  void gen_matching();
 
  private:
   
