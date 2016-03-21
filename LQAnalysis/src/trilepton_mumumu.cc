@@ -177,7 +177,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     }
   } // Find l2 and assign l1&l3 in ptorder 
   FillCutFlow("2SS1OS", weight);
-
+  FillHist("here1", 0, 1, 0, 1, 1);
   if(k_sample_name.Contains("HN")) gen_matching();
 
   ///////////////////////////////////////////
@@ -187,7 +187,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   snu::KEvent Evt = eventbase->GetEvent();
   double MET = Evt.PFMET(), METphi = Evt.PFMETphi();
   snu::KParticle W_pri_lowmass, nu_lowmass, gamma_star, z_candidate;
-  nu_lowmass.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, 0);
+  nu_lowmass.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET);
   double pz_sol_lowmass[2];
   pz_sol_lowmass[0] = solveqdeq(80.4, lep[0]+lep[1]+lep[2], MET, METphi, "m"); // 0 = minus
   pz_sol_lowmass[1] = solveqdeq(80.4, lep[0]+lep[1]+lep[2], MET, METphi, "p"); // 1 = plus
@@ -239,11 +239,11 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   ///////////////////////////////////////////
 
   snu::KParticle W_pri_highmass, nu_highmass, W_sec;
-  nu_highmass.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, 0);
-  int l_2_index = find_mlmet_closest_to_W(lep, nu_highmass);
+  nu_highmass.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET);
+  int l_3_index = find_mlmet_closest_to_W(lep, nu_highmass);
   double pz_sol_highmass[2]; 
-  pz_sol_highmass[0] = solveqdeq(80.4, lep[l_2_index], MET, METphi, "m"); // 0 = minus
-  pz_sol_highmass[1] = solveqdeq(80.4, lep[l_2_index], MET, METphi, "p"); // 1 = plus
+  pz_sol_highmass[0] = solveqdeq(80.4, lep[l_3_index], MET, METphi, "m"); // 0 = minus
+  pz_sol_highmass[1] = solveqdeq(80.4, lep[l_3_index], MET, METphi, "p"); // 1 = plus
   int solution_selection_highmass = 0;
   if( pz_sol_highmass[0] != pz_sol_highmass[1] ){ 
     // take the one with smaller magnitude
@@ -260,9 +260,9 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   // [class4]
   // m(HN) : 200 ~ 1000 GeV - primary lepton has smaller pT
 
-  W_sec = lep[l_2_index] + nu_highmass;
+  W_sec = lep[l_3_index] + nu_highmass;
 
-  if(l_2_index == OppSign){
+  if(l_3_index == OppSign){
      
     HN[2] = W_sec + lep[SameSign[1]]; // [class3]
     HN[3] = W_sec + lep[SameSign[0]]; // [class4]
@@ -488,10 +488,45 @@ void trilepton_mumumu::gen_matching(){
   std::vector<snu::KTruth> truthColl;
   eventbase->GetTruthSel()->Selection(truthColl);
 
+  // get reco info here
+  std::vector<snu::KMuon> muontriTightColl;
+  eventbase->GetMuonSel()->HNtriTightMuonSelection(muontriTightColl);
+  snu::KParticle reco_lep[3];
+  for(int i=0;i<3;i++){
+    reco_lep[i] = muontriTightColl.at(i);
+  }
+  int OppSign, SameSign[2]; // SameSign[0].Pt() > SameSign[1].Pt()
+  if(reco_lep[0].Charge() * reco_lep[1].Charge() > 0){ // Q(0) = Q(1)
+    if(reco_lep[1].Charge() * reco_lep[2].Charge() < 0){ // Q(1) != Q(2)
+      OppSign = 2;
+      SameSign[0] = 0;
+      SameSign[1] = 1;
+    }
+    else return; // veto Q(0) = Q(1) = Q(2)
+  }
+  else{ // Q(0) != Q(1)
+    if(reco_lep[0].Charge() * reco_lep[2].Charge() > 0){ // Q(0) = Q(2)
+      OppSign = 1;
+      SameSign[0] = 0;
+      SameSign[1] = 2;
+    }
+    else if(reco_lep[1].Charge() * reco_lep[2].Charge() > 0){ // Q(1) = Q(2)
+      OppSign = 0;
+      SameSign[0] = 1;
+      SameSign[1] = 2;
+    }
+  } // Find l2 and assign l1&l3 in ptorder 
+
+  snu::KEvent Evt = eventbase->GetEvent();
+  double MET = Evt.PFMET(), METphi = Evt.PFMETphi();
+  snu::KParticle reco_MET;
+  reco_MET.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET);
+
+  // W_pri : first W
   // l_1 : lepton from first W
   // l_2 : lepton from HN
+  // W_sec : W from HN
   // l_3 : lepton from second W
-  // W_pri : on-shell W (First W for low mass, second W for high mass)
   
   int truthmax = truthColl.size();
   int gen_W_pri_index, gen_l_1_index, gen_HN_index, gen_l_2_index, gen_W_sec_index, gen_l_3_index, gen_nu_index;
@@ -643,6 +678,21 @@ void trilepton_mumumu::gen_matching(){
         break;
       }
     }
+
+    TLorentzVector reco_lep_tlv[3];
+    for(int i=0; i<3; i++) reco_lep_tlv[i] = reco_lep[i];
+    int l_3_cand = find_mlmet_closest_to_W(reco_lep_tlv, reco_MET);
+
+    FillHist("reco_MET", reco_MET.Pt(), 1, 0, 120, 120);
+    FillHist("reco_lep_0_MET", (reco_lep[0] + reco_MET).M() - 80.4, 1, -60, 60, 120);
+    FillHist("reco_lep_1_MET", (reco_lep[1] + reco_MET).M() - 80.4, 1, -60, 60, 120);
+    FillHist("reco_lep_2_MET", (reco_lep[2] + reco_MET).M() - 80.4, 1, -60, 60, 120);
+
+    FillHist("l_3_cand", l_3_cand, 1, 0, 3, 3);
+    if( gen_l_3.DeltaR(reco_lep[l_3_cand]) < 0.3 ) FillHist("highmass_mlmet_Wmass_check", 1, 1, 0, 2, 2);
+    else FillHist("highmass_mlmet_Wmass_check", 0, 1, 0, 2, 2);
+
+
   }
 
   // histograms
@@ -650,9 +700,13 @@ void trilepton_mumumu::gen_matching(){
   snu::KParticle gen_l_SS;
   if( gen_l_1.Charge() == gen_l_2.Charge() ) gen_l_SS = gen_l_2;
   else gen_l_SS = gen_l_3;
-  if( gen_l_1.Pt() > gen_l_SS.Pt() ) FillHist("pri_lep_pt_greater_check", 1, 1, 0, 2, 2);
-  else FillHist("pri_lep_pt_greater_check", 0, 1, 0, 2, 2);
 
+  //check in gen level
+  if( gen_l_1.Pt() > gen_l_SS.Pt() ) FillHist("gen_pri_lep_pt_greater_check", 1, 1, 0, 2, 2);
+  else FillHist("gen_pri_lep_pt_greater_check", 0, 1, 0, 2, 2);
+
+  if( reco_lep[SameSign[0]].DeltaR(gen_l_1) < 0.3 ) FillHist("reco_leading_SS_matching_check", 1, 1, 0, 2, 2);
+  else FillHist("reco_leading_SS_matching_check", 0, 1, 0, 2, 2);  
 
 }
 

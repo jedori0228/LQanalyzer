@@ -85,11 +85,20 @@ double XYAngle(TLorentzVector a, TLorentzVector b){
   return a_temp.Angle(b_temp.Vect());
 }
 
-int find_mlmet_closest_to_W(TLorentzVector* lep, TLorentzVector MET){
-
+int find_mlmet_closest_to_W(TLorentzVector *lep, TLorentzVector MET){
   double m_diff[3];
-  for(int i=0; i<3; i++) m_diff[i] = fabs( (lep[i]+MET).M() - 80.4 );
+  for(int i=0; i<3; i++){
+    m_diff[i] = fabs( (lep[i]+MET).M() - 80.4 );
+    //m_diff[i] = fabs( Mt3(lep[i], MET) );
+  }
   double m_diff_min = TMath::Min( m_diff[0] , TMath::Min( m_diff[1], m_diff[2] ) );
   for(int i=0; i<3; i++) if( m_diff_min == m_diff[i] ) return i;
+
+}
+
+double Mt3(TLorentzVector a, TLorentzVector b){
+
+  double dphi = a.DeltaPhi(b);
+  return TMath::Sqrt(2*a.Pt()*b.Pt()*(1-TMath::Cos(dphi)));
 
 }
