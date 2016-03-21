@@ -689,14 +689,23 @@ void trilepton_mumumu::gen_matching(){
     FillHist("reco_lep_2_MET", (reco_lep[2] + reco_MET).M() - 80.4, 1, -60, 60, 120);
 
     FillHist("l_3_cand", l_3_cand, 1, 0, 3, 3);
-    if( gen_l_3.DeltaR(reco_lep[l_3_cand]) < 0.3 ) FillHist("highmass_mlmet_Wmass_check", 1, 1, 0, 2, 2);
+    if( gen_l_3.DeltaR(reco_lep[l_3_cand]) < 0.15 ) FillHist("highmass_mlmet_Wmass_check", 1, 1, 0, 2, 2);
     else FillHist("highmass_mlmet_Wmass_check", 0, 1, 0, 2, 2);
 
 
   }
 
   // histograms
-  
+ 
+  FillHist("matching_validation_W_pri", (gen_l_1+gen_l_2+gen_l_3+gen_nu).M(), 1, 0, 1100, 110);
+  FillHist("matching_validation_HN", (gen_l_2+gen_l_3+gen_nu).M(), 1, 0, 1100, 110);
+  FillHist("matching_validation_W_sec", (gen_l_3+gen_nu).M(), 1, 0, 100, 100);
+
+  FillHist("gen_l_1_Pt", gen_l_1.Pt(), 1, 0, 200, 200);
+  FillHist("gen_l_2_Pt", gen_l_2.Pt(), 1, 0, 200, 200);
+  FillHist("gen_l_3_Pt", gen_l_3.Pt(), 1, 0, 200, 200);
+  FillHist("gen_nu_Pt", gen_nu.Pt(), 1, 0, 200, 200);
+ 
   snu::KParticle gen_l_SS;
   if( gen_l_1.Charge() == gen_l_2.Charge() ) gen_l_SS = gen_l_2;
   else gen_l_SS = gen_l_3;
@@ -705,7 +714,9 @@ void trilepton_mumumu::gen_matching(){
   if( gen_l_1.Pt() > gen_l_SS.Pt() ) FillHist("gen_pri_lep_pt_greater_check", 1, 1, 0, 2, 2);
   else FillHist("gen_pri_lep_pt_greater_check", 0, 1, 0, 2, 2);
 
-  if( reco_lep[SameSign[0]].DeltaR(gen_l_1) < 0.3 ) FillHist("reco_leading_SS_matching_check", 1, 1, 0, 2, 2);
+  if( reco_lep[SameSign[0]].DeltaR(gen_l_1) < 0.15 
+      //&& fabs(reco_lep[SameSign[0]].Pt()-gen_l_1.Pt())/gen_l_1.Pt() < 0.05 
+    ) FillHist("reco_leading_SS_matching_check", 1, 1, 0, 2, 2);
   else FillHist("reco_leading_SS_matching_check", 0, 1, 0, 2, 2);  
 
 }

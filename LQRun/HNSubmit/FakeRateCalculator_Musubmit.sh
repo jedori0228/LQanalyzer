@@ -41,12 +41,12 @@ then
     data_lumi="AtoD"
     loglevel="INFO"
     logstep=1000
-    outputdir="/home/chasejeon/LQanalyzer_Oct2015/data/output/Muon/"
+    outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/"
 
 
-    declare -a input_samples=("DY10to50" "DY50plus" "ttbar")
-  #  declare -a input_samples=("Wjets" "Wgamma" "stbar_sch" "stbar_tch" "stbar_tW" "st_sch" "st_tch" "st_tW"  )
-  #  declare -a input_samples=( "Wjets" "ttbar")
+    declare -a input_samples=("DY10to50" "DY50plus" "ttbar" "Wjets" "Wgamma" "stbar_sch" "stbar_tch" "stbar_tW" "st_sch" "st_tch" "st_tW")
+    #declare -a input_samples=("Wjets" "Wgamma" "stbar_sch" "stbar_tch" "stbar_tW" "st_sch" "st_tch" "st_tW"  )
+    #declare -a input_samples=( "Wjets" "ttbar")
     source submit.sh  
     #source hadd.sh /home/chasejeon/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/output/ElectronFakes/MC/  FakeRateCalculator_El_mc_5_3_14.root  FakeRateCalculator_El_SK*
     #mv /home/chasejeon/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/output/ElectronFakes/MC/FakeRateCalculator_El_mc_5_3_14.root /home/jskim/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/output/ElectronFakes/
@@ -104,9 +104,10 @@ then
     loglevel="INFO"
     logstep=1000
     stream="muon"
-    outputdir="/home/chasejeon/LQanalyzer_Oct2015/data/output/Muon/"
+    outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/"
     
-    declare -a input_samples=("A" "B" "C" "D")
+    #declare -a input_samples=("A" "B" "C" "D")
+    declare -a input_samples=("A")
 
     source submit.sh $1
 
