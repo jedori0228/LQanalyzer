@@ -124,7 +124,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
           FillHist("eta_F0", muon.Eta(), weight, -3, 3, 30);
           FillHist("pt_F0", muon.Pt(), weight, 0., 200., 200./5.);
           FillHist("events_F0", fabs(muon.Eta()), muon.Pt(), weight, etaarray, 4, ptarray, 9);
-          if(muonTightColl.size() == 1){
+          if(muontriTightColl.size() == 1){
             FillHist("eta_F", muon.Eta(), weight, -3, 3, 30);
             FillHist("pt_F", muon.Pt(), weight, 0., 200., 200/5.);
             FillHist("events_F", fabs(muon.Eta()), muon.Pt(), weight, etaarray, 4, ptarray, 9);          
@@ -187,8 +187,6 @@ void FakeRateCalculator_Mu::ClearOutputVectors() throw(LQError) {
   out_muons.clear();
   out_electrons.clear();
 }
-
-////////////////////////////////////////////
 
 float FakeRateCalculator_Mu::GetPrescale(std::vector<snu::KMuon> muon, bool passlow, bool passhigh){
   float prescale_trigger = 0.;
