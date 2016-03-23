@@ -693,6 +693,58 @@ void trilepton_mumumu::gen_matching(){
     else FillHist("highmass_mlmet_Wmass_check", 0, 1, 0, 2, 2);
 
 
+    // 1) pt ordering firstly done
+    
+    int l_1_cand = SameSign[0], l_SS_rem = SameSign[1], signal_class = 3;
+    if( k_sample_name.Contains("HN700") || k_sample_name.Contains("HN1000") ){
+      signal_class = 4;
+      l_1_cand = SameSign[1];
+      l_SS_rem = SameSign[0];
+    }
+    
+    if( reco_lep[l_1_cand].DeltaR(gen_l_1) < 0.15 ){
+      int l_2_cand, l_3_cand;
+      if( fabs( (reco_lep[OppSign]+reco_MET).M() - 80.4 ) < fabs( (reco_lep[l_SS_rem]+reco_MET).M() - 80.4 ) ){
+        l_3_cand = OppSign;
+        l_2_cand = l_SS_rem;
+      }
+      else{
+        l_3_cand = l_SS_rem;
+        l_2_cand = OppSign;
+      }
+
+      if( gen_l_2.DeltaR( reco_lep[l_2_cand] ) < 0.15 && gen_l_3.DeltaR( reco_lep[l_3_cand] ) < 0.15 ) FillHist("pt_order_first_mlmet_next", 1, 1, 0, 2, 2);
+      else FillHist("pt_order_first_mlmet_next", 0, 1, 0, 2, 2);
+
+    }
+
+    // 2) mlmet first
+    
+    if( gen_l_3.DeltaR(reco_lep[l_3_cand]) < 0.15 ){
+      int l_1_cand, l_2_cand;
+      if( l_3_cand == OppSign ){
+        if( signal_class == 3){
+          l_1_cand = SameSign[0];
+          l_2_cand = SameSign[1];
+        }
+        else{
+          l_1_cand = SameSign[1];
+          l_2_cand = SameSign[0];
+        }
+      }
+      else{
+        l_2_cand = OppSign;
+        if( l_3_cand == SameSign[0] ) l_1_cand = SameSign[1];
+        else l_1_cand = SameSign[0];
+      }
+
+      if( gen_l_1.DeltaR( reco_lep[l_1_cand] ) < 0.15 && gen_l_2.DeltaR( reco_lep[l_2_cand] ) < 0.15 ) FillHist("mlmet_first_pt_order_next", 1, 1, 0, 2, 2);
+      else FillHist("mlmet_first_pt_order_next", 0, 1, 0, 2, 2);
+
+
+    }
+
+
   }
 
   // histograms
@@ -725,6 +777,8 @@ void trilepton_mumumu::gen_matching(){
       //&& fabs(reco_lep[SameSign[0]].Pt()-gen_l_1.Pt())/gen_l_1.Pt() < 0.05 
     ) FillHist("reco_subleading_SS_matching_check", 1, 1, 0, 2, 2);
   else FillHist("reco_subleading_SS_matching_check", 0, 1, 0, 2, 2); 
+
+
 
 }
 
