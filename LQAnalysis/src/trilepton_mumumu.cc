@@ -684,9 +684,9 @@ void trilepton_mumumu::gen_matching(){
     int l_3_cand = find_mlmet_closest_to_W(reco_lep_tlv, reco_MET);
 
     FillHist("reco_MET", reco_MET.Pt(), 1, 0, 120, 120);
-    FillHist("reco_lep_0_MET", (reco_lep[0] + reco_MET).M() - 80.4, 1, -60, 60, 120);
-    FillHist("reco_lep_1_MET", (reco_lep[1] + reco_MET).M() - 80.4, 1, -60, 60, 120);
-    FillHist("reco_lep_2_MET", (reco_lep[2] + reco_MET).M() - 80.4, 1, -60, 60, 120);
+    FillHist("reco_lep_1_MET", (reco_lep[0] + reco_MET).M() - 80.4, 1, -60, 60, 120);
+    FillHist("reco_lep_2_MET", (reco_lep[1] + reco_MET).M() - 80.4, 1, -60, 60, 120);
+    FillHist("reco_lep_3_MET", (reco_lep[2] + reco_MET).M() - 80.4, 1, -60, 60, 120);
 
     FillHist("l_3_cand", l_3_cand, 1, 0, 3, 3);
     if( gen_l_3.DeltaR(reco_lep[l_3_cand]) < 0.15 ) FillHist("highmass_mlmet_Wmass_check", 1, 1, 0, 2, 2);
@@ -701,15 +701,17 @@ void trilepton_mumumu::gen_matching(){
   FillHist("matching_validation_HN", (gen_l_2+gen_l_3+gen_nu).M(), 1, 0, 1100, 110);
   FillHist("matching_validation_W_sec", (gen_l_3+gen_nu).M(), 1, 0, 100, 100);
 
-  FillHist("gen_l_1_Pt", gen_l_1.Pt(), 1, 0, 200, 200);
-  FillHist("gen_l_2_Pt", gen_l_2.Pt(), 1, 0, 200, 200);
-  FillHist("gen_l_3_Pt", gen_l_3.Pt(), 1, 0, 200, 200);
-  FillHist("gen_nu_Pt", gen_nu.Pt(), 1, 0, 200, 200);
+  FillHist("gen_l_1_Pt", gen_l_1.Pt(), 1, 0, 100, 100);
+  FillHist("gen_l_2_Pt", gen_l_2.Pt(), 1, 0, 100, 100);
+  FillHist("gen_l_3_Pt", gen_l_3.Pt(), 1, 0, 100, 100);
+  FillHist("gen_nu_Pt", gen_nu.Pt(), 1, 0, 100, 100);
  
   snu::KParticle gen_l_SS;
   if( gen_l_1.Charge() == gen_l_2.Charge() ) gen_l_SS = gen_l_2;
   else gen_l_SS = gen_l_3;
 
+  FillHist("gen_l_SS_Pt", gen_l_SS.Pt(), 1, 0, 100, 100);
+  
   //check in gen level
   if( gen_l_1.Pt() > gen_l_SS.Pt() ) FillHist("gen_pri_lep_pt_greater_check", 1, 1, 0, 2, 2);
   else FillHist("gen_pri_lep_pt_greater_check", 0, 1, 0, 2, 2);
@@ -717,7 +719,12 @@ void trilepton_mumumu::gen_matching(){
   if( reco_lep[SameSign[0]].DeltaR(gen_l_1) < 0.15 
       //&& fabs(reco_lep[SameSign[0]].Pt()-gen_l_1.Pt())/gen_l_1.Pt() < 0.05 
     ) FillHist("reco_leading_SS_matching_check", 1, 1, 0, 2, 2);
-  else FillHist("reco_leading_SS_matching_check", 0, 1, 0, 2, 2);  
+  else FillHist("reco_leading_SS_matching_check", 0, 1, 0, 2, 2); 
+
+  if( reco_lep[SameSign[1]].DeltaR(gen_l_1) < 0.15
+      //&& fabs(reco_lep[SameSign[0]].Pt()-gen_l_1.Pt())/gen_l_1.Pt() < 0.05 
+    ) FillHist("reco_subleading_SS_matching_check", 1, 1, 0, 2, 2);
+  else FillHist("reco_subleading_SS_matching_check", 0, 1, 0, 2, 2); 
 
 }
 

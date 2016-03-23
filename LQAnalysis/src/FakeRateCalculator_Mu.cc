@@ -92,13 +92,14 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   if(muontriLooseColl.size() != 1) return;
 
   if( !PassTrigger(triggerlist_Mu8,prescale) && !PassTrigger(triggerlist_Mu17,prescale) ) return;
+  //if( ! (PassTrigger(triggerlist_Mu8,prescale) && !PassTrigger(triggerlist_Mu17,prescale)) ) return;
 
   float prescale_trigger = GetPrescale(muontriLooseColl, PassTrigger(triggerlist_Mu8,prescale), PassTrigger(triggerlist_Mu17,prescale));
 
-  //FillHist("prescale_trigger", prescale_trigger, 1, 0, 1, 10000);
+  FillHist("prescale_trigger", prescale_trigger, 1, 0, 1, 10000);
   
   cout << prescale_trigger << endl;
-  weight *= prescale_trigger;  
+  //weight *= prescale_trigger;  
 
 
   snu::KParticle muon;
@@ -122,11 +123,11 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
       if( ptmu_ptjet < 1. ){
         if( dPhi > 2.5 ){
           FillHist("eta_F0", muon.Eta(), weight, -3, 3, 30);
-          FillHist("pt_F0", muon.Pt(), weight, 0., 200., 200./5.);
+          FillHist("pt_F0", muon.Pt(), weight, 0., 200., 200./1.);
           FillHist("events_F0", fabs(muon.Eta()), muon.Pt(), weight, etaarray, 4, ptarray, 9);
           if(muontriTightColl.size() == 1){
             FillHist("eta_F", muon.Eta(), weight, -3, 3, 30);
-            FillHist("pt_F", muon.Pt(), weight, 0., 200., 200/5.);
+            FillHist("pt_F", muon.Pt(), weight, 0., 200., 200/1.);
             FillHist("events_F", fabs(muon.Eta()), muon.Pt(), weight, etaarray, 4, ptarray, 9);          
           }
           goto stop;

@@ -103,7 +103,8 @@ then
     data_lumi="AtoD"
     loglevel="INFO"
     logstep=1000
-    stream="muon"
+    #stream="muon"
+    stream="singlemuon"
     outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/"
     
     #declare -a input_samples=("A" "B" "C" "D")
