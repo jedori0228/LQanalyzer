@@ -177,7 +177,6 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     }
   } // Find l2 and assign l1&l3 in ptorder 
   FillCutFlow("2SS1OS", weight);
-  FillHist("here1", 0, 1, 0, 1, 1);
   if(k_sample_name.Contains("HN")) gen_matching();
 
   ///////////////////////////////////////////
@@ -288,6 +287,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   FillHist("z_candidate_mass_cut0", z_candidate.M(), weight, z_candidate_x_min, z_candidate_x_max, (z_candidate_x_max-z_candidate_x_min)/z_candidate_dx);
   FillHist("n_jet_cut0", n_jet, weight, 0, 10, 10);
   FillCLHist(trilephist, "cut0", eventbase->GetEvent(), muontriTightColl, electronTightColl, jetColl_lepveto, weight);
+  FillHist("n_events_cut0", 0, weight, 0, 1, 1);
   // PU
   FillHist("HN_mass_class1_cut0_PU", HN[0].M(), weight*pileup_reweight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
   FillHist("HN_mass_class2_cut0_PU", HN[1].M(), weight*pileup_reweight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
@@ -299,6 +299,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   FillHist("z_candidate_mass_cut0_PU", z_candidate.M(), weight*pileup_reweight, z_candidate_x_min, z_candidate_x_max, (z_candidate_x_max-z_candidate_x_min)/z_candidate_dx);
   FillHist("n_jet_cut0_PU", n_jet, weight*pileup_reweight, 0, 10, 10);
   FillCLHist(trilephist, "cut0_PU", eventbase->GetEvent(), muontriTightColl, electronTightColl, jetColl_lepveto, weight*pileup_reweight);
+  FillHist("n_events_cut0_PU", 0, weight*pileup_reweight, 0, 1, 1);
   if( is_deltaR_OS_min_0p5 ){
     SetBinInfo(1);
     // No PU
@@ -312,6 +313,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     FillHist("z_candidate_mass_cutdR", z_candidate.M(), weight, z_candidate_x_min, z_candidate_x_max, (z_candidate_x_max-z_candidate_x_min)/z_candidate_dx);
     FillHist("n_jet_cutdR", n_jet, weight, 0, 10, 10);
     FillCLHist(trilephist, "cutdR", eventbase->GetEvent(), muontriTightColl, electronTightColl, jetColl_lepveto, weight);
+    FillHist("n_events_cutdR", 0, weight, 0, 1, 1);
     // PU
     FillHist("HN_mass_class1_cutdR_PU", HN[0].M(), weight*pileup_reweight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
     FillHist("HN_mass_class2_cutdR_PU", HN[1].M(), weight*pileup_reweight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
@@ -323,6 +325,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     FillHist("z_candidate_mass_cutdR_PU", z_candidate.M(), weight*pileup_reweight, z_candidate_x_min, z_candidate_x_max, (z_candidate_x_max-z_candidate_x_min)/z_candidate_dx);
     FillHist("n_jet_cutdR_PU", n_jet, weight*pileup_reweight, 0, 10, 10);
     FillCLHist(trilephist, "cutdR_PU", eventbase->GetEvent(), muontriTightColl, electronTightColl, jetColl_lepveto, weight*pileup_reweight);
+    FillHist("n_events_cutdR_PU", 0, weight*pileup_reweight, 0, 1, 1);
     if( is_W_pri_lowmass_100 ){
       SetBinInfo(2);
       // No PU
@@ -334,6 +337,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
       FillHist("z_candidate_mass_cutdR_cutW", z_candidate.M(), weight, z_candidate_x_min, z_candidate_x_max, (z_candidate_x_max-z_candidate_x_min)/z_candidate_dx);
       FillHist("n_jet_cutdR_cutW", n_jet, weight, 0, 10, 10);
       FillCLHist(trilephist, "cutdR_cutW", eventbase->GetEvent(), muontriTightColl, electronTightColl, jetColl_lepveto, weight);
+      FillHist("n_events_cutdR_cutW", 0, weight, 0, 1, 1);
       // PU
       FillHist("HN_mass_class1_cutdR_cutW_PU", HN[0].M(), weight*pileup_reweight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
       FillHist("HN_mass_class2_cutdR_cutW_PU", HN[1].M(), weight*pileup_reweight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
@@ -343,6 +347,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
       FillHist("z_candidate_mass_cutdR_cutW_PU", z_candidate.M(), weight*pileup_reweight, z_candidate_x_min, z_candidate_x_max, (z_candidate_x_max-z_candidate_x_min)/z_candidate_dx);
       FillHist("n_jet_cutdR_cutW_PU", n_jet, weight*pileup_reweight, 0, 10, 10);
       FillCLHist(trilephist, "cutdR_cutW_PU", eventbase->GetEvent(), muontriTightColl, electronTightColl, jetColl_lepveto, weight*pileup_reweight);
+      FillHist("n_events_cutdR_cutW_PU", 0, weight*pileup_reweight, 0, 1, 1);
     }
   }
 
