@@ -36,9 +36,13 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   if(!PassBasicEventCuts()) return; //FIXME Do we need this?
   FillCutFlow("EventCut", weight);
   
-  std::vector<TString> triggerlist_Mu8, triggerlist_Mu17;
+  std::vector<TString> triggerlist_Mu5, triggerlist_Mu8, triggerlist_Mu17;
+  triggerlist_Mu5.push_back("HLT_Mu5_v");
   triggerlist_Mu8.push_back("HLT_Mu8_v");
   triggerlist_Mu17.push_back("HLT_Mu17_v");
+
+  //if( !PassTrigger(triggerlist_Mu5,prescale) ) return;
+  //FillHist("Mu5", 0, 1, 0, 1, 1);
     
   if (!eventbase->GetEvent().HasGoodPrimaryVertex()) return; 
   FillCutFlow("VertexCut", weight);
@@ -99,7 +103,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   FillHist("prescale_trigger", prescale_trigger, 1, 0, 1, 10000);
   
   cout << prescale_trigger << endl;
-  //weight *= prescale_trigger;  
+  weight *= prescale_trigger;  
 
 
   snu::KParticle muon;
@@ -124,11 +128,11 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
         if( dPhi > 2.5 ){
           FillHist("eta_F0", muon.Eta(), weight, -3, 3, 30);
           FillHist("pt_F0", muon.Pt(), weight, 0., 200., 200./1.);
-          FillHist("events_F0", fabs(muon.Eta()), muon.Pt(), weight, etaarray, 4, ptarray, 9);
+          FillHist("events_F0", muon.Pt(), fabs(muon.Eta()), weight, ptarray, 9, etaarray, 4);
           if(muontriTightColl.size() == 1){
             FillHist("eta_F", muon.Eta(), weight, -3, 3, 30);
             FillHist("pt_F", muon.Pt(), weight, 0., 200., 200/1.);
-            FillHist("events_F", fabs(muon.Eta()), muon.Pt(), weight, etaarray, 4, ptarray, 9);          
+            FillHist("events_F", muon.Pt(), fabs(muon.Eta()), weight, ptarray, 9, etaarray, 4);          
           }
           goto stop;
         }
@@ -150,8 +154,8 @@ void FakeRateCalculator_Mu::BeginCycle() throw( LQError ){
   Message("In begin Cycle", INFO);
   string analysisdir = getenv("FILEDIR");  
   if(!k_isdata) reweightPU = new Reweight((analysisdir + "MyDataPileupHistogram.root").c_str());
-  DeclareVariable(out_electrons, "Signal_Electrons", "LQTree");
-  DeclareVariable(out_muons, "Signal_Muons");
+  //DeclareVariable(out_electrons, "Signal_Electrons", "LQTree");
+  //DeclareVariable(out_muons, "Signal_Muons");
   return;
 }
 
@@ -194,7 +198,7 @@ float FakeRateCalculator_Mu::GetPrescale(std::vector<snu::KMuon> muon, bool pass
   if(muon.size() == 1){
     if(muon.at(0).Pt() >= 20.){
       if(passhigh){
-        prescale_trigger = (25.014000) / 19674 ; //// 20 + GeV bins
+        prescale_trigger = (25.014) / 19674 ; //// 20 + GeV bins
       }
       else prescale_trigger = 0.;
     }

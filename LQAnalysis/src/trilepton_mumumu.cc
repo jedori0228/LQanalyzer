@@ -256,9 +256,9 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   W_pri_highmass = lep[0] + lep[1] + lep[2] + nu_highmass;
 
   // [class3]
-  // m(HN) : 90 ~ 200 GeV - primary lepton has larger pT
+  // m(HN) : 90 ~ 500 GeV - primary lepton has larger pT
   // [class4]
-  // m(HN) : 200 ~ 1000 GeV - primary lepton has smaller pT
+  // m(HN) : 700 ~ 1000 GeV - primary lepton has smaller pT
 
   W_sec = lep[l_3_index] + nu_highmass;
 
@@ -532,13 +532,15 @@ void trilepton_mumumu::gen_matching(){
   int gen_W_pri_index, gen_l_1_index, gen_HN_index, gen_l_2_index, gen_W_sec_index, gen_l_3_index, gen_nu_index;
   snu::KParticle gen_nu, gen_W_pri, gen_HN, gen_W_sec;
   snu::KParticle gen_l_1, gen_l_2, gen_l_3;
-  bool W_sec_in_truth=false, isLowMass = true;
+  bool W_sec_in_truth=false, isLowMass = false;
+
+  if(k_sample_name.Contains("HN40_") || k_sample_name.Contains("HN50_") || k_sample_name.Contains("HN60_")) isLowMass = true;
   
   // check if this is low/high mass region //
   // find HN index
   for(int i=2;i<truthmax;i++){
     if(truthColl.at(i).PdgId() == 80000002){
-      if(truthColl.at(i).M() > 80) isLowMass = false;
+      //if(truthColl.at(i).M() > 80) isLowMass = false;
       gen_HN_index = i;
       gen_HN = truthColl.at(i);
       break;
@@ -689,59 +691,67 @@ void trilepton_mumumu::gen_matching(){
     FillHist("reco_lep_3_MET", (reco_lep[2] + reco_MET).M() - 80.4, 1, -60, 60, 120);
 
     FillHist("l_3_cand", l_3_cand, 1, 0, 3, 3);
-    if( gen_l_3.DeltaR(reco_lep[l_3_cand]) < 0.15 ) FillHist("highmass_mlmet_Wmass_check", 1, 1, 0, 2, 2);
-    else FillHist("highmass_mlmet_Wmass_check", 0, 1, 0, 2, 2);
+    if( gen_l_3.DeltaR(reco_lep[l_3_cand]) < 0.15 ) FillHist("highmass_mlmet_Wmass_match_gen_l_3", 1, 1, 0, 2, 2);
+    else FillHist("highmass_mlmet_Wmass_match_gen_l_3", 0, 1, 0, 2, 2);
 
 
-    // 1) pt ordering firstly done
+    // 1) pt ordering firstly done = m1
     
-    int l_1_cand = SameSign[0], l_SS_rem = SameSign[1], signal_class = 3;
-    if( k_sample_name.Contains("HN700") || k_sample_name.Contains("HN1000") ){
+    int l_1_cand_m1 = SameSign[0], l_SS_rem = SameSign[1], signal_class = 3;
+    // pt ordering reversed for m(HN) >= 700 GeV
+    if( k_sample_name.Contains("HN700_") || k_sample_name.Contains("HN1000_") ){
       signal_class = 4;
-      l_1_cand = SameSign[1];
+      l_1_cand_m1 = SameSign[1];
       l_SS_rem = SameSign[0];
     }
-    
-    if( reco_lep[l_1_cand].DeltaR(gen_l_1) < 0.15 ){
-      int l_2_cand, l_3_cand;
+    if( reco_lep[l_1_cand_m1].DeltaR(gen_l_1) < 0.15 ){
+      FillHist("pt_order_first", 1, 1, 0, 2, 2);
+
+      int l_2_cand_m1, l_3_cand_m1;
       if( fabs( (reco_lep[OppSign]+reco_MET).M() - 80.4 ) < fabs( (reco_lep[l_SS_rem]+reco_MET).M() - 80.4 ) ){
-        l_3_cand = OppSign;
-        l_2_cand = l_SS_rem;
+        l_3_cand_m1 = OppSign;
+        l_2_cand_m1 = l_SS_rem;
       }
       else{
-        l_3_cand = l_SS_rem;
-        l_2_cand = OppSign;
+        l_3_cand_m1 = l_SS_rem;
+        l_2_cand_m1 = OppSign;
       }
-
-      if( gen_l_2.DeltaR( reco_lep[l_2_cand] ) < 0.15 && gen_l_3.DeltaR( reco_lep[l_3_cand] ) < 0.15 ) FillHist("pt_order_first_mlmet_next", 1, 1, 0, 2, 2);
+      if( gen_l_2.DeltaR( reco_lep[l_2_cand_m1] ) < 0.15 && gen_l_3.DeltaR( reco_lep[l_3_cand_m1] ) < 0.15 ) FillHist("pt_order_first_mlmet_next", 1, 1, 0, 2, 2);
       else FillHist("pt_order_first_mlmet_next", 0, 1, 0, 2, 2);
 
     }
+    else{
+      FillHist("pt_order_first", 0, 1, 0, 2, 2);
+    }
 
-    // 2) mlmet first
+    // 2) mlmet first = m2
     
     if( gen_l_3.DeltaR(reco_lep[l_3_cand]) < 0.15 ){
-      int l_1_cand, l_2_cand;
+      FillHist("mlmet_first", 1, 1, 0, 2, 2);      
+
+      int l_1_cand_m2, l_2_cand_m2;
       if( l_3_cand == OppSign ){
         if( signal_class == 3){
-          l_1_cand = SameSign[0];
-          l_2_cand = SameSign[1];
+          l_1_cand_m2 = SameSign[0];
+          l_2_cand_m2 = SameSign[1];
         }
         else{
-          l_1_cand = SameSign[1];
-          l_2_cand = SameSign[0];
+          l_1_cand_m2 = SameSign[1];
+          l_2_cand_m2 = SameSign[0];
         }
       }
       else{
-        l_2_cand = OppSign;
-        if( l_3_cand == SameSign[0] ) l_1_cand = SameSign[1];
-        else l_1_cand = SameSign[0];
+        l_2_cand_m2 = OppSign;
+        if( l_3_cand == SameSign[0] ) l_1_cand_m2 = SameSign[1];
+        else l_1_cand_m2 = SameSign[0];
       }
 
-      if( gen_l_1.DeltaR( reco_lep[l_1_cand] ) < 0.15 && gen_l_2.DeltaR( reco_lep[l_2_cand] ) < 0.15 ) FillHist("mlmet_first_pt_order_next", 1, 1, 0, 2, 2);
+      if( gen_l_1.DeltaR( reco_lep[l_1_cand_m2] ) < 0.15 && gen_l_2.DeltaR( reco_lep[l_2_cand_m2] ) < 0.15 ) FillHist("mlmet_first_pt_order_next", 1, 1, 0, 2, 2);
       else FillHist("mlmet_first_pt_order_next", 0, 1, 0, 2, 2);
 
-
+    }
+    else{
+      FillHist("mlmet_first", 0, 1, 0, 2, 2);
     }
 
 
@@ -765,18 +775,18 @@ void trilepton_mumumu::gen_matching(){
   FillHist("gen_l_SS_Pt", gen_l_SS.Pt(), 1, 0, 100, 100);
   
   //check in gen level
-  if( gen_l_1.Pt() > gen_l_SS.Pt() ) FillHist("gen_pri_lep_pt_greater_check", 1, 1, 0, 2, 2);
-  else FillHist("gen_pri_lep_pt_greater_check", 0, 1, 0, 2, 2);
+  if( gen_l_1.Pt() > gen_l_SS.Pt() ) FillHist("gen_pri_lep_pt_greater", 1, 1, 0, 2, 2);
+  else FillHist("gen_pri_lep_pt_greater", 0, 1, 0, 2, 2);
 
   if( reco_lep[SameSign[0]].DeltaR(gen_l_1) < 0.15 
       //&& fabs(reco_lep[SameSign[0]].Pt()-gen_l_1.Pt())/gen_l_1.Pt() < 0.05 
-    ) FillHist("reco_leading_SS_matching_check", 1, 1, 0, 2, 2);
-  else FillHist("reco_leading_SS_matching_check", 0, 1, 0, 2, 2); 
+    ) FillHist("reco_leading_SS_match_gen_l_1", 1, 1, 0, 2, 2);
+  else FillHist("reco_leading_SS_match_gen_l_1", 0, 1, 0, 2, 2); 
 
   if( reco_lep[SameSign[1]].DeltaR(gen_l_1) < 0.15
       //&& fabs(reco_lep[SameSign[0]].Pt()-gen_l_1.Pt())/gen_l_1.Pt() < 0.05 
-    ) FillHist("reco_subleading_SS_matching_check", 1, 1, 0, 2, 2);
-  else FillHist("reco_subleading_SS_matching_check", 0, 1, 0, 2, 2); 
+    ) FillHist("reco_subleading_SS_match_gen_l_1", 1, 1, 0, 2, 2);
+  else FillHist("reco_subleading_SS_match_gen_l_1", 0, 1, 0, 2, 2); 
 
 
 

@@ -1,7 +1,7 @@
 #!/bin/sh
 
-runData=true
-runMC=false
+runData=false
+runMC=true
 runQCD=false
 runQCD2=false
 
@@ -44,9 +44,9 @@ then
     outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/"
 
 
-    declare -a input_samples=("DY10to50" "DY50plus" "ttbar" "Wjets" "Wgamma" "stbar_sch" "stbar_tch" "stbar_tW" "st_sch" "st_tch" "st_tW")
-    #declare -a input_samples=("Wjets" "Wgamma" "stbar_sch" "stbar_tch" "stbar_tW" "st_sch" "st_tch" "st_tW"  )
-    #declare -a input_samples=( "Wjets" "ttbar")
+    #declare -a input_samples=("DY10to50" "DY50plus" "ttbar" "Wjets" "Wgamma" "stbar_sch" "stbar_tch" "stbar_tW" "st_sch" "st_tch" "st_tW")
+    #declare -a input_samples=("stbar_sch" "stbar_tch" "stbar_tW" "st_sch" "st_tch" "st_tW")
+    declare -a input_samples=("ttbar_central")
     source submit.sh  
     #source hadd.sh /home/chasejeon/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/output/ElectronFakes/MC/  FakeRateCalculator_El_mc_5_3_14.root  FakeRateCalculator_El_SK*
     #mv /home/chasejeon/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/output/ElectronFakes/MC/FakeRateCalculator_El_mc_5_3_14.root /home/jskim/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/output/ElectronFakes/
@@ -56,18 +56,18 @@ fi
 if [[ $runQCD  == "true" ]];
 then
     source functions.sh
-    cycle="FakeRateCalculator_El"
+    cycle="FakeRateCalculator_Mu"
     skinput="True"
 
     njobs=30
     data_lumi="AtoD"
     loglevel="INFO"
     logstep=1000
-    outputdir="/home/chasejeon/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/output/ElectronFakes/QCD/"
+    outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/QCD/"
     
     declare -a input_samples=("QCD_20_30_EM" "QCD_20_30_BCtoE" "QCD_30_80_EM" "QCD_30_80_BCtoE" "QCD_80_170_EM" "QCD_80_170_BCtoE" "QCD_170_250_EM" "QCD_170_250_BCtoE" "QCD_250_350_EM" "QCD_250_350_BCtoE" "QCD_350_EM" "QCD_350_BCtoE" )
 
-   # source submit.sh
+   source submit.sh
    # source hadd.sh /home/chasejeon/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/output/ElectronFakes/QCD/ FakeRateCalculator_El_SKQCD_5_3_14.root FakeRateCalculator_El_SKQCD*
    # mv /home/chasejeon/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/output/ElectronFakes/QCD/FakeRateCalculator_El_SKQCD_5_3_14.root /home/jskim/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/output/ElectronFakes/
 fi
@@ -75,19 +75,19 @@ fi
 if [[ $runQCD2  == "true" ]];
 then
     source functions.sh
-    cycle="FakeRateCalculator_El"
+    cycle="FakeRateCalculator_Mu"
     skinput="True"
 
     njobs=30
     data_lumi="AtoD"
     loglevel="INFO"
     logstep=1000
-    outputdir="/home/chasejeon/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/output/ElectronFakes/QCD2/"
+    outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/QCD2/"
 
     declare -a input_samples=( "QCD_30-40_EM2" "QCD_40_EM2")
 
 
-    #source submit.sh
+    source submit.sh
     #source hadd.sh /home/chasejeon/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/output/ElectronFakes/QCD2/ FakeRateCalculator_El_SKQCD_5_3_14.root FakeRateCalculator_El_SKQCD*
 
 fi
@@ -103,12 +103,12 @@ then
     data_lumi="AtoD"
     loglevel="INFO"
     logstep=1000
-    #stream="muon"
-    stream="singlemuon"
+    stream="muon"
+    #stream="singlemuon"
     outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/"
     
-    #declare -a input_samples=("A" "B" "C" "D")
-    declare -a input_samples=("A")
+    declare -a input_samples=("A" "B" "C" "D")
+    #declare -a input_samples=("A")
 
     source submit.sh $1
 
