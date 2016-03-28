@@ -48,8 +48,8 @@ class MuonSelection : public BaseSelection {
   bool TopVetoMuonSelection(snu::KMuon mu);
 
   //// HN Trilepton analysis seslection
-  bool HNtriMuonSelection(snu::KMuon mu);
-
+  bool HNtriTightMuonSelection(snu::KMuon mu);
+  bool HNtriLooseMuonSelection(snu::KMuon mu);
 
   
   //// General 

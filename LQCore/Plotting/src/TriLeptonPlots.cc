@@ -5,7 +5,7 @@
 
 using namespace std;
 
-TriLeptonPlots::TriLeptonPlots(TString name): StdPlots(name){
+TriLeptonPlots::TriLeptonPlots(TString name){
 
   TH1::SetDefaultSumw2(true);
   map_sig["h_Njets"]                  =     new TH1F("h_Njets_"             + name,"number of jets",10,0,10);
@@ -32,8 +32,8 @@ TriLeptonPlots::TriLeptonPlots(TString name): StdPlots(name){
   map_sig["h_PFMET"]                  =     new TH1F("h_PFMET_"               + name,"Missing Et",100,0.0,500.0);
   map_sig["h_PFMET_phi"]              =     new TH1F("h_PFMET_phi_"           + name,"Missing Et",100,0.0,500.0);
 
-  map_sig["h_NoHFMET"]                =     new TH1F("h_NoHFMET_"               + name,"Missing Et",100,0.0,500.0);
-  map_sig["h_NoHFMET_phi"]            =     new TH1F("h_NoHFMET_phi_"           + name,"Missing Et",100,0.0,500.0);
+
+
 
   map_sig["h_nVertices"]              =     new TH1F("h_nVertices_"         + name,"number of even vertices",60,0.0,60.0);
   /// Charge plot
@@ -71,9 +71,9 @@ void TriLeptonPlots::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std::v
   
   Fill("h_Nmuons" ,muons.size(), weight);
   Fill("h_Nelectrons" ,electrons.size(), weight);
-  if(! (muons.size()==3 || electrons.size()==3 || (electrons.size() == 2 && muons.size() ==1) || (electrons.size() == 1 && muons.size() ==2) )) return;
-  if(electrons.size() == 3 && muons.size() > 0) return;
-  if(electrons.size() > 0 && muons.size() ==3) return;
+  //if(! (muons.size()==3 || electrons.size()==3 || (electrons.size() == 2 && muons.size() ==1) || (electrons.size() == 1 && muons.size() ==2) )) return;
+  //if(electrons.size() == 3 && muons.size() > 0) return;
+  //if(electrons.size() > 0 && muons.size() ==3) return;
 
   Fill("h_Nmuons" ,muons.size(), weight);
   Fill("h_Nelectrons" ,electrons.size(), weight);
@@ -92,17 +92,16 @@ void TriLeptonPlots::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std::v
     if(muons[1].Charge() != muons[2].Charge())    Fill("h_osllmass", (muons[1]+muons[2]).M(),weight);
     int imu=0;
     for(std::vector<snu::KMuon>::iterator muit = muons.begin(); muit != muons.end(); muit++, imu++){
-      float LeptonRelIso = muit->RelIso03();
       Fill("h_Lepton_Pt", muit->Pt(),weight);
       Fill("h_Lepton_Eta",muit->Eta(),weight);
-      Fill("h_LeptonRelIso", LeptonRelIso, weight);
+      Fill("h_LeptonRelIso", muit->RelIso03(), weight);
       Fill("h_dXY", muit->dXY(), weight);
       Fill("h_dZ", muit->dZ(), weight);
       Fill("h_GlobalChi2", muit->GlobalChi2(), weight);
       if(imu ==0) {
         Fill("h_leadingLepton_Pt", muit->Pt(),weight);
         Fill("h_leadingLepton_Eta",muit->Eta(),weight);
-        Fill("h_leadingLepton_LeptonRelIso", LeptonRelIso, weight);
+        Fill("h_leadingLepton_LeptonRelIso", muit->RelIso03(), weight);
         Fill("h_leadingLepton_dXY", muit->dXY(), weight);
         Fill("h_leadingLepton_dZ", muit->dZ(), weight);
         Fill("h_leadingLepton_GlobalChi2", muit->GlobalChi2(), weight);
@@ -110,7 +109,7 @@ void TriLeptonPlots::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std::v
       if(imu ==1) {
         Fill("h_secondLepton_Pt", muit->Pt(),weight);
         Fill("h_secondLepton_Eta",muit->Eta(),weight);
-        Fill("h_secondLepton_LeptonRelIso", LeptonRelIso, weight);
+        Fill("h_secondLepton_LeptonRelIso", muit->RelIso03(), weight);
         Fill("h_secondLepton_dXY", muit->dXY(), weight);
         Fill("h_secondLepton_dZ", muit->dZ(), weight);
         Fill("h_secondLepton_GlobalChi2", muit->GlobalChi2(), weight);
@@ -118,7 +117,7 @@ void TriLeptonPlots::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std::v
       if(imu ==2) {
         Fill("h_thirdLepton_Pt", muit->Pt(),weight);
         Fill("h_thirdLepton_Eta",muit->Eta(),weight);
-        Fill("h_thirdLepton_LeptonRelIso", LeptonRelIso, weight);
+        Fill("h_thirdLepton_LeptonRelIso", muit->RelIso03(), weight);
         Fill("h_thirdLepton_dXY", muit->dXY(), weight);
         Fill("h_thirdLepton_dZ", muit->dZ(), weight);
         Fill("h_thirdLepton_GlobalChi2", muit->GlobalChi2(), weight);
@@ -156,7 +155,7 @@ void TriLeptonPlots::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std::v
       }
       if(imu ==2) {
         Fill("h_thirdLepton_Pt", muit->Pt(),weight);
-  Fill("h_thirdLepton_Eta",muit->Eta(),weight);
+        Fill("h_thirdLepton_Eta",muit->Eta(),weight);
       }
 
     }
@@ -195,15 +194,17 @@ void TriLeptonPlots::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std::v
   
  
   Fill("h_Njets",jets.size(), weight);
-  
-  Fill("h_PFMET",ev.PFMET(), weight);
-  Fill("h_PFMET_phi",ev.METPhi(snu::KEvent::pfmet), weight);
+  int nbjet=0;
+  for(UInt_t j=0; j < jets.size(); j++){
+    if( jets.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Loose) ) nbjet++;
+  }
+  Fill("h_Nbjets", nbjet, weight); 
+
+  Fill("h_PFMET",ev.MET(), weight);
+  Fill("h_PFMET_phi",ev.METPhi(), weight);
   Fill("h_nVertices", ev.nVertices(), weight);
 
 
-  Fill("h_NoHFMET",ev.MET(snu::KEvent::nohf), weight);
-  Fill("h_NoHFMET_phi",ev.METPhi(snu::KEvent::nohf), weight);
-  
   for(UInt_t j=0; j < jets.size(); j++){
     Fill("h_jets_pt", jets[j].Pt(),weight);
     Fill("h_jets_eta",jets[j].Eta(),weight);

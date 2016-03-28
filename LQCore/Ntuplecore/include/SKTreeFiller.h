@@ -33,7 +33,7 @@ class SKTreeFiller : public Data, public AnalysisBase {
   std::vector<snu::KGenJet> GetAllGenJets();
   snu::KEvent GetEventInfo(snu::KEvent::json js);
   snu::KTrigger GetTriggerInfo(std::vector<TString> triglist);
-  std::vector<snu::KTruth>  GetTruthParticles(int np=30);
+  std::vector<snu::KTruth>  GetTruthParticles(int np=100);
   void ERRORMessage(TString comment);
   snu::KParticle::PartType partType;
 

@@ -24,11 +24,15 @@ class trilepton_mumumu : public AnalyzerCore {
   void FillCutFlow(TString cut, float w);
   void SetBinInfo(int cut);
   double HN_x_min, HN_x_max, HN_dx,
-         W_on_shell_x_min, W_on_shell_x_max, W_on_shell_dx,
+         W_pri_lowmass_x_min, W_pri_lowmass_x_max, W_pri_lowmass_dx,
          dR_x_min, dR_x_max, dR_dx,
          gamma_star_x_min, gamma_star_x_max, gamma_star_dx,
          z_candidate_x_min, z_candidate_x_max, z_candidate_dx;
-
+  void gen_matching();
+  void find_decay(std::vector<snu::KTruth> truthcoll, int target_index, std::vector<int>& indices);
+  void print_all_indices(TString particle, std::vector<int> vec);
+  int n_gen_pass;
+  double sol_sel_chi2_best, sol_sel_chi2_plus, sol_sel_chi2_minus, sol_sel_chi2_smaller, sol_sel_chi2_larger;
 
  private:
   

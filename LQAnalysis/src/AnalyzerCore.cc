@@ -143,7 +143,9 @@ std::vector<snu::KMuon> AnalyzerCore::GetMuons(BaseSelection::ID muid, bool keep
   
   else if(muid == BaseSelection::MUON_HN_FAKELOOSE){   eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_FAKELOOSE, 15., 2.5);}
 
-  else if(muid == BaseSelection::MUON_HN_TRI){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI, 10., 2.5);}
+  else if(muid == BaseSelection::MUON_HN_TRI_TIGHT){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_TIGHT, 10., 2.5);}
+
+  else if(muid == BaseSelection::MUON_HN_TRI_LOOSE){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_LOOSE, 10., 2.5);}
 
   // Veto cut
   else if(muid == BaseSelection::MUON_HN_VETO){   eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_VETO, 15., 2.5);}
@@ -612,7 +614,8 @@ int AnalyzerCore::AssignnNumberOfTruth(){
   /// List of signal samples
   /// G.Yu needs to add signal here
  
-  if(k_sample_name.Contains("Majornana"))  np = 1000; 
+  if(k_sample_name.Contains("Majornana"))  np = 1000;
+  if(k_sample_name.Contains("HN")) np = 1000;
   
   return np;
 }
