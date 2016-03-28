@@ -5,7 +5,7 @@
 
 using namespace std;
 
-TriLeptonPlots::TriLeptonPlots(TString name): StdPlots(name){
+TriLeptonPlots::TriLeptonPlots(TString name){
 
   TH1::SetDefaultSumw2(true);
   map_sig["h_Njets"]                  =     new TH1F("h_Njets_"             + name,"number of jets",10,0,10);
@@ -71,9 +71,9 @@ void TriLeptonPlots::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std::v
   
   Fill("h_Nmuons" ,muons.size(), weight);
   Fill("h_Nelectrons" ,electrons.size(), weight);
-  if(! (muons.size()==3 || electrons.size()==3 || (electrons.size() == 2 && muons.size() ==1) || (electrons.size() == 1 && muons.size() ==2) )) return;
-  if(electrons.size() == 3 && muons.size() > 0) return;
-  if(electrons.size() > 0 && muons.size() ==3) return;
+  //if(! (muons.size()==3 || electrons.size()==3 || (electrons.size() == 2 && muons.size() ==1) || (electrons.size() == 1 && muons.size() ==2) )) return;
+  //if(electrons.size() == 3 && muons.size() > 0) return;
+  //if(electrons.size() > 0 && muons.size() ==3) return;
 
   Fill("h_Nmuons" ,muons.size(), weight);
   Fill("h_Nelectrons" ,electrons.size(), weight);
@@ -156,7 +156,7 @@ void TriLeptonPlots::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std::v
       }
       if(imu ==2) {
         Fill("h_thirdLepton_Pt", muit->Pt(),weight);
-  Fill("h_thirdLepton_Eta",muit->Eta(),weight);
+        Fill("h_thirdLepton_Eta",muit->Eta(),weight);
       }
 
     }
@@ -195,7 +195,12 @@ void TriLeptonPlots::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std::v
   
  
   Fill("h_Njets",jets.size(), weight);
-  
+  int nbjet=0;
+  for(UInt_t j=0; j < jets.size(); j++){
+    if(jets.at(j).CombinedSecVertexBtag() > 0.679) nbjet++;
+  }
+  Fill("h_Nbjets", nbjet, weight); 
+
   Fill("h_PFMET",ev.PFMET(), weight);
   Fill("h_PFMET_phi",ev.PFMETphi(), weight);
   Fill("h_nVertices", ev.nVertices(), weight);
