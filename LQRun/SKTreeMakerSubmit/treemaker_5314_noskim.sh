@@ -33,7 +33,7 @@ then
     loglevel="INFO"
     logstep=1000
 #    nevents=10000
-    declare -a input_samples=("ttbar_CT10_pythia" "ttbar_CT10_herwig")
+    declare -a input_samples=("HN40_mumumu_new")
     
     stream="muon"
 

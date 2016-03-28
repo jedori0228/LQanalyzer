@@ -29,6 +29,8 @@ class trilepton_mumumu : public AnalyzerCore {
          gamma_star_x_min, gamma_star_x_max, gamma_star_dx,
          z_candidate_x_min, z_candidate_x_max, z_candidate_dx;
   void gen_matching();
+  void find_decay(std::vector<snu::KTruth> truthcoll, int target_index, std::vector<int>& indices);
+  void print_all_indices(TString particle, std::vector<int> vec);
   int n_gen_pass;
   double sol_sel_chi2_best, sol_sel_chi2_plus, sol_sel_chi2_minus, sol_sel_chi2_smaller, sol_sel_chi2_larger;
 
