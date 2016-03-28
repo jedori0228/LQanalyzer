@@ -207,7 +207,7 @@ bool MuonSelection::HNtriMuonSelection(KMuon mu) {
 
   bool pass_selection(true);
 
-  LeptonRelIso = mu.RelIso03();
+  LeptonRelIso = mu.RelIso03(); //FIXME POG now use cone 0.4
 
   if(!PassID(MUON_POG_LOOSE, mu))  pass_selection =false;
 

@@ -34,7 +34,12 @@ trilepton_mumumu::trilepton_mumumu() :  AnalyzerCore(), out_muons(0)  {
   //
   // This function sets up Root files and histograms Needed in ExecuteEvents
   InitialiseAnalysis();
-  
+  MakeCleverHistograms(trilephist,"cut0");
+  MakeCleverHistograms(trilephist,"cut0_PU");
+  MakeCleverHistograms(trilephist,"cutdR");
+  MakeCleverHistograms(trilephist,"cutdR_PU");
+  MakeCleverHistograms(trilephist,"cutdR_cutW");
+  MakeCleverHistograms(trilephist,"cutdR_cutW_PU");
 }
 
 
@@ -125,7 +130,11 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   std::vector<snu::KMuon> muontriColl = GetMuons(BaseSelection::MUON_HN_TRI); 
   
   
+  
   /// List of preset jet collections : NoLeptonVeto/Loose/Medium/Tight/TightLepVeto/HNJets
+  //FIXME 
+  //John : "Also for jets can you make sure you are not using jetpileup ID. This is not been tuned for 13 TeV so we best not apply it yet"
+  //I can yout JET_LOOSE
   std::vector<snu::KJet> jetColl_hn       = GetJets(BaseSelection::JET_HN);// pt > 20 ; eta < 2.5; PFlep veto; pileup ID
   
   FillHist("Njets", jetColl_hn.size() ,weight, 0. , 5., 5);
@@ -154,30 +163,36 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   if( n_loose_muon != 3 ) return;
   FillCutFlow("3loosemuon", weight);
 
-  snu::KParticle lep[3], nu, selection_nu[2], HN, W_on_shell, gamma_star, z_candidate;
+  snu::KParticle lep[3], nu, selection_nu[2], HN[2], W_on_shell, gamma_star, z_candidate;
   for(int i=0;i<3;i++){
     lep[i] = muontriColl.at(i);
   }
 
-  int OppSign, LepCand[2]; // LepCand[0].Pt() > LepCand[1].Pt()
+  // MC samples has m(ll)_saveflavour > 4 GeV cut at gen level
+  // MADGRAPH : https://github.com/cms-sw/genproductions/blob/master/bin/MadGraph5_aMCatNLO/cards/production/13TeV/WZTo3LNu01j_5f_NLO_FXFX/WZTo3LNu01j_5f_NLO_FXFX_run_card.dat#L130
+  // POWHEG   : https://github.com/cms-sw/genproductions/blob/master/bin/Powheg/production/WZTo3lNu_NNPDF30_13TeV/WZ_lllnu_NNPDF30_13TeV.input#L2
+  if( ! (lep[0]+lep[1]).M() > 4 || ! (lep[0]+lep[2]).M() > 4 || ! (lep[1]+lep[2]).M() > 4 ) return;
+  FillCutFlow("mllsf4", weight);
+
+  int OppSign, SameSign[2]; // SameSign[0].Pt() > SameSign[1].Pt()
   if(lep[0].Charge() * lep[1].Charge() > 0){ // Q(0) = Q(1)
     if(lep[1].Charge() * lep[2].Charge() < 0){ // Q(1) != Q(2)
       OppSign = 2;
-      LepCand[0] = 0;
-      LepCand[1] = 1;
+      SameSign[0] = 0;
+      SameSign[1] = 1;
     }
     else return; // veto Q(0) = Q(1) = Q(2)
   }
   else{ // Q(0) != Q(1)
     if(lep[0].Charge() * lep[2].Charge() > 0){ // Q(0) = Q(2)
       OppSign = 1;
-      LepCand[0] = 0;
-      LepCand[1] = 2;
+      SameSign[0] = 0;
+      SameSign[1] = 2;
     }
     else if(lep[1].Charge() * lep[2].Charge() > 0){ // Q(1) = Q(2)
       OppSign = 0;
-      LepCand[0] = 1;
-      LepCand[1] = 2;
+      SameSign[0] = 1;
+      SameSign[1] = 2;
     }
   } // Find l2 and assign l1&l3 in ptorder 
   FillCutFlow("2SS1OS", weight);
@@ -204,68 +219,93 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
 
   // reconstruct HN and W_real 4-vec with selected Pz solution
   PutNuPz(&nu, selection_nu[solution_selection].Pz());
-  HN = lep[1] + lep[2] + nu;
-  W_on_shell = HN + lep[0];
+  // SameSign[0] : leading among SS
+  // SameSign[1] : subleading among SS
+  // [class1]
+  // HN40, HN50 - SS_leading is primary
+  // [class2]
+  // HN60       - SS_subleading is primary
+  HN[0] = lep[OppSign] + lep[SameSign[1]] + nu; // [class1]
+  HN[1] = lep[OppSign] + lep[SameSign[0]] + nu; // [class2]
+  W_on_shell = lep[0] + lep[1] + lep[2] + nu;
 
   double deltaR_OS_min;
-  if( lep[0].DeltaR(lep[1]) < lep[2].DeltaR(lep[1]) ){
-    deltaR_OS_min = lep[0].DeltaR(lep[1]);
-    gamma_star = lep[1] + lep[0];
+  if( lep[OppSign].DeltaR(lep[SameSign[0]]) < lep[OppSign].DeltaR(lep[SameSign[1]]) ){
+    deltaR_OS_min = lep[OppSign].DeltaR(lep[SameSign[0]]);
+    gamma_star = lep[OppSign] + lep[SameSign[0]];
   }
   else{
-    deltaR_OS_min = lep[2].DeltaR(lep[1]);
-    gamma_star = lep[1] + lep[2];
+    deltaR_OS_min = lep[OppSign].DeltaR(lep[SameSign[1]]);
+    gamma_star = lep[OppSign] + lep[SameSign[1]];
   }
 
-  if( fabs( (lep[0]+lep[1]).M() - 91.1876 ) <
-      fabs( (lep[2]+lep[1]).M() - 91.1876 )   ){
-    z_candidate = lep[1] + lep[0];
+  if( fabs( (lep[OppSign] + lep[SameSign[0]]).M() - 91.1876 ) <
+      fabs( (lep[OppSign] + lep[SameSign[1]]).M() - 91.1876 )   ){
+    z_candidate = lep[OppSign] + lep[SameSign[0]];
   }
   else{
-    z_candidate = lep[1] + lep[2];
+    z_candidate = lep[OppSign] + lep[SameSign[1]];
   }
 
   SetBinInfo(0);
-  FillHist("cut0_HN_mass", HN.M(), weight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
-  FillHist("cut0_W_on_shell_mass", W_on_shell.M(), weight, W_on_shell_x_min, W_on_shell_x_max, (W_on_shell_x_max-W_on_shell_x_min)/W_on_shell_dx);
-  FillHist("cut0_deltaR_OS_min", deltaR_OS_min, weight, 0, 5, 5./0.1);
-  FillHist("cut0_gamma_star_mass", gamma_star.M(), weight, gamma_star_x_min, gamma_star_x_max, (gamma_star_x_max-gamma_star_x_min)/gamma_star_dx);
-  FillHist("cut0_z_candidate_mass", z_candidate.M(), weight, z_candidate_x_min, z_candidate_x_max, (z_candidate_x_max-z_candidate_x_min)/z_candidate_dx);
-  FillHist("cut0_n_jet", n_jet, weight, 0, 10, 10);
-  FillHist("cut0_HN_mass_PU", HN.M(), weight*pileup_reweight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
-  FillHist("cut0_W_on_shell_mass_PU", W_on_shell.M(), weight*pileup_reweight, W_on_shell_x_min, W_on_shell_x_max, (W_on_shell_x_max-W_on_shell_x_min)/W_on_shell_dx);
-  FillHist("cut0_deltaR_OS_min_PU", deltaR_OS_min, weight*pileup_reweight, 0, 5, 5./0.1);
-  FillHist("cut0_gamma_star_mass_PU", gamma_star.M(), weight*pileup_reweight, gamma_star_x_min, gamma_star_x_max, (gamma_star_x_max-gamma_star_x_min)/gamma_star_dx);
-  FillHist("cut0_z_candidate_mass_PU", z_candidate.M(), weight*pileup_reweight, z_candidate_x_min, z_candidate_x_max, (z_candidate_x_max-z_candidate_x_min)/z_candidate_dx);
-  FillHist("cut0_n_jet_PU", n_jet, weight*pileup_reweight, 0, 10, 10);
+  // No PU
+  FillHist("HN_mass_class1_cut0", HN[0].M(), weight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
+  FillHist("HN_mass_class2_cut0", HN[1].M(), weight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
+  FillHist("W_on_shell_mass_cut0", W_on_shell.M(), weight, W_on_shell_x_min, W_on_shell_x_max, (W_on_shell_x_max-W_on_shell_x_min)/W_on_shell_dx);
+  FillHist("deltaR_OS_min_cut0", deltaR_OS_min, weight, 0, 5, 5./0.1);
+  FillHist("gamma_star_mass_cut0", gamma_star.M(), weight, gamma_star_x_min, gamma_star_x_max, (gamma_star_x_max-gamma_star_x_min)/gamma_star_dx);
+  FillHist("z_candidate_mass_cut0", z_candidate.M(), weight, z_candidate_x_min, z_candidate_x_max, (z_candidate_x_max-z_candidate_x_min)/z_candidate_dx);
+  FillHist("n_jet_cut0", n_jet, weight, 0, 10, 10);
+  FillCLHist(trilephist, "cut0", eventbase->GetEvent(), muontriColl, electronColl, jetColl_hn, weight);
+  // PU
+  FillHist("HN_mass_class1_cut0_PU", HN[0].M(), weight*pileup_reweight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
+  FillHist("HN_mass_class2_cut0_PU", HN[1].M(), weight*pileup_reweight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
+  FillHist("W_on_shell_mass_cut0_PU", W_on_shell.M(), weight*pileup_reweight, W_on_shell_x_min, W_on_shell_x_max, (W_on_shell_x_max-W_on_shell_x_min)/W_on_shell_dx);
+  FillHist("deltaR_OS_min_cut0_PU", deltaR_OS_min, weight*pileup_reweight, 0, 5, 5./0.1);
+  FillHist("gamma_star_mass_cut0_PU", gamma_star.M(), weight*pileup_reweight, gamma_star_x_min, gamma_star_x_max, (gamma_star_x_max-gamma_star_x_min)/gamma_star_dx);
+  FillHist("z_candidate_mass_cut0_PU", z_candidate.M(), weight*pileup_reweight, z_candidate_x_min, z_candidate_x_max, (z_candidate_x_max-z_candidate_x_min)/z_candidate_dx);
+  FillHist("n_jet_cut0_PU", n_jet, weight*pileup_reweight, 0, 10, 10);
+  FillCLHist(trilephist, "cut0_PU", eventbase->GetEvent(), muontriColl, electronColl, jetColl_hn, weight*pileup_reweight);
   if(deltaR_OS_min > 0.5){
     SetBinInfo(1);
-    FillHist("cutdR_HN_mass", HN.M(), weight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
-    FillHist("cutdR_W_on_shell_mass", W_on_shell.M(), weight, W_on_shell_x_min, W_on_shell_x_max, (W_on_shell_x_max-W_on_shell_x_min)/W_on_shell_dx);
-    FillHist("cutdR_deltaR_OS_min", deltaR_OS_min, weight, 0, 5, 5./0.1);
-    FillHist("cutdR_gamma_star_mass", gamma_star.M(), weight, gamma_star_x_min, gamma_star_x_max, (gamma_star_x_max-gamma_star_x_min)/gamma_star_dx);
-    FillHist("cutdR_z_candidate_mass", z_candidate.M(), weight, z_candidate_x_min, z_candidate_x_max, (z_candidate_x_max-z_candidate_x_min)/z_candidate_dx);
-    FillHist("cutdR_n_jet", n_jet, weight, 0, 10, 10);
-    FillHist("cutdR_HN_mass_PU", HN.M(), weight*pileup_reweight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
-    FillHist("cutdR_W_on_shell_mass_PU", W_on_shell.M(), weight*pileup_reweight, W_on_shell_x_min, W_on_shell_x_max, (W_on_shell_x_max-W_on_shell_x_min)/W_on_shell_dx);
-    FillHist("cutdR_deltaR_OS_min_PU", deltaR_OS_min, weight*pileup_reweight, 0, 5, 5./0.1);
-    FillHist("cutdR_gamma_star_mass_PU", gamma_star.M(), weight*pileup_reweight, gamma_star_x_min, gamma_star_x_max, (gamma_star_x_max-gamma_star_x_min)/gamma_star_dx);
-    FillHist("cutdR_z_candidate_mass_PU", z_candidate.M(), weight*pileup_reweight, z_candidate_x_min, z_candidate_x_max, (z_candidate_x_max-z_candidate_x_min)/z_candidate_dx);
-    FillHist("cutdR_n_jet_PU", n_jet, weight*pileup_reweight, 0, 10, 10);
+    // No PU
+    FillHist("HN_mass_class1_cutdR", HN[0].M(), weight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
+    FillHist("HN_mass_class2_cutdR", HN[1].M(), weight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
+    FillHist("W_on_shell_mass_cutdR", W_on_shell.M(), weight, W_on_shell_x_min, W_on_shell_x_max, (W_on_shell_x_max-W_on_shell_x_min)/W_on_shell_dx);
+    FillHist("deltaR_OS_min_cutdR", deltaR_OS_min, weight, 0, 5, 5./0.1);
+    FillHist("gamma_star_mass_cutdR", gamma_star.M(), weight, gamma_star_x_min, gamma_star_x_max, (gamma_star_x_max-gamma_star_x_min)/gamma_star_dx);
+    FillHist("z_candidate_mass_cutdR", z_candidate.M(), weight, z_candidate_x_min, z_candidate_x_max, (z_candidate_x_max-z_candidate_x_min)/z_candidate_dx);
+    FillHist("n_jet_cutdR", n_jet, weight, 0, 10, 10);
+    FillCLHist(trilephist, "cutdR", eventbase->GetEvent(), muontriColl, electronColl, jetColl_hn, weight);
+    // PU
+    FillHist("HN_mass_class1_cutdR_PU", HN[0].M(), weight*pileup_reweight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
+    FillHist("HN_mass_class2_cutdR_PU", HN[1].M(), weight*pileup_reweight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
+    FillHist("W_on_shell_mass_cutdR_PU", W_on_shell.M(), weight*pileup_reweight, W_on_shell_x_min, W_on_shell_x_max, (W_on_shell_x_max-W_on_shell_x_min)/W_on_shell_dx);
+    FillHist("deltaR_OS_min_cutdR_PU", deltaR_OS_min, weight*pileup_reweight, 0, 5, 5./0.1);
+    FillHist("gamma_star_mass_cutdR_PU", gamma_star.M(), weight*pileup_reweight, gamma_star_x_min, gamma_star_x_max, (gamma_star_x_max-gamma_star_x_min)/gamma_star_dx);
+    FillHist("z_candidate_mass_cutdR_PU", z_candidate.M(), weight*pileup_reweight, z_candidate_x_min, z_candidate_x_max, (z_candidate_x_max-z_candidate_x_min)/z_candidate_dx);
+    FillHist("n_jet_cutdR_PU", n_jet, weight*pileup_reweight, 0, 10, 10);
+    FillCLHist(trilephist, "cutdR_PU", eventbase->GetEvent(), muontriColl, electronColl, jetColl_hn, weight*pileup_reweight);
     if(W_on_shell.M() < 100){
       SetBinInfo(2);
-      FillHist("cutdR_cutW_HN_mass", HN.M(), weight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
-      FillHist("cutdR_cutW_W_on_shell_mass", W_on_shell.M(), weight, W_on_shell_x_min, W_on_shell_x_max, (W_on_shell_x_max-W_on_shell_x_min)/W_on_shell_dx);
-      FillHist("cutdR_cutW_deltaR_OS_min", deltaR_OS_min, weight, 0, 5, 5./0.1);
-      FillHist("cutdR_cutW_gamma_star_mass", gamma_star.M(), weight, gamma_star_x_min, gamma_star_x_max, (gamma_star_x_max-gamma_star_x_min)/gamma_star_dx);
-      FillHist("cutdR_cutW_z_candidate_mass", z_candidate.M(), weight, z_candidate_x_min, z_candidate_x_max, (z_candidate_x_max-z_candidate_x_min)/z_candidate_dx);
-      FillHist("cutdR_cutW_n_jet", n_jet, weight, 0, 10, 10);
-      FillHist("cutdR_cutW_HN_mass_PU", HN.M(), weight*pileup_reweight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
-      FillHist("cutdR_cutW_W_on_shell_mass_PU", W_on_shell.M(), weight*pileup_reweight, W_on_shell_x_min, W_on_shell_x_max, (W_on_shell_x_max-W_on_shell_x_min)/W_on_shell_dx);
-      FillHist("cutdR_cutW_deltaR_OS_min_PU", deltaR_OS_min, weight*pileup_reweight, 0, 5, 5./0.1);
-      FillHist("cutdR_cutW_gamma_star_mass_PU", gamma_star.M(), weight*pileup_reweight, gamma_star_x_min, gamma_star_x_max, (gamma_star_x_max-gamma_star_x_min)/gamma_star_dx);
-      FillHist("cutdR_cutW_z_candidate_mass_PU", z_candidate.M(), weight*pileup_reweight, z_candidate_x_min, z_candidate_x_max, (z_candidate_x_max-z_candidate_x_min)/z_candidate_dx);
-      FillHist("cutdR_cutW_n_jet_PU", n_jet, weight*pileup_reweight, 0, 10, 10);
+      // No PU
+      FillHist("HN_mass_class1_cutdR_cutW", HN[0].M(), weight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
+      FillHist("HN_mass_class2_cutdR_cutW", HN[1].M(), weight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
+      FillHist("W_on_shell_mass_cutdR_cutW", W_on_shell.M(), weight, W_on_shell_x_min, W_on_shell_x_max, (W_on_shell_x_max-W_on_shell_x_min)/W_on_shell_dx);
+      FillHist("deltaR_OS_min_cutdR_cutW", deltaR_OS_min, weight, 0, 5, 5./0.1);
+      FillHist("gamma_star_mass_cutdR_cutW", gamma_star.M(), weight, gamma_star_x_min, gamma_star_x_max, (gamma_star_x_max-gamma_star_x_min)/gamma_star_dx);
+      FillHist("z_candidate_mass_cutdR_cutW", z_candidate.M(), weight, z_candidate_x_min, z_candidate_x_max, (z_candidate_x_max-z_candidate_x_min)/z_candidate_dx);
+      FillHist("n_jet_cutdR_cutW", n_jet, weight, 0, 10, 10);
+      FillCLHist(trilephist, "cutdR_cutW", eventbase->GetEvent(), muontriColl, electronColl, jetColl_hn, weight);
+      // PU
+      FillHist("HN_mass_class1_cutdR_cutW_PU", HN[0].M(), weight*pileup_reweight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
+      FillHist("HN_mass_class2_cutdR_cutW_PU", HN[1].M(), weight*pileup_reweight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
+      FillHist("W_on_shell_mass_cutdR_cutW_PU", W_on_shell.M(), weight*pileup_reweight, W_on_shell_x_min, W_on_shell_x_max, (W_on_shell_x_max-W_on_shell_x_min)/W_on_shell_dx);
+      FillHist("deltaR_OS_min_cutdR_cutW_PU", deltaR_OS_min, weight*pileup_reweight, 0, 5, 5./0.1);
+      FillHist("gamma_star_mass_cutdR_cutW_PU", gamma_star.M(), weight*pileup_reweight, gamma_star_x_min, gamma_star_x_max, (gamma_star_x_max-gamma_star_x_min)/gamma_star_dx);
+      FillHist("z_candidate_mass_cutdR_cutW_PU", z_candidate.M(), weight*pileup_reweight, z_candidate_x_min, z_candidate_x_max, (z_candidate_x_max-z_candidate_x_min)/z_candidate_dx);
+      FillHist("n_jet_cutdR_cutW_PU", n_jet, weight*pileup_reweight, 0, 10, 10);
+      FillCLHist(trilephist, "cutdR_cutW_PU", eventbase->GetEvent(), muontriColl, electronColl, jetColl_hn, weight*pileup_reweight);
     }
   }
 
@@ -318,14 +358,15 @@ void trilepton_mumumu::FillCutFlow(TString cut, float weight){
   
   }
   else{
-   AnalyzerCore::MakeHistograms("cutflow", 6,0.,6.);
+   AnalyzerCore::MakeHistograms("cutflow", 7,0.,7.);
 
    GetHist("cutflow")->GetXaxis()->SetBinLabel(1,"NoCut");
    GetHist("cutflow")->GetXaxis()->SetBinLabel(2,"EventCut");
    GetHist("cutflow")->GetXaxis()->SetBinLabel(3,"TriggerCut");
    GetHist("cutflow")->GetXaxis()->SetBinLabel(4,"VertexCut");
    GetHist("cutflow")->GetXaxis()->SetBinLabel(5,"3loosemuon");
-   GetHist("cutflow")->GetXaxis()->SetBinLabel(6,"2SS1OS");  
+   GetHist("cutflow")->GetXaxis()->SetBinLabel(6,"mllsf4");
+   GetHist("cutflow")->GetXaxis()->SetBinLabel(7,"2SS1OS");  
    
   }
 }
