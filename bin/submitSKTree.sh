@@ -2,8 +2,9 @@
 ### sets all configurable variables to defaul values
 
 declare -a list_of_catversions=("v7-6-3" "v7-6-2" "v7-4-5" "v7-4-4")
-declare -a list_of_skims=("FLATCAT" "SKTree_NoSkim" "SKTree_LeptonSkim" "SKTree_DiLepSkim" "NoCut" "Lepton" "DiLep")
+declare -a list_of_skims=("FLATCAT" "SKTree_NoSkim" "SKTree_LeptonSkim" "SKTree_DiLepSkim" "SKTree_TriLepSkim" "NoCut" "Lepton" "DiLep")
 declare -a list_of_sampletags=("ALL" "DATA" "MC" "DoubleEG" "DoubleMuon" "MuonEG" "SingleMuon" "SinglePhoton" "SingleElectron" "SingleLepton")
+declare -a  oldcat=("v7-4-4" "v7-4-5")
 
 
 
@@ -186,23 +187,28 @@ function mergeoutput
           then
                 output_file_skim_tag="SK"$output_file_skim_tag"_nocut_cat_"$submit_version_tag
             fi
-        
-        if [ $job_skim == "SKTree_LeptonSkim" ] || [ $job_skim == "Lepton" ];
-        then
-        output_file_skim_tag="SK"$output_file_skim_tag"_cat_"$submit_version_tag
-        fi
-        
-        if [ $job_skim == "SKTree_DiLepSkim" ] || [ $job_skim == "DiLep" ];
-        then
-        output_file_skim_tag="SK"$output_file_skim_tag"_dilep_cat_"$submit_version_tag
-        fi
-        
-        echo "############################################################################################################################################################"
-        echo "############################################################################################################################################################"
-        echo "############################################################################################################################################################"
-        echo "MERGING DATA: Periods C + D"
-        echo " "
-        echo "Command:"
+	    
+	    if [ $job_skim == "SKTree_LeptonSkim" ] || [ $job_skim == "Lepton" ];
+		then
+		output_file_skim_tag="SK"$output_file_skim_tag"_cat_"$submit_version_tag
+	    fi
+	    
+	    if [ $job_skim == "SKTree_DiLepSkim" ] || [ $job_skim == "DiLep" ];
+		then
+		output_file_skim_tag="SK"$output_file_skim_tag"_dilep_cat_"$submit_version_tag
+	    fi
+	    if [[ $job_skim == "SKTree_TriLepSkim" ]] ;
+		then
+		output_file_skim_tag="SK"$output_file_skim_tag"_trilep_cat_"$submit_version_tag
+            fi
+
+	    
+	    echo "############################################################################################################################################################"
+	    echo "############################################################################################################################################################"
+	    echo "############################################################################################################################################################"
+	    echo "MERGING DATA: Periods C + D"
+	    echo " "
+	    echo "Command:"
             echo "source hadd.sh "${outputdir_data}" "${job_cycle}"_data_cat_"${submit_version_tag}".root "${outputdir_data}${job_cycle}"'*'"$output_file_skim_tag"'*'"
             echo "############################################################################################################################################################"
         echo ""
@@ -257,6 +263,9 @@ if [[ $submit_file_tag  != ""  ]];
     if [[ $job_skim == "SKTree_DiLepSkim" ]];then
     ARG_SINGLE_FILE="FULLLISTOFSAMPLESDILEP"
     fi
+    if [[ $job_skim == "SKTree_TriLepSkim" ]];then
+        ARG_SINGLE_FILE="FULLLISTOFSAMPLESTRILEP"
+    fi
     if [[ $job_skim == "DiLep" ]];then
     ARG_SINGLE_FILE="FULLLISTOFSAMPLESDILEP"
     fi
@@ -271,50 +280,49 @@ if [[ $submit_file_tag  != ""  ]];
       fi
       done
     if [[ $file_tag_exists == "false" ]];
-    then
-    echo "LQanalyzer::sktree :: ERROR :: 'sktree -i <samplename>'"
-    echo "LQanalyzer::sktree :: ERROR :: Samplename is Invalid for the catversion "$CATVERSION" and skim "$job_skim":" 
-    if [[ $check_all_catversions == "false" ]];
-        then
-        
-        declare -a  oldcat=("v7-4-4" "v7-4-5")
-        isoldname=false
-        for oclist in  ${oldcat[@]};
-          do
-          while read oline
-        do
-        if [[ $oline == *"/data2/DATA/cattoflat/MC/"* ]];
-            then
-            osline=$(echo $oline | head -n1 | awk '{print $1}')
-            
-            if [[ $submit_file_tag == $osline ]];
-            then
-            isoldname=true;
-            fi
-        fi
-          done < ${LQANALYZER_RUN_PATH}/txt/datasets_snu_CAT_mc_${oclist}.txt
-        done
-        
-        if [[ $isoldname == "true" ]];
-        then
-        echo "LQanalyzer::sktree :: HELP :: Input names since v7-6-3. You are still using old names" 
-        echo "LQanalyzer::sktree :: HELP :: To run on older samples set -c <catversion> or -ac true"
-        echo "LQanalyzer::sktree :: HELP :: Check new input options using 'sktree -L "$job_skim" "$CATVERSION"'"
-        exit 1
-        else
-        echo ""
-        echo "LQanalyzer::sktree :: HELP :: 1) Check input options using 'sktree -L "$job_skim" "$CATVERSION"'"
-        echo "LQanalyzer::sktree :: HELP :: 2a) To check if this sample is available at SNU (FlatCatuple format) run 'sktree -A'."
-        echo "LQanalyzer::sktree :: HELP :: 2b) If it is available locallly check if this sample is available with different skim. run 'sktree -L <skim>'"
-        echo "LQanalyzer::sktree :: HELP :: 3a) If 'sktree -A' shows sample is missing then we need to wait for the miniAOD to be produced"
-        echo "LQanalyzer::sktree :: HELP :: 3b) If 'sktree -A' shows sample is available at kisti then run 'sktree -r DATASETNAME' to request this sample"
-        echo "LQanalyzer::sktree :: HELP :: 3c) If 'sktree -A' shows sample is not there then no catuple exists: run 'sktree -rcat DATASETNAME' to request this catuple"
-        echo ""
-        exit 1
-        fi
-        
-    else 
-        echo ""
+	then
+	echo "LQanalyzer::sktree :: ERROR :: 'sktree -i <samplename>'"
+	echo "LQanalyzer::sktree :: ERROR :: Samplename is Invalid for the catversion "$CATVERSION" and skim "$job_skim":" 
+	if [[ $check_all_catversions == "false" ]];
+	    then
+	    
+	    isoldname=false
+	    for oclist in  ${oldcat[@]};
+	      do
+	      while read oline
+		do
+		if [[ $oline == *"/data2/DATA/cattoflat/MC/"* ]];
+		    then
+		    osline=$(echo $oline | head -n1 | awk '{print $1}')
+		    
+		    if [[ $submit_file_tag == $osline ]];
+			then
+			isoldname=true;
+		    fi
+		fi
+	      done < ${LQANALYZER_RUN_PATH}/txt/datasets_snu_CAT_mc_${oclist}.txt
+	    done
+	    
+	    if [[ $isoldname == "true" ]];
+		then
+		echo "LQanalyzer::sktree :: HELP :: Input names since v7-6-3. You are still using old names" 
+		echo "LQanalyzer::sktree :: HELP :: To run on older samples set -c <catversion> or -ac true"
+		echo "LQanalyzer::sktree :: HELP :: Check new input options using 'sktree -L "$job_skim" "$CATVERSION"'"
+		exit 1
+	    else
+		echo ""
+		echo "LQanalyzer::sktree :: HELP :: 1) Check input options using 'sktree -L "$job_skim" "$CATVERSION"'"
+		echo "LQanalyzer::sktree :: HELP :: 2a) To check if this sample is available at SNU (FlatCatuple format) run 'sktree -A'."
+		echo "LQanalyzer::sktree :: HELP :: 2b) If it is available locallly check if this sample is available with different skim. run 'sktree -L <skim>'"
+		echo "LQanalyzer::sktree :: HELP :: 3a) If 'sktree -A' shows sample is missing then we need to wait for the miniAOD to be produced"
+		echo "LQanalyzer::sktree :: HELP :: 3b) If 'sktree -A' shows sample is available at kisti then run 'sktree -r DATASETNAME' to request this sample"
+		echo "LQanalyzer::sktree :: HELP :: 3c) If 'sktree -A' shows sample is not there then no catuple exists: run 'sktree -rcat DATASETNAME' to request this catuple"
+		echo ""
+		exit 1
+	    fi
+	    
+	else 
+	    echo ""
             echo "LQanalyzer::sktree :: HELP :: 1) Check input options using 'sktree -L "$job_skim"'"
             echo "LQanalyzer::sktree :: HELP :: 2a) To check if this sample is available at SNU (FlatCatuple format) run 'sktree -A'"
         echo "LQanalyzer::sktree :: HELP :: 2b) If it is available locallly check if this sample is available with different skim. run 'sktree -L <skim>'"
@@ -425,76 +433,79 @@ if [[ $submit_file_list  != ""  ]];
         then
         echo "LQanalyzer::sktree :: ERROR :: Check input list. You have missing sample ''."
                 exit 1
-        fi
-        ARG_SINGLE_FILE="FULLLISTOFSAMPLES"
-        if [[ $job_skim == "SKTree_NoSkim" ]];then
-        ARG_SINGLE_FILE="FULLLISTOFSAMPLESNOCUT"
-        fi
-        if [[ $job_skim == "NoCut" ]];then
-        ARG_SINGLE_FILE="FULLLISTOFSAMPLESNOCUT"
-        fi
-        if [[ $job_skim == "SKTree_LeptonSkim" ]];then
-        ARG_SINGLE_FILE="FULLLISTOFSAMPLESLEPTON"
-        fi
-        if [[ $job_skim == "Lepton" ]];then
-        ARG_SINGLE_FILE="FULLLISTOFSAMPLESLEPTON"
-        fi
-        if [[ $job_skim == "SKTree_DiLepSkim" ]];then
-        ARG_SINGLE_FILE="FULLLISTOFSAMPLESDILEP"
-        fi
-        if [[ $job_skim == "DiLep" ]];then
-        ARG_SINGLE_FILE="FULLLISTOFSAMPLESDILEP"
-        fi
+	    fi
+	    ARG_SINGLE_FILE="FULLLISTOFSAMPLES"
+	    if [[ $job_skim == "SKTree_NoSkim" ]];then
+		ARG_SINGLE_FILE="FULLLISTOFSAMPLESNOCUT"
+	    fi
+	    if [[ $job_skim == "NoCut" ]];then
+		ARG_SINGLE_FILE="FULLLISTOFSAMPLESNOCUT"
+	    fi
+	    if [[ $job_skim == "SKTree_LeptonSkim" ]];then
+		ARG_SINGLE_FILE="FULLLISTOFSAMPLESLEPTON"
+	    fi
+	    if [[ $job_skim == "Lepton" ]];then
+		ARG_SINGLE_FILE="FULLLISTOFSAMPLESLEPTON"
+	    fi
+	    if [[ $job_skim == "SKTree_DiLepSkim" ]];then
+		ARG_SINGLE_FILE="FULLLISTOFSAMPLESDILEP"
+	    fi
+	    if [[ $job_skim == "SKTree_TriLepSkim" ]];then
+                ARG_SINGLE_FILE="FULLLISTOFSAMPLESTRILEP"
+            fi
+	    if [[ $job_skim == "DiLep" ]];then
+		ARG_SINGLE_FILE="FULLLISTOFSAMPLESDILEP"
+	    fi
 
-        
-        eval test_single_file=(\${$ARG_SINGLE_FILE[@]})
-        file_tag_exists=false
-        for all_files in ${test_single_file[@]};
-          do
-          if [[ $all_files == $part_of_list ]];
-          then
-          file_tag_exists=true
-          fi
-        done
-        if [[ $file_tag_exists == "false" ]];
-        then
-        echo "###################################################################################################################"
-        echo "LQanalyzer::sktree :: WARNING :: Check input list. "$part_of_list" is not a valid input name for latest catversion"
-        echo "###################################################################################################################"
-        echo "Check options using 'sktree -l. If your sample is missing run 'sktree -A' "
-        else
-        valid_list_samples=$((valid_list_samples+1))
-        fi
-    done
-    if [[ $valid_list_samples -eq 0 ]];
-        then
-        echo "LQanalyzer::sktree :: ERROR :: All input list is invalid. Exiting"
-        exit 1
-    fi
-    
-    if [[ $submit_sampletag != "MC" ]];
-        then
-        
-        if [[ $submit_file_tag  != ""  ]];
-        then
-         echo "LQanalyzer::sktree :: ERROR :: Running with 'sktree -i and -list is not valid'"
-        exit 1
-        fi
-    fi
-    list_isdata=true
-    if [[ $submit_sampletag == "MC" ]];
-        then
-        list_isdata=false
-    fi
-    if [[ $list_isdata == "false" ]];
-        then
-        if [[ $submit_sampletag != ""  ]];
-        then
-        echo "LQanalyzer::sktree :: ERROR :: Running with 'sktree -list <list> and -S <samplelist> is not valid unless samplelist is data'"
-        exit 1
-        fi
-    fi
-    
+	    
+	    eval test_single_file=(\${$ARG_SINGLE_FILE[@]})
+	    file_tag_exists=false
+	    for all_files in ${test_single_file[@]};
+	      do
+	      if [[ $all_files == $part_of_list ]];
+		  then
+		  file_tag_exists=true
+	      fi
+	    done
+	    if [[ $file_tag_exists == "false" ]];
+		then
+		echo "###################################################################################################################"
+		echo "LQanalyzer::sktree :: WARNING :: Check input list. "$part_of_list" is not a valid input name for latest catversion"
+		echo "###################################################################################################################"
+		echo "Check options using 'sktree -l. If your sample is missing run 'sktree -A' "
+	    else
+		valid_list_samples=$((valid_list_samples+1))
+	    fi
+	done
+	if [[ $valid_list_samples -eq 0 ]];
+	    then
+	    echo "LQanalyzer::sktree :: ERROR :: All input list is invalid. Exiting"
+	    exit 1
+	fi
+	
+	if [[ $submit_sampletag != "MC" ]];
+	    then
+	    
+	    if [[ $submit_file_tag  != ""  ]];
+		then
+		 echo "LQanalyzer::sktree :: ERROR :: Running with 'sktree -i and -list is not valid'"
+		exit 1
+	    fi
+	fi
+	list_isdata=true
+	if [[ $submit_sampletag == "MC" ]];
+	    then
+	    list_isdata=false
+	fi
+	if [[ $list_isdata == "false" ]];
+	    then
+	    if [[ $submit_sampletag != ""  ]];
+		then
+		echo "LQanalyzer::sktree :: ERROR :: Running with 'sktree -list <list> and -S <samplelist> is not valid unless samplelist is data'"
+		exit 1
+	    fi
+	fi
+	
 fi
 
 if [[ $submit_sampletag  != ""  ]];
@@ -622,7 +633,27 @@ if [[ $submit_analyzer_name == "SKTreeMakerDiLep" ]];
     
 fi
 
+if [[ $submit_analyzer_name == "SKTreeMakerTriLep" ]];
+    then
+    submit_skinput=true
+    job_skim="SKTree_DiLepSkim"
+    if [[ $set_sktreemaker_debug == "false" ]];
+        then
+        job_njobs=30
+    fi
+    if [[ $submit_version_tag == "" ]];
+	then
+	echo "When running SKTreeMaker you need to specify the catversion: -c "
+        echo "Options are: "
+        for ic in  ${list_of_catversions[@]};
+          do
+          echo $ic
+        done
 
+        exit 1
+    fi
+
+fi
 outputdir_cat=$LQANALYZER_DIR"/data/output/CAT/"
 outputdir_analyzer=$LQANALYZER_DIR"/data/output/CAT/"$submit_analyzer_name
 dir_tag="periodC/"
@@ -650,19 +681,37 @@ if [[ $runDATA == "true" ]];
     then echo "LQanalyzer::sktree :: ERROR :: There are no NoCut skims for data"
     exit 1
     fi
+    
     ARGDATASKIM=$submit_sampletag
     eval out_streams_skimcheck=(\${$ARGDATASKIM[@]})
-    
-    for stream_check in ${out_streams_skimcheck[@]};
-    do
-      if [[ $stream_check == *"Single"* ]];
-      then
-      echo "LQanalyzer::sktree :: ERROR :: There are no DiLepton skims for "$stream_check" in catversion "$submit_version_tag
- 
-      exit 1
-      fi
-    done
+    if [[ $job_skim == *"DiLep"* ]];
+	then
+	for stream_check in ${out_streams_skimcheck[@]};
+	  do
+	  if [[ $stream_check == *"Single"* ]];
+	      then
+	      echo "LQanalyzer::sktree :: ERROR :: There are no DiLepton skims for "$stream_check" in catversion "$submit_version_tag
+	      
+	      exit 1
+	  fi
+	done
+    fi
+    if [[ $job_skim == *"TriLep"* ]];
+        then
+        for stream_check in ${out_streams_skimcheck[@]};
+          do
+          if [[ $stream_check == *"Single"* ]];
+              then
+              echo "LQanalyzer::sktree :: ERROR :: There are no TriLepton skims for "$stream_check" in catversion "$submit_version_tag
+
+              exit 1
+          fi
+        done
+    fi
+
     echo "LQanalyzer::sktree :: INFO :: ARRAY of samples  to process = "${out_streams[*]}
+
+    
 
 
 fi
@@ -674,8 +723,9 @@ if [[ $job_output_dir == "" ]]
     job_output_dir=$outputdir_data
     fi
     if [[ $runMC  == "true" ]];
-    then
-    job_output_dir=$outputdir_mc
+	then
+	job_output_dir=$outputdir_mc
+	
     fi
 fi
 output_datafile=${outputdir_mc}"/"$job_cycle"_data_cat_"${submit_version_tag}".root"
@@ -839,7 +889,17 @@ elif [[ $job_skim == "SKTree_DiLepSkim" ]]
     echo "Fix submission"
     exit 1
     fi
-    
+elif [[ $job_skim == "SKTree_TriLepSkim" ]]
+    then
+    echo $skim_output_message
+    if [[ $submit_skinput == "false" ]];
+	then
+        echo "LQanalyzer::sktree :: ERROR :: skim set  to SKTree_TriLepSkim: Yet you set -sktree <false>"
+	echo "Fix submission"
+        exit 1
+    fi
+
+
 elif [[ $job_skim == "NoCut" ]]
     then
     echo $skim_output_message
@@ -952,29 +1012,24 @@ if [[ $job_loglevel != "ERROR" ]]
     fi
     fi
 fi
-if [[ $runDATA  == "true" ]];
-    then
-    if [[ $submit_file_list  != ""  ]];
-    then
-    echo "Running on data"
-    echo "ARRAY of files specified with sktree -list: This is not allowed for data"
-    exit 1
-    fi
-fi
+
 
 njobs_output_message="LQanalyzer::sktree :: INFO :: Number of subjobs = "${job_njobs}" (Default)"
 if [[ $changed_job_njobs == "true" ]];
     then
-    njobs_output_message="LQanalyzer::sktree :: INFO :: Number of subjobs = "$job_njobs 
     
     if [[ $job_cycle != *"SKTreeMaker"* ]];
     then
-    if [[ $job_njobs -gt 15 ]];
-    then
-        echo "LQanalyzer::sktree :: WARNING :: njobs set set out of range (0-15)"
-        job_njobs=15
+	if [[ $job_njobs -eq 311 ]];
+	    then
+	    job_njobs=-300
+	elif [[ $job_njobs -gt 15 ]];
+	    then
+	    echo "LQanalyzer::sktree :: WARNING :: njobs set set out of range (0-15)"
+	    job_njobs=15
+	fi
     fi
-    fi
+    njobs_output_message="LQanalyzer::sktree :: INFO :: Number of subjobs = "$job_njobs 
 fi
 
 echo $njobs_output_message
@@ -1108,7 +1163,12 @@ if [[ $runDATA  == "true" ]];
       loglevel=$job_loglevel
       logstep=$job_logstep
       stream=${istream}
-      outputdir=${job_output_dir}
+      if [[ $changed_job_output_dir == "true" ]];
+	  then
+	  outputdir=${job_output_dir}
+      else
+	  outputdir=$outputdir_data
+      fi
       catversion=${submit_version_tag}
     
       ARG=data_periods

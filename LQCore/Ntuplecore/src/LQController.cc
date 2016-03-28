@@ -264,12 +264,12 @@ void LQController::SetDataPeriod(TString period){
                      LQError::StopExecution );
     }
 
-
-    if( period == "C") target_luminosity = 17.226;
-    else if( period == "D") target_luminosity =2613.019;
-    else if( period == "CtoD") target_luminosity = 17.226 + 2613.019;
-    else if( period == "ALL") target_luminosity = 17.226 + 2613.019;
-    else target_luminosity = 17.226 + 2613.019;
+    /// brilcalc lumi -u /pb --normtag /afs/cern.ch/user/l/lumipro/public/normtag_file/moriond16_normtag.json -i jsonfiles/Cert_13TeV_16Dec2015ReReco_Collisions15_25ns_JSON_Silver.txt 
+    if( period == "C") target_luminosity = 17.731;
+    else if( period == "D") target_luminosity = 2672.976;
+    else if( period == "CtoD") target_luminosity = 17.731 + 2672.976; 
+    else if( period == "ALL") target_luminosity = 17.731 + 2672.976;
+    else target_luminosity = 17.731 + 2672.976;
   }
 
 }
@@ -565,6 +565,7 @@ void LQController::ExecuteCycle() throw( LQError ) {
     }
 
     cycle->SetCatVersion(SetNTCatVersion(catversion_lq));
+    cycle->SetTargetLumi(target_luminosity);
 
     //// Connect chain to Data class                                                                                                                                        
     if(inputType!=NOTSET) {
@@ -593,6 +594,7 @@ void LQController::ExecuteCycle() throw( LQError ) {
     else{
       /// Get answer from input ntuple
       m_logger <<  INFO << chain <<  LQLogger::endmsg;
+      cycle->LoadTree(1);
       cycle->GetInputTree()->GetEntry(1,0);/// Get first entry in ntuple
       bool alt_isdata =  cycle->isData;
       if(alt_isdata) inputType = data;
@@ -655,6 +657,9 @@ void LQController::ExecuteCycle() throw( LQError ) {
       for(unsigned int list_entry = 0; list_entry < list_to_run.size(); list_entry++){
 	Bool_t skipEvent = kFALSE;
 	try {
+	  Long64_t ifentry =      cycle->LoadTree(list_entry);
+	  if (ifentry < 0) break;
+
 	  cycle->GetEntry(list_entry);
 	  cycle->SetUpEvent(list_entry,ev_weight,k_period);
 	  cycle->ClearOutputVectors();
@@ -676,6 +681,8 @@ void LQController::ExecuteCycle() throw( LQError ) {
     }/// check size of list loop
     else if(run_single_event){
       for (Long64_t jentry = n_ev_to_skip; jentry < nevents_to_process; jentry++ ) {
+	Long64_t ifentry =	cycle->LoadTree(jentry);
+	if (ifentry < 0) break;
 	cycle->GetEntry(jentry);	
 	if(!(jentry%50000)) m_logger << INFO << "Processing event " << jentry << " " << cycle->GetEventNumber() << LQLogger::endmsg;
 	if(cycle->GetEventNumber() == single_ev){
@@ -698,7 +705,8 @@ void LQController::ExecuteCycle() throw( LQError ) {
 	Bool_t skipEvent = kFALSE;
         try {
 	  m_logger << DEBUG << "cycle->GetEvent " << LQLogger::endmsg;
-
+	  Long64_t ifentry =cycle->LoadTree(jentry);
+	  if (ifentry < 0) break;    
 	  cycle->GetEntry(jentry);
 	  m_logger << DEBUG << "cycle->SetUpEvent " << LQLogger::endmsg;
 	  cycle->SetUpEvent(jentry, ev_weight,k_period);

@@ -3,13 +3,13 @@ if [[ $LQANALYZER_DIR == "" ]];
     source $LQANALYZER_DIR/setup.sh
 fi
 
-itag=".4"
+itag=".5"
 tagname=$CATVERSION$itag
 
 rm $LQANALYZER_DIR/scripts/setup/SetBrachAndTag.sh
 echo "export CATVERSION="$CATVERSION >> $LQANALYZER_DIR/scripts/setup/SetBrachAndTag.sh
 echo "### If there is a small bug/new code then new subtag is made"  >> $LQANALYZER_DIR/scripts/setup/SetBrachAndTag.sh
-echo "tag_numerator='"$itag"'"  >> $LQANALYZER_DIR/scripts/setup/SetBrachAndTag.sh
+echo "export tag_numerator='"$itag"'"  >> $LQANALYZER_DIR/scripts/setup/SetBrachAndTag.sh
 echo "if [[ '-d' == "branch" ]];"  >> $LQANALYZER_DIR/scripts/setup/SetBrachAndTag.sh
 echo "    then" >> $LQANALYZER_DIR/scripts/setup/SetBrachAndTag.sh
 echo "    export CATTAG=" >> $LQANALYZER_DIR/scripts/setup/SetBrachAndTag.sh
