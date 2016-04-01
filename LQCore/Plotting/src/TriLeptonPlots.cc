@@ -31,6 +31,8 @@ TriLeptonPlots::TriLeptonPlots(TString name){
 
   map_sig["h_PFMET"]                  =     new TH1F("h_PFMET_"               + name,"Missing Et",100,0.0,500.0);
   map_sig["h_PFMET_phi"]              =     new TH1F("h_PFMET_phi_"           + name,"Missing Et",100,0.0,500.0);
+  map_sig["h_HT"]                     =     new TH1F("h_HT_"           + name,"H_{T}",300,0.0,300.0);
+
 
 
 
@@ -205,11 +207,13 @@ void TriLeptonPlots::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std::v
   Fill("h_PFMET_phi",ev.PFMETphi(), weight);
   Fill("h_nVertices", ev.nVertices(), weight);
 
-
+  float sumpt=0.;
   for(UInt_t j=0; j < jets.size(); j++){
     Fill("h_jets_pt", jets[j].Pt(),weight);
     Fill("h_jets_eta",jets[j].Eta(),weight);
+    sumpt += jets[j].Pt();
   }
+  Fill("h_HT", sumpt, weight);
 
 
   return;

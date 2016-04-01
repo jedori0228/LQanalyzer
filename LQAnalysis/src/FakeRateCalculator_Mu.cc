@@ -98,6 +98,10 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   if( !PassTrigger(triggerlist_Mu8,prescale) && !PassTrigger(triggerlist_Mu17,prescale) ) return;
   //if( ! (PassTrigger(triggerlist_Mu8,prescale) && !PassTrigger(triggerlist_Mu17,prescale)) ) return;
 
+  snu::KEvent Evt = eventbase->GetEvent();
+  double MET = Evt.PFMET();
+  if( MET < 40 ) return; // Let Wjets dominate
+
   float prescale_trigger = GetPrescale(muontriLooseColl, PassTrigger(triggerlist_Mu8,prescale), PassTrigger(triggerlist_Mu17,prescale));
 
   FillHist("prescale_trigger", prescale_trigger, 1, 0, 1, 10000);
