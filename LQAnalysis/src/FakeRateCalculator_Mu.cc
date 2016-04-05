@@ -85,6 +85,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   std::vector<snu::KElectron> electronTightColl;
   eventbase->GetElectronSel()->HNTightElectronSelection(electronTightColl);
 
+  // tag jet collections
   std::vector<snu::KJet> jetColl = GetJets("fakerate");
 
   ////////////////////////////////////////////////////
@@ -98,17 +99,22 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   if( !PassTrigger(triggerlist_Mu8,prescale) && !PassTrigger(triggerlist_Mu17,prescale) ) return;
   //if( ! (PassTrigger(triggerlist_Mu8,prescale) && !PassTrigger(triggerlist_Mu17,prescale)) ) return;
 
-  snu::KEvent Evt = eventbase->GetEvent();
-  double MET = Evt.PFMET();
-  if( MET < 40 ) return; // Let Wjets dominate
+  //snu::KEvent Evt = eventbase->GetEvent();
+  //double MET = Evt.PFMET();
+  //if( MET < 40 ) return; // Let Wjets dominate
 
   float prescale_trigger = GetPrescale(muontriLooseColl, PassTrigger(triggerlist_Mu8,prescale), PassTrigger(triggerlist_Mu17,prescale));
 
   FillHist("prescale_trigger", prescale_trigger, 1, 0, 1, 10000);
   
-  cout << prescale_trigger << endl;
+  //cout << prescale_trigger << endl;
   weight *= prescale_trigger;  
 
+  std::vector<snu::KJet> jetColl_lepveto;
+  eventbase->GetJetSel()->SetEta(5.0);
+  //eventbase->GetJetSel()->JetSelectionLeptonVeto(jetColl_lepveto, muontriTightColl, electronTightColl);
+  // should remove the loosest leptons in the analysis
+  eventbase->GetJetSel()->JetSelectionLeptonVeto(jetColl_lepveto, AnalyzerCore::GetMuons("veto"), AnalyzerCore::GetElectrons(false,false, "veto") );
 
   snu::KParticle muon;
   muon = muontriLooseColl.at(0);
@@ -130,13 +136,19 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
       FillHist("dPhi", dPhi, weight, 0., 4., 40);
       if( ptmu_ptjet < 1. ){
         if( dPhi > 2.5 ){
+          double HT_loose = AnalyzerCore::SumPt(jetColl_lepveto);
+          double HT_tag = AnalyzerCore::SumPt(jetColl);
           FillHist("eta_F0", muon.Eta(), weight, -3, 3, 30);
           FillHist("pt_F0", muon.Pt(), weight, 0., 200., 200./1.);
           FillHist("events_F0", muon.Pt(), fabs(muon.Eta()), weight, ptarray, 9, etaarray, 4);
+          FillHist("HT_loose_F0", HT_loose, weight, 0, 300, 300);
+          FillHist("HT_tag_F0", HT_tag, weight, 0, 300, 300);
           if(muontriTightColl.size() == 1){
             FillHist("eta_F", muon.Eta(), weight, -3, 3, 30);
             FillHist("pt_F", muon.Pt(), weight, 0., 200., 200/1.);
-            FillHist("events_F", muon.Pt(), fabs(muon.Eta()), weight, ptarray, 9, etaarray, 4);          
+            FillHist("events_F", muon.Pt(), fabs(muon.Eta()), weight, ptarray, 9, etaarray, 4);
+            FillHist("HT_loose_F", HT_loose, weight, 0, 300, 300);
+            FillHist("HT_tag_F", HT_tag, weight, 0, 300, 300);
           }
           goto stop;
         }

@@ -15,6 +15,9 @@
 #include "EventBase.h"                                                                                  
 #include "BaseSelection.h"
 
+#define FR_n_pt_bin 7
+#define FR_n_eta_bin 4
+
 //// Needed to allow inheritance for use in LQCore/core classes
 ClassImp (trilepton_mumumu);
 
@@ -23,7 +26,9 @@ ClassImp (trilepton_mumumu);
  *  This is an Example Cycle. It inherits from AnalyzerCore. The code contains all the base class functions to run the analysis.
  *
  */
-trilepton_mumumu::trilepton_mumumu() :  AnalyzerCore(), out_muons(0)  {
+trilepton_mumumu::trilepton_mumumu() :  AnalyzerCore(), out_muons(0), 
+sol_sel_chi2_best(0), sol_sel_chi2_plus(0), sol_sel_chi2_minus(0), sol_sel_chi2_smaller(0), sol_sel_chi2_larger(0), n_gen_pass(0)
+{
 
   
   // To have the correct name in the log:                                                                                   
@@ -34,12 +39,8 @@ trilepton_mumumu::trilepton_mumumu() :  AnalyzerCore(), out_muons(0)  {
   // This function sets up Root files and histograms Needed in ExecuteEvents
   InitialiseAnalysis();
 
-  sol_sel_chi2_best = 0;
-  sol_sel_chi2_plus = 0;
-  sol_sel_chi2_minus = 0;
-  sol_sel_chi2_smaller = 0;
-  sol_sel_chi2_larger = 0;
-  n_gen_pass = 0;
+  TFile* file = new TFile("/home/jskim/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/rootfiles/8TeV_trimuon_FR.root");
+  hist_trimuon_FR = (TH2F*)file->Get("events_F")->Clone();
 }
 
 
@@ -184,7 +185,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   // 1 : TLL
   // 2 : TTL
   // 3 : TTT(signal region)
-  int n_tight = 0;
+  int n_tight = 2;
   if( n_triTight_muons != n_tight ) return;
 
   FillCutFlow("3muon", weight);
@@ -193,6 +194,14 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   for(int i=0;i<3;i++){
     lep[i] = muontriLooseColl.at(i);
   }
+
+  double FR_muon[3];
+  for(int i=0; i<3; i++) FR_muon[i] = get_FR(lep[i]);
+
+  if( n_tight == 0 ) weight *= FR_muon[0]*FR_muon[1]*FR_muon[2]/( (1.-FR_muon[0])*(1.-FR_muon[1])*(1.-FR_muon[2]) ) ;
+  else if ( n_tight == 1) weight *= -FR_muon[1]*FR_muon[2]/( (1.-FR_muon[1])*(1.-FR_muon[2]) );
+  else if ( n_tight == 2) weight *= FR_muon[2]/(1.-FR_muon[2]);
+  else{}
 
   // MC samples has m(ll)_saveflavour > 4 GeV cut at gen level
   // MADGRAPH : https://github.com/cms-sw/genproductions/blob/master/bin/MadGraph5_aMCatNLO/cards/production/13TeV/WZTo3LNu01j_5f_NLO_FXFX/WZTo3LNu01j_5f_NLO_FXFX_run_card.dat#L130
@@ -962,3 +971,45 @@ void trilepton_mumumu::print_all_indices(TString particle, std::vector<int> vec)
   for(int i=0; i<vec.size(); i++) cout << " " << vec.at(i) << endl;
 
 }
+
+double trilepton_mumumu::get_FR(snu::KParticle muon){
+
+  double this_pt = muon.Pt();
+  double this_eta = fabs( muon.Eta() );
+
+  // FR_n_pt_bin = 7
+  // array index      0    1    2    3    4    5    6    7
+  // bin numbe          1    2     3    4    5   6     7
+  // ptarray[7+1] = {10., 15., 20., 25., 30., 35., 45., 60.}; 
+
+  double ptarray[FR_n_pt_bin+1] = {10., 15., 20., 25., 30., 35., 45., 60.};
+  double etaarray[FR_n_eta_bin+1] = {0.0, 0.8, 1.479, 2.0, 2.5};
+
+  int this_pt_bin;
+  if( this_pt >= ptarray[FR_n_pt_bin] ) this_pt_bin = FR_n_pt_bin;
+  else{
+    for(int i=0; i<FR_n_pt_bin; i++){
+      if( ptarray[i] <= this_pt && this_pt < ptarray[i+1] ){
+        this_pt_bin = i+1;
+        break;
+      }
+    }
+  }
+  int this_eta_bin;
+  if( this_eta >= etaarray[FR_n_eta_bin] ) this_eta_bin = FR_n_eta_bin;
+  else{
+    for(int i=0; i<FR_n_eta_bin; i++){
+      if( etaarray[i] <= this_eta && this_eta < etaarray[i+1] ){
+        this_eta_bin = i+1;
+        break;
+      }
+    }
+  }
+
+  return hist_trimuon_FR->GetBinContent(this_pt_bin, this_eta_bin);
+
+}
+
+
+
+

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 runData=true
-runMC=false
+runMC=true
 runQCD=false
 runQCD2=false
 
@@ -41,7 +41,7 @@ then
     data_lumi="AtoD"
     loglevel="INFO"
     logstep=1000
-    outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/met_40/"
+    outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/"
 
 
     declare -a input_samples=("DY10to50" "DY50plus" "ttbar" "Wjets" "Wgamma" "ttbar_central" "stbar_sch" "stbar_tch" "stbar_tW" "st_sch" "st_tch" "st_tW")
@@ -105,7 +105,7 @@ then
     logstep=1000
     stream="muon"
     #stream="singlemuon"
-    outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/met_40/period/"
+    outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/period/"
     
     declare -a input_samples=("A" "B" "C" "D")
     #declare -a input_samples=("A")

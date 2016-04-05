@@ -4,7 +4,6 @@
 #include "AnalyzerCore.h"
 #include "Trilepton.h"
 
-
 class trilepton_mumumu : public AnalyzerCore {
 
  public:
@@ -33,6 +32,9 @@ class trilepton_mumumu : public AnalyzerCore {
   void print_all_indices(TString particle, std::vector<int> vec);
   int n_gen_pass;
   double sol_sel_chi2_best, sol_sel_chi2_plus, sol_sel_chi2_minus, sol_sel_chi2_smaller, sol_sel_chi2_larger;
+
+  TH2F* hist_trimuon_FR;
+  double get_FR(snu::KParticle muon);
 
  private:
   
