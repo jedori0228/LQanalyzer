@@ -586,7 +586,7 @@ void trilepton_mumumu::gen_matching(){
   
   int truthmax = truthColl.size();
   vector<int> gen_HN_indices, gen_W_pri_indices, gen_W_sec_indices, gen_l_1_indices, gen_nu_indices, gen_l_3_indices, gen_l_2_indices;
-  snu::KParticle gen_nu, gen_W_pri, gen_HN, gen_W_sec, gen_l_1, gen_l_2, gen_l_3;
+  snu::KParticle gen_nu, gen_l_1, gen_l_2, gen_l_3;
   bool W_sec_in_truth=false, isLowMass = false;
 
   // check if this is low/high mass region //
@@ -893,6 +893,12 @@ void trilepton_mumumu::gen_matching(){
 
 
   }
+
+  snu::KParticle gen_HN = truthColl.at(gen_HN_indices.back());
+  if(k_sample_name.Contains("HN40")) FillHist("gen_HN_mass", gen_HN.M(), 1, 39, 41, 1./0.01);
+  if(k_sample_name.Contains("HN60")) FillHist("gen_HN_mass", gen_HN.M(), 1, 59, 61, 1./0.01);
+  if(k_sample_name.Contains("HN150")) FillHist("gen_HN_mass", gen_HN.M(), 1, 149, 151, 1/0.01);
+  if(k_sample_name.Contains("HN700")) FillHist("gen_HN_mass", gen_HN.M(), 1, 680, 720, 40./1.);
 
   // histograms
  
