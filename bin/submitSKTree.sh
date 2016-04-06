@@ -22,7 +22,7 @@ runSinglePhoton=false
 job_data_lumi="CtoD"  ###  "C" = period C only   "ALL"  = period C+D
 job_logstep=1000
 job_loglevel="INFO"
-job_njobs=10
+job_njobs=5
 job_skim="SKTree_LeptonSkim"
 changed_skim=false
 job_output_dir=""
@@ -220,6 +220,49 @@ function mergeoutput
             echo ""
         fi
     fi
+
+}
+
+function mergefake
+{
+            output_file_skim_tag=$1
+	    outname="nonprompt"
+
+            if [[ $job_skim == "FLATCAT" ]];
+                then
+                output_file_skim_tag=$output_file_skim_tag"_cat_"$submit_version_tag
+		outname=$outname"_cat_"$submit_version_tag
+            fi
+            if [ $job_skim == "SKTree_NoSkim" ] || [ $job_skim == "NoCut" ];
+                  then
+                output_file_skim_tag="SK"$output_file_skim_tag"_nocut_cat_"$submit_version_tag
+		outname="SK"$outname"_nocut_cat_"$submit_version_tag
+            fi
+
+            if [ $job_skim == "SKTree_LeptonSkim" ] || [ $job_skim == "Lepton" ];
+                then
+                output_file_skim_tag="SK"$output_file_skim_tag"_cat_"$submit_version_tag
+		outname="SK"$outname"_cat_"$submit_version_tag
+
+            fi
+
+            if [ $job_skim == "SKTree_DiLepSkim" ] || [ $job_skim == "DiLep" ];
+                then
+                output_file_skim_tag="SK"$output_file_skim_tag"_dilep_cat_"$submit_version_tag
+		outname="SK"$outname"_dilep_cat_"$submit_version_tag
+
+            fi
+            if [[ $job_skim == "SKTree_TriLepSkim" ]] ;
+                then
+                output_file_skim_tag="SK"$output_file_skim_tag"_trilep_cat_"$submit_version_tag
+		outname="SK"$outname"_trilep_cat_"$submit_version_tag
+
+            fi
+
+	    echo hadd.sh ${outputdir_np} ${job_cycle}_${output_file_skim_tag}.root ${outputdir_np}${job_cycle}'*'${output_file_skim_tag}'*'
+	    source hadd.sh ${outputdir_np} ${job_cycle}_${output_file_skim_tag}.root ${outputdir_np}${job_cycle}'*'${output_file_skim_tag}'*'
+
+	    mv  ${outputdir_np}/${job_cycle}_${output_file_skim_tag}.root  ${outputdir_mc}/${job_cycle}_${outname}.root
 
 }
 
@@ -654,14 +697,25 @@ if [[ $submit_analyzer_name == "SKTreeMakerTriLep" ]];
     fi
 
 fi
-outputdir_cat=$LQANALYZER_DIR"/data/output/CAT/"
-outputdir_analyzer=$LQANALYZER_DIR"/data/output/CAT/"$submit_analyzer_name
+
+outdir="/data2/CAT_SKTreeOutput/JobOutPut/"$USER"/LQanalyzer/"
+if [[ ! -d "${outdir}" ]]; then
+    mkdir "/data2/CAT_SKTreeOutput/JobOutPut/"$USER
+    mkdir ${outdir}
+fi
+
+
+outputdir_cat=$outdir"/data/output/CAT/"
+
+outputdir_analyzer=$outdir"/data/output/CAT/"$submit_analyzer_name
 dir_tag="periodC/"
 
 if [[  $job_cycle != "SKTreeMaker"* ]];
     then
     if [[ ! -d "${outputdir_cat}" ]]; then
-    mkdir ${outputdir_cat}
+	mkdir $outdir"/data/"
+	mkdir $outdir"/data/output/"
+	mkdir ${outputdir_cat}
     fi
     if [[ ! -d "${outputdir_analyzer}" ]]; then
     mkdir ${outputdir_analyzer}
@@ -674,6 +728,7 @@ fi
 
 outputdir_mc=${outputdir_analyzer}"/"${dir_tag}
 outputdir_data=${outputdir_mc}"Data/"
+outputdir_np=${outputdir_mc}"Fake/"
 
 if [[ $runDATA == "true" ]];
     then
@@ -727,6 +782,11 @@ if [[ $job_output_dir == "" ]]
 	job_output_dir=$outputdir_mc
 	
     fi
+    if [[ $job_run_fake == "True" ]];
+	then
+	job_output_dir=$outputdir_np
+    fi
+
 fi
 output_datafile=${outputdir_mc}"/"$job_cycle"_data_cat_"${submit_version_tag}".root"
 
@@ -742,16 +802,20 @@ if [[  $job_cycle != "SKTreeMaker"* ]];
     mkdir ${outputdir_data}
     echo "Making " + ${outputdir_data}
     fi
-     if [[ ! -d "${job_output_dir}" ]]; then
-     mkdir ${job_output_dir}
-     echo "Making " + ${job_output_dir}
-     if [[ ! -d "${job_output_dir}" ]]; then
-         echo "LQanalyzer::sktree :: ERROR :: Output directory is set by user. "
-         echo "LQanalyzer::sktree :: ERROR :: Make Directory ried but failed"
-         echo "LQanalyzer::sktree :: ERROR :: User needs to make directory."
-     fi
-     fi
-     
+    if [[ ! -d "${outputdir_np}" ]]; then
+        mkdir ${outputdir_np}
+        echo "Making " + ${outputdir_np}
+    fi
+    if [[ ! -d "${job_output_dir}" ]]; then
+	mkdir ${job_output_dir}
+	echo "Making " + ${job_output_dir}
+	if [[ ! -d "${job_output_dir}" ]]; then
+	    echo "LQanalyzer::sktree :: ERROR :: Output directory is set by user. "
+	    echo "LQanalyzer::sktree :: ERROR :: Make Directory ried but failed"
+	    echo "LQanalyzer::sktree :: ERROR :: User needs to make directory."
+	fi
+    fi
+    
 fi
 
 if [[ $submit_analyzer_name ==  "" ]];
@@ -786,6 +850,7 @@ if [[ $job_run_fake == "True" ]];
     then
     echo "LQanalyzer::sktree :: INFO ::RunFake= True"
 fi
+
 if [[ $runDATA  == "true" ]];
     then
     ARGPERIOD=data_periods
@@ -1023,10 +1088,10 @@ if [[ $changed_job_njobs == "true" ]];
 	if [[ $job_njobs -eq 311 ]];
 	    then
 	    job_njobs=-300
-	elif [[ $job_njobs -gt 15 ]];
+	elif [[ $job_njobs -gt 5 ]];
 	    then
-	    echo "LQanalyzer::sktree :: WARNING :: njobs set set out of range (0-15)"
-	    job_njobs=15
+	    echo "LQanalyzer::sktree :: WARNING :: njobs set set out of range (0-5)"
+	    job_njobs=5
 	fi
     fi
     njobs_output_message="LQanalyzer::sktree :: INFO :: Number of subjobs = "$job_njobs 
@@ -1167,7 +1232,12 @@ if [[ $runDATA  == "true" ]];
 	  then
 	  outputdir=${job_output_dir}
       else
-	  outputdir=$outputdir_data
+	  if [[ $job_run_fake == "True" ]];
+	      then
+	      outputdir=$outputdir_np
+	      else 
+	      outputdir=$outputdir_data
+	  fi
       fi
       catversion=${submit_version_tag}
     
@@ -1175,9 +1245,15 @@ if [[ $runDATA  == "true" ]];
       eval input_samples=(\${$ARG[@]})
 
       
+
       source submit.sh
-      mergeoutput $istream
+      if [[ ${job_run_fake} == "True" ]];
+	  then
+	  mergefake $istream
       
+      else
+	  mergeoutput $istream
+      fi
     done
 fi
 
