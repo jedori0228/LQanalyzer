@@ -63,8 +63,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   std::vector<snu::KMuon> muontriLooseColl;
   eventbase->GetMuonSel()->HNtriLooseMuonSelection(muontriLooseColl);
 
-
-  //FIXME can we use thie scale factor for our muons?
+  //FIXME can we use this scale factor for our muons?
 /*
   if(!isData){ 
      for(std::vector<snu::KMuon>::iterator it = muontriTightColl.begin(); it!= muontriTightColl.end(); it++){
@@ -85,12 +84,19 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   std::vector<snu::KElectron> electronTightColl;
   eventbase->GetElectronSel()->HNTightElectronSelection(electronTightColl);
 
-  // tag jet collections
-  std::vector<snu::KJet> jetColl = GetJets("fakerate");
+  std::vector<snu::KJet> jetColl_lepveto;
+  eventbase->GetJetSel()->SetEta(5.0);
+  //eventbase->GetJetSel()->JetSelectionLeptonVeto(jetColl_lepveto, muontriTightColl, electronTightColl);
+  // should remove the loosest leptons in the analysis
+  eventbase->GetJetSel()->JetSelectionLeptonVeto(jetColl_lepveto, AnalyzerCore::GetMuons("veto"), AnalyzerCore::GetElectrons(false,false, "veto") );
 
-  ////////////////////////////////////////////////////
-  ///////////////// Analysis
-  ////////////////////////////////////////////////////
+/*
+  /////////////////////////////////////////////////////
+  ///////////// back-to-back dijet topology ///////////
+  /////////////////////////////////////////////////////
+
+  // tag jet collections
+  //   std::vector<snu::KJet> jetColl = GetJets("fakerate");
 
   if(jetColl.size() == 0) return;
 
@@ -109,12 +115,6 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   
   //cout << prescale_trigger << endl;
   weight *= prescale_trigger;  
-
-  std::vector<snu::KJet> jetColl_lepveto;
-  eventbase->GetJetSel()->SetEta(5.0);
-  //eventbase->GetJetSel()->JetSelectionLeptonVeto(jetColl_lepveto, muontriTightColl, electronTightColl);
-  // should remove the loosest leptons in the analysis
-  eventbase->GetJetSel()->JetSelectionLeptonVeto(jetColl_lepveto, AnalyzerCore::GetMuons("veto"), AnalyzerCore::GetElectrons(false,false, "veto") );
 
   snu::KParticle muon;
   muon = muontriLooseColl.at(0);
@@ -156,6 +156,48 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
     }
   }
   stop: ;
+*/
+
+
+
+  //////////////////////////////////////
+  ///////////// use MC Turth ///////////
+  //////////////////////////////////////
+
+  int n_triTight_muons = muontriTightColl.size();
+  int n_triLoose_muons = muontriLooseColl.size();
+  int n_jets = jetColl_lepveto.size();
+
+  //FillHist("n_loose_muons", n_triLoose_muons, 1, 0, 10, 10);
+  //FillHist("n_tight_muons", n_triTight_muons, 1, 0, 10, 10);
+  //FillHist("n_jets", n_jets, 1, 0, 10, 10);
+
+  if( n_triLoose_muons != 1 ) return;
+  snu::KMuon muon = muontriLooseColl.at(0);
+  //if( muon.GetType() == 1 || muon.GetType() == 2 || muon.GetType() == 3 ) return;
+  if( muon.GetType() == 0 ) return;
+
+  if( !PassTrigger(triggerlist_Mu8,prescale) && !PassTrigger(triggerlist_Mu17,prescale) ) return;
+
+  float prescale_trigger = GetPrescale(muontriLooseColl, PassTrigger(triggerlist_Mu8,prescale), PassTrigger(triggerlist_Mu17,prescale));
+  weight *= prescale_trigger;
+
+  float etaarray [] = {0.0,0.8,1.479,2.0,2.5};
+  float ptarray [] = {10.,15.,20.,25.,30.,35.,45.,60.,80.,100.};
+
+  FillHist("eta_den", muon.Eta(), weight, -3, 3, 30);
+  FillHist("pt_den", muon.Pt(), weight, 0., 200., 200./1.);
+  FillHist("events_den", muon.Pt(), fabs(muon.Eta()), weight, ptarray, 9, etaarray, 4);
+  FillHist("n_jets_den", n_jets, 1, 0, 15, 15);
+  double HT = AnalyzerCore::SumPt(jetColl_lepveto);
+  FillHist("HT_den", HT, weight, 0, 300, 300);
+  if( n_triTight_muons == 1 ){
+    FillHist("eta_num", muon.Eta(), weight, -3, 3, 30);
+    FillHist("pt_num", muon.Pt(), weight, 0., 200., 200./1.);
+    FillHist("events_num", muon.Pt(), fabs(muon.Eta()), weight, ptarray, 9, etaarray, 4);
+    FillHist("n_jets_num", n_jets, 1, 0, 15, 15);
+    FillHist("HT_num", HT, weight, 0, 300, 300);
+  }
 
   return;
 }// End of execute event loop

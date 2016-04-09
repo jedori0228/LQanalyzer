@@ -39,8 +39,10 @@ sol_sel_chi2_best(0), sol_sel_chi2_plus(0), sol_sel_chi2_minus(0), sol_sel_chi2_
   // This function sets up Root files and histograms Needed in ExecuteEvents
   InitialiseAnalysis();
 
-  TFile* file = new TFile("/home/jskim/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/rootfiles/8TeV_trimuon_FR.root");
-  hist_trimuon_FR = (TH2F*)file->Get("events_F")->Clone();
+  //TFile* file = new TFile("/home/jskim/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/rootfiles/8TeV_trimuon_FR_dijet_dijet_topology.root");
+  //hist_trimuon_FR = (TH2F*)file->Get("events_F")->Clone();
+  TFile* file = new TFile("/home/jskim/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/rootfiles/8TeV_trimuon_FR_MCTruth_ttbar.root");
+  hist_trimuon_FR = (TH2F*)file->Get("events_num")->Clone();
 }
 
 
@@ -148,11 +150,24 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   std::vector<snu::KJet> jetColl_lepveto;
   //eventbase->GetJetSel()->JetHNSelection(jetColl_lepveto, muontriTightColl, electronTightColl); // HNSelection is too tight
   eventbase->GetJetSel()->SetEta(5.0);
-  eventbase->GetJetSel()->JetSelectionLeptonVeto(jetColl_lepveto, muontriTightColl, electronTightColl);
+  //eventbase->GetJetSel()->JetSelectionLeptonVeto(jetColl_lepveto, muontriTightColl, electronTightColl);
+  eventbase->GetJetSel()->JetSelectionLeptonVeto(jetColl_lepveto, AnalyzerCore::GetMuons("veto"), AnalyzerCore::GetElectrons(false,false, "veto") );
 
   int n_triTight_muons = muontriTightColl.size();
   int n_triLoose_muons = muontriLooseColl.size();
   int n_jets = jetColl_lepveto.size();
+
+
+  //if(n_triTight_muons != 3) return;
+  //FillHist("TTT", 0, weight*pileup_reweight, 0, 1, 1);
+  //vector<snu::KMuon> muons_nofake = GetTruePrompt(muontriTightColl, false);
+  //if(muons_nofake.size() != 3){
+    //return;
+    //FillHist("fake_included", 0, weight*pileup_reweight, 0, 1, 1);
+  //}
+  //return;
+
+
 
 /*
   // some control plots //
@@ -198,10 +213,13 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   double FR_muon[3];
   for(int i=0; i<3; i++) FR_muon[i] = get_FR(lep[i]);
 
+
+  // fake method weighting
   if( n_tight == 0 ) weight *= FR_muon[0]*FR_muon[1]*FR_muon[2]/( (1.-FR_muon[0])*(1.-FR_muon[1])*(1.-FR_muon[2]) ) ;
   else if ( n_tight == 1) weight *= -FR_muon[1]*FR_muon[2]/( (1.-FR_muon[1])*(1.-FR_muon[2]) );
   else if ( n_tight == 2) weight *= FR_muon[2]/(1.-FR_muon[2]);
   else{}
+
 
   // MC samples has m(ll)_saveflavour > 4 GeV cut at gen level
   // MADGRAPH : https://github.com/cms-sw/genproductions/blob/master/bin/MadGraph5_aMCatNLO/cards/production/13TeV/WZTo3LNu01j_5f_NLO_FXFX/WZTo3LNu01j_5f_NLO_FXFX_run_card.dat#L130
@@ -455,7 +473,6 @@ trilepton_mumumu::~trilepton_mumumu() {
   
   Message("In trilepton_mumumu Destructor" , INFO);
   if(!k_isdata)delete reweightPU;
-  
 }
 
 

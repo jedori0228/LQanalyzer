@@ -1,6 +1,6 @@
 #!/bin/sh
 
-runData=true
+runData=false
 runMC=true
 runQCD=false
 runQCD2=false
@@ -37,16 +37,16 @@ then
     cycle="FakeRateCalculator_Mu"
     skinput="True"
 
-    njobs=30
+    njobs=20
     data_lumi="AtoD"
     loglevel="INFO"
     logstep=1000
-    outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/"
+    outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/use_MCTruth/"
 
 
-    declare -a input_samples=("DY10to50" "DY50plus" "ttbar" "Wjets" "Wgamma" "ttbar_central" "stbar_sch" "stbar_tch" "stbar_tW" "st_sch" "st_tch" "st_tW")
+    #declare -a input_samples=("DY10to50" "DY50plus" "ttbar" "Wjets" "Wgamma" "ttbar_central" "stbar_sch" "stbar_tch" "stbar_tW" "st_sch" "st_tch" "st_tW")
     #declare -a input_samples=("stbar_sch" "stbar_tch" "stbar_tW" "st_sch" "st_tch" "st_tW")
-    #declare -a input_samples=("ttbar_central")
+    declare -a input_samples=("ttbar_central")
     source submit.sh  
     #source hadd.sh /home/chasejeon/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/output/ElectronFakes/MC/  FakeRateCalculator_El_mc_5_3_14.root  FakeRateCalculator_El_SK*
     #mv /home/chasejeon/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/output/ElectronFakes/MC/FakeRateCalculator_El_mc_5_3_14.root /home/jskim/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/output/ElectronFakes/
@@ -98,17 +98,20 @@ then
     source functions.sh
     cycle="FakeRateCalculator_Mu"
     skinput="True"
+    #skinput="False"
 
     njobs=30
     data_lumi="AtoD"
     loglevel="INFO"
     logstep=1000
     stream="muon"
+    nevents=-1
     #stream="singlemuon"
-    outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/period/"
+    #outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/period/"
+    outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/use_LQNtuple/"
     
-    declare -a input_samples=("A" "B" "C" "D")
-    #declare -a input_samples=("A")
+    #declare -a input_samples=("A" "B" "C" "D")
+    declare -a input_samples=("A")
 
     source submit.sh $1
 
