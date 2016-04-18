@@ -182,7 +182,6 @@ SKCH150PU_nocut    2748.842285   sk_cluster_ntuple_path  sk_cms_ntuple_path_2015
 
 ############ Tag27_CMSSW_5_3_14 ##############################################################################
 ###### Following sktrees are made from LQNtuples_5_3_14_snu27 LQNtuples
-
 SKmuon		 A	sk_cluster_ntuple_path  sk_cms_ntuple_path_2014        Data/DoubleMuon/periodA/
 SKmuon		 B	sk_cluster_ntuple_path  sk_cms_ntuple_path_2014        Data/DoubleMuon/periodB/
 SKmuon		 C	sk_cluster_ntuple_path  sk_cms_ntuple_path_2014        Data/DoubleMuon/periodC/
@@ -227,6 +226,11 @@ SKst_tW           44834.054      sk_cluster_ntuple_path  sk_cms_ntuple_path_2014
 SKtopDIL          461277.43      sk_cluster_ntuple_path  sk_cms_ntuple_path_2014        MC/topDIL/
 SKtopHAD          460656.55      sk_cluster_ntuple_path  sk_cms_ntuple_path_2014        MC/topHAD/
 SKtopLJ           93722.93       sk_cluster_ntuple_path  sk_cms_ntuple_path_2014        MC/topLJ/
+
+SKttbarMSpow   85713.03906   /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/ttbar_pow/
+SKttbarMS      245371.375    /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/ttbarMS/
+SKttbarMS_chs  245371.375    /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/ttbarMSchs/
+
 
 ### Diboson ###
 ### PYTHIA
@@ -934,3 +938,70 @@ QCD_600-800_mu   1. cluster_mc_ntuple_path_2016 cms_mc_ntuple_path_2016 QCD_600-
 QCD_80-120_mu    1. cluster_mc_ntuple_path_2016 cms_mc_ntuple_path_2016 QCD_80-120_mu/
 ######################
 
+HN40    662251.65    /data2/MC/HN_3L/HN40/
+HN50    277777.77    /data2/MC/HN_3L/HN50/
+HN60    169491.52    /data2/MC/HN_3L/HN60/
+
+SKHN40    662251.65 /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/May14_TopRefSel/MC/HN40_no_PU/
+SKHN50    277777.77 /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/May14_TopRefSel/MC/HN50_no_PU/
+SKHN60    169491.52 /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/May14_TopRefSel/MC/HN60_no_PU/
+
+
+#w_llln
+w_mumumunu          25933.60 /data1/DATA/LQNtuples_5_3_14_snu27/MC/w_mumumunu/
+SKw_mumumunu 25933.60 /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/w_mumumunu_no_PU/
+
+Wtollln           12979.30 /data1/DATA/LQNtuples_5_3_14_snu27/MC/Wtollln_MadGraph_8TeV_noPU/
+SKWtollln   12979.30 /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/Wtollln_no_PU/
+
+Wtollln_new 12979.30 /data1/DATA/LQNtuples_5_3_14_snu27/MC/Wtollln_MadGraph_8TeV_PU/
+SKWtollln_new 12979.30 /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/Wtollln_PU/
+
+HN40_lep          82987.55 /data1/DATA/LQNtuples_5_3_14_snu27/MC/HN40ee_MadGraph_8TeV_noPU/
+SKHN40_lep  82987.55 /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN40_lep/
+
+#CAT
+test_DY 1. /data1/DATA/LQNtuples_5_3_14_snu27/MC/CATtest_DY/
+
+#HNtri > 80 GeV samples
+HN100 87719.29  /data1/DATA/LQNtuples_5_3_14_snu27/MC/HNtri100_MadGraph_8TeV_mumumu_no_PU/
+
+#new HNtri samples
+HN40_mumumu_new 209.59  /data1/DATA/LQNtuples_5_3_14_snu27/MC/HNtri40_MadGraph_8TeV_mumumu_PU/
+HN40_eee_new    209.59  /data1/DATA/LQNtuples_5_3_14_snu27/MC/HNtri40_MadGraph_8TeV_eee_PU/
+HN50_mumumu_new 289.85  /data1/DATA/LQNtuples_5_3_14_snu27/MC/HNtri50_MadGraph_8TeV_mumumu_PU/
+HN50_eee_new    289.85  /data1/DATA/LQNtuples_5_3_14_snu27/MC/HNtri50_MadGraph_8TeV_eee_PU/
+HN60_mumumu_new 512.29  /data1/DATA/LQNtuples_5_3_14_snu27/MC/HNtri60_MadGraph_8TeV_mumumu_PU/
+HN60_eee_new    512.29  /data1/DATA/LQNtuples_5_3_14_snu27/MC/HNtri60_MadGraph_8TeV_eee_PU/
+
+SKHN40_mumumu_new 209.59  /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN40_mumumu_PU/
+SKHN40_eee_new    209.59  /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN40_eee_PU/
+SKHN50_mumumu_new 289.85  /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN50_mumumu_PU/
+SKHN50_eee_new    289.85  /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN50_eee_PU/
+SKHN60_mumumu_new 512.29  /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN60_mumumu_PU/
+SKHN60_eee_new    512.29  /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN50_eee_PU/
+
+SKHN70_mumumu_new 3907.78 /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN70_mumumu_PU/
+SKHN90_mumumu_new 42337.00 /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN90_mumumu_PU/
+SKHN100_mumumu_new 88888.88  /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN100_mumumu_PU/
+SKHN150_mumumu_new 732600.73 /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN150_mumumu_PU/
+SKHN200_mumumu_new 2361832.78  /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN200_mumumu_PU/
+SKHN300_mumumu_new 11446886.44 /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN300_mumumu_PU/
+SKHN400_mumumu_new 36049026.67 /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN400_mumumu_PU/
+SKHN500_mumumu_new 91996320.14 /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN500_mumumu_PU/
+SKHN700_mumumu_new 414937759.33  /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN700_mumumu_PU/
+SKHN1000_mumumu_new 2393489707.99  /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN1000_mumumu_PU/
+
+#QCD single mu enriched
+SKQCD_15-20_mu 1 /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/QCD_15-20_mu/
+SKQCD_20-30_mu 1 /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/QCD_20-30_mu/
+SKQCD_30-50_mu 1 /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/QCD_30-50_mu/
+SKQCD_50-80_mu 1 /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/QCD_50-80_mu/
+SKQCD_80-120_mu 1 /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/QCD_80-120_mu/
+SKQCD_120-170_mu 1 /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/QCD_120-170_mu/
+SKQCD_170-300_mu 1 /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/QCD_170-300_mu/
+SKQCD_300-470_mu 1 /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/QCD_300-470_mu/
+SKQCD_470-600_mu 1 /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/QCD_470-600_mu/
+SKQCD_600-800_mu 1 /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/QCD_600-800_mu/
+SKQCD_800-1000_mu 1 /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/QCD_800-1000_mu/
+SKQCD_1000_mu 1 /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/QCD_1000_mu/

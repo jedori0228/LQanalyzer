@@ -8,6 +8,7 @@ class MuonPlots;
 class ElectronPlots;
 class JetPlots;
 class SignalPlots;
+class TriLeptonPlots;
 class EventBase;
 
 #include "LQCycleBase.h"
@@ -79,6 +80,7 @@ class AnalyzerCore : public LQCycleBase {
   float CFRate(snu::KElectron el, bool useoldrates=false);
   void CorrectMuonMomentum(vector<snu::KMuon>& k_muons);
   std::vector<snu::KElectron>  ShiftElectronEnergy(std::vector<snu::KElectron> el, bool applyshift);
+
   float Get_DataDrivenWeight_E(vector<snu::KElectron> k_electrons, int njets, int nbjets, double rho, double dxy, double biso, double eiso,  bool    usetight,TString cut, bool applypucorr);
 
   float Get_DataDrivenWeight_EE(vector<snu::KElectron> k_electrons, double rho);
@@ -101,7 +103,7 @@ class AnalyzerCore : public LQCycleBase {
   vector<TLorentzVector> MakeTLorentz( vector<snu::KMuon> mu);
   vector<TLorentzVector> MakeTLorentz( vector<snu::KJet> jet);
   // enum for plotting functions/classes
-  enum histtype {muhist, elhist, jethist, sighist};
+  enum histtype {muhist, elhist, jethist, sighist, trilephist};
   
   
   //
@@ -145,10 +147,12 @@ class AnalyzerCore : public LQCycleBase {
   std::vector<TString> triggerlist;
 
   //// Making cleaver hist maps
+  map<TString, TriLeptonPlots*> mapCLhistTriLep;
   map<TString, SignalPlots*> mapCLhistSig;
   map<TString, ElectronPlots*> mapCLhistEl;
   map<TString, MuonPlots*> mapCLhistMu;
   map<TString, JetPlots*> mapCLhistJet;
+
   
   //
   // Function that closes rootfile
@@ -202,6 +206,7 @@ class AnalyzerCore : public LQCycleBase {
 
   //// Event related                                                                                                                                              
   bool PassTrigger(std::vector<TString> list, int& prescale);
+  void ListTriggersAvailable();
   bool PassBasicEventCuts();
 
 };

@@ -16,6 +16,7 @@
 #include "ElectronPlots.h"
 #include "JetPlots.h"
 #include "SignalPlots.h"
+#include "TriLeptonPlots.h"
 
 // STD includes
 #include <iostream>
@@ -126,8 +127,12 @@ std::vector<snu::KJet> AnalyzerCore::GetJets(TString label){
     eventbase->GetJetSel()->SetEta(2.5);
     eventbase->GetJetSel()->JetSelectionLeptonVeto(jetColl, GetMuons("veto"), GetElectrons(false,false, "veto"));
   }
-  
-  
+  else  if(label.Contains("HNtriFRTagJet")){
+		eventbase->GetJetSel()->SetID(BaseSelection::PFJET_LOOSE);
+		eventbase->GetJetSel()->SetPt(40.);
+		eventbase->GetJetSel()->SetEta(3.0);
+		eventbase->GetJetSel()->JetSelectionLeptonVeto(jetColl, GetMuons("veto"), GetElectrons(false,false, "veto"));
+  }
   else  if(label.Contains("ApplyLeptonVeto")){
     eventbase->GetJetSel()->SetID(BaseSelection::PFJET_LOOSE);
     eventbase->GetJetSel()->SetPt(20.);
@@ -2484,6 +2489,8 @@ void AnalyzerCore::MakeCleverHistograms(histtype type, TString clhistname ){
   if(type==jethist) mapCLhistJet[clhistname] = new JetPlots(clhistname);
   /// Signal plots                                                                                             
   if(type==sighist)  mapCLhistSig[clhistname] = new SignalPlots(clhistname);
+
+  if(type==trilephist)  mapCLhistTriLep[clhistname] = new TriLeptonPlots(clhistname);
       
   return;
 }
@@ -2680,8 +2687,19 @@ void AnalyzerCore::FillCLHist(histtype type, TString hist, vector<snu::KJet> jet
 
 void AnalyzerCore::FillCLHist(histtype type, TString hist, snu::KEvent ev,vector<snu::KMuon> muons, vector<snu::KElectron> electrons, vector<snu::KJet> jets,double w){
 
-  if(type==sighist){
-    if(!hist.Contains("TCha")) return; 
+  if(type==trilephist){
+
+    map<TString, TriLeptonPlots*>::iterator trilepit = mapCLhistTriLep.find(hist);
+    if(trilepit !=mapCLhistTriLep.end()) trilepit->second->Fill(ev, muons, electrons, jets,w);
+    else {
+      mapCLhistTriLep[hist] = new TriLeptonPlots(hist);
+      trilepit = mapCLhistTriLep.find(hist);
+      trilepit->second->Fill(ev, muons, electrons, jets,w);
+    }
+  }
+
+  else if(type==sighist){
+    if(!hist.Contains("TCha")) return;
     map<TString, SignalPlots*>::iterator sigpit = mapCLhistSig.find(hist);
     if(sigpit !=mapCLhistSig.end()) sigpit->second->Fill(ev, muons, electrons, jets,w, 0.);
     else {
@@ -2765,6 +2783,13 @@ void AnalyzerCore::WriteCLHists(){
     Dir = m_outputFile->mkdir(sigpit->first);
     m_outputFile->cd( Dir->GetName() );
     sigpit->second->Write();
+    m_outputFile->cd();
+  }
+  for(map<TString, TriLeptonPlots*>::iterator trilepit = mapCLhistTriLep.begin(); trilepit != mapCLhistTriLep.end(); trilepit++){
+
+    //Dir = m_outputFile->mkdir(trilepit->first);
+    //m_outputFile->cd( Dir->GetName() );
+    trilepit->second->Write();
     m_outputFile->cd();
   }
 
@@ -3154,7 +3179,7 @@ void AnalyzerCore::CorrectMuonMomentum(vector<snu::KMuon>& k_muons){
   }
 }
 
- float AnalyzerCore::Get_DataDrivenWeightMC_EM(vector<snu::KMuon> k_muons, vector<snu::KElectron> k_electrons, double rho, TString tag){
+float AnalyzerCore::Get_DataDrivenWeightMC_EM(vector<snu::KMuon> k_muons, vector<snu::KElectron> k_electrons, double rho, TString tag){
 
    float em_weight = 0.;
    if(k_muons.size()==1 && k_electrons.size()==1){
@@ -3299,7 +3324,6 @@ float  AnalyzerCore::Get_DataDrivenWeight_E(vector<snu::KElectron> k_electrons, 
   }
   return 0.;
 }
-    
 
 
 vector<TLorentzVector> AnalyzerCore::MakeTLorentz(vector<snu::KElectron> el){
@@ -3336,7 +3360,13 @@ vector<TLorentzVector> AnalyzerCore::MakeTLorentz(vector<snu::KJet> j){
   return tl_jet;
 }
 
-
+void AnalyzerCore::ListTriggersAvailable(){
+  cout << "Set of triggers you can use are: " << endl;
+  for(unsigned int i=0; i < eventbase->GetTrigger().GetHLTInsideDatasetTriggerNames().size(); i++){
+    cout << eventbase->GetTrigger().GetHLTInsideDatasetTriggerNames().at(i)<< " has prescale " << eventbase->GetTrigger().GetHLTInsideDatasetTriggerPrescales().at(i)<< endl;
+  }
+  return;
+}
 
 
 

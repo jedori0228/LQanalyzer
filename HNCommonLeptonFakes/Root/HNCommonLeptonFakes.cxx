@@ -56,6 +56,10 @@ void HNCommonLeptonFakes::InitialiseFake(){
   /// List files with fake rates
 
   string lqdir = getenv("LQANALYZER_DIR");
+  cout
+  << "lqdir = " << lqdir << endl
+  << "path = " << (lqdir + "/data/rootfiles/FakeRateOpt.root").c_str() << endl  ;
+
   TFile* file_fake_Opt  = TFile::Open( (lqdir + "/data/rootfiles/FakeRateOpt.root").c_str());
   CheckFile(file_fake_Opt);
   TFile* file_fake  = TFile::Open( (lqdir + "/data/rootfiles/FakeRate2807.root").c_str());
