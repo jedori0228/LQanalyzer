@@ -1,8 +1,8 @@
 #!/bin/sh
 
 ###### SET WHAT JOBS TO RUN
-runMC=false
-runDoubleMuon=true
+runMC=true
+runDoubleMuon=false
 
 if [[ $runMC  == "true" ]]; 
 then
@@ -12,9 +12,13 @@ then
 #    useskim="NoCut"
     #outputdir=$LQANALYZER_DIR"/data/output/trilepton/mumumu/TTL/weighted/"
     #outputdir=$LQANALYZER_DIR"/data/output/trilepton/mumumu/TTT/"
-    outputdir=$LQANALYZER_DIR"/"
+    #outputdir=$LQANALYZER_DIR"/data/output/trilepton/mumumu_dXY_0p005_dZ_0p1/TTT/"
+    outputdir=$LQANALYZER_DIR"/data/output/trilepton/mumumu_dXY_0p2_dZ_0p5/TTT/"
+    #outputdir=$LQANALYZER_DIR"/data/output/trilepton/mumumu_dXY_0p01_dZ_0p5/TTT/"
+
+    #outputdir=$LQANALYZER_DIR"/"
     #### JOB CONFIGURATION
-    njobs=30
+    njobs=5
     data_lumi="AtoD"
     loglevel="INFO"
     logstep=1000
@@ -22,8 +26,12 @@ then
     #declare -a input_samples=("HN40_mumumu_new" "HN50_mumumu_new" "HN60_mumumu_new" "HN90_mumumu_new" "HN100_mumumu_new" "HN150_mumumu_new" "HN200_mumumu_new" "HN300_mumumu_new" "HN400_mumumu_new" "HN500_mumumu_new" "HN700_mumumu_new" "HN1000_mumumu_new")
     #declare -a input_samples=("DY10to50" "DY50plus" "Wjets" "WW_mg" "WZtollqq_mg" "WZtoqqln_mg" "WZtollln_mg" "ZZtollnn_mg" "ZZtollqq_mg" "ZZtollll_mg" "topDIL")
     #declare -a input_samples=("ggHtoZZ" "WZtollln_mg" "ZZtollll_mg" "Wtollln_new")
-    declare -a input_samples=("Wtollln_new")
+    #declare -a input_samples=("Wtollln_new")
     #declare -a input_samples=("DY10to50" "DY50plus" "topDIL" "Wbb" "ttW" "ttZ" "WWW" "TTWW" "TTG" "ZZZ" "WZZ" "WWZ" "WWG" "WW_mg" "WZtollqq_mg" "WZtoqqln_mg" "WZtollln_mg" "ZZtollnn_mg" "ZZtollqq_mg" "ZZtollll_mg" "Zbb" "HtoWW" "ggHtoZZ" "Wtollln_new" "ttbar" "Wjets")
+
+    #declare -a input_samples=("WW_mg" "WZtollqq_mg" "WZtoqqln_mg" "WZtollln_mg" "ZZtollnn_mg" "ZZtollqq_mg" "ZZtollll_mg" "Zbb" "HtoWW" "ggHtoZZ" "Wtollln_new") #cms5
+    declare -a input_samples=("Zbb") #cms6
+
     source submit.sh $1
 fi
     
@@ -36,11 +44,13 @@ then
     skinput="True"
     stream="muon"
     useskim="DiLep"
-    outputdir=$LQANALYZER_DIR"/data/output/trilepton/mumumu/TTL/weighted/MCTruth/period/"
+    #outputdir=$LQANALYZER_DIR"/data/output/trilepton/mumumu/TTL/weighted/MCTruth/period/"
     #outputdir=$LQANALYZER_DIR"/data/output/trilepton/mumumu/TTT/period/"
+    outputdir=$LQANALYZER_DIR"/data/output/trilepton/mumumu_dXY_0p2_dZ_0p5/TTT/period/"
+    #outputdir=$LQANALYZER_DIR"/data/output/trilepton/mumumu_dXY_0p01_dZ_0p5/FR_weigthed/"
     #outputdir=$LQANALYZER_DIR"/"
     #### JOB CONFIGURATION
-    njobs=15
+    njobs=5
     data_lumi="AtoD"
     loglevel="INFO"
     logstep=1000

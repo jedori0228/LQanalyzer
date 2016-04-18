@@ -117,10 +117,10 @@ SKDY50plus_15_nocut       8382.401      /data1/LocalNtuples/Tag27_CMSSW_5_3_20/S
 #SKmuon		 C	/data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/Data/DoubleMuon/periodC/
 #SKmuon		 D	/data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/Data/DoubleMuon/periodD/
 
-SKmuon    A  /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/Oct15/Data/DoubleMuon/periodA/
-SKmuon    B  /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/Oct15/Data/DoubleMuon/periodB/
-SKmuon    C  /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/Oct15/Data/DoubleMuon/periodC/
-SKmuon    D  /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/Oct15/Data/DoubleMuon/periodD/
+SKmuon    A  /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/Data/DoubleMuon/periodA/
+SKmuon    B  /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/Data/DoubleMuon/periodB/
+SKmuon    C  /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/Data/DoubleMuon/periodC/
+SKmuon    D  /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/Data/DoubleMuon/periodD/
 
 SKegamma	 A	/data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/Data/DoubleElectron/periodA/
 SKegamma	 B	/data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/Data/DoubleElectron/periodB/
@@ -137,10 +137,10 @@ SKemu		 D	/data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/Data/ElectronM
 #SKsinglemuon	 C	/data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/Data/SingleMuon/periodC/
 #SKsinglemuon	 D	/data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/Data/SingleMuon/periodD/
 
-SKsinglemuon   A  /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/Oct15/Data/SingleMuon/periodA/
-SKsinglemuon   B  /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/Oct15/Data/SingleMuon/periodB/
-SKsinglemuon   C  /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/Oct15/Data/SingleMuon/periodC/
-SKsinglemuon   D  /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/Oct15/Data/SingleMuon/periodD/
+SKsinglemuon   A  /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/Data/SingleMuon/periodA/
+SKsinglemuon   B  /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/Data/SingleMuon/periodB/
+SKsinglemuon   C  /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/Data/SingleMuon/periodC/
+SKsinglemuon   D  /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/Data/SingleMuon/periodD/
 
 SKsingleelectron A	/data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/Data/SingleElectron/periodA/
 SKsingleelectron B	/data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/Data/SingleElectron/periodB/
@@ -156,8 +156,8 @@ SKsingleelectron D	/data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/Data/
 ### MADGRAPH
 #SKDY10to50        2901.7         /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/DY10to50/
 #SKDY50plus        8693.5         /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/DY50plus/
-SKDY10to50        2901.7         /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/Oct15/MC/DY10to50/
-SKDY50plus        8693.5         /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/Oct15/MC/DY50plus/
+SKDY10to50        2901.7         /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/DY10to50/
+SKDY50plus        8693.5         /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/DY50plus/
 SKDY10to50_15       2827.096        /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/Aug15/MC/DY10to50_15/
 SKDY50plus_15       8382.401      /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/Aug15/MC/DY50plus_15/
 SKZbb             147000         /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/Zbb/
@@ -171,8 +171,7 @@ SKttbar_matchingup   158474.37        /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKT
 SKttbar_scaledown    161438.73        /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/Aug15/MC/ttbar_scaledown/
 SKttbar_scaleup      170377.21        /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/Aug15/MC/ttbar_scaleup/
 SKttbar_width_x5     57792.39         /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/Aug15/MC/ttbar_width_x5/
-#SKttbar_central       1.              /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/Aug15/MC/ttbar_central/
-SKttbar_central      262243.375       /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/Oct15/MC/ttbar_central/
+SKttbar_central       1.              /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/Aug15/MC/ttbar_central/
 
 
 ### POWHEG
@@ -188,7 +187,7 @@ SKZ4Jets          277455.84      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/
 
 ### Wjets ###
 #SKWjets           1538.562       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/Wjets/
-SKWjets           1538.562       /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/Oct15/MC/Wjets/
+SKWjets           1538.562       /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/Wjets/
 SKWbb             517443.59      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/Wbb/
 SKW1Jets          3781.307       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/W1Jets/
 SKW2Jets          18803.881      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/W2Jets/
@@ -205,15 +204,20 @@ SKttbar           29588.256      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/
 #SKst_sch          68591.293      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/st_tch/
 #SKst_tch          66635.23       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/st_tch/
 #SKst_tW           44834.054      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/st_tW/
-SKstbar_sch       79530.6821     /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/Oct15/MC/stbar_sch/
-SKstbar_tch       63031.661      /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/Oct15/MC/stbar_tch/
-SKstbar_tW        44455.856      /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/Oct15/MC/stbar_tW/
-SKst_sch          68591.293      /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/Oct15/MC/st_tch/
-SKst_tch          66635.23       /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/Oct15/MC/st_tch/
-SKst_tW           44834.054      /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/Oct15/MC/st_tW/
+SKstbar_sch       79530.6821     /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/stbar_sch/
+SKstbar_tch       63031.661      /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/stbar_tch/
+SKstbar_tW        44455.856      /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/stbar_tW/
+SKst_sch          68591.293      /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/st_tch/
+SKst_tch          66635.23       /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/st_tch/
+SKst_tW           44834.054      /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/st_tW/
 SKtopDIL          461277.43      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/topDIL/
 SKtopHAD          460656.55      /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/topHAD/
 SKtopLJ           93722.93       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/topLJ/
+
+SKttbarMSpow   85713.03906   /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/ttbar_pow/
+SKttbarMS      245371.375    /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/ttbarMS/
+SKttbarMS_chs  245371.375    /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/ttbarMSchs/
+
 
 ### Diboson ###
 ### PYTHIA
@@ -247,7 +251,7 @@ SKHtoWW           769720.          /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTree
 SKZgamma          49684.472       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/Zgamma/
 SKWgammaE         156730.       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/WgammaE/
 #SKWgamma          10403.722       /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/Wgamma/
-SKWgamma          10403.722       /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/Oct15/MC/Wgamma/
+SKWgamma          10403.722       /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/Wgamma/
 SKWgammaMu        156730.         /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/WgammaMu/
 SKWgammaTau       148800.         /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/WgammaTau/
 SKSSWmWm          1084518.452     /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MC/SSWmWm/
@@ -742,3 +746,16 @@ SKHN500_mumumu_new 91996320.14 /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/Ju
 SKHN700_mumumu_new 414937759.33  /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN700_mumumu_PU/
 SKHN1000_mumumu_new 2393489707.99  /data1/LocalNtuples/Tag27_CMSSW_5_3_14/SKTrees/June14v2/MCNoCut/HN1000_mumumu_PU/
 
+#QCD single mu enriched
+SKQCD_15-20_mu 1 /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/QCD_15-20_mu/
+SKQCD_20-30_mu 1 /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/QCD_20-30_mu/
+SKQCD_30-50_mu 1 /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/QCD_30-50_mu/
+SKQCD_50-80_mu 1 /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/QCD_50-80_mu/
+SKQCD_80-120_mu 1 /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/QCD_80-120_mu/
+SKQCD_120-170_mu 1 /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/QCD_120-170_mu/
+SKQCD_170-300_mu 1 /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/QCD_170-300_mu/
+SKQCD_300-470_mu 1 /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/QCD_300-470_mu/
+SKQCD_470-600_mu 1 /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/QCD_470-600_mu/
+SKQCD_600-800_mu 1 /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/QCD_600-800_mu/
+SKQCD_800-1000_mu 1 /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/QCD_800-1000_mu/
+SKQCD_1000_mu 1 /data1/LocalNtuples/Tag27_CMSSW_5_3_20/SKTrees/April16/MC/QCD_1000_mu/

@@ -36,14 +36,25 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   if(!PassBasicEventCuts()) return; //FIXME Do we need this?
   FillCutFlow("EventCut", weight);
   
-  std::vector<TString> triggerlist_Mu5, triggerlist_Mu8, triggerlist_Mu17;
-  triggerlist_Mu5.push_back("HLT_Mu5_v");
+  std::vector<TString> triggerlist_Mu8, triggerlist_Mu17;
+  std::vector<TString> triggerlist_Mu5, triggerlist_Mu12, triggerlist_Mu24;
+  
   triggerlist_Mu8.push_back("HLT_Mu8_v");
   triggerlist_Mu17.push_back("HLT_Mu17_v");
 
-  //if( !PassTrigger(triggerlist_Mu5,prescale) ) return;
-  //FillHist("Mu5", 0, 1, 0, 1, 1);
-    
+  triggerlist_Mu5.push_back("HLT_Mu5_v");
+  triggerlist_Mu12.push_back("HLT_Mu12_v");
+  triggerlist_Mu24.push_back("HLT_Mu24_v");
+  
+
+  //if( PassTrigger(triggerlist_Mu5,prescale)  ) FillHist("HLT_Mu5_v", 0, 1, 0, 1, 1);
+  //if( PassTrigger(triggerlist_Mu12,prescale)  ) FillHist("HLT_Mu12_v", 0, 1, 0, 1, 1); 
+  //if( PassTrigger(triggerlist_Mu24,prescale)  ) FillHist("HLT_Mu24_v", 0, 1, 0, 1, 1);
+  //return;
+
+  //ListTriggersAvailable();
+  //return;
+
   if (!eventbase->GetEvent().HasGoodPrimaryVertex()) return; 
   FillCutFlow("VertexCut", weight);
   
@@ -90,40 +101,37 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   // should remove the loosest leptons in the analysis
   eventbase->GetJetSel()->JetSelectionLeptonVeto(jetColl_lepveto, AnalyzerCore::GetMuons("veto"), AnalyzerCore::GetElectrons(false,false, "veto") );
 
+
+  if( !PassTrigger(triggerlist_Mu8,prescale) && !PassTrigger(triggerlist_Mu17,prescale) ) return;
+  float prescale_trigger = GetPrescale(muontriLooseColl, PassTrigger(triggerlist_Mu8,prescale), PassTrigger(triggerlist_Mu17,prescale));
+
+  weight *= prescale_trigger;
+
+
+  float etaarray [] = {0.0,0.8,1.479,2.0,2.5};
+  float ptarray [] = {10.,15.,20.,25.,30.,35.,45.,60.,80.,100.};
+
 /*
   /////////////////////////////////////////////////////
   ///////////// back-to-back dijet topology ///////////
   /////////////////////////////////////////////////////
 
   // tag jet collections
-  //   std::vector<snu::KJet> jetColl = GetJets("fakerate");
+  std::vector<snu::KJet> jetColl = GetJets("HNtriFRTagJet");
 
   if(jetColl.size() == 0) return;
 
   if(muontriLooseColl.size() != 1) return;
 
-  if( !PassTrigger(triggerlist_Mu8,prescale) && !PassTrigger(triggerlist_Mu17,prescale) ) return;
-  //if( ! (PassTrigger(triggerlist_Mu8,prescale) && !PassTrigger(triggerlist_Mu17,prescale)) ) return;
-
   //snu::KEvent Evt = eventbase->GetEvent();
   //double MET = Evt.PFMET();
   //if( MET < 40 ) return; // Let Wjets dominate
-
-  float prescale_trigger = GetPrescale(muontriLooseColl, PassTrigger(triggerlist_Mu8,prescale), PassTrigger(triggerlist_Mu17,prescale));
-
-  FillHist("prescale_trigger", prescale_trigger, 1, 0, 1, 10000);
-  
-  //cout << prescale_trigger << endl;
-  weight *= prescale_trigger;  
 
   snu::KParticle muon;
   muon = muontriLooseColl.at(0);
   muon.SetPxPyPzE(muon.Px(),muon.Py(),muon.Pz(),muon.E());
 
   float dR=999.9, dPhi=999.9, ptmu_ptjet=999.9;
-
-  float etaarray [] = {0.0,0.8,1.479,2.0,2.5};
-  float ptarray [] = {10.,15.,20.,25.,30.,35.,45.,60.,80.,100.};
 
   for(unsigned int i=0; i<jetColl.size(); i++){
     dR = jetColl.at(i).DeltaR(muon);
@@ -159,7 +167,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
 */
 
 
-
+/*
   //////////////////////////////////////
   ///////////// use MC Turth ///////////
   //////////////////////////////////////
@@ -177,14 +185,6 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   //if( muon.GetType() == 1 || muon.GetType() == 2 || muon.GetType() == 3 ) return;
   if( muon.GetType() == 0 ) return;
 
-  if( !PassTrigger(triggerlist_Mu8,prescale) && !PassTrigger(triggerlist_Mu17,prescale) ) return;
-
-  float prescale_trigger = GetPrescale(muontriLooseColl, PassTrigger(triggerlist_Mu8,prescale), PassTrigger(triggerlist_Mu17,prescale));
-  weight *= prescale_trigger;
-
-  float etaarray [] = {0.0,0.8,1.479,2.0,2.5};
-  float ptarray [] = {10.,15.,20.,25.,30.,35.,45.,60.,80.,100.};
-
   FillHist("eta_den", muon.Eta(), weight, -3, 3, 30);
   FillHist("pt_den", muon.Pt(), weight, 0., 200., 200./1.);
   FillHist("events_den", muon.Pt(), fabs(muon.Eta()), weight, ptarray, 9, etaarray, 4);
@@ -198,6 +198,75 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
     FillHist("n_jets_num", n_jets, 1, 0, 15, 15);
     FillHist("HT_num", HT, weight, 0, 300, 300);
   }
+*/
+
+/*
+  ////////////////////////////////////////////////
+  ///////////// impact parameter study ///////////
+  ////////////////////////////////////////////////
+
+  if( !PassTrigger(triggerlist_Mu8,prescale) && !PassTrigger(triggerlist_Mu17,prescale) ) return;
+  float prescale_trigger = GetPrescale(muontriLooseColl, PassTrigger(triggerlist_Mu8,prescale), PassTrigger(triggerlist_Mu17,prescale));
+
+  weight *= prescale_trigger;
+
+  vector<snu::KMuon> selected_muons;
+  FillHist("events", 0, weight, 0, 2, 2);
+  for(unsigned int i=0; i<muontriLooseColl.size(); i++){
+    snu::KMuon thismuon = muontriLooseColl.at(i);
+    float LeptonRelIso = (thismuon.SumIsoCHDR03() + std::max(0.0, thismuon.SumIsoNHDR03() + thismuon.SumIsoPHDR03() - 0.5* thismuon.SumPUIsoR03()))/thismuon.Pt() ;
+    FillHist("reliso", LeptonRelIso, weight, 0, 0.6, 0.6/0.01);
+    FillHist("dXY", fabs( thismuon.dXY() ), weight, 0, 0.2, 0.2/0.01);
+    FillHist("dXYPat", fabs( thismuon.dXYPat() ), weight, 0, 0.2, 0.2/0.01);
+    FillHist("dXYPat_over_dXYErrPat", fabs( thismuon.dXYPat()/thismuon.dXYErrPat() ), weight, 0, 5, 5./0.1);
+    FillHist("D0", fabs( thismuon.D0() ), weight, 0, 0.2, 0.2/0.01);
+    FillHist("D0_over_D0Err", fabs( thismuon.D0()/thismuon.D0Err() ), weight, 0, 5, 5./0.1);
+    if(    0.02 < fabs( thismuon.D0() )
+        &&        fabs( thismuon.D0() ) < 1 
+        && 3.0 < fabs( thismuon.D0()/thismuon.D0Err() )
+        &&       fabs( thismuon.D0()/thismuon.D0Err() ) < 5.0 ){
+
+      selected_muons.push_back(thismuon);
+
+    }
+  }
+
+  if(selected_muons.size() != 0){
+    FillHist("events", 1, weight, 0, 2, 2);
+  }
+
+
+  if(selected_muons.size() == 1){
+    snu::KParticle muon = selected_muons.at(0);
+    FillHist("eta_F0", muon.Eta(), weight, -3, 3, 30);
+    FillHist("pt_F0", muon.Pt(), weight, 0., 200., 200./1.);
+    FillHist("events_F0", muon.Pt(), fabs(muon.Eta()), weight, ptarray, 9, etaarray, 4);
+    if(muontriTightColl.size() == 1){
+      FillHist("eta_F", muon.Eta(), weight, -3, 3, 30);
+      FillHist("pt_F", muon.Pt(), weight, 0., 200., 200/1.);
+      FillHist("events_F", muon.Pt(), fabs(muon.Eta()), weight, ptarray, 9, etaarray, 4);
+    }
+  }
+*/
+
+
+  ///////////////////////////////////////////////
+  ///////////// large dXY muon method ///////////
+  ///////////////////////////////////////////////
+
+  if( muontriLooseColl.size() != 1) return;
+  snu::KMuon muon = muontriLooseColl.at(0); 
+    
+  FillHist("eta_F0", muon.Eta(), weight, -3, 3, 30);
+  FillHist("pt_F0", muon.Pt(), weight, 0., 200., 200./1.);
+  FillHist("events_F0", muon.Pt(), fabs(muon.Eta()), weight, ptarray, 9, etaarray, 4);
+  if(muontriTightColl.size() == 1){
+    FillHist("eta_F", muon.Eta(), weight, -3, 3, 30);
+    FillHist("pt_F", muon.Pt(), weight, 0., 200., 200/1.);
+    FillHist("events_F", muon.Pt(), fabs(muon.Eta()), weight, ptarray, 9, etaarray, 4);
+  }
+
+
 
   return;
 }// End of execute event loop

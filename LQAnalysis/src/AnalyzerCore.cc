@@ -127,7 +127,7 @@ std::vector<snu::KJet> AnalyzerCore::GetJets(TString label){
     eventbase->GetJetSel()->SetEta(2.5);
     eventbase->GetJetSel()->JetSelectionLeptonVeto(jetColl, GetMuons("veto"), GetElectrons(false,false, "veto"));
   }
-  else  if(label.Contains("fakerate")){
+  else  if(label.Contains("HNtriFRTagJet")){
 		eventbase->GetJetSel()->SetID(BaseSelection::PFJET_LOOSE);
 		eventbase->GetJetSel()->SetPt(40.);
 		eventbase->GetJetSel()->SetEta(3.0);
@@ -3350,7 +3350,13 @@ vector<TLorentzVector> AnalyzerCore::MakeTLorentz(vector<snu::KJet> j){
   return tl_jet;
 }
 
-
+void AnalyzerCore::ListTriggersAvailable(){
+  cout << "Set of triggers you can use are: " << endl;
+  for(unsigned int i=0; i < eventbase->GetTrigger().GetHLTInsideDatasetTriggerNames().size(); i++){
+    cout << eventbase->GetTrigger().GetHLTInsideDatasetTriggerNames().at(i)<< " has prescale " << eventbase->GetTrigger().GetHLTInsideDatasetTriggerPrescales().at(i)<< endl;
+  }
+  return;
+}
 
 
 

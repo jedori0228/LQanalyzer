@@ -54,10 +54,10 @@ TriLeptonPlots::TriLeptonPlots(TString name){
   map_sig["h_leadingLepton_dXY"] = new TH1F("h_leadingLepton_dXY_"+name, "leading lepton dXY", 1000, 0, 0.1);
   map_sig["h_secondLepton_dXY"] = new TH1F("h_secondLepton_dXY_"+name, "secondary lepton dXY", 1000, 0, 0.1);
   map_sig["h_thirdLepton_dXY"] = new TH1F("h_thirdLepton_dXY_"+name, "thirdary lepton dXY", 1000, 0, 0.1);
-  map_sig["h_dZ"] = new TH1F("h_dZ_"+name, "lepton dZ", 1000, 0, 0.1);
-  map_sig["h_leadingLepton_dZ"] = new TH1F("h_leadingLepton_dZ_"+name, "leading lepton dZ", 1000, 0, 0.1);
-  map_sig["h_secondLepton_dZ"] = new TH1F("h_secondLepton_dZ_"+name, "secondary lepton dZ", 1000, 0, 0.1);
-  map_sig["h_thirdLepton_dZ"] = new TH1F("h_thirdLepton_dZ_"+name, "thirdary lepton dZ", 1000, 0, 0.1);
+  map_sig["h_dZ"] = new TH1F("h_dZ_"+name, "lepton dZ", 5000, 0, 0.5);
+  map_sig["h_leadingLepton_dZ"] = new TH1F("h_leadingLepton_dZ_"+name, "leading lepton dZ", 5000, 0, 0.5);
+  map_sig["h_secondLepton_dZ"] = new TH1F("h_secondLepton_dZ_"+name, "secondary lepton dZ", 5000, 0, 0.5);
+  map_sig["h_thirdLepton_dZ"] = new TH1F("h_thirdLepton_dZ_"+name, "thirdary lepton dZ", 5000, 0, 0.5);
   map_sig["h_GlobalChi2"] = new TH1F("h_GlobalChi2_"+name, "lepton GlobalChi2", 100, 0, 100);
   map_sig["h_leadingLepton_GlobalChi2"] = new TH1F("h_leadingLepton_GlobalChi2_"+name, "leading lepton GlobalChi2", 100, 0, 100);
   map_sig["h_secondLepton_GlobalChi2"] = new TH1F("h_secondLepton_GlobalChi2_"+name, "secondary lepton GlobalChi2", 100, 0, 100);

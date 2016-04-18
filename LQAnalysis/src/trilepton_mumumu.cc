@@ -38,11 +38,14 @@ sol_sel_chi2_best(0), sol_sel_chi2_plus(0), sol_sel_chi2_minus(0), sol_sel_chi2_
   //
   // This function sets up Root files and histograms Needed in ExecuteEvents
   InitialiseAnalysis();
-
-  //TFile* file = new TFile("/home/jskim/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/rootfiles/8TeV_trimuon_FR_dijet_dijet_topology.root");
-  //hist_trimuon_FR = (TH2F*)file->Get("events_F")->Clone();
-  TFile* file = new TFile("/home/jskim/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/rootfiles/8TeV_trimuon_FR_MCTruth_ttbar.root");
-  hist_trimuon_FR = (TH2F*)file->Get("events_num")->Clone();
+  
+  //dXY_0p005_dZ_0p1
+  //dXY_0p01_dZ_0p5
+  //dXY_0p2_dZ_0p5
+  TFile* file = new TFile("/home/jskim/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/rootfiles/8TeV_trimuon_FR_dXY_0p01_dZ_0p5_dijet_topology.root");
+  hist_trimuon_FR = (TH2F*)file->Get("events_F")->Clone();
+  //TFile* file = new TFile("/home/jskim/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/rootfiles/8TeV_trimuon_FR_MCTruth_ttbar.root");
+  //hist_trimuon_FR = (TH2F*)file->Get("events_num")->Clone();
 }
 
 
@@ -196,29 +199,42 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
 */
 
   if( n_triLoose_muons != 3 ) return;
-  // 0 : LLL
-  // 1 : TLL
-  // 2 : TTL
-  // 3 : TTT(signal region)
-  int n_tight = 2;
-  if( n_triTight_muons != n_tight ) return;
+  //for TTT
+  if( n_triTight_muons != 3 ) return;
 
   FillCutFlow("3muon", weight);
 
   snu::KParticle lep[3], HN[4];
+  vector<double> FR_muon;
   for(int i=0;i<3;i++){
     lep[i] = muontriLooseColl.at(i);
+    if( !eventbase->GetMuonSel()->HNIstriTight(muontriLooseColl.at(i) , false) ){
+      FR_muon.push_back( get_FR(lep[i]) ); 
+    }
   }
 
+/*
+  // fake method weighting
+  if( n_triTight_muons == 3 ) return; // return TTT case
+  for(unsigned int i=0; i<FR_muon.size(); i++){
+    weight *= FR_muon.at(i)/( 1.-FR_muon.at(i) );
+  }
+  if( FR_muon.size() == 2 ) weight *= -1.; // minus sign for TLL
+*/
+/*
+  if( n_triTight_muons == 0 ) weight *= FR_muon.at(0)*FR_muon.at(1)*FR_muon.at(2)/( (1.-FR_muon.at(0))*(1.-FR_muon.at(1))*(1.-FR_muon.at(2)) ); // LLL
+  else if ( n_triTight_muons == 1) weight *= -FR_muon.at(0)*FR_muon.at(1)/( (1.-FR_muon.at(0))*(1.-FR_muon.at(1)) ); // TLL
+  else if ( n_triTight_muons == 2) weight *= FR_muon.at(0)/(1.-FR_muon.at(0)); // TTL
+  else return; // return TTT event
+*/
+/*
   double FR_muon[3];
   for(int i=0; i<3; i++) FR_muon[i] = get_FR(lep[i]);
-
-
-  // fake method weighting
-  if( n_tight == 0 ) weight *= FR_muon[0]*FR_muon[1]*FR_muon[2]/( (1.-FR_muon[0])*(1.-FR_muon[1])*(1.-FR_muon[2]) ) ;
-  else if ( n_tight == 1) weight *= -FR_muon[1]*FR_muon[2]/( (1.-FR_muon[1])*(1.-FR_muon[2]) );
-  else if ( n_tight == 2) weight *= FR_muon[2]/(1.-FR_muon[2]);
-  else{}
+  if( n_triTight_muons == 0 ) weight *= FR_muon[0]*FR_muon[1]*FR_muon[2]/( (1.-FR_muon[0])*(1.-FR_muon[1])*(1.-FR_muon[2]) ); // LLL
+  else if ( n_triTight_muons == 1) weight *= -FR_muon[1]*FR_muon[2]/( (1.-FR_muon[1])*(1.-FR_muon[2]) ); // TLL
+  else if ( n_triTight_muons == 2) weight *= FR_muon[2]/(1.-FR_muon[2]); // TTL
+  else return; // return TTT event
+*/
 
 
   // MC samples has m(ll)_saveflavour > 4 GeV cut at gen level
@@ -249,7 +265,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     }
   } // Find l2 and assign l1&l3 in ptorder 
   FillCutFlow("2SS1OS", weight);
-  //if(k_sample_name.Contains("HN")) gen_matching();
+  if(k_sample_name.Contains("HN")) gen_matching();
 
   ///////////////////////////////////////////
   ////////// m(HN) < 80 GeV region //////////
@@ -426,6 +442,12 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
       FillHist("n_jets_cutdR_cutW_PU", n_jets, weight*pileup_reweight, 0, 10, 10);
       FillCLHist(trilephist, "cutdR_cutW_PU", eventbase->GetEvent(), muontriLooseColl, electronTightColl, jetColl_lepveto, weight*pileup_reweight);
       FillHist("n_events_cutdR_cutW_PU", 0, weight*pileup_reweight, 0, 1, 1);
+
+      if( n_jets == 0 ){
+        FillCLHist(trilephist, "cutdR_cutW_cutnjet", eventbase->GetEvent(), muontriLooseColl, electronTightColl, jetColl_lepveto, weight);
+        FillCLHist(trilephist, "cutdR_cutW_cutnjet_PU", eventbase->GetEvent(), muontriLooseColl, electronTightColl, jetColl_lepveto, weight*pileup_reweight);
+      }
+
     }
   }
 
