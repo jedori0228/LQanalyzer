@@ -109,14 +109,15 @@ then
     data_lumi="AtoD"
     loglevel="INFO"
     logstep=1000
-    stream="muon"
+    #stream="muon"
+    stream="muon_lowpt"
     #stream="singlemuon"
     nevents=-1
     #outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/dijet_topology/dXY_0p01_dZ_0p5/period/"
     outputdir=$LQANALYZER_DIR"/"
     
-    declare -a input_samples=("A" "B" "C" "D")
-    #declare -a input_samples=("A")
+    #declare -a input_samples=("A" "B" "C" "D")
+    declare -a input_samples=("D")
 
     source submit.sh $1
 
