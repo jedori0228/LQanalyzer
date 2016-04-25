@@ -42,7 +42,7 @@ sol_sel_chi2_best(0), sol_sel_chi2_plus(0), sol_sel_chi2_minus(0), sol_sel_chi2_
   //dXY_0p005_dZ_0p1
   //dXY_0p01_dZ_0p5
   //dXY_0p2_dZ_0p5
-  TFile* file = new TFile("/home/jskim/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/rootfiles/8TeV_trimuon_FR_dXY_0p01_dZ_0p5_dijet_topology.root");
+  TFile* file = new TFile("/data4/LQAnalyzerCode/jskim/LQanalyzer/data/rootfiles/8TeV_trimuon_FR_dXY_0p01_dZ_0p5_dijet_topology.root");
   hist_trimuon_FR = (TH2F*)file->Get("events_F")->Clone();
   //TFile* file = new TFile("/home/jskim/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/rootfiles/8TeV_trimuon_FR_MCTruth_ttbar.root");
   //hist_trimuon_FR = (TH2F*)file->Get("events_num")->Clone();
@@ -66,7 +66,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
 
   m_logger << DEBUG << "RunNumber/Event Number = "  << eventbase->GetEvent().RunNumber() << " : " << eventbase->GetEvent().EventNumber() << LQLogger::endmsg;
   m_logger << DEBUG << "isData = " << isData << LQLogger::endmsg;
-  
+
   /// FillCutFlow(cut, weight) fills a basic TH1 called cutflow. It is used to check number of events passing different cuts
   /// The string cut must match a bin label in FillCutFlow function
   FillCutFlow("NoCut", weight);
@@ -199,9 +199,11 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
 */
 
   if( n_triLoose_muons != 3 ) return;
+
   //for TTT
   if( n_triTight_muons != 3 ) return;
 
+  if( muontriLooseColl.at(0).Pt() < 15 ) return;
   FillCutFlow("3muon", weight);
 
   snu::KParticle lep[3], HN[4];
@@ -442,6 +444,15 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
       FillHist("n_jets_cutdR_cutW_PU", n_jets, weight*pileup_reweight, 0, 10, 10);
       FillCLHist(trilephist, "cutdR_cutW_PU", eventbase->GetEvent(), muontriLooseColl, electronTightColl, jetColl_lepveto, weight*pileup_reweight);
       FillHist("n_events_cutdR_cutW_PU", 0, weight*pileup_reweight, 0, 1, 1);
+
+      FillHist("CHECK_first_pt", lep[0].Pt(), 1,  10, 60, 50);
+      FillHist("CHECK_second_pt", lep[1].Pt(), 1, 10, 60, 50);
+      FillHist("CHECK_third_pt", lep[2].Pt(), 1,  10, 60, 50);
+      cout
+      << "jskim : " << eventbase->GetEvent().EventNumber() << endl
+      << " lep[0].Pt() = " << lep[0].Pt() << endl
+      << " lep[1].Pt() = " << lep[0].Pt() << endl
+      << " lep[2].Pt() = " << lep[0].Pt() << endl;
 
       if( n_jets == 0 ){
         FillCLHist(trilephist, "cutdR_cutW_cutnjet", eventbase->GetEvent(), muontriLooseColl, electronTightColl, jetColl_lepveto, weight);

@@ -108,10 +108,10 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   weight *= prescale_trigger;
 
 
-  float etaarray [] = {0.0,0.8,1.479,2.0,2.5};
-  float ptarray [] = {10.,15.,20.,25.,30.,35.,45.,60.,80.,100.};
+  float etaarray [] = {0.0, 0.8, 1.479, 2.0, 2.5};
+  float ptarray [] = {10., 11., 12., 13., 14., 15.};
 
-/*
+
   /////////////////////////////////////////////////////
   ///////////// back-to-back dijet topology ///////////
   /////////////////////////////////////////////////////
@@ -148,13 +148,13 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
           double HT_tag = AnalyzerCore::SumPt(jetColl);
           FillHist("eta_F0", muon.Eta(), weight, -3, 3, 30);
           FillHist("pt_F0", muon.Pt(), weight, 0., 200., 200./1.);
-          FillHist("events_F0", muon.Pt(), fabs(muon.Eta()), weight, ptarray, 9, etaarray, 4);
+          FillHist("events_F0", muon.Pt(), fabs(muon.Eta()), weight, ptarray, 5, etaarray, 4);
           FillHist("HT_loose_F0", HT_loose, weight, 0, 300, 300);
           FillHist("HT_tag_F0", HT_tag, weight, 0, 300, 300);
           if(muontriTightColl.size() == 1){
             FillHist("eta_F", muon.Eta(), weight, -3, 3, 30);
             FillHist("pt_F", muon.Pt(), weight, 0., 200., 200/1.);
-            FillHist("events_F", muon.Pt(), fabs(muon.Eta()), weight, ptarray, 9, etaarray, 4);
+            FillHist("events_F", muon.Pt(), fabs(muon.Eta()), weight, ptarray, 5, etaarray, 4);
             FillHist("HT_loose_F", HT_loose, weight, 0, 300, 300);
             FillHist("HT_tag_F", HT_tag, weight, 0, 300, 300);
           }
@@ -164,7 +164,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
     }
   }
   stop: ;
-*/
+
 
 
 /*
@@ -249,7 +249,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   }
 */
 
-
+/*
   ///////////////////////////////////////////////
   ///////////// large dXY muon method ///////////
   ///////////////////////////////////////////////
@@ -265,7 +265,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
     FillHist("pt_F", muon.Pt(), weight, 0., 200., 200/1.);
     FillHist("events_F", muon.Pt(), fabs(muon.Eta()), weight, ptarray, 9, etaarray, 4);
   }
-
+*/
 
 
   return;

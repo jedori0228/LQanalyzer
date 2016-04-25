@@ -1,7 +1,7 @@
 #!/bin/sh
 
-runData=false
-runMC=true
+runData=true
+runMC=false
 runQCD=false
 runQCD2=false
 
@@ -105,7 +105,8 @@ then
     skinput="True"
     #skinput="False"
 
-    njobs=5
+    njobs=30
+    usebatch="True"
     data_lumi="AtoD"
     loglevel="INFO"
     logstep=1000
@@ -114,7 +115,7 @@ then
     #stream="singlemuon"
     nevents=-1
     #outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/dijet_topology/dXY_0p01_dZ_0p5/period/"
-    outputdir=$LQANALYZER_DIR"/"
+    outputdir="/data4/LQAnalyzerCode/jskim/LQanalyzer/data/output/MuonFakes/"
     
     #declare -a input_samples=("A" "B" "C" "D")
     declare -a input_samples=("D")
