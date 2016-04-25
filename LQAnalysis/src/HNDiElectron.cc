@@ -463,19 +463,6 @@ void HNDiElectron::ExecuteEvents()throw( LQError ){
     ee_weight_method_pteta_60  *= Get_DataDrivenWeight_EE(electronAnalysisColl, jetColl_lepveto_mva,  eventbase->GetEvent().JetRho(), true, 0.01, 0.09, 0.05, "method1_pt_eta_60_" + reg, 0);
 
     
-    if(electronAnalysisColl.size() == 2){
-      if(nbjet == 0){
-	if(electronAnalysisColl.at(1).Pt() < 20.){
-	  if(fabs(electronAnalysisColl.at(1).Eta()) < 1.5){
-	    ee_weight_method_pteta_40 *= 1.5;
-	    weight *= 1.5;
-	    ee_weight_up *= 1.5;
-	    ee_weight_down *= 1.5;
-	  }
-	}
-      }
-    }
-
     
     TString cl1 ="";
     TString cl2 ="";
@@ -705,27 +692,26 @@ void HNDiElectron::ExecuteEvents()throw( LQError ){
     FillEventCutFlow("DiJet","",weight);
 
     FillHist("SSee_DiJet_np_staterr", 1.,  0., 2.,2);
+
+    if(jetColl_lepveto_mva.size() > 3 ) {
+      bool has_forward_jet(false), has_back_jet(false);
+      for(unsigned int ij = 0 ; ij < jetColl_lepveto_mva.size(); ij++){
+	if(jetColl_lepveto_mva.at(ij).Eta() > 1.5) has_forward_jet=true;
+	if(jetColl_lepveto_mva.at(ij).Eta() < -1.5) has_back_jet=true;
+	cout << "Passes selection ll jjjj " << endl;
+	for(unsigned int ij1=0; ij1 < jetColl_lepveto_mva.size(); ij1++){
+	  cout << jetColl_lepveto_mva.at(ij1).Eta() << endl;
+	}
+      }
+      if(has_forward_jet && has_back_jet) FillCLHist(sighist, "TChannel", eventbase->GetEvent(), muonVetoColl,electronAnalysisColl,jetColl_lepveto_mva, weight);
+    }
+    
     if(!Zcandidate(electronAnalysisColl, 10., false)){
       
       FillCLHist(sighist, "Preselection", eventbase->GetEvent(), muonVetoColl,electronAnalysisColl,jetColl_lepveto_mva, weight);
       FillEventCutFlow("Presel","",weight);
 
-
-      if(jetColl_lepveto_mva.size() > 3 ) {
-        bool has_forward_jet(false), has_back_jet(false);
-	for(unsigned int ij = 0 ; ij < jetColl_lepveto_mva.size(); ij++){
-          if(jetColl_lepveto_mva.at(ij).Eta() > 1.5) has_forward_jet=true;
-          if(jetColl_lepveto_mva.at(ij).Eta() < -1.5) has_back_jet=true;
-	  cout << "Passes selection ll jjjj " << endl;
-	  for(unsigned int ij1=0; ij1 < jetColl_lepveto_mva.size(); ij1++){
-	    cout << jetColl_lepveto_mva.at(ij1).Eta() << endl;
-	  }
-        }
-        if(has_forward_jet && has_back_jet)
-	  cout << "Passes TChannel " << endl;
-	  FillCLHist(sighist, "TChannel", eventbase->GetEvent(), muonVetoColl,electronAnalysisColl,jetColl_lepveto_mva, weight);
-      }
-
+      
 
       if(nbjet==0)   FillEventCutFlow("Presel_nobjet","",weight);
       

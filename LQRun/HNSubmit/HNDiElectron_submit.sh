@@ -198,6 +198,7 @@ then
     #samples2016="True"
     #usebatch="False"
 
+
     outputdir=$LQANALYZER_DIR"/data/output/SSElectron/MC/"
     ### submit this configured job (uses bin/submit.sh)
     source submit.sh $1

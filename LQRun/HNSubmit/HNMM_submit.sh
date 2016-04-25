@@ -5,7 +5,7 @@ runmc=true
 runmc_cl=false
 runsig=false
 runfakes=true
-runflips=true
+runflips=false
 
 if [[ $1  == "NP" ]];
     then
@@ -70,7 +70,7 @@ then
     #signal
     source functions.sh
     
-    cycle="HNEMu"
+    cycle="HNDiMuon"
     skinput="True"
     useskim="NoCut"
 
@@ -83,7 +83,7 @@ then
     declare -a input_samples=("HNemu40" "HNemu50" "HNemu60" "HNemu70" "HNemu80" "HNemu90" "HNemu100" "HNemu125" "HNemu150" "HNemu175" "HNemu200" "HNemu225" "HNemu250" "HNemu275" "HNemu300" "HNemu325" "HNemu350" "HNemu375" "HNemu400" "HNemu500" "HNmue40" "HNmue50" "HNmue60" "HNmue70" "HNmue80" "HNmue90" "HNmue100" "HNmue125" "HNmue150" "HNmue175" "HNmue200" "HNmue225" "HNmue250" "HNmue275" "HNmue300" "HNmue325" "HNmue350" "HNmue375" "HNmue400" "HNmue500")
 
         
-    outputdir=$LQANALYZER_DIR"/data/output/SSElectronMuon/"
+    outputdir=$LQANALYZER_DIR"/data/output/SSMuon/"
     ### submit this configured job (uses bin/submit.sh)
     source submit.sh $1
 fi
@@ -97,7 +97,7 @@ then
 
     source functions.sh
 
-    cycle="HNEMu"
+    cycle="HNDiMuon"
     skinput="True"
     useskim="DiLep"
     
@@ -110,7 +110,7 @@ then
 
     declare -a input_samples=("WZ_py")
     runnp="True"
-    outputdir=$LQANALYZER_DIR"/data/output/SSElectronMuon/MCcl/"
+    outputdir=$LQANALYZER_DIR"/data/output/SSMuon/MCcl/"
     ### submit this configured job (uses bin/submit.sh)
     source submit.sh $1
 fi
@@ -121,7 +121,7 @@ then
 
     source functions.sh
     
-    cycle="HNEMu"
+    cycle="HNDiMuon"
     skinput="True"
     useskim="DiLep"
     
@@ -132,10 +132,10 @@ then
     logstep=1000
     declare -a input_samples=("SSWmWm" "SSWpWp" "WW_dp" "ttW" "ttZ" "WWW" "TTWW" "TTG" "ZZZ" "WZZ" "WWZ" "WWG" "WW_py" "WZ_py" "ZZ_py" "HtoWW" "HtoTauTau" "ggHtoZZ" )
 
-    outputdir=$LQANALYZER_DIR"/data/output/SSElectronMuon/MC/"
+    outputdir=$LQANALYZER_DIR"/data/output/SSMuon/MC/"
     ### submit this configured job (uses bin/submit.sh)
     source submit.sh $1
-    source hadd.sh ${LQANALYZER_DIR}/data/output/SSElectronMuon/MC/  HNEMu_mc_5_3_14.root HNEMu_*
+    source hadd.sh ${LQANALYZER_DIR}/data/output/SSMuon/MC/  HNDiMuon_mc_5_3_14.root HNDiMuon_*
 
 fi
 
@@ -147,7 +147,7 @@ then
 
     source functions.sh
 
-    cycle="HNEMu"
+    cycle="HNDiMuon"
     skinput="True"
     useskim="DiLep"
 
@@ -161,12 +161,12 @@ then
     declare -a input_samples=( "A" "B" "C" "D")
     
 
-    stream="emu"
+    stream="muon"
 
-    outputdir=$LQANALYZER_DIR"/data/output/SSElectronMuon/"
+    outputdir=$LQANALYZER_DIR"/data/output/SSMuon/"
     ### submit this configured job (uses bin/submit.sh)
     source submit.sh $1
-    source hadd.sh ${LQANALYZER_DIR}/data/output/SSElectronMuon/  HNEMu_data_5_3_14.root HNEMu_period*
+    source hadd.sh ${LQANALYZER_DIR}/data/output/SSMuon/  HNDiMuon_data_5_3_14.root HNDiMuon_period*
 fi
 
 
@@ -175,7 +175,7 @@ if [[ $runfakes  == "true" ]];
     source functions.sh
     
     ### FAKE
-    cycle="HNEMu"
+    cycle="HNDiMuon"
     skinput="True"
     useskim="DiLep"
     loglevel="INFO"
@@ -189,21 +189,21 @@ if [[ $runfakes  == "true" ]];
     runnp="True"
     declare -a input_samples=("A" "B" "C" "D")
 
-    stream="emu"
+    stream="muon"
 
-    outputdir=$LQANALYZER_DIR"/data/output/SSElectronMuon/"
+    outputdir=$LQANALYZER_DIR"/data/output/SSMuon/"
 
 
     ### submit this configured job (uses bin/submit.sh)
     source submit.sh $1
-    source hadd.sh ${LQANALYZER_DIR}/data/output/SSElectronMuon/  HNEMu_SKnonprompt_dilep_5_3_14.root HNEMu_nonprompt_period*
+    source hadd.sh ${LQANALYZER_DIR}/data/output/SSMuon/  HNDiMuon_SKnonprompt_dilep_5_3_14.root HNDiMuon_nonprompt_period*
 fi
 
 if [[ $runflips  == "true" ]];
     then
     source functions.sh
     
-    cycle="HNEMu"
+    cycle="HNDiMuon"
     skinput="True"
     useskim="DiLep"
     loglevel="INFO"
@@ -217,13 +217,13 @@ if [[ $runflips  == "true" ]];
     runcf="True"
     declare -a input_samples=("A" "B" "C" "D" )
         
-    stream="emu"
-    outputdir=$LQANALYZER_DIR"/data/output/SSElectronMuon/"
+    stream="muon"
+    outputdir=$LQANALYZER_DIR"/data/output/SSMuon/"
     
     
     ### submit this configured job (uses bin/submit.sh)
     source submit.sh $1
-    source hadd.sh ${LQANALYZER_DIR}/data/output/SSElectronMuon/  HNEMu_SKchargeflip_dilep_5_3_14.root HNEMu_chargeflip_*
+    source hadd.sh ${LQANALYZER_DIR}/data/output/SSMuon/  HNDiMuon_SKchargeflip_dilep_5_3_14.root HNDiMuon_chargeflip_*
 fi
 
 

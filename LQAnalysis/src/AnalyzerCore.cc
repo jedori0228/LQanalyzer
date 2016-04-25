@@ -136,7 +136,7 @@ std::vector<snu::KJet> AnalyzerCore::GetJets(TString label){
   else  if(label.Contains("ApplyLeptonVeto")){
     eventbase->GetJetSel()->SetID(BaseSelection::PFJET_LOOSE);
     eventbase->GetJetSel()->SetPt(20.);
-    eventbase->GetJetSel()->SetEta(5.);
+    eventbase->GetJetSel()->SetEta(2.5);
     eventbase->GetJetSel()->JetSelectionLeptonVeto(jetColl, GetMuons("veto"), GetElectrons(false,false, "veto"));
   }
   else if(label.Contains("ApplyPileUpID")){
@@ -2698,8 +2698,9 @@ void AnalyzerCore::FillCLHist(histtype type, TString hist, snu::KEvent ev,vector
     }
   }
 
-  else if(type==sighist){
-    if(!hist.Contains("TCha")) return;
+  if(!( hist.Contains("TChan"))|| (   hist.Contains("SSee_DiJet"))) return;
+  if(type==sighist){
+    
     map<TString, SignalPlots*>::iterator sigpit = mapCLhistSig.find(hist);
     if(sigpit !=mapCLhistSig.end()) sigpit->second->Fill(ev, muons, electrons, jets,w, 0.);
     else {
@@ -2988,6 +2989,13 @@ bool AnalyzerCore::SameCharge(std::vector<snu::KElectron> electrons){
   return false;
 }
 
+
+bool AnalyzerCore::SameCharge(std::vector<snu::KMuon> muons){
+
+  if(muons.size()!=2) return false;
+  if(muons.at(0).Charge() == muons.at(1).Charge()) return true;
+  return false;
+}
 int AnalyzerCore::NBJet(std::vector<snu::KJet> jets){
   
   int nbjet=0;
@@ -3195,6 +3203,21 @@ float AnalyzerCore::Get_DataDrivenWeightMC_EM(vector<snu::KMuon> k_muons, vector
      
      
    }
+
+
+   if(k_muons.size()==2){
+
+     bool is_mu1_tight    = IsTight(k_muons.at(0));
+     bool is_el1_tight    = IsTight(k_muons.at(1));
+
+
+     vector<TLorentzVector> muons=MakeTLorentz(k_muons);
+
+     em_weight =m_fakeobj->get_dilepton_mm_mceventweight(muons, is_mu1_tight,is_el1_tight, NBJet( GetJets("ApplyPileUpID")), tag);
+
+
+   }
+
    return em_weight;
 
  }
