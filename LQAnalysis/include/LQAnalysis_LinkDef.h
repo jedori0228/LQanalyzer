@@ -26,6 +26,7 @@
 #pragma link C++ class ElectronSF+;
 #pragma link C++ class HNEMu+;
 #pragma link C++ class trilepton_mumumu+;
+#pragma link C++ class trilepton_mumumu_FR_method+;
 #pragma link C++ class FakeRateCalculator_Mu+;
 
 #endif // __CINT__

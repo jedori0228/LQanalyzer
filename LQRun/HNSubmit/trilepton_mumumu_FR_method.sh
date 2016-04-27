@@ -7,7 +7,7 @@ runDoubleMuon=true
 if [[ $runMC  == "true" ]]; 
 then
     source functions.sh
-    cycle="trilepton_mumumu"
+    cycle="trilepton_mumumu_FR_method"
     skinput="True"
 #    useskim="NoCut"
     outputdir=$LQANALYZER_DIR"/data/output/trilepton_mumumu/"
@@ -35,12 +35,11 @@ fi
 if [[ $runDoubleMuon  == "true" ]];
 then
     source functions.sh
-    cycle="trilepton_mumumu"
+    cycle="trilepton_mumumu_FR_method"
     skinput="True"
     stream="muon"
     useskim="DiLep"
     #useskim="Lepton"
-    #outputdir=$LQANALYZER_DIR"/data/output/trilepton_mumumu/period/"
     outputdir=$LQANALYZER_DIR"/data/output/trilepton_mumumu/FR_weighted/"
     #### JOB CONFIGURATION
     njobs=50
