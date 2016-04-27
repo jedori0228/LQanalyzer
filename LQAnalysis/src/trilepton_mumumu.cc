@@ -201,7 +201,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   if( n_triLoose_muons != 3 ) return;
 
   //for TTT
-  if( n_triTight_muons != 3 ) return;
+  //if( n_triTight_muons != 3 ) return;
 
   if( muontriLooseColl.at(0).Pt() < 15 ) return;
   FillCutFlow("3muon", weight);
@@ -215,14 +215,14 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     }
   }
 
-/*
+
   // fake method weighting
   if( n_triTight_muons == 3 ) return; // return TTT case
   for(unsigned int i=0; i<FR_muon.size(); i++){
     weight *= FR_muon.at(i)/( 1.-FR_muon.at(i) );
   }
   if( FR_muon.size() == 2 ) weight *= -1.; // minus sign for TLL
-*/
+
 /*
   if( n_triTight_muons == 0 ) weight *= FR_muon.at(0)*FR_muon.at(1)*FR_muon.at(2)/( (1.-FR_muon.at(0))*(1.-FR_muon.at(1))*(1.-FR_muon.at(2)) ); // LLL
   else if ( n_triTight_muons == 1) weight *= -FR_muon.at(0)*FR_muon.at(1)/( (1.-FR_muon.at(0))*(1.-FR_muon.at(1)) ); // TLL

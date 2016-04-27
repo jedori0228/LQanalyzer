@@ -1,7 +1,7 @@
 #!/bin/sh
 
 runData=true
-runMC=false
+runMC=true
 runQCD=false
 runQCD2=false
 
@@ -36,22 +36,18 @@ then
     source functions.sh
     cycle="FakeRateCalculator_Mu"
     skinput="True"
-
-    njobs=5
+    usebatch="True"
+    njobs=50
     data_lumi="AtoD"
     loglevel="INFO"
     logstep=1000
     #outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/MCTruth/QCD_single_mu_enriched/"
-    #outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/dijet_topology/dXY_0p01_dZ_0p5/"
-    outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/Large_dXY/"
+    outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/dijet_topology/dXY_0p01_dZ_0p5/"
+    #outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/Large_dXY/"
 
-    #declare -a input_samples=("DY10to50" "DY50plus" "Wjets" "Wgamma" "stbar_sch" "stbar_tch" "stbar_tW" "st_sch" "st_tch" "st_tW" "ttbarMS")
-
-    #declare -a input_samples=("stbar_sch" "stbar_tch" "stbar_tW" "st_sch" "st_tch" "st_tW") #cms5
-    declare -a input_samples=("ttbarMS") #cms6
-
-    #declare -a input_samples=("ttbarMSpow" "ttbarMS" "ttbarMS_chs")
+    declare -a input_samples=("DY10to50" "DY50plus" "Wjets" "Wgamma" "stbar_sch" "stbar_tch" "stbar_tW" "st_sch" "st_tch" "st_tW" "ttbarMS")
     #declare -a input_samples=("QCD_1000_mu" "QCD_15-20_mu" "QCD_20-30_mu" "QCD_30-50_mu" "QCD_50-80_mu" "QCD_800-1000_mu" "QCD_120-170_mu" "QCD_170-300_mu" "QCD_300-470_mu" "QCD_470-600_mu" "QCD_600-800_mu" "QCD_80-120_mu")
+
     source submit.sh  
     #source hadd.sh /home/chasejeon/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/output/ElectronFakes/MC/  FakeRateCalculator_El_mc_5_3_14.root  FakeRateCalculator_El_SK*
     #mv /home/chasejeon/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/output/ElectronFakes/MC/FakeRateCalculator_El_mc_5_3_14.root /home/jskim/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/output/ElectronFakes/
@@ -105,20 +101,22 @@ then
     skinput="True"
     #skinput="False"
 
-    njobs=30
+    njobs=50
     usebatch="True"
     data_lumi="AtoD"
     loglevel="INFO"
     logstep=1000
+
     #stream="muon"
-    stream="muon_lowpt"
-    #stream="singlemuon"
+    #stream="muon_lowpt" # for 10-15 GeV pT bin
+    stream="singlemuon"
+
     nevents=-1
-    #outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/dijet_topology/dXY_0p01_dZ_0p5/period/"
-    outputdir="/data4/LQAnalyzerCode/jskim/LQanalyzer/data/output/MuonFakes/"
+    outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/dijet_topology/dXY_0p01_dZ_0p5/period/"
+    #outputdir="/data4/LQAnalyzerCode/jskim/LQanalyzer/data/output/MuonFakes/"
     
-    #declare -a input_samples=("A" "B" "C" "D")
-    declare -a input_samples=("D")
+    declare -a input_samples=("A" "B" "C" "D")
+    #declare -a input_samples=("D") # for stream="muon_lowpt"
 
     source submit.sh $1
 
