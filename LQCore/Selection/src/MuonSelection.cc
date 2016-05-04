@@ -367,7 +367,7 @@ void MuonSelection::HNtriHighdXYTightMuonSelection(std::vector<KMuon>& leptonCol
     if( muit->validPixHits() == 0)   pass_selection = false;
     if( muit->validStations() <= 1 ) pass_selection = false;
     if( muit->ActiveLayer() <= 5   ) pass_selection = false;
-    if( fabs(muit->dXY())    >= 0.2) pass_selection = false;
+    if( fabs(muit->dXY())    <= 0.02) pass_selection = false;
     if( fabs(muit->dZ())    >= 0.5)  pass_selection = false;
     if(!(muit->GlobalChi2() < 10.)) pass_selection = false;
 
@@ -411,7 +411,7 @@ void MuonSelection::HNtriHighdXYLooseMuonSelection(std::vector<KMuon>& leptonCol
     if( muit->validPixHits() == 0)   pass_selection = false;
     if( muit->validStations() <= 1 ) pass_selection = false;
     if( muit->ActiveLayer() <= 5   ) pass_selection = false;
-    if( fabs(muit->dXY())    >= 0.2) pass_selection = false;
+    if( fabs(muit->dXY())    <= 0.02) pass_selection = false;
     if( fabs(muit->dZ())    >= 0.5)  pass_selection = false;
     if(!(muit->GlobalChi2() < 10.)) pass_selection = false;
 

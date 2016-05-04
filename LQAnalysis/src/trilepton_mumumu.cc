@@ -153,7 +153,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   int n_triLoose_muons = muontriLooseColl.size();
   int n_jets = jetColl_lepveto.size();
 
-/*
+
   // some control plots //
   FillHist("control_n_tight_muons", n_triTight_muons, weight*pileup_reweight, 0, 10, 10);
   FillHist("control_n_loose_muons", n_triLoose_muons, weight*pileup_reweight, 0, 10, 10);
@@ -163,6 +163,20 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     if(jetColl_lepveto.at(j).CombinedSecVertexBtag() > 0.679) n_bjets++;
   }
   FillHist("control_n_bjets", n_bjets, weight*pileup_reweight, 0, 10, 10);
+  if(n_triLoose_muons==2 && n_triTight_muons==2 && n_jets == 0){
+    if(muontriLooseColl.at(0).Charge() == muontriLooseColl.at(1).Charge()){
+      snu::KParticle CR_muon[2];
+      CR_muon[0] = muontriLooseColl.at(0);
+      CR_muon[1] = muontriLooseColl.at(1);
+      FillHist("control_n_muons_2_SS_n_jets_0_n_events_PU", 0, weight*pileup_reweight, 0, 1, 1);
+      FillHist("control_n_muons_2_SS_n_jets_0_n_events_mll_PU", (CR_muon[0]+CR_muon[1]).M() , weight*pileup_reweight, 0, 200, 200);
+      FillHist("control_n_muons_2_SS_n_jets_0_n_events_leadingLepton_Pt_PU", CR_muon[0].Pt() , weight*pileup_reweight, 0, 200, 200);
+      FillHist("control_n_muons_2_SS_n_jets_0_n_events_secondLepton_Pt_PU", CR_muon[1].Pt() , weight*pileup_reweight, 0, 200, 200);
+      FillHist("control_n_muons_2_SS_n_jets_0_n_events_leadingLepton_Eta_PU", CR_muon[0].Eta() , weight*pileup_reweight, -3, 3, 6./0.1);
+      FillHist("control_n_muons_2_SS_n_jets_0_n_events_secondLepton_Eta_PU", CR_muon[1].Eta() , weight*pileup_reweight, -3, 3, 6./0.1);
+    }
+  }
+/*
   if(n_triTight_muons==0 && n_bjets == 1){
     FillHist("control_n_muons_0_n_bjets_1", 0, weight*pileup_reweight, 0, 1, 1);
     FillHist("control_n_muons_0_n_bjets_1_n_jet", n_jets, weight*pileup_reweight, 0, 15, 15);
@@ -395,16 +409,6 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
       FillHist("n_jets_cutdR_cutW_PU", n_jets, weight*pileup_reweight, 0, 10, 10);
       FillCLHist(trilephist, "cutdR_cutW_PU", eventbase->GetEvent(), muontriLooseColl, electronTightColl, jetColl_lepveto, weight*pileup_reweight);
       FillHist("n_events_cutdR_cutW_PU", 0, weight*pileup_reweight, 0, 1, 1);
-
-      FillHist("CHECK_first_pt", lep[0].Pt(), 1,  10, 60, 50);
-      FillHist("CHECK_second_pt", lep[1].Pt(), 1, 10, 60, 50);
-      FillHist("CHECK_third_pt", lep[2].Pt(), 1,  10, 60, 50);
-      cout
-      << "jskim : " << eventbase->GetEvent().EventNumber() << endl
-      << " lep[0].Pt() = " << lep[0].Pt() << endl
-      << " lep[1].Pt() = " << lep[0].Pt() << endl
-      << " lep[2].Pt() = " << lep[0].Pt() << endl;
-
       if( n_jets == 0 ){
         FillCLHist(trilephist, "cutdR_cutW_cutnjet", eventbase->GetEvent(), muontriLooseColl, electronTightColl, jetColl_lepveto, weight);
         FillCLHist(trilephist, "cutdR_cutW_cutnjet_PU", eventbase->GetEvent(), muontriLooseColl, electronTightColl, jetColl_lepveto, weight*pileup_reweight);

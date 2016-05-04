@@ -40,9 +40,9 @@ then
     stream="muon"
     useskim="DiLep"
     #useskim="Lepton"
-    outputdir=$LQANALYZER_DIR"/data/output/trilepton_mumumu/FR_weighted/"
+    outputdir=$LQANALYZER_DIR"/data/output/trilepton_mumumu/FR_weighted/HighdXY/"
     #### JOB CONFIGURATION
-    njobs=50
+    njobs=10
     data_lumi="AtoD"
     loglevel="INFO"
     logstep=1000

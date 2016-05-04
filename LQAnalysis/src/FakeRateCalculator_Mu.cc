@@ -250,23 +250,27 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   }
 */
 
-/*
+
   ///////////////////////////////////////////////
   ///////////// large dXY muon method ///////////
   ///////////////////////////////////////////////
+  std::vector<snu::KMuon> muontriHighdXYTightColl;
+  eventbase->GetMuonSel()->HNtriHighdXYTightMuonSelection(muontriHighdXYTightColl);
+  std::vector<snu::KMuon> muontriHighdXYLooseColl;
+  eventbase->GetMuonSel()->HNtriHighdXYLooseMuonSelection(muontriHighdXYLooseColl);
 
-  if( muontriLooseColl.size() != 1) return;
-  snu::KMuon muon = muontriLooseColl.at(0); 
+  if( muontriHighdXYLooseColl.size() != 1) return;
+  snu::KMuon HighdXYmuon = muontriHighdXYLooseColl.at(0); 
     
-  FillHist("eta_F0", muon.Eta(), weight, -3, 3, 30);
-  FillHist("pt_F0", muon.Pt(), weight, 0., 200., 200./1.);
-  FillHist("events_F0", muon.Pt(), fabs(muon.Eta()), weight, ptarray, 9, etaarray, 4);
-  if(muontriTightColl.size() == 1){
-    FillHist("eta_F", muon.Eta(), weight, -3, 3, 30);
-    FillHist("pt_F", muon.Pt(), weight, 0., 200., 200/1.);
-    FillHist("events_F", muon.Pt(), fabs(muon.Eta()), weight, ptarray, 9, etaarray, 4);
+  FillHist("HighdXY_eta_F0", HighdXYmuon.Eta(), weight, -3, 3, 30);
+  FillHist("HighdXY_pt_F0", HighdXYmuon.Pt(), weight, 0., 200., 200./1.);
+  FillHist("HighdXY_events_F0", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), weight, ptarray, 9, etaarray, 4);
+  if(muontriHighdXYTightColl.size() == 1){
+    FillHist("HighdXY_eta_F", HighdXYmuon.Eta(), weight, -3, 3, 30);
+    FillHist("HighdXY_pt_F", HighdXYmuon.Pt(), weight, 0., 200., 200/1.);
+    FillHist("HighdXY_events_F", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), weight, ptarray, 9, etaarray, 4);
   }
-*/
+
 
 
   return;

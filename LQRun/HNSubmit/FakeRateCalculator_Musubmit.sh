@@ -1,7 +1,7 @@
 #!/bin/sh
 
 runData=true
-runMC=true
+runMC=false
 runQCD=false
 runQCD2=false
 
@@ -107,16 +107,17 @@ then
     loglevel="INFO"
     logstep=1000
 
-    #stream="muon"
-    #stream="muon_lowpt" # for 10-15 GeV pT bin
-    stream="singlemuon"
-
     nevents=-1
     outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/dijet_topology/dXY_0p01_dZ_0p5/period/"
     #outputdir="/data4/LQAnalyzerCode/jskim/LQanalyzer/data/output/MuonFakes/"
-    
-    declare -a input_samples=("A" "B" "C" "D")
-    #declare -a input_samples=("D") # for stream="muon_lowpt"
+
+    #### ifr pT > 15 GeV bin ####
+    #stream="singlemuon"
+    #declare -a input_samples=("A" "B" "C" "D")
+
+    #### for 10-15 GeV pT bin ####
+    stream="muon_lowpt"
+    declare -a input_samples=("D")
 
     source submit.sh $1
 
