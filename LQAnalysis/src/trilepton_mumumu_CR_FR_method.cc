@@ -41,12 +41,12 @@ trilepton_mumumu_CR_FR_method::trilepton_mumumu_CR_FR_method() :  AnalyzerCore()
   //dXY_0p005_dZ_0p1
   //dXY_0p01_dZ_0p5
   //dXY_0p2_dZ_0p5
-  //TFile* file = new TFile("/home/jskim/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/rootfiles/8TeV_trimuon_FR_dXY_0p01_dZ_0p5_dijet_topology.root");
+  //TFile* file = new TFile("/data4/LQAnalyzerCode/jskim/LQanalyzer/data/rootfiles/8TeV_trimuon_FR_dXY_0p01_dZ_0p5_dijet_topology.root");
   //hist_trimuon_FR = (TH2F*)file->Get("events_F")->Clone();
-  TFile* file = new TFile("/home/jskim/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/rootfiles/8TeV_trimuon_HighdXY_FR.root");
+  TFile* file = new TFile("/data4/LQAnalyzerCode/jskim/LQanalyzer/data/rootfiles/8TeV_trimuon_HighdXY_FR.root");
   hist_trimuon_FR = (TH2F*)file->Get("HighdXY_events_F")->Clone();
 
-  //TFile* file = new TFile("/home/jskim/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/rootfiles/8TeV_trimuon_FR_MCTruth_ttbar.root");
+  //TFile* file = new TFile("/data4/LQAnalyzerCode/jskim/LQanalyzer/data/rootfiles/8TeV_trimuon_FR_MCTruth_ttbar.root");
   //hist_trimuon_FR = (TH2F*)file->Get("events_num")->Clone();
 }
 
@@ -163,14 +163,14 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   int n_jets = jetColl_lepveto.size();
 
   // CR related variables //
-  FillHist("control_n_tight_muons", n_triTight_muons, weight*pileup_reweight, 0, 10, 10);
-  FillHist("control_n_loose_muons", n_triLoose_muons, weight*pileup_reweight, 0, 10, 10);
-  FillHist("control_n_jets", n_jets, weight*pileup_reweight, 0, 10, 10);
+  FillHist("n_tight_muons_control_PU", n_triTight_muons, weight*pileup_reweight, 0, 10, 10);
+  FillHist("n_loose_muons_control_PU", n_triLoose_muons, weight*pileup_reweight, 0, 10, 10);
+  FillHist("n_jets_control_PU", n_jets, weight*pileup_reweight, 0, 10, 10);
   int n_bjets=0;
   for(UInt_t j=0; j < n_jets; j++){
     if(jetColl_lepveto.at(j).CombinedSecVertexBtag() > 0.679) n_bjets++;
   }
-  FillHist("control_n_bjets", n_bjets, weight*pileup_reweight, 0, 10, 10);
+  FillHist("n_bjets_control_PU", n_bjets, weight*pileup_reweight, 0, 10, 10);
 
   // define CR         //
   // SS dimuon + 0 jet //
@@ -202,7 +202,7 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   for(unsigned int i=0; i<FR_muon.size(); i++){
     weight *= FR_muon.at(i)/( 1.-FR_muon.at(i) );
   }
-  if( FR_muon.size() == 2 ) weight *= -1.; // minus sign for TLL
+  if( FR_muon.size() == 2 ) weight *= -1.; // minus sign for LL
 
 /*
   if( n_triTight_muons == 0 ) weight *= FR_muon.at(0)*FR_muon.at(1)*FR_muon.at(2)/( (1.-FR_muon.at(0))*(1.-FR_muon.at(1))*(1.-FR_muon.at(2)) ); // LLL
@@ -225,10 +225,10 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   CR_muon[1] = muontriLooseColl.at(1);
   FillHist("n_events_control_PU", 0, weight*pileup_reweight, 0, 1, 1);
   FillHist("mll_control_PU", (CR_muon[0]+CR_muon[1]).M() , weight*pileup_reweight, 0, 200, 200);
-  FillHist("leadingLepton_control_Pt_PU", CR_muon[0].Pt() , weight*pileup_reweight, 0, 200, 200);
-  FillHist("secondLepton_control_PPt_PU", CR_muon[1].Pt() , weight*pileup_reweight, 0, 200, 200);
-  FillHist("leadingLepton_control_PEta_PU", CR_muon[0].Eta() , weight*pileup_reweight, -3, 3, 6./0.1);
-  FillHist("secondLepton_control_PEta_PU", CR_muon[1].Eta() , weight*pileup_reweight, -3, 3, 6./0.1);
+  FillHist("leadingLepton_Pt_control_PU", CR_muon[0].Pt() , weight*pileup_reweight, 0, 200, 200);
+  FillHist("secondLepton_Pt_control_PU", CR_muon[1].Pt() , weight*pileup_reweight, 0, 200, 200);
+  FillHist("leadingLepton_Eta_control_PU", CR_muon[0].Eta() , weight*pileup_reweight, -3, 3, 6./0.1);
+  FillHist("secondLepton_Eta_control_PU", CR_muon[1].Eta() , weight*pileup_reweight, -3, 3, 6./0.1);
 
   return;
 }// End of execute event loop

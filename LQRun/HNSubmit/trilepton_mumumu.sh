@@ -14,7 +14,7 @@ then
     outputdir=$LQANALYZER_DIR"/data/output/trilepton_mumumu/"
     #outputdir=$LQANALYZER_DIR"/"
     #### JOB CONFIGURATION
-    njobs=5
+    njobs=50
     data_lumi="AtoD"
     loglevel="INFO"
     logstep=1000
@@ -41,21 +41,21 @@ then
     if [[ $runFRMethod == "true" ]];
     then
         cycle="trilepton_mumumu_FR_method"
-        outputdir=$LQANALYZER_DIR"/data/output/trilepton_mumumu/FR_weighted/HighdXY/"
-        outputdir=$LQANALYZER_DIR"/"
+        #outputdir=$LQANALYZER_DIR"/data/output/trilepton_mumumu/FR_weighted/HighdXY/"
+        outputdir=$LQANALYZER_DIR"/data/output/trilepton_mumumu/FR_weighted/dijet_topology/"
     fi
     skinput="True"
     stream="muon"
     useskim="DiLep"
     #useskim="Lepton"
     #### JOB CONFIGURATION
-    njobs=5
+    njobs=30
     data_lumi="AtoD"
     loglevel="INFO"
     logstep=1000
     nevents=-1
-    #declare -a input_samples=("A" "B" "C" "D")
-    declare -a input_samples=("A")
+    declare -a input_samples=("A" "B" "C" "D")
+    #declare -a input_samples=("A")
     source submit.sh $1
 fi     
 
