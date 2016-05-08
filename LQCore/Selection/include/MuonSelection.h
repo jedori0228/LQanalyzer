@@ -42,6 +42,8 @@ class MuonSelection : public BaseSelection {
   //// Trimuon channel fake study : large dXY muons
   void HNtriHighdXYTightMuonSelection(std::vector<snu::KMuon>& leptonColl, bool m_debug = false);
   void HNtriHighdXYLooseMuonSelection(std::vector<snu::KMuon>& leptonColl, bool m_debug = false);
+  void HNtriNodXYCutTightMuonSelection(std::vector<snu::KMuon>& leptonColl, bool m_debug = false);
+  void HNtriNodXYCutLooseMuonSelection(std::vector<snu::KMuon>& leptonColl, bool m_debug = false);
 
   //// Top analysis selection
   void TopTightMuonSelection(std::vector<snu::KMuon>& leptonColl, bool m_debug = false);

@@ -120,53 +120,55 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   // tag jet collections
   std::vector<snu::KJet> jetColl = GetJets("HNtriFRTagJet");
 
-  if(jetColl.size() == 0) return;
+  //if(jetColl.size() == 0) return;
+  if(jetColl.size() != 0){
+    //if(muontriLooseColl.size() != 1) return;
+    if(muontriLooseColl.size() == 1){
 
-  if(muontriLooseColl.size() != 1) return;
+      //snu::KEvent Evt = eventbase->GetEvent();
+      //double MET = Evt.PFMET();
+      //if( MET < 40 ) return; // Let Wjets dominate
 
-  //snu::KEvent Evt = eventbase->GetEvent();
-  //double MET = Evt.PFMET();
-  //if( MET < 40 ) return; // Let Wjets dominate
+      snu::KParticle muon;
+      muon = muontriLooseColl.at(0);
+      muon.SetPxPyPzE(muon.Px(),muon.Py(),muon.Pz(),muon.E());
 
-  snu::KParticle muon;
-  muon = muontriLooseColl.at(0);
-  muon.SetPxPyPzE(muon.Px(),muon.Py(),muon.Pz(),muon.E());
+      float dR=999.9, dPhi=999.9, ptmu_ptjet=999.9;
 
-  float dR=999.9, dPhi=999.9, ptmu_ptjet=999.9;
+      for(unsigned int i=0; i<jetColl.size(); i++){
+        dR = jetColl.at(i).DeltaR(muon);
+        dPhi = fabs(jetColl.at(i).DeltaPhi(muon));
+        ptmu_ptjet = muon.Pt() / jetColl.at(i).Pt();
+        FillHist("dR", dR, weight, 0., 10., 100);
 
-  for(unsigned int i=0; i<jetColl.size(); i++){
-    dR = jetColl.at(i).DeltaR(muon);
-    dPhi = fabs(jetColl.at(i).DeltaPhi(muon));
-    ptmu_ptjet = muon.Pt() / jetColl.at(i).Pt();
-    FillHist("dR", dR, weight, 0., 10., 100);
-
-    if( dR > 1.0 ){
-      FillHist("ptmu_ptjet", ptmu_ptjet, weight, 0., 2., 200);
-      FillHist("dPhi", dPhi, weight, 0., 4., 40);
-      if( ptmu_ptjet < 1. ){
-        if( dPhi > 2.5 ){
-          double HT_loose = AnalyzerCore::SumPt(jetColl_lepveto);
-          double HT_tag = AnalyzerCore::SumPt(jetColl);
-          FillHist("eta_F0", muon.Eta(), weight, -3, 3, 30);
-          FillHist("pt_F0", muon.Pt(), weight, 0., 200., 200./1.);
-          FillHist("events_F0", muon.Pt(), fabs(muon.Eta()), weight, ptarray, 9, etaarray, 4);
-          FillHist("HT_loose_F0", HT_loose, weight, 0, 300, 300);
-          FillHist("HT_tag_F0", HT_tag, weight, 0, 300, 300);
-          if(muontriTightColl.size() == 1){
-            FillHist("eta_F", muon.Eta(), weight, -3, 3, 30);
-            FillHist("pt_F", muon.Pt(), weight, 0., 200., 200/1.);
-            FillHist("events_F", muon.Pt(), fabs(muon.Eta()), weight, ptarray, 9, etaarray, 4);
-            FillHist("HT_loose_F", HT_loose, weight, 0, 300, 300);
-            FillHist("HT_tag_F", HT_tag, weight, 0, 300, 300);
+        if( dR > 1.0 ){
+          FillHist("ptmu_ptjet", ptmu_ptjet, weight, 0., 2., 200);
+          FillHist("dPhi", dPhi, weight, 0., 4., 40);
+          if( ptmu_ptjet < 1. ){
+            if( dPhi > 2.5 ){
+              double HT_loose = AnalyzerCore::SumPt(jetColl_lepveto);
+              double HT_tag = AnalyzerCore::SumPt(jetColl);
+              FillHist("eta_F0", muon.Eta(), weight, -3, 3, 30);
+              FillHist("pt_F0", muon.Pt(), weight, 0., 200., 200./1.);
+              FillHist("events_F0", muon.Pt(), fabs(muon.Eta()), weight, ptarray, 9, etaarray, 4);
+              FillHist("HT_loose_F0", HT_loose, weight, 0, 300, 300);
+              FillHist("HT_tag_F0", HT_tag, weight, 0, 300, 300);
+              if(muontriTightColl.size() == 1){
+                FillHist("eta_F", muon.Eta(), weight, -3, 3, 30);
+                FillHist("pt_F", muon.Pt(), weight, 0., 200., 200/1.);
+                FillHist("events_F", muon.Pt(), fabs(muon.Eta()), weight, ptarray, 9, etaarray, 4);
+                FillHist("HT_loose_F", HT_loose, weight, 0, 300, 300);
+                FillHist("HT_tag_F", HT_tag, weight, 0, 300, 300);
+              }
+              goto stop;
+            }
           }
-          goto stop;
         }
       }
+      stop: ;
+
     }
   }
-  stop: ;
-
-
 
 /*
   //////////////////////////////////////
@@ -254,24 +256,36 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   ///////////////////////////////////////////////
   ///////////// large dXY muon method ///////////
   ///////////////////////////////////////////////
+  
   std::vector<snu::KMuon> muontriHighdXYTightColl;
   eventbase->GetMuonSel()->HNtriHighdXYTightMuonSelection(muontriHighdXYTightColl);
   std::vector<snu::KMuon> muontriHighdXYLooseColl;
   eventbase->GetMuonSel()->HNtriHighdXYLooseMuonSelection(muontriHighdXYLooseColl);
 
-  if( muontriHighdXYLooseColl.size() != 1) return;
-  snu::KMuon HighdXYmuon = muontriHighdXYLooseColl.at(0); 
+  if( muontriHighdXYLooseColl.size() == 1 ){
+    snu::KMuon HighdXYmuon = muontriHighdXYLooseColl.at(0); 
     
-  FillHist("HighdXY_eta_F0", HighdXYmuon.Eta(), weight, -3, 3, 30);
-  FillHist("HighdXY_pt_F0", HighdXYmuon.Pt(), weight, 0., 200., 200./1.);
-  FillHist("HighdXY_events_F0", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), weight, ptarray, 9, etaarray, 4);
-  if(muontriHighdXYTightColl.size() == 1){
-    FillHist("HighdXY_eta_F", HighdXYmuon.Eta(), weight, -3, 3, 30);
-    FillHist("HighdXY_pt_F", HighdXYmuon.Pt(), weight, 0., 200., 200/1.);
-    FillHist("HighdXY_events_F", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), weight, ptarray, 9, etaarray, 4);
+    FillHist("HighdXY_eta_F0", HighdXYmuon.Eta(), weight, -3, 3, 30);
+    FillHist("HighdXY_pt_F0", HighdXYmuon.Pt(), weight, 0., 200., 200./1.);
+    FillHist("HighdXY_events_F0", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), weight, ptarray, 9, etaarray, 4);
+    if(muontriHighdXYTightColl.size() == 1){
+      FillHist("HighdXY_eta_F", HighdXYmuon.Eta(), weight, -3, 3, 30);
+      FillHist("HighdXY_pt_F", HighdXYmuon.Pt(), weight, 0., 200., 200/1.);
+      FillHist("HighdXY_events_F", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), weight, ptarray, 9, etaarray, 4);
+    }
   }
 
+  std::vector<snu::KMuon> muontriNodXYCutTightColl;
+  eventbase->GetMuonSel()->HNtriNodXYCutTightMuonSelection(muontriNodXYCutTightColl);
+  std::vector<snu::KMuon> muontriNodXYCutLooseColl;
+  eventbase->GetMuonSel()->HNtriNodXYCutLooseMuonSelection(muontriNodXYCutLooseColl);
 
+  for(unsigned int i=0; i<muontriNodXYCutTightColl.size(); i++){
+    FillHist("TightIsoMuon_dXY", muontriNodXYCutTightColl.at(i).dXY(), weight, 0., 0.2, 0.2/0.01);
+  }
+  for(unsigned int i=0; i<muontriNodXYCutLooseColl.size(); i++){
+    FillHist("LooseIsoMuon_dXY", muontriNodXYCutLooseColl.at(i).dXY(), weight, 0., 0.2, 0.2/0.01);
+  }
 
   return;
 }// End of execute event loop

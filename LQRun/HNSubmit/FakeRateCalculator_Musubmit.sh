@@ -108,16 +108,17 @@ then
     logstep=1000
 
     nevents=-1
-    outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/dijet_topology/dXY_0p01_dZ_0p5/period/"
-    #outputdir="/data4/LQAnalyzerCode/jskim/LQanalyzer/data/output/MuonFakes/"
 
     #### ifr pT > 15 GeV bin ####
+    outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/dijet_topology/dXY_0p01_dZ_0p5/period/"
     #stream="singlemuon"
-    #declare -a input_samples=("A" "B" "C" "D")
+    stream="muon"
+    declare -a input_samples=("A" "B" "C" "D")
 
     #### for 10-15 GeV pT bin ####
-    stream="muon_lowpt"
-    declare -a input_samples=("D")
+    #outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/dijet_topology/dXY_0p01_dZ_0p5/"
+    #stream="muon_lowpt"
+    #declare -a input_samples=("D")
 
     source submit.sh $1
 
