@@ -128,6 +128,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
 
   /// List of preset muon collections : Can call also POGSoft/POGLoose/POGMedium/POGTight
   std::vector<snu::KMuon> muontriTightColl = GetMuons(BaseSelection::MUON_HN_TRI_TIGHT); 
+  std::vector<snu::KMuon> muontriLooseColl = GetMuons(BaseSelection::MUON_HN_TRI_LOOSE);
   
   /// List of preset jet collections : NoLeptonVeto/Loose/Medium/Tight/TightLepVeto/HNJets
   //FIXME 
@@ -152,39 +153,20 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   FillHist("PileupWeight" ,  pileup_reweight,weight,  0. , 50., 10);
   
   int n_triTight_muons = muontriTightColl.size();
+  int n_triLoose_muons = muontriLooseColl.size();
   int n_jets = jetColl_loose.size();
 
   FillHist("GenWeight_NJet" , n_jets*MCweight + MCweight*0.1, 1., -6. , 6., 12);
 
-  // some control plots //
-  FillHist("control_n_muons", n_triTight_muons, weight*pileup_reweight, 0, 10, 10);
-  FillHist("control_n_jets", n_jets, weight*pileup_reweight, 0, 10, 10);
-  int n_bjets=0;
-  for(UInt_t j=0; j < n_jets; j++){
-    if( jetColl_loose.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Loose) ) n_bjets++; //FIXME which working point should we use?
-  }
-  FillHist("control_n_bjets", n_bjets, weight*pileup_reweight, 0, 10, 10);
-  if(n_triTight_muons==0 && n_bjets == 1){
-    FillHist("control_n_muons_0_n_bjets_1", 0, weight*pileup_reweight, 0, 1, 1);
-    FillHist("control_n_muons_0_n_bjets_1_n_jet", n_jets, weight*pileup_reweight, 0, 15, 15);
-    FillHist("control_n_muons_0_n_bjets_1_PFMET", eventbase->GetEvent().PFMET(), weight*pileup_reweight, 0, 300, 300);
-
-  }
-  if(n_triTight_muons==1 && n_bjets == 1){
-    FillHist("control_n_muons_1_n_bjets_1", 0, weight*pileup_reweight, 0, 1, 1);
-    FillHist("control_n_muons_1_n_bjets_1_leading_lepton_pt", muontriTightColl.at(0).Pt(), weight*pileup_reweight, 0, 500, 500);
-    FillHist("control_n_muons_1_n_bjets_1_leading_lepton_eta",  muontriTightColl.at(0).Eta(), weight*pileup_reweight, -3, 3, 6./0.1);
-    FillHist("control_n_muons_1_n_bjets_1_n_jet", n_jets, weight*pileup_reweight, 0, 15, 15);
-    FillHist("control_n_muons_1_n_bjets_1_PFMET", eventbase->GetEvent().PFMET(), weight*pileup_reweight, 0, 300, 300);
-
-  }
-
+  if( n_triLoose_muons != 3 ) return;
   if( n_triTight_muons != 3 ) return;
+
+  if( muontriLooseColl.at(0).Pt() < 15 ) return;
   FillCutFlow("3muon", weight);
 
   snu::KParticle lep[3], HN[4];
   for(int i=0;i<3;i++){
-    lep[i] = muontriTightColl.at(i);
+    lep[i] = muontriLooseColl.at(i);
   }
 
   // MC samples has m(ll)_saveflavour > 4 GeV cut at gen level
@@ -541,7 +523,7 @@ void trilepton_mumumu::gen_matching(){
   cout << "=========================================================" << endl;
   cout << "truth size = " << truthColl.size() << endl;
   cout << "index" << '\t' << "pdgid" << '\t' << "mother" << '\t' << "mother pid" << endl;
-  for(int i=2; i<truthColl.size(); i++){
+  for(unsigned int i=2; i<truthColl.size(); i++){
     cout << i << '\t' << truthColl.at(i).PdgId() << '\t' << truthColl.at(i).IndexMother() << '\t' << truthColl.at( truthColl.at(i).IndexMother() ).PdgId() << endl;
   }
 
@@ -619,7 +601,7 @@ void trilepton_mumumu::gen_matching(){
 
     // find l_1 at gen. level
     for(int i=2;i<truthmax;i++){
-      for(int j=0;j<gen_W_pri_indices.size();j++){
+      for(unsigned int j=0;j<gen_W_pri_indices.size();j++){
         if(abs(truthColl.at(i).PdgId()) == 13 && truthColl.at(i).IndexMother() == gen_W_pri_indices.at(j) ){
           gen_l_1_indices.push_back(i);
           find_decay(truthColl, i, gen_l_1_indices);
@@ -648,7 +630,7 @@ void trilepton_mumumu::gen_matching(){
 
       // find nu at gen. level
       for(int i=2;i<truthmax;i++){
-        for(int j=0;j<gen_HN_indices.size();j++){
+        for(unsigned int j=0;j<gen_HN_indices.size();j++){
           if(abs(truthColl.at(i).PdgId()) == 14 && truthColl.at(i).IndexMother() == gen_HN_indices.at(j) ){
             gen_nu_indices.push_back(i);
             find_decay(truthColl, i, gen_nu_indices);
@@ -660,7 +642,7 @@ void trilepton_mumumu::gen_matching(){
 
       // find l_3 at gen. level
       for(int i=2;i<truthmax;i++){
-        for(int j=0;j<gen_HN_indices.size();j++){
+        for(unsigned int j=0;j<gen_HN_indices.size();j++){
           if(truthColl.at(i).PdgId() == truthColl.at(gen_l_1_indices.at(0)).PdgId() && truthColl.at(i).IndexMother() == gen_HN_indices.at(j) ){
             gen_l_3_indices.push_back(i);
             find_decay(truthColl, i, gen_l_3_indices);
@@ -672,7 +654,7 @@ void trilepton_mumumu::gen_matching(){
 
       // find l_2 at gen. level
       for(int i=2;i<truthmax;i++){
-        for(int j=0;j<gen_HN_indices.size();j++){
+        for(unsigned int j=0;j<gen_HN_indices.size();j++){
           if(truthColl.at(i).PdgId() == -truthColl.at(gen_l_1_indices.at(0)).PdgId() && truthColl.at(i).IndexMother() == gen_HN_indices.at(j) ){
             gen_l_2_indices.push_back(i);
             find_decay(truthColl, i, gen_l_2_indices);
@@ -688,7 +670,7 @@ void trilepton_mumumu::gen_matching(){
 
       // find nu at gen. level
       for(int i=2;i<truthmax;i++){
-        for(int j=0;j<gen_W_sec_indices.size();j++){
+        for(unsigned int j=0;j<gen_W_sec_indices.size();j++){
           if(abs(truthColl.at(i).PdgId()) == 14 && truthColl.at(i).IndexMother() == gen_W_sec_indices.at(j) ){
             gen_nu_indices.push_back(i);
             find_decay(truthColl, i, gen_nu_indices);
@@ -700,7 +682,7 @@ void trilepton_mumumu::gen_matching(){
 
       // find l_3 at gen. level
       for(int i=2;i<truthmax;i++){
-        for(int j=0;j<gen_W_sec_indices.size();j++){
+        for(unsigned int j=0;j<gen_W_sec_indices.size();j++){
           if(fabs(truthColl.at(i).PdgId()) == fabs(truthColl.at(gen_l_1_indices.at(0)).PdgId()) && truthColl.at(i).IndexMother() == gen_W_sec_indices.at(j) ){
             gen_l_3_indices.push_back(i);
             find_decay(truthColl, i, gen_nu_indices);
@@ -712,7 +694,7 @@ void trilepton_mumumu::gen_matching(){
 
       // find l_2 at gen. level
       for(int i=2;i<truthmax;i++){
-        for(int j=0;j<gen_HN_indices.size();j++){
+        for(unsigned int j=0;j<gen_HN_indices.size();j++){
           if(fabs(truthColl.at(i).PdgId()) == fabs(truthColl.at(gen_l_1_indices.at(0)).PdgId()) && truthColl.at(i).IndexMother() == gen_HN_indices.at(j) ){
             gen_l_2_indices.push_back(i);
             find_decay(truthColl, i, gen_l_2_indices);
@@ -756,7 +738,7 @@ void trilepton_mumumu::gen_matching(){
   else{
     // find l_1 at gen. level
     for(int i=2;i<truthmax;i++){
-      for(int j=0;j<gen_HN_indices.size();j++){
+      for(unsigned int j=0;j<gen_HN_indices.size();j++){
         if(abs(truthColl.at(i).PdgId()) == 13 && truthColl.at(i).IndexMother() == truthColl.at(gen_HN_indices.at(j)).IndexMother()){
           gen_l_1_indices.push_back(i);
           find_decay(truthColl, i, gen_l_1_indices);
@@ -768,7 +750,7 @@ void trilepton_mumumu::gen_matching(){
 
     // fine l_2 at gen. level
     for(int i=2;i<truthmax;i++){
-      for(int j=0;j<gen_HN_indices.size();j++){
+      for(unsigned int j=0;j<gen_HN_indices.size();j++){
         if(abs(truthColl.at(i).PdgId()) == 13 && truthColl.at(i).IndexMother() == gen_HN_indices.at(j) ){
           gen_l_2_indices.push_back(i);
           find_decay(truthColl, i, gen_l_2_indices);
@@ -780,7 +762,7 @@ void trilepton_mumumu::gen_matching(){
 
     // find W_sec
     for(int i=2;i<truthmax;i++){
-      for(int j=0;j<gen_HN_indices.size();j++){
+      for(unsigned int j=0;j<gen_HN_indices.size();j++){
         if(abs(truthColl.at(i).PdgId()) == 24 && truthColl.at(i).IndexMother() == gen_HN_indices.at(j) ){
           gen_W_sec_indices.push_back(i);
           find_decay(truthColl, i, gen_W_sec_indices);
@@ -792,7 +774,7 @@ void trilepton_mumumu::gen_matching(){
 
     // find nu at gen. level
     for(int i=2;i<truthmax;i++){
-      for(int j=0;j<gen_W_sec_indices.size();j++){
+      for(unsigned int j=0;j<gen_W_sec_indices.size();j++){
         if(abs(truthColl.at(i).PdgId()) == 14 && truthColl.at(i).IndexMother() == gen_W_sec_indices.at(j) ){
           gen_nu_indices.push_back(i);
           find_decay(truthColl, i, gen_nu_indices);
@@ -804,7 +786,7 @@ void trilepton_mumumu::gen_matching(){
 
     // find l_3 at gen. level
     for(int i=2;i<truthmax;i++){
-      for(int j=0;j<gen_W_sec_indices.size();j++){
+      for(unsigned int j=0;j<gen_W_sec_indices.size();j++){
         if(abs(truthColl.at(i).PdgId()) == 13 && truthColl.at(i).IndexMother() == gen_W_sec_indices.at(j) ){
           gen_l_3_indices.push_back(i);
           find_decay(truthColl, i, gen_l_3_indices);
@@ -935,7 +917,7 @@ void trilepton_mumumu::gen_matching(){
 
 void trilepton_mumumu::find_decay(std::vector<snu::KTruth> truthcoll, int target_index, std::vector<int>& indices){
 
-  for(int i=target_index+1; i<truthcoll.size(); i++){ 
+  for(unsigned int i=target_index+1; i<truthcoll.size(); i++){ 
     if( truthcoll.at(i).IndexMother() == target_index && truthcoll.at(i).PdgId() == truthcoll.at(target_index).PdgId() ){
       indices.push_back(i);
       find_decay(truthcoll, i, indices);
@@ -947,7 +929,7 @@ void trilepton_mumumu::find_decay(std::vector<snu::KTruth> truthcoll, int target
 void trilepton_mumumu::print_all_indices(TString particle, std::vector<int> vec){
 
   cout << particle+" indices" << endl;
-  for(int i=0; i<vec.size(); i++) cout << " " << vec.at(i) << endl;
+  for(unsigned int i=0; i<vec.size(); i++) cout << " " << vec.at(i) << endl;
 
 }
 

@@ -218,7 +218,7 @@ bool MuonSelection::HNtriTightMuonSelection(KMuon mu) {
   if( mu.validPixHits() == 0)   pass_selection = false;
   if( mu.validStations() <= 1 ) pass_selection = false;
   if( mu.ActiveLayer() <= 5   ) pass_selection = false;
-  if( fabs(mu.dXY())    >= 0.2) pass_selection = false;
+  if( fabs(mu.dXY())    >= 0.01) pass_selection = false; // 100 um
   if( fabs(mu.dZ())    >= 0.5)  pass_selection = false;
   if(!(mu.GlobalChi2() < 10.)) pass_selection = false;
 

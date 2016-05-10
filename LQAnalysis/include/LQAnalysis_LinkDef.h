@@ -18,5 +18,6 @@
 #pragma link C++ class SKTreeMakerNoCut+;
 #pragma link C++ class HNEMu+;
 #pragma link C++ class trilepton_mumumu+;
+#pragma link C++ class trilepton_mumumu_FR_method+;
 
 #endif // __CINT__
