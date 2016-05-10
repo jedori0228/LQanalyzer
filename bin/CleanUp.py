@@ -47,13 +47,15 @@ def CleanUpLogs(path):
             date=entries[2]
 
         os.system("ls -l " + logspace1 + " > " + logspace1 + "/file_dates.txt")
+        
         for line2 in open(logspace1 + "/file_dates.txt", 'r'):
+            is_deleted=False
             if not ".txt" in line2:
 
                 entries = line2.split()
                 if not len(entries)==2:
 
-                    if os.getenv("HOSTNAME") in line2:
+                    if str(os.getenv("HOSTNAME")) in line2:
                         os.system("ps ux | grep 'root.exe' &> " + logspace1 + "/pslog")
                         filename = logspace1 + "/pslog"
                         
@@ -65,7 +67,7 @@ def CleanUpLogs(path):
                         if n_previous_jobs == 0:
                             os.system(" rm -r " + logspace1 + "/" + entries[8])
                             print "Deleting directory "  + logspace1 + "/" + entries[8] +" since this is made on " + os.getenv("HOSTNAME") + " but no jobs running on this machine."
-                          
+                            is_deleted=True
                     nfiles=0
                     if (os.path.exists(logspace1 + "/" + entries[8] +"/output/")):
                         os.system("ls -l " + logspace1 + "/" + entries[8] +"/output/ > " + logspace1 + "/rootfile_list.txt")
@@ -89,9 +91,11 @@ def CleanUpLogs(path):
                         
                     if month_file not in month:
                         if int(date) > int(days_to_keep):
-                            print "Log file older than one week: Removing " + logspace1 + entries[8]
-                            os.system(" rm -r " + logspace1 + "/" + entries[8])
+                            if not is_deleted:
+                                print "Log file older than one week: Removing " + logspace1 + entries[8]
+                                os.system(" rm -r " + logspace1 + "/" + entries[8])
                     elif int(date_file) < (int(date)-int(days_to_keep)):
-                        print "Log file older than one week: Removing " + logspace1 + entries[8]   
-                        os.system(" rm -r " + logspace1 + "/" + entries[8])        
+                        if not is_deleted:
+                            print "Log file older than one week: Removing " + logspace1 + entries[8]   
+                            os.system(" rm -r " + logspace1 + "/" + entries[8])        
 

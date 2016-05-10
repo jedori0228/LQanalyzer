@@ -165,6 +165,7 @@ print ""
 ####
 ####################
 
+
 if not cycle == "SKTreeMaker":
     if not cycle == "SKTreeMakerNoCut":
         if not cycle == "SKTreeMakerDiLep":
@@ -188,8 +189,7 @@ if not os.path.exists(timestamp_dir+"/job_output/"):
     os.system("mkdir " + timestamp_dir+"/job_output/")
 
 local_sub_dir=  timestamp_dir + "/job_output/"  + sample + '_' + new_channel + '_' + now()
-
-    
+  
 if not os.path.exists(local_sub_dir):
     os.system("mkdir " + local_sub_dir)
         
@@ -197,12 +197,21 @@ if not os.path.exists(local_sub_dir):
 #### HARD CODE THE MAXIMUM number of subjobs
 ##################################################################################################################
 
+large_sample=False
+if "TT" in sample:
+    large_sample=True
+if "DY50"  in sample:
+    large_sample=True
+
+
+
 import platform
+BusyMachine=False
 username = str(os.getenv("USER"))
 if platform.system() == "Linux":
     os.system("top  -n 1 -b | grep 'root.exe' &> " + local_sub_dir + "/toplog")
     filename = local_sub_dir +'/toplog'
-
+    
     n_previous_jobs=0
     njob_user=0
     for line in open(filename, 'r'):
@@ -211,8 +220,9 @@ if platform.system() == "Linux":
             njob_user+=1
         
     if n_previous_jobs > 10:
-        number_of_cores = 2
-        print "Number of subjobs is reduced to 2, since there are over 10 subjobs running on this machine."
+        if number_of_cores > 2:
+            number_of_cores = 2
+            print "Number of subjobs is reduced to 2, since there are over 10 subjobs running on this machine."
 
         for line in open(filename, 'r'):
             print line
@@ -220,8 +230,22 @@ if platform.system() == "Linux":
         number_of_cores = 1
     os.system("rm " + filename)
 
+    os.system("top  -n 1 -b | grep 'cmsRun' &> " + local_sub_dir + "/toplog2")
+    filename2 = local_sub_dir +'/toplog2'
+    for line in open(filename2, 'r'):
+        n_previous_jobs+=1
+
+    if n_previous_jobs > 10:
+        BusyMachine=True
+    os.system("rm " + filename2)    
 nj_def=30
 
+
+if large_sample == True:
+    if BusyMachine == True:
+        print "Machine is busy"
+        
+        
 if number_of_cores > 1:
     if useskinput == "True":
         if (12 - n_previous_jobs) < number_of_cores:
@@ -269,6 +293,15 @@ if number_of_cores <  -100:
     number_of_cores=30
 if number_of_cores < 0:
     number_of_cores=1
+
+if number_of_cores < 6:
+    if number_of_cores > 1:
+        
+        if "DY" in sample:
+            number_of_cores = 10
+        if "TT " in sample:
+            number_of_cores = 10
+
 ##################################################################################################################            
 ##### FINISHED CONFIGURATION
 ##################################################################################################################
@@ -410,7 +443,8 @@ inDS = ""
 mcLumi = 1.0
 filechannel=""
 
-catversions = ["v7-6-3",
+catversions = ["v7-6-4",
+               "v7-6-3",
                "v7-6-2",
                "v7-4-5",
                "v7-4-4"]
@@ -611,7 +645,10 @@ if not mc:
 else:
     if useCATv742ntuples == "True":
                 outsamplename = outsamplename + "_cat_"+ output_catversion
-        
+
+if  "SKTreeMaker" in cycle:            
+    outsamplename = outsamplename +  os.getenv("CATTAG")
+
 ### specify the location of the macro for the subjob     
 printedrunscript = output+ "Job_[1-" + str(number_of_cores)  + "]/runJob_[1-" + str(number_of_cores)  + "].C"
 
@@ -733,6 +770,7 @@ if DEBUG == "True":
 for i in range(1,number_of_cores+1):
     script = output+ "Job_" + str(i) + "/runJob_" + str(i) + ".C"
     log = output+ "Job_" + str(i) + "/runJob_" + str(i) +".log"
+#    runcommand = "ssh cms1 'cd " +  os.getenv("LQANALYZER_DIR") + "; source queue_setup.sh; nohup root.exe -l -q -b " +  script + "&>" + log + "&'"
     runcommand = "nohup root.exe -l -q -b " +  script + "&>" + log + "&"
     if singlejob:
         print "Running single job " + script 
@@ -953,7 +991,7 @@ else:
             Finaloutputdir +=  original_sample + "/"
             if not os.path.exists(Finaloutputdir):
                 os.system("mkdir " + Finaloutputdir)
-                
+                os.system("chmod 755 -R " +  Finaloutputdir)
     if cycle == "SKTreeMakerNoCut":
         doMerge=False
         if not os.path.exists(SKTreeOutput):
@@ -989,6 +1027,7 @@ else:
             Finaloutputdir += original_sample + "/"
             if not os.path.exists(Finaloutputdir):
                 os.system("mkdir " + Finaloutputdir)
+                os.system("chmod 755 -R " +  Finaloutputdir)
     if cycle == "SKTreeMakerDiLep":
         doMerge=False
         if not os.path.exists(SKTreeOutput):
@@ -1023,7 +1062,7 @@ else:
             Finaloutputdir +=  original_sample + "/"
             if not os.path.exists(Finaloutputdir):
                 os.system("mkdir " + Finaloutputdir)
-
+                os.system("chmod 755 -R " +  Finaloutputdir)
     if cycle == "SKTreeMakerTriLep":
         doMerge=False
         if not os.path.exists(SKTreeOutput):
@@ -1055,7 +1094,7 @@ else:
             Finaloutputdir +=  original_sample + "/"
             if not os.path.exists(Finaloutputdir):
                 os.system("mkdir " + Finaloutputdir)
-                                
+                os.system("chmod 755 -R " +  Finaloutputdir)
                 
     if not os.path.exists(Finaloutputdir):
         os.system("mkdir " + Finaloutputdir)
@@ -1110,3 +1149,5 @@ end_time = time.time()
 total_time=end_time- start_time
 print "Using " + str(number_of_cores) + " cores: Job time = " + str(total_time) +  " s"
 print ""
+
+#  LocalWords:  Finaloutputdir

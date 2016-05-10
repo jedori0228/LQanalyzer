@@ -93,15 +93,103 @@ void ExampleAnalyzerDiElectron::ExecuteEvents()throw( LQError ){
   m_logger << DEBUG << "RunNumber/Event Number = "  << eventbase->GetEvent().RunNumber() << " : " << eventbase->GetEvent().EventNumber() << LQLogger::endmsg;
   m_logger << DEBUG << "isData = " << isData << LQLogger::endmsg;
 
+  std::vector<snu::KElectron> electronColl_nocut_truth             =  GetElectrons(BaseSelection::ELECTRON_NOCUT);
+  
+  FillHist("Nelectrons" , electronColl_nocut_truth.size(), 1.,  0. , 5., 5);
+  
+  int n_prompt(0);
+  int n_cf(0);
+  int n_conv(0);
+  int n_tau(0);
+  int n_fake(0);
+  for(unsigned int iel=0; iel < electronColl_nocut_truth.size(); iel++){
+    if(electronColl_nocut_truth.at(iel).MCIsPrompt()) n_prompt++;
+    else n_fake++;
 
-  ///// SIGNAL PLOTS
-  /*  for(unsigned int ig=0; ig < eventbase->GetTruth().size(); ig++){
-    if(fabs(genBColl[ig].PdgId()) == 11){
+    if(electronColl_nocut_truth.at(iel).MCIsCF()) n_cf++;
+    if(electronColl_nocut_truth.at(iel).MCIsFromConversion()) n_conv++;
+    if(electronColl_nocut_truth.at(iel).MCFromTau()) n_tau++;
+    FillHist("el_pdgid", fabs(electronColl_nocut_truth.at(iel).MCMatchedPdgId()),  fabs(electronColl_nocut_truth.at(iel).MotherPdgId()), 1., 0., 1000., 1000, 0., 1000., 1000); 
+  }
+  
+  FillHist("electron_prompt_breakdown", n_prompt,n_fake, 1., 0., 4, 4, 0., 4., 4);
+  FillHist("electron_cf_breakdown", n_cf, n_prompt,1., 0., 4, 4, 0., 5., 5);
+  FillHist("electron_conv_breakdown", n_conv,n_prompt, 1., 0., 4, 4, 0., 5., 5);
+  FillHist("electron_tau_breakdown", n_tau,n_prompt, 1., 0., 4, 4, 0., 5., 5);
+  
+  /// Can count number of bjets using IsBTagged function in KJet class 
+  int nbjet_just_using_discriminant=0;
+  for(unsigned int ij =0; ij < GetJets(BaseSelection::JET_HN).size(); ij++){
+    if(GetJets(BaseSelection::JET_HN).at(ij).IsBTagged(snu::KJet::CSVv2, snu::KJet::Tight)) nbjet_just_using_discriminant++;
+  }
 
-      
+  
+  /// Updated way to cound bjets using NBJet function
+  /// NBJet counts number of bjets, but varies the value of btag disciminant as expained in 
+  /// 2a) on https://twiki.cern.ch/twiki/bin/viewauth/CMS/BTagSFMethods
+
+  /// Allowed input for taggers are:
+  /// snu::KJet::CSVv2
+  /// snu::KJet::cMVAv2
+  /// Allowed values for WP are:
+  /// snu::KJet::Loose
+  /// snu::KJet::Medium
+  /// snu::KJet::Tight
+  int nbjet_using_btagsf = NBJet(GetJets(BaseSelection::JET_HN), snu::KJet::CSVv2, snu::KJet::Tight);
+  
+  /// Can also check invidual jets using IsBTagged function in AnalyzerCore
+  int nbjet_just_using_sf(0);
+  for(unsigned int ij =0; ij < GetJets(BaseSelection::JET_HN).size(); ij++){
+    if(IsBTagged(GetJets(BaseSelection::JET_HN).at(ij), snu::KJet::CSVv2, snu::KJet::Tight)) nbjet_just_using_sf++;
+  }
+  
+
+  std::vector<snu::KMuon> muons = GetMuons(BaseSelection::MUON_POG_TIGHT);
+  CorrectMuonMomentum(muons);
+
+  /*if(n_prompt > 3){
+    for(unsigned int iel=0; iel < electronColl_nocut_truth.size(); iel++){
+      cout << "eta " << electronColl_nocut_truth.at(iel).Eta() << endl;
+      cout << "phi " << electronColl_nocut_truth.at(iel).Phi() << endl;
+      cout << "pt " << electronColl_nocut_truth.at(iel).Pt() << endl;
+      cout << "isprompt= " << electronColl_nocut_truth.at(iel).MCIsPrompt() << endl;
+      cout << "mc pdgid = " << electronColl_nocut_truth.at(iel).MCMatchedPdgId() << endl;
+      cout << "mc index = " <<  electronColl_nocut_truth.at(iel).MCTruthIndex() << endl;
+      cout << "mother pdgid = " <<  electronColl_nocut_truth.at(iel).MotherPdgId()<< endl;
+      cout << "motherindex= " <<electronColl_nocut_truth.at(iel).MotherTruthIndex()<< endl;
+
+      cout << "Mother type = " << electronColl_nocut_truth.at(iel).GetMotherType() << endl;
+      cout << "Particle type = " << electronColl_nocut_truth.at(iel).GetParticleType() << endl;
+
+      for(unsigned int ig=0; ig < eventbase->GetTruth().size(); ig++){
+	if(eventbase->GetTruth().at(ig).Pt() != eventbase->GetTruth().at(ig).Pt()) continue;
+	if(eventbase->GetTruth().at(ig).Pt() < 0.1) continue;
+	if(eventbase->GetTruth().at(ig).IndexMother() <= 0)continue;
+	if(eventbase->GetTruth().at(ig).IndexMother() >= int(eventbase->GetTruth().size()))continue;
+	cout << ig << " " << eventbase->GetTruth().at(ig).PdgId() << " : mother " <<  eventbase->GetTruth().at(eventbase->GetTruth().at(ig).IndexMother()).PdgId() << " :  " << eventbase->GetTruth().at(ig).IndexMother() << endl;
+	cout << eventbase->GetTruth().at(ig).Eta() << " " << eventbase->GetTruth().at(ig).Phi() << " " << eventbase->GetTruth().at(ig).Pt() <<endl;
+      }
     }
     }*/
-  
+
+  std::vector<snu::KMuon> muonColl_truth = GetMuons(BaseSelection::MUON_POG_TIGHT);
+  for(unsigned int im=0; im < muonColl_truth.size() ; im++){
+  }
+  /*cout << "mc pdgid = " <<muonColl_truth.at(im).MCMatchedPdgId() << endl;
+    cout << "mc index = " << muonColl_truth.at(im).MCTruthIndex() << endl;
+    cout << "mother pdgid = " << muonColl_truth.at(im).MotherPdgId()<< endl;
+    cout << "motherindex= " <<muonColl_truth.at(im).MotherTruthIndex()<< endl;
+    cout << "Is from conversion = " << muonColl_truth.at(im).MCIsFromConversion()<< endl;
+  }
+  for(unsigned int ig=0; ig < eventbase->GetTruth().size(); ig++){
+    if(eventbase->GetTruth().at(ig).Pt() != eventbase->GetTruth().at(ig).Pt()) continue;
+    if(eventbase->GetTruth().at(ig).Pt() < 0.1) continue;
+    if(eventbase->GetTruth().at(ig).IndexMother() <= 0)continue;
+    if(eventbase->GetTruth().at(ig).IndexMother() >= int(eventbase->GetTruth().size()))continue;
+    cout << ig << " " << eventbase->GetTruth().at(ig).PdgId() << " : mother " <<  eventbase->GetTruth().at(eventbase->GetTruth().at(ig).IndexMother()).PdgId() << " :  " << eventbase->GetTruth().at(ig).IndexMother() << endl;
+    cout << eventbase->GetTruth().at(ig).Eta() << " " << eventbase->GetTruth().at(ig).Phi() << " " << eventbase->GetTruth().at(ig).Pt() <<endl;
+  }
+  */
 
   /// Apply MC weight for MCatnlo samples
   // MC weight = gen weight * lumimask weight
@@ -383,8 +471,8 @@ void ExampleAnalyzerDiElectron::BeginCycle() throw( LQError ){
   // clear these variables in ::ClearOutputVectors function
   //DeclareVariable(obj, label, treename );
   //DeclareVariable(obj, label ); //-> will use default treename: LQTree
-  DeclareVariable(out_electrons, "Signal_Electrons", "LQTree");
-  DeclareVariable(out_muons, "Signal_Muons");
+  //DeclareVariable(out_electrons, "Signal_Electrons", "LQTree");
+  //DeclareVariable(out_muons, "Signal_Muons");
 
   
   return;

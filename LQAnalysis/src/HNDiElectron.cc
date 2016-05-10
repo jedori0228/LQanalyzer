@@ -51,8 +51,11 @@ void HNDiElectron::InitialiseAnalysis() throw( LQError ) {
    //// Initialise Plotting class functions
    /// MakeCleverHistograms ( type, "label")  type can be muhist/elhist/jethist/sighist
 
+   MakeCleverHistograms(sighist_ee, "TChannel");
    MakeCleverHistograms(sighist_ee, "SIGNAL");
    MakeCleverHistograms(sighist_ee, "SS_SIGNAL");
+   MakeCleverHistograms(sighist_ee, "SIGNAL_4J");
+   MakeCleverHistograms(sighist_ee, "SS_SIGNAL_4J");
    MakeCleverHistograms(sighist_ee, "SS_SIGNAL_CC");
    MakeCleverHistograms(sighist_ee, "SS_SIGNAL_noZ");
    MakeCleverHistograms(sighist_ee, "SS_SIGNAL_BB");
@@ -96,15 +99,79 @@ void HNDiElectron::ExecuteEvents()throw( LQError ){
 
 
   ///// SIGNAL PLOTS
+  FillHist("NoCut" , 1., MCweight,  0. , 2., 2);
 
   if(!isData)weight*= MCweight;
   
   /// Apply json file if gold json is used. if lumimask == silver this does nothing  
   if(isData&& (! eventbase->GetEvent().LumiMask(lumimask))) return;
+
+
+  if(IsSignal()){
+    //ListTriggersAvailable();
+    vector<int> pt1;
+    pt1.push_back(35);
+    pt1.push_back(25);
+    pt1.push_back(25);
+    pt1.push_back(25);
+    pt1.push_back(30);
+    pt1.push_back(30);
+    pt1.push_back(20);
+    pt1.push_back(25);
+    pt1.push_back(30);
+    pt1.push_back(120);
+    pt1.push_back(20);
+    pt1.push_back(25);
+    vector<int>pt2;
+    pt2.push_back(35);
+    pt2.push_back(25);
+    pt2.push_back(10);
+    pt2.push_back(10);
+    pt2.push_back(10);
+    pt2.push_back(15);
+    pt2.push_back(15);
+    pt2.push_back(10);
+    pt2.push_back(10);
+    pt2.push_back(10);
+    pt2.push_back(15);
+    pt2.push_back(15);
+
+
+    std::vector<TString> lists_triggers;
+    lists_triggers.push_back("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v");
+    lists_triggers.push_back("HLT_DoubleEle24_22_eta2p1_WPLoose_Gsf_v");
+    lists_triggers.push_back("HLT_Ele22_eta2p1_WPLoose_Gsf_v");
+    lists_triggers.push_back("HLT_Ele23_WPLoose_Gsf_v");
+    lists_triggers.push_back("HLT_Ele27_WPLoose_Gsf_v");
+    lists_triggers.push_back("HLT_Ele27_eta2p1_WPLoose_Gsf_v");
+    lists_triggers.push_back("HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_v");
+    lists_triggers.push_back("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v");
+    lists_triggers.push_back("HLT_Ele27_eta2p1_WPLoose_Gsf_HT200");
+    lists_triggers.push_back("HLT_Ele115_CaloIdVT_GsfTrkIdT_v");
+    lists_triggers.push_back("HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v");
+    lists_triggers.push_back("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v");
+    for(unsigned int i=0; i < lists_triggers.size(); i++){
+      FillTriggerEfficiency(lists_triggers.at(i), weight, "denominator_nojet", lists_triggers );
+    }
+    if(GetJets(BaseSelection::JET_HN).size() > 1){
+      for(unsigned int i=0; i < lists_triggers.size(); i++){
+	std::vector<TString> trig; trig.push_back(lists_triggers.at(i));
+	FillTriggerEfficiency(lists_triggers.at(i), weight, "denominator", lists_triggers );
+	if(PassTrigger(trig, prescale))  {
+	  FillTriggerEfficiency(lists_triggers.at(i), weight, "numerator",lists_triggers );
+	  
+	  if(GetElectrons(BaseSelection::ELECTRON_POG_TIGHT).size() ==2) {
+	    FillTriggerEfficiency(lists_triggers.at(i), weight, "numerator_dimuon",lists_triggers );
+	    if(GetElectrons(BaseSelection::ELECTRON_POG_TIGHT).at(0).Pt() > pt1.at(i) && GetElectrons(BaseSelection::ELECTRON_POG_TIGHT).at(1).Pt() > pt2.at(i))  FillTriggerEfficiency(lists_triggers.at(i), weight, "numerator_dimuon_pt",lists_triggers );
+	  }
+	}
+      }
+    }
+  }
+
   
   /// FillCutFlow(cut, weight) fills a basic TH1 called cutflow. It is used to check number of events passing different cuts
   /// The string cut must match a bin label in FillCutFlow function
-  FillCutFlow("NoCut", weight);
   FillHist("GenWeight" , 1., MCweight,  0. , 2., 2);
 
   if(isData) FillHist("Nvtx_nocut_data",  eventbase->GetEvent().nVertices() ,weight, 0. , 50., 50);
@@ -226,13 +293,30 @@ void HNDiElectron::ExecuteEvents()throw( LQError ){
     if(electronColl.at(0).Pt() > 20. && electronColl.at(1).Pt() > 15. ){
       
       FillCLHist(sighist_ee, "SIGNAL", eventbase->GetEvent(), muonColl,electronColl,jetColl_hn, weight);
+      
+      if(jetColl_loose.size() > 3 ) {
+	FillCLHist(sighist_ee, "SIGNAL_4J", eventbase->GetEvent(), muonColl,electronColl,jetColl_loose, weight);
+      } 
+      
+
 
       if(SameCharge(electronColl))  {
 	FillCLHist(sighist_ee, "SS_SIGNAL", eventbase->GetEvent(), muonColl,electronColl,jetColl_hn, weight);
 	if(electronColl.at(0).GsfCtfScPixChargeConsistency() && electronColl.at(1).GsfCtfScPixChargeConsistency()){
-	  if(electronColl.at(0).HasMatchedConvPhot() && electronColl.at(1).HasMatchedConvPhot()){
+	  if(electronColl.at(0).PassesConvVeto() && electronColl.at(1).PassesConvVeto()){
 	    FillCLHist(sighist_ee, "SS_SIGNAL_CC", eventbase->GetEvent(), muonColl,electronColl,jetColl_hn, weight);
 	    if(!Zcandidate(electronColl, 20., false)){
+
+	      if(jetColl_loose.size() > 3 ) {
+		bool has_forward_jet(false), has_back_jet(false);
+		for(unsigned int ij = 0 ; ij < jetColl_loose.size(); ij++){
+		  if(jetColl_loose.at(ij).Eta() > 2.5) has_forward_jet=true;
+		  if(jetColl_loose.at(ij).Eta() < -2.5) has_back_jet=true;
+		}
+		if(has_forward_jet && has_back_jet)
+		  FillCLHist(sighist_ee, "SS_SIGNAL_4J", eventbase->GetEvent(), muonColl,electronColl,jetColl_loose, weight);
+	      }
+	      
 	      FillCLHist(sighist_ee, "SS_SIGNAL_noZ", eventbase->GetEvent(), muonColl,electronColl,jetColl_hn, weight);
 
 	      if(electronColl.at(1).Pt() < 20.)  FillCLHist(sighist_ee, "SS_SIGNAL_LowPt", eventbase->GetEvent(), muonColl,electronColl,jetColl_hn, weight);
@@ -242,6 +326,25 @@ void HNDiElectron::ExecuteEvents()throw( LQError ){
 	      
 	      if(jetColl_hn.size() == 1 && (GetDiLepMass(electronColl) > 100. )) FillCLHist(sighist_ee, "SS_SIGNAL_1Jet", eventbase->GetEvent(), muonColl,electronColl,jetColl_hn, weight);
 	      if(jetColl_hn.size() > 1 ) FillCLHist(sighist_ee, "SS_SIGNAL_Presel", eventbase->GetEvent(), muonColl,electronColl,jetColl_hn, weight);
+	      
+	      if(jetColl_hn.size() > 3 ) {
+		bool has_forward_jet(false), has_back_jet(false);
+		for(unsigned int ij = 0 ; ij < jetColl_hn.size(); ij++){
+		  if(jetColl_hn.at(ij).Eta() > 1.5) has_forward_jet=true;
+		  if(jetColl_hn.at(ij).Eta() < -1.5) has_back_jet=true;
+		  cout << "Passes selection ll jjjj " << endl;
+		  for(unsigned int ij1=0; ij1 < jetColl_hn.size(); ij1++){
+		    cout << jetColl_hn.at(ij1).Eta() << endl;
+		  }
+		}
+		if(has_forward_jet && has_back_jet){
+		  FillCLHist(sighist_ee, "TChannel", eventbase->GetEvent(), muonColl,electronColl,jetColl_hn, weight);
+		  FillHist("SigTchannel" , 1., MCweight,  0. , 2., 2);
+		}
+		
+	      }
+
+
 
 	      if(NBJet(jetColl_hn, snu::KJet::CSVv2, snu::KJet::Medium) == 0){
 		if(electronColl.at(0).IsEBFiducial()   && electronColl.at(1).IsEBFiducial())       FillCLHist(sighist_ee, "SS_SIGNAL_BB_noB", eventbase->GetEvent(),   muonColl,electronColl,jetColl_hn, weight);
@@ -366,6 +469,23 @@ void HNDiElectron::ExecuteEvents()throw( LQError ){
   return;
 }// End of execute event loop
   
+
+void HNDiElectron::FillTriggerEfficiency(TString cut, float weight, TString label, std::vector<TString> list){
+
+  if(GetHist("TriggerEfficiency_" + label)) {
+    GetHist("TriggerEfficiency_"+label)->Fill(cut,weight);
+
+  }
+  else{
+    int ntrig = list.size();
+    AnalyzerCore::MakeHistograms("TriggerEfficiency_"+label,ntrig,0.,float(ntrig));
+
+    for(unsigned int it=0; it < list.size(); it++){
+      GetHist("TriggerEfficiency_"+label)->GetXaxis()->SetBinLabel(it+1,list.at(it));
+    }
+  }
+  
+}
 
 
 
@@ -677,8 +797,8 @@ void HNDiElectron::BeginCycle() throw( LQError ){
   // clear these variables in ::ClearOutputVectors function
   //DeclareVariable(obj, label, treename );
   //DeclareVariable(obj, label ); //-> will use default treename: LQTree
-  DeclareVariable(out_electrons, "Signal_Electrons", "LQTree");
-  DeclareVariable(out_muons, "Signal_Muons");
+  //  DeclareVariable(out_electrons, "Signal_Electrons", "LQTree");
+  //  DeclareVariable(out_muons, "Signal_Muons");
 
   
   return;

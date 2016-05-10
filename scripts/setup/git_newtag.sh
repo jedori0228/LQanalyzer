@@ -3,8 +3,33 @@ if [[ $LQANALYZER_DIR == "" ]];
     source $LQANALYZER_DIR/setup.sh
 fi
 
-itag=".6"
+########## Tag index
+itag=".1"
 tagname=$CATVERSION$itag
+
+
+diff  setup.sh scripts/setup/tag_setup.sh >> SetupCheck.txt
+
+setup_is_different="False"
+while read line
+do
+    setup_is_different="True"
+done  < SetupCheck.txt
+
+rm SetupCheck.txt
+if [[ $setup_is_different == "True" ]];
+then
+    echo "setup.sh is changed. Make changes to scripts/setup/tag_setup.sh"
+    return
+fi
+echo "$tagname (HEAD)" >> LatestTag.txt
+while read line
+do
+    if [[ $line != *"HEAD"* ]];then
+	echo "$line" >> LatestTag.txt
+    fi
+done  < /data1/LQAnalyzer_rootfiles_for_analysis/CATTag/LatestTag.txt
+mv LatestTag.txt /data1/LQAnalyzer_rootfiles_for_analysis/CATTag/LatestTag.txt
 
 rm $LQANALYZER_DIR/scripts/setup/SetBrachAndTag.sh
 echo "export CATVERSION="$CATVERSION >> $LQANALYZER_DIR/scripts/setup/SetBrachAndTag.sh
