@@ -521,7 +521,7 @@ void trilepton_mumumu::gen_matching(){
   std::vector<snu::KTruth> truthColl;
   eventbase->GetTruthSel()->Selection(truthColl);
 
-  // print truth info
+  //==== print truth info
   //cout << "=========================================================" << endl;
   //cout << "truth size = " << truthColl.size() << endl;
   //cout << "index" << '\t' << "pdgid" << '\t' << "mother" << '\t' << "mother pid" << endl;
@@ -603,23 +603,30 @@ void trilepton_mumumu::gen_matching(){
       }
     }
     //print_all_indices("gen_W_pri", gen_W_pri_indices);
+    if(gen_W_pri_indices.size() == 0) return;
 
     //==== find l_1 at gen. level
     for(int i=2;i<truthmax;i++){
       for(unsigned int j=0;j<gen_W_pri_indices.size();j++){
+        //==== 1) |PID| = 13
+        //==== 2) Mother = W_pri
         if(abs(truthColl.at(i).PdgId()) == 13 && truthColl.at(i).IndexMother() == gen_W_pri_indices.at(j) ){
           gen_l_1_indices.push_back(i);
           find_decay(truthColl, i, gen_l_1_indices);
           break;
         }
       }
+      if(gen_l_1_indices.size() != 0) break;
     }
     //print_all_indices("gen_l_1", gen_l_1_indices);
+    if(gen_l_1_indices.size() == 0) return;
 
     //==== As m(HN) goes closer to W mass, W_sec starting to appear in truth coll
     //==== if W_sec is virtual, it may not appear in the gen particle collections
     //==== check W_sec exists
     for(int i=2;i<truthmax;i++){
+      //==== 1) |PID| = 24
+      //==== 2) Mother's PID = 80000002
       if(fabs(truthColl.at(i).PdgId()) == 24 && truthColl.at(truthColl.at(i).IndexMother()).PdgId() == 80000002){
         gen_W_sec_indices.push_back(i);
         find_decay(truthColl, i, gen_W_sec_indices);
@@ -636,18 +643,24 @@ void trilepton_mumumu::gen_matching(){
       //==== find nu at gen. level
       for(int i=2;i<truthmax;i++){
         for(unsigned int j=0;j<gen_HN_indices.size();j++){
+          //==== 1) PID = 14
+          //==== 2) Mother = {HN}
           if(abs(truthColl.at(i).PdgId()) == 14 && truthColl.at(i).IndexMother() == gen_HN_indices.at(j) ){
             gen_nu_indices.push_back(i);
             find_decay(truthColl, i, gen_nu_indices);
             break;
           }
         }
+        if(gen_nu_indices.size() != 0) break;
       }
       //print_all_indices("gen_nu", gen_nu_indices);
+      if(gen_nu_indices.size() == 0) return;
 
       //==== find l_3 at gen. level
       for(int i=2;i<truthmax;i++){
         for(unsigned int j=0;j<gen_HN_indices.size();j++){
+          //==== 1) PID = PID of l_1 (SS)
+          //==== 2) Mother = {HN}
           if(truthColl.at(i).PdgId() == truthColl.at(gen_l_1_indices.at(0)).PdgId() && truthColl.at(i).IndexMother() == gen_HN_indices.at(j) ){
             gen_l_3_indices.push_back(i);
             find_decay(truthColl, i, gen_l_3_indices);
@@ -656,63 +669,76 @@ void trilepton_mumumu::gen_matching(){
         }
       }
       //print_all_indices("gen_l_3", gen_l_3_indices);
+      if(gen_l_3_indices.size() == 0) return;
 
       //==== find l_2 at gen. level
       for(int i=2;i<truthmax;i++){
         for(unsigned int j=0;j<gen_HN_indices.size();j++){
+          //==== 1) PID = - (PID of l_1) (OS)
+          //==== 2) Mother = {HN}
           if(truthColl.at(i).PdgId() == -truthColl.at(gen_l_1_indices.at(0)).PdgId() && truthColl.at(i).IndexMother() == gen_HN_indices.at(j) ){
             gen_l_2_indices.push_back(i);
             find_decay(truthColl, i, gen_l_2_indices);
             break;
           }
         }
+        if(gen_l_2_indices.size() != 0) break;
       }
       //print_all_indices("gen_l_2", gen_l_2_indices);
+      if(gen_l_2_indices.size() == 0) return;
     }
     //==== W_sec in truthColl index case
     else{
       //cout << "[W_sec!]" << endl;
-
       //==== find nu at gen. level
       for(int i=2;i<truthmax;i++){
         for(unsigned int j=0;j<gen_W_sec_indices.size();j++){
+          //==== 1) |PID| = 14
+          //==== 2) Mother = {W_sec}
           if(abs(truthColl.at(i).PdgId()) == 14 && truthColl.at(i).IndexMother() == gen_W_sec_indices.at(j) ){
             gen_nu_indices.push_back(i);
             find_decay(truthColl, i, gen_nu_indices);
             break;
           }
         }
+        if(gen_nu_indices.size() != 0) break;
       }
       //print_all_indices("gen_nu", gen_nu_indices);
+      if(gen_nu_indices.size() == 0) return;
 
       //==== find l_3 at gen. level
       for(int i=2;i<truthmax;i++){
         for(unsigned int j=0;j<gen_W_sec_indices.size();j++){
-          if(fabs(truthColl.at(i).PdgId()) == fabs(truthColl.at(gen_l_1_indices.at(0)).PdgId()) && truthColl.at(i).IndexMother() == gen_W_sec_indices.at(j) ){
+          //==== 1) |PID| = 13
+          //==== 2) Mother = {W_sec}
+          if(fabs(truthColl.at(i).PdgId()) == 13 && truthColl.at(i).IndexMother() == gen_W_sec_indices.at(j) ){
             gen_l_3_indices.push_back(i);
             find_decay(truthColl, i, gen_nu_indices);
             break;
           }
         }
+        if(gen_l_3_indices.size() != 0) break;
       }
       //print_all_indices("gen_l_3", gen_l_3_indices);
+      if(gen_l_3_indices.size() == 0) return;
 
       //==== find l_2 at gen. level
       for(int i=2;i<truthmax;i++){
         for(unsigned int j=0;j<gen_HN_indices.size();j++){
-          if(fabs(truthColl.at(i).PdgId()) == fabs(truthColl.at(gen_l_1_indices.at(0)).PdgId()) && truthColl.at(i).IndexMother() == gen_HN_indices.at(j) ){
+          //==== 1) |PID| = 13
+          //==== 2) Mother = {HN}
+          if(fabs(truthColl.at(i).PdgId()) == 13 && truthColl.at(i).IndexMother() == gen_HN_indices.at(j) ){
             gen_l_2_indices.push_back(i);
             find_decay(truthColl, i, gen_l_2_indices);
             break;
           }
         }
+        if(gen_l_2_indices.size() != 0) break;
       }
       //print_all_indices("gen_l_2", gen_l_2_indices);
+      if(gen_l_2_indices.size() == 0) return;
       
     }
-
-    //==== return when we failed to find all gen particles
-    if( gen_l_1_indices.size() == 0 || gen_l_2_indices.size() == 0 || gen_l_2_indices.size() == 0 || gen_nu_indices.size() == 0 ) return;
 
     gen_l_1 = truthColl.at( gen_l_1_indices.back() );
     gen_l_2 = truthColl.at( gen_l_2_indices.back() );
@@ -760,66 +786,83 @@ void trilepton_mumumu::gen_matching(){
   else{
     //==== find l_1 at gen. level
     for(int i=2;i<truthmax;i++){
-      for(unsigned int j=0;j<gen_HN_indices.size();j++){
+      for(unsigned int j=0;j<1;j++){
+        //==== 1) |PID| = 13
+        //==== 2) Mother = Mother of HN.at(0) : becase they are generated at the same time.
         if(abs(truthColl.at(i).PdgId()) == 13 && truthColl.at(i).IndexMother() == truthColl.at(gen_HN_indices.at(j)).IndexMother()){
           gen_l_1_indices.push_back(i);
           find_decay(truthColl, i, gen_l_1_indices);
           break;
         }
       }
+      if(gen_l_1_indices.size() != 0) break;
     }
     //print_all_indices("gen_l_1", gen_l_1_indices);
+    if(gen_l_1_indices.size() == 0) return;
 
     //==== fine l_2 at gen. level
     for(int i=2;i<truthmax;i++){
       for(unsigned int j=0;j<gen_HN_indices.size();j++){
+      //==== 1) |PID| = 13
+      //==== 2) Mother = {HN}
         if(abs(truthColl.at(i).PdgId()) == 13 && truthColl.at(i).IndexMother() == gen_HN_indices.at(j) ){
           gen_l_2_indices.push_back(i);
           find_decay(truthColl, i, gen_l_2_indices);
           break;
         }
       }
+      if(gen_l_2_indices.size() != 0) break;
     }
     //print_all_indices("gen_l_2", gen_l_2_indices);    
+    if(gen_l_2_indices.size() == 0) return;
 
     //==== find W_sec
     for(int i=2;i<truthmax;i++){
       for(unsigned int j=0;j<gen_HN_indices.size();j++){
+        //==== 1) |PID| = 24
+        //==== 2) Mother = {HN}
         if(abs(truthColl.at(i).PdgId()) == 24 && truthColl.at(i).IndexMother() == gen_HN_indices.at(j) ){
           gen_W_sec_indices.push_back(i);
           find_decay(truthColl, i, gen_W_sec_indices);
           break;
         }
       }
+      if(gen_W_sec_indices.size() != 0) break;
     }
     //print_all_indices("gen_W_sec", gen_W_sec_indices);
+    if(gen_W_sec_indices.size() == 0) return;
 
     //==== find nu at gen. level
     for(int i=2;i<truthmax;i++){
       for(unsigned int j=0;j<gen_W_sec_indices.size();j++){
+        //==== 1) |PID| = 14
+        //==== 2) Mother = {W_sec}
         if(abs(truthColl.at(i).PdgId()) == 14 && truthColl.at(i).IndexMother() == gen_W_sec_indices.at(j) ){
           gen_nu_indices.push_back(i);
           find_decay(truthColl, i, gen_nu_indices);
           break;
         }
       }
+      if(gen_nu_indices.size() != 0) break;
     }
     //print_all_indices("gen_nu", gen_nu_indices);
+    if(gen_nu_indices.size() == 0) return;
 
     //==== find l_3 at gen. level
     for(int i=2;i<truthmax;i++){
       for(unsigned int j=0;j<gen_W_sec_indices.size();j++){
+        //==== 1) |PID| = 13
+        //==== 2) Mother = {W_sec}
         if(abs(truthColl.at(i).PdgId()) == 13 && truthColl.at(i).IndexMother() == gen_W_sec_indices.at(j) ){
           gen_l_3_indices.push_back(i);
           find_decay(truthColl, i, gen_l_3_indices);
           break;
         }
       }
+      if(gen_l_3_indices.size() != 0) break;
     }
     //print_all_indices("gen_l_3", gen_l_3_indices);
-
-    //==== return when we failed to find all gen particles
-    if( gen_l_1_indices.size() == 0 || gen_l_2_indices.size() == 0 || gen_l_2_indices.size() == 0 || gen_nu_indices.size() == 0 ) return;
+    if(gen_l_3_indices.size() == 0) return;
 
     gen_l_1 = truthColl.at( gen_l_1_indices.back() );
     gen_l_2 = truthColl.at( gen_l_2_indices.back() );
