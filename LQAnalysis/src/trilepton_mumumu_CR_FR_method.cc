@@ -38,16 +38,6 @@ trilepton_mumumu_CR_FR_method::trilepton_mumumu_CR_FR_method() :  AnalyzerCore()
   // This function sets up Root files and histograms Needed in ExecuteEvents
   InitialiseAnalysis();
   
-  //dXY_0p005_dZ_0p1
-  //dXY_0p01_dZ_0p5
-  //dXY_0p2_dZ_0p5
-  //TFile* file = new TFile("/data4/LQAnalyzerCode/jskim/LQanalyzer/data/rootfiles/8TeV_trimuon_FR_dXY_0p01_dZ_0p5_dijet_topology.root");
-  //hist_trimuon_FR = (TH2F*)file->Get("events_F")->Clone();
-  TFile* file = new TFile("/data4/LQAnalyzerCode/jskim/LQanalyzer/data/rootfiles/8TeV_trimuon_HighdXY_FR.root");
-  hist_trimuon_FR = (TH2F*)file->Get("HighdXY_events_F")->Clone();
-
-  //TFile* file = new TFile("/data4/LQAnalyzerCode/jskim/LQanalyzer/data/rootfiles/8TeV_trimuon_FR_MCTruth_ttbar.root");
-  //hist_trimuon_FR = (TH2F*)file->Get("events_num")->Clone();
 }
 
 
@@ -60,6 +50,21 @@ void trilepton_mumumu_CR_FR_method::InitialiseAnalysis() throw( LQError ) {
   // You can also use m_logger << level << "comment" << int/double  << LQLogger::endmsg;
   //
 
+  string lqdir = getenv("LQANALYZER_DIR");
+
+  //==== dXY_0p005_dZ_0p1
+  //==== dXY_0p01_dZ_0p5
+  //==== dXY_0p2_dZ_0p5
+
+  //TFile* file = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_dXY_0p01_dZ_0p5_dijet_topology.root").c_str() );
+  //hist_trimuon_FR = (TH2F*)file->Get("events_F")->Clone();
+  TFile* file = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_HighdXY_FR.root").c_str() );
+  hist_trimuon_FR = (TH2F*)file->Get("HighdXY_events_F")->Clone();
+
+  //TFile* file = new TFile( (lqdir+"/data/rootfiles/rootfiles/8TeV_trimuon_FR_MCTruth_ttbar.root").c_str() );
+  //hist_trimuon_FR = (TH2F*)file->Get("events_num")->Clone(); 
+
+  return;
   return;
  }
 
