@@ -1,7 +1,8 @@
 #!/bin/sh
 
+runMC=true
 runData=true
-runMC=false
+runDataLowPt=false
 runQCD=false
 runQCD2=false
 
@@ -37,16 +38,17 @@ then
     cycle="FakeRateCalculator_Mu"
     skinput="True"
     usebatch="True"
-    njobs=50
+    njobs=70
     data_lumi="AtoD"
     loglevel="INFO"
     logstep=1000
     #outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/MCTruth/QCD_single_mu_enriched/"
-    outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/dijet_topology/dXY_0p01_dZ_0p5/"
-    #outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/Large_dXY/"
+    outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/dXY_0p01_dZ_0p5/"
+    #outputdir=$LQANALYZER_DIR"/"
 
-    declare -a input_samples=("DY10to50" "DY50plus" "Wjets" "Wgamma" "stbar_sch" "stbar_tch" "stbar_tW" "st_sch" "st_tch" "st_tW" "ttbarMS")
+    declare -a input_samples=("DY10to50" "DY50plus" "Wjets" "Wgamma" "stbar_sch" "stbar_tch" "stbar_tW" "st_sch" "st_tch" "st_tW" "ttbarMS" "Wbb" "ttW" "ttZ" "WWW" "TTWW" "TTG" "ZZZ" "WZZ" "WWZ" "WWG" "WW_mg" "WZtollqq_mg" "WZtoqqln_mg" "WZtollln_mg" "ZZtollnn_mg" "ZZtollqq_mg" "ZZtollll_mg" "Zbb" "HtoWW" "ggHtoZZ" "Wtollln_new")
     #declare -a input_samples=("QCD_1000_mu" "QCD_15-20_mu" "QCD_20-30_mu" "QCD_30-50_mu" "QCD_50-80_mu" "QCD_800-1000_mu" "QCD_120-170_mu" "QCD_170-300_mu" "QCD_300-470_mu" "QCD_470-600_mu" "QCD_600-800_mu" "QCD_80-120_mu")
+    #declare -a input_samples=("DY50plus")
 
     source submit.sh  
     #source hadd.sh /home/chasejeon/LQanalyzer_Oct2015_8TeV/LQanalyzer/data/output/ElectronFakes/MC/  FakeRateCalculator_El_mc_5_3_14.root  FakeRateCalculator_El_SK*
@@ -106,19 +108,24 @@ then
     data_lumi="AtoD"
     loglevel="INFO"
     logstep=1000
+    #usebatch="False"
 
     nevents=-1
 
-    #### ifr pT > 15 GeV bin ####
-    outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/dijet_topology/dXY_0p01_dZ_0p5/period/"
-    #stream="singlemuon"
+    #### for pT > 15 GeV bin ####
+    outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/dXY_0p01_dZ_0p5/period/"
+    #outputdir=$LQANALYZER_DIR"/"
     stream="muon"
+    #stream="singlemuon"
     declare -a input_samples=("A" "B" "C" "D")
 
     #### for 10-15 GeV pT bin ####
-    #outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/dijet_topology/dXY_0p01_dZ_0p5/"
-    #stream="muon_lowpt"
-    #declare -a input_samples=("D")
+    if [[ $runDataLowPt == "true" ]];
+    then
+        outputdir=$LQANALYZER_DIR"/data/output/MuonFakes/dXY_0p01_dZ_0p5/"
+        stream="muon_lowpt"
+        declare -a input_samples=("D")
+    fi
 
     source submit.sh $1
 
