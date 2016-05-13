@@ -52,17 +52,12 @@ void trilepton_mumumu_FR_method::InitialiseAnalysis() throw( LQError ) {
 
   string lqdir = getenv("LQANALYZER_DIR");
 
-  //==== dXY_0p005_dZ_0p1
-  //==== dXY_0p01_dZ_0p5
-  //==== dXY_0p2_dZ_0p5
-
-  //TFile* file = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_dXY_0p01_dZ_0p5_dijet_topology.root").c_str() );
-  //hist_trimuon_FR = (TH2F*)file->Get("events_F")->Clone();
-  TFile* file = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_HighdXY_FR.root").c_str() );
-  hist_trimuon_FR = (TH2F*)file->Get("HighdXY_events_F")->Clone();
-
-  //TFile* file = new TFile( (lqdir+"/data/rootfiles/rootfiles/8TeV_trimuon_FR_MCTruth_ttbar.root").c_str() );
-  //hist_trimuon_FR = (TH2F*)file->Get("events_num")->Clone(); 
+  //==== dijet topology
+  TFile* file = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_dijet_topology.root").c_str() );
+  hist_trimuon_FR = (TH2F*)file->Get("events_F")->Clone();
+  //==== HighdXY muons
+  //TFile* file = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_HighdXY.root").c_str() );
+  //hist_trimuon_FR = (TH2F*)file->Get("HighdXY_events_F")->Clone();
 
   return;
 }
