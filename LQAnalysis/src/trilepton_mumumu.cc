@@ -390,6 +390,23 @@ void trilepton_mumumu::EndCycle()throw( LQError ){
   << "smaller = " << sol_sel_chi2_smaller/n_gen_pass << endl
   << "larger = " << sol_sel_chi2_larger/n_gen_pass << endl;
 
+  TH1F* GEN_solution_selection_chi2 = new TH1F("GEN_solution_selection_chi2", "", 6, 0, 6);
+  GEN_solution_selection_chi2->GetXaxis()->SetBinLabel(1, "n_gen_pass");
+  GEN_solution_selection_chi2->GetXaxis()->SetBinLabel(2, "best");
+  GEN_solution_selection_chi2->GetXaxis()->SetBinLabel(3, "plus");
+  GEN_solution_selection_chi2->GetXaxis()->SetBinLabel(4, "minus");
+  GEN_solution_selection_chi2->GetXaxis()->SetBinLabel(5, "smaller");
+  GEN_solution_selection_chi2->GetXaxis()->SetBinLabel(6, "larger");
+  GEN_solution_selection_chi2->SetBinContent(1, n_gen_pass);
+  GEN_solution_selection_chi2->SetBinContent(2, sol_sel_chi2_best);
+  GEN_solution_selection_chi2->SetBinContent(3, sol_sel_chi2_plus);
+  GEN_solution_selection_chi2->SetBinContent(4, sol_sel_chi2_minus);
+  GEN_solution_selection_chi2->SetBinContent(5, sol_sel_chi2_smaller);
+  GEN_solution_selection_chi2->SetBinContent(6, sol_sel_chi2_larger);
+
+  m_outputFile->cd();
+  GEN_solution_selection_chi2->Write();
+
 }
 
 
