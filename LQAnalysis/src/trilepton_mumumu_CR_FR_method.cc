@@ -15,9 +15,6 @@
 #include "EventBase.h"                                                                                  
 #include "BaseSelection.h"
 
-#define FR_n_pt_bin 7
-#define FR_n_eta_bin 4
-
 //// Needed to allow inheritance for use in LQCore/core classes
 ClassImp (trilepton_mumumu_CR_FR_method);
 
@@ -53,11 +50,18 @@ void trilepton_mumumu_CR_FR_method::InitialiseAnalysis() throw( LQError ) {
   string lqdir = getenv("LQANALYZER_DIR");
 
   //==== dijet topology
-  TFile* file = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_dijet_topology.root").c_str() );
-  hist_trimuon_FR = (TH2F*)file->Get("events_F")->Clone();
+  //TFile* file = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_dijet_topology.root").c_str() );
+  //hist_trimuon_FR = (TH2F*)file->Get("events_F")->Clone();
   //==== HighdXY muons
   //TFile* file = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_HighdXY.root").c_str() );
   //hist_trimuon_FR = (TH2F*)file->Get("HighdXY_events_F")->Clone();
+  //==== DiMuonHighdXY muons
+  TFile* file = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_DiMuon_HighdXY.root").c_str() );
+  hist_trimuon_FR = (TH2F*)file->Get("DiMuon_HighdXY_events_F")->Clone();
+
+  TH1I* hist_bins = (TH1I*)file->Get("hist_bins");
+  FR_n_pt_bin = hist_bins->GetBinContent(1);
+  FR_n_eta_bin = hist_bins->GetBinContent(2);
 
   return;
  }
@@ -374,8 +378,25 @@ double trilepton_mumumu_CR_FR_method::get_FR(snu::KParticle muon){
   // bin numbe          1    2     3    4    5   6     7
   // ptarray[7+1] = {10., 15., 20., 25., 30., 35., 45., 60.}; 
 
-  double ptarray[FR_n_pt_bin+1] = {10., 15., 20., 25., 30., 35., 45., 60.};
-  double etaarray[FR_n_eta_bin+1] = {0.0, 0.8, 1.479, 2.0, 2.5};
+  double ptarray[FR_n_pt_bin+1], etaarray[FR_n_eta_bin+1];
+  //cout << "FR_n_pt_bin = " << FR_n_pt_bin << endl;
+  for(int i=0; i<FR_n_pt_bin; i++){
+    ptarray[i] = hist_trimuon_FR->GetXaxis()->GetBinLowEdge(i+1);
+    //cout << " " << ptarray[i] << endl;
+    if(i==FR_n_pt_bin-1){
+      ptarray[FR_n_pt_bin] = hist_trimuon_FR->GetXaxis()->GetBinUpEdge(i+1);
+      //cout << " " << ptarray[FR_n_pt_bin] << endl;
+    }
+  }
+  //cout << "FR_n_eta_bin = " << FR_n_eta_bin << endl;
+  for(int i=0; i<FR_n_eta_bin; i++){
+    etaarray[i] = hist_trimuon_FR->GetYaxis()->GetBinLowEdge(i+1);
+    //cout << " " << etaarray[i] << endl;
+    if(i==FR_n_eta_bin-1){
+      etaarray[FR_n_eta_bin] = hist_trimuon_FR->GetYaxis()->GetBinUpEdge(i+1);
+      //cout << " " << etaarray[FR_n_eta_bin] << endl;
+    }
+  }
 
   int this_pt_bin;
   if( this_pt >= ptarray[FR_n_pt_bin] ) this_pt_bin = FR_n_pt_bin;
@@ -401,7 +422,3 @@ double trilepton_mumumu_CR_FR_method::get_FR(snu::KParticle muon){
   return hist_trimuon_FR->GetBinContent(this_pt_bin, this_eta_bin);
 
 }
-
-
-
-

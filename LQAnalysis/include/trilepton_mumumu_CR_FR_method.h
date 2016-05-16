@@ -29,6 +29,7 @@ class trilepton_mumumu_CR_FR_method : public AnalyzerCore {
          z_candidate_x_min, z_candidate_x_max, z_candidate_dx;
 
   TH2F* hist_trimuon_FR;
+  int FR_n_pt_bin, FR_n_eta_bin;
   double get_FR(snu::KParticle muon);
 
  private:
