@@ -26,8 +26,9 @@ ClassImp (trilepton_mumumu);
  *  This is an Example Cycle. It inherits from AnalyzerCore. The code contains all the base class functions to run the analysis.
  *
  */
-trilepton_mumumu::trilepton_mumumu() :  AnalyzerCore(), out_muons(0), 
-sol_sel_chi2_best(0), sol_sel_chi2_plus(0), sol_sel_chi2_minus(0), sol_sel_chi2_smaller(0), sol_sel_chi2_larger(0), n_gen_pass(0)
+trilepton_mumumu::trilepton_mumumu() :
+sol_sel_chi2_best(0), sol_sel_chi2_plus(0), sol_sel_chi2_minus(0), sol_sel_chi2_smaller(0), sol_sel_chi2_larger(0), n_gen_pass(0),
+AnalyzerCore(), out_muons(0)
 {
 
   
@@ -38,7 +39,12 @@ sol_sel_chi2_best(0), sol_sel_chi2_plus(0), sol_sel_chi2_minus(0), sol_sel_chi2_
   //
   // This function sets up Root files and histograms Needed in ExecuteEvents
   InitialiseAnalysis();
-  
+  MakeCleverHistograms(trilephist,"cut0");
+  MakeCleverHistograms(trilephist,"cut0_PU");
+  MakeCleverHistograms(trilephist,"cutdR");
+  MakeCleverHistograms(trilephist,"cutdR_PU");
+  MakeCleverHistograms(trilephist,"cutdR_cutW");
+  MakeCleverHistograms(trilephist,"cutdR_cutW_PU");
 }
 
 
@@ -156,7 +162,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   if( n_triLoose_muons != 3 ) return;
   if( n_triTight_muons != 3 ) return;
 
-  if( muontriLooseColl.at(0).Pt() < 15 ) return;
+  if( muontriLooseColl.at(0).Pt() < 20. ) return;
   FillCutFlow("3muon", weight);
 
   snu::KParticle lep[3], HN[4];
@@ -164,9 +170,9 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     lep[i] = muontriLooseColl.at(i);
   }
 
-  // MC samples has m(ll)_saveflavour > 4 GeV cut at gen level
-  // MADGRAPH : https://github.com/cms-sw/genproductions/blob/master/bin/MadGraph5_aMCatNLO/cards/production/13TeV/WZTo3LNu01j_5f_NLO_FXFX/WZTo3LNu01j_5f_NLO_FXFX_run_card.dat#L130
-  // POWHEG   : https://github.com/cms-sw/genproductions/blob/master/bin/Powheg/production/WZTo3lNu_NNPDF30_13TeV/WZ_lllnu_NNPDF30_13TeV.input#L2
+  //==== MC samples has m(ll)_saveflavour > 4 GeV cut at gen level
+  //==== MADGRAPH : https://github.com/cms-sw/genproductions/blob/master/bin/MadGraph5_aMCatNLO/cards/production/13TeV/WZTo3LNu01j_5f_NLO_FXFX/WZTo3LNu01j_5f_NLO_FXFX_run_card.dat#L130
+  //==== POWHEG   : https://github.com/cms-sw/genproductions/blob/master/bin/Powheg/production/WZTo3lNu_NNPDF30_13TeV/WZ_lllnu_NNPDF30_13TeV.input#L2
   if( ! (lep[0]+lep[1]).M() > 4 || ! (lep[0]+lep[2]).M() > 4 || ! (lep[1]+lep[2]).M() > 4 ) return;
   FillCutFlow("mllsf4", weight);
 
