@@ -319,6 +319,10 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
     int n_jets = jetColl_lepveto.size();
 
     if( muontriHighdXYLooseColl.size() == 2){
+
+      //==== lead pt > 20 GeV
+      if( muontriHighdXYLooseColl.at(0).Pt() < 20 ) continue;
+
       FillHist("DiMuon_HighdXY_dRdimuon", muontriHighdXYLooseColl.at(0).DeltaR( muontriHighdXYLooseColl.at(1) ), weight, 0, 4, 4./0.1);
       FillHist("DiMuon_HighdXY_mdimuon", (muontriHighdXYLooseColl.at(0)+muontriHighdXYLooseColl.at(1)).M(), weight, 0, 200, 200./5.);
       FillHist("DiMuon_HighdXY_n_jets", n_jets, weight, 0, 10, 10);
@@ -337,6 +341,10 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
     } // if(dimuon)
 
     if( muontriHighdXYLooseColl.size() == 3){
+
+      //==== lead pt > 20 GeV
+      if( muontriHighdXYLooseColl.at(0).Pt() < 20 ) continue;
+
       FillHist("TriMuon_HighdXY_n_jets", n_jets, weight, 0, 10, 10);
       for(unsigned int i=0; i<3; i++){
         snu::KMuon muon = muontriHighdXYLooseColl.at(i);
@@ -362,10 +370,13 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   ///////////// use MC Turth ///////////
   //////////////////////////////////////
  
-  if( !k_isdata ){
+  if( !k_isdata && PassTrigger(triggerlist_Mu17TkMu8,prescale) ){
 
     float etaarray_2 [] = {0.0, 0.8, 1.479, 2.0, 2.5};
     float ptarray_2 [] = {10.,15.,20.,25.,30.,35.,45.,60.,80.,100.};
+
+    //==== lead pT > 20
+    if( muontriNodXYCutTightColl_raw.at(0).Pt() < 20 ) continue;
 
     for(unsigned int i=0; i<muontriNodXYCutTightColl_raw.size(); i++){
 
