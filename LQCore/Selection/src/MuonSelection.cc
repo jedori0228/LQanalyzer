@@ -270,7 +270,8 @@ bool MuonSelection::HNIstriTight(KMuon muon, bool m_debug) {
   if( muon.validPixHits() == 0)   pass_selection = false;
   if( muon.validStations() <= 1 ) pass_selection = false;
   if( muon.ActiveLayer() <= 5   ) pass_selection = false;
-  if( fabs(muon.dXY())    >= 0.01) pass_selection = false; // 0.01 cm = 100 um
+  if( fabs(muon.dXY())    >= 0.01) pass_selection = false; // 0.01 cm = 0.1 mm = 100 um
+  if( fabs( muon.dXY() / muon.dXYErrPat() ) >= 3.0 ) pass_selection = false;
   if( fabs(muon.dZ())    >= 0.5)  pass_selection = false;
   if(!(muon.GlobalChi2() < 10.)) pass_selection = false;
 
@@ -323,7 +324,8 @@ void MuonSelection::HNtriLooseMuonSelection(std::vector<KMuon>& leptonColl , boo
     if( muit->validPixHits() == 0)   pass_selection = false;
     if( muit->validStations() <= 1 ) pass_selection = false;
     if( muit->ActiveLayer() <= 5   ) pass_selection = false;
-    if( fabs(muit->dXY())    >= 0.2) pass_selection = false;
+    if( fabs(muit->dXY())    >= 0.01) pass_selection = false; // 0.01 cm = 0.1 mm = 100 um
+    if( fabs( muit->dXY() / muit->dXYErrPat() ) >= 3.0 ) pass_selection = false;
     if( fabs(muit->dZ())    >= 0.5)  pass_selection = false;
     if(!(muit->GlobalChi2() < 10.)) pass_selection = false;
 
@@ -363,7 +365,8 @@ bool MuonSelection::HNIstriHighdXYTight(KMuon muon, bool m_debug){
   if( muon.validPixHits() == 0)   pass_selection = false;
   if( muon.validStations() <= 1 ) pass_selection = false;
   if( muon.ActiveLayer() <= 5   ) pass_selection = false;
-  if( fabs(muon.dXY())    <= 0.02) pass_selection = false;
+  if( fabs(muon.dXY())    >= 1.0 ) pass_selection = false; // 1 cm = 10 mm
+  if( fabs( muon.dXY() / muon.dXYErrPat() ) <= 4.0 ) pass_selection = false; // inverted this, to select fake muons!
   if( fabs(muon.dZ())    >= 0.5)  pass_selection = false;
   if(!(muon.GlobalChi2() < 10.)) pass_selection = false;
 
@@ -415,7 +418,8 @@ void MuonSelection::HNtriHighdXYLooseMuonSelection(std::vector<KMuon>& leptonCol
     if( muit->validPixHits() == 0)   pass_selection = false;
     if( muit->validStations() <= 1 ) pass_selection = false;
     if( muit->ActiveLayer() <= 5   ) pass_selection = false;
-    if( fabs(muit->dXY())    <= 0.02) pass_selection = false;
+    if( fabs(muit->dXY())    >= 1.0 ) pass_selection = false; // 1 cm = 10 mm
+    if( fabs( muit->dXY() / muit->dXYErrPat() ) <= 4.0 ) pass_selection = false; // inverted this, to select fake muons!
     if( fabs(muit->dZ())    >= 0.5)  pass_selection = false;
     if(!(muit->GlobalChi2() < 10.)) pass_selection = false;
 
