@@ -14,6 +14,7 @@ class EventBase;
 #include "LQCycleBase.h"
 #include "HNCommonLeptonFakes/HNCommonLeptonFakes/HNCommonLeptonFakes.h"
 #include "rochcor2012/rochcor2012/rochcor2012jan22.h"
+#include "TNtupleD.h"
 
 class AnalyzerCore : public LQCycleBase {
   
@@ -131,6 +132,7 @@ class AnalyzerCore : public LQCycleBase {
   TDirectory *Dir;
   map<TString, TH1*> maphist;
   map<TString, TH2*> maphist2D;
+  map<TString, TNtupleD*> mapntp;
   std::map<TString, std::vector<std::map<float, std::vector<float> > > > JECUncMap;
 
 
@@ -169,6 +171,8 @@ class AnalyzerCore : public LQCycleBase {
   void MakeHistograms(TString hname, int nbins, float xbins[]);
   void MakeHistograms2D(TString hname, int nbinsx, float xbins[], int nbinsy, float ybins[]);
   void MakeHistograms2D(TString hname, int nbinsx, float xmin, float xmax, int nbinsy, float ymin, float ymax);
+  void MakeNtp(TString hname, TString myvar);
+
     //
     // Makes temporary dir
     //
@@ -181,6 +185,7 @@ class AnalyzerCore : public LQCycleBase {
   //// Plotting 
   TH1* GetHist(TString hname);
   TH2* GetHist2D(TString hname);
+  TNtupleD* GetNtp(TString hname);
 
   /// Fills hist in maphist
   void FillHist(TString histname, float value, float w );
@@ -188,6 +193,10 @@ class AnalyzerCore : public LQCycleBase {
   void FillHist(TString histname, float value, float w , float xmin[], int nbins=0);
   void FillHist(TString histname, float value1, float value2, float w , float x[], int nbinsx, float y[], int nbinsy);
   void FillHist(TString histname, float value1,  float value2, float w , float xmin, float xmax, int nbinsx,  float ymin, float ymax, int nbinsy);
+
+  /// Fills ntuple
+  void FillNtp(TString hname, Double_t myinput[]);
+
   /// Fills clever hists
   void FillCLHist(histtype type, TString hist, snu::KEvent ev,vector<snu::KMuon> muons, vector<snu::KElectron> electrons, vector<snu::KJet> jets,double weight);
   void FillCLHist(histtype type, TString hist, snu::KEvent ev,vector<snu::KMuon> muons, vector<snu::KElectron> electrons, vector<snu::KJet> jets,double weight, Double_t err);
@@ -204,6 +213,7 @@ class AnalyzerCore : public LQCycleBase {
   void OpenPutputFile();
   void WriteHists();
   void WriteCLHists();
+  void WriteNtp();
 
   //// Event related                                                                                                                                              
   bool PassTrigger(std::vector<TString> list, int& prescale);
