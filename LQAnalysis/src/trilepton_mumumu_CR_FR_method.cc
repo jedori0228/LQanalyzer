@@ -69,6 +69,8 @@ void trilepton_mumumu_CR_FR_method::InitialiseAnalysis() throw( LQError ) {
 
 void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
 
+  weight = 1.0; //initializing
+
   m_logger << DEBUG << "RunNumber/Event Number = "  << eventbase->GetEvent().RunNumber() << " : " << eventbase->GetEvent().EventNumber() << LQLogger::endmsg;
   m_logger << DEBUG << "isData = " << isData << LQLogger::endmsg;
 
@@ -165,7 +167,7 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   int n_triLoose_muons = muontriLooseColl.size();
   int n_jets = jetColl_lepveto.size();
 
-  // CR related variables //
+  //==== CR related variables
   FillHist("n_tight_muons_control_PU", n_triTight_muons, weight*pileup_reweight, 0, 10, 10);
   FillHist("n_loose_muons_control_PU", n_triLoose_muons, weight*pileup_reweight, 0, 10, 10);
   FillHist("n_jets_control_PU", n_jets, weight*pileup_reweight, 0, 10, 10);
@@ -175,13 +177,13 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   }
   FillHist("n_bjets_control_PU", n_bjets, weight*pileup_reweight, 0, 10, 10);
 
-  // define CR         //
-  // SS dimuon + 0 jet //
+  //==== define CR
+  //==== SS dimuon + 0 jet
   if( n_triLoose_muons != 2 ) return;
   if( n_triTight_muons == 2 ) return; // return for TT case
   if( n_jets != 0 ) return;
   if( muontriLooseColl.at(0).Charge() != muontriLooseColl.at(1).Charge() ) return;
-  if( muontriLooseColl.at(0).Pt() < 15 ) return;
+  if( muontriLooseColl.at(0).Pt() < 20. ) return;
 
   //if(n_triTight_muons != 3) return;
   //FillHist("TTT", 0, weight*pileup_reweight, 0, 1, 1);
@@ -192,20 +194,64 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   //}
   //return;
 
-  snu::KParticle lep[2];
+  snu::KMuon lep[2];
   vector<double> FR_muon;
+  double LeptonRelIso[2];
   for(int i=0;i<2;i++){
     lep[i] = muontriLooseColl.at(i);
+    LeptonRelIso[i] = (lep[i].SumIsoCHDR03() + std::max(0.0, lep[i].SumIsoNHDR03() + lep[i].SumIsoPHDR03() - 0.5* lep[i].SumPUIsoR03()))/lep[i].Pt();
     if( !eventbase->GetMuonSel()->HNIstriTight(muontriLooseColl.at(i) , false) ){
       FR_muon.push_back( get_FR(lep[i]) );
     }
   }
 
-  // fake method weighting
+  //==== fake method weighting
   for(unsigned int i=0; i<FR_muon.size(); i++){
     weight *= FR_muon.at(i)/( 1.-FR_muon.at(i) );
   }
   if( FR_muon.size() == 2 ) weight *= -1.; // minus sign for LL
+
+  if( FR_muon.size() == 1 ){
+    //==== FR weighted plots
+    FillHist("TL_leadingLepton_Pt_control_PU", lep[0].Pt() , weight*pileup_reweight, 0, 200, 200);
+    FillHist("TL_secondLepton_Pt_control_PU", lep[1].Pt() , weight*pileup_reweight, 0, 200, 200);
+    FillHist("TL_leadingLepton_Eta_control_PU", lep[0].Eta() , weight*pileup_reweight, -3, 3, 6./0.1);
+    FillHist("TL_secondLepton_Eta_control_PU", lep[1].Eta() , weight*pileup_reweight, -3, 3, 6./0.1);
+    FillHist("TL_leadingLepton_RelIso_control_PU", LeptonRelIso[0] , weight*pileup_reweight, 0, 1.0, 10);
+    FillHist("TL_secondLepton_RelIso_control_PU", LeptonRelIso[1] , weight*pileup_reweight, 0, 1.0, 10);
+    FillHist("TL_leadingLepton_Chi2_control_PU", lep[0].GlobalChi2() , weight*pileup_reweight, 0, 10, 10./0.1);
+    FillHist("TL_secondLepton_Chi2_control_PU", lep[1].GlobalChi2() , weight*pileup_reweight, 0, 10, 10./0.1);
+    //==== weight = 1 plots
+    FillHist("TL_leadingLepton_Pt_1_control_PU", lep[0].Pt() , 1, 0, 200, 200);
+    FillHist("TL_secondLepton_Pt_1_control_PU", lep[1].Pt() , 1, 0, 200, 200);
+    FillHist("TL_leadingLepton_Eta_1_control_PU", lep[0].Eta() , 1, -3, 3, 6./0.1);
+    FillHist("TL_secondLepton_Eta_1_control_PU", lep[1].Eta() , 1, -3, 3, 6./0.1);
+    FillHist("TL_leadingLepton_RelIso_1_control_PU", LeptonRelIso[0] , 1, 0, 1.0, 10);
+    FillHist("TL_secondLepton_RelIso_1_control_PU", LeptonRelIso[1] , 1, 0, 1.0, 10);
+    FillHist("TL_leadingLepton_Chi2_1_control_PU", lep[0].GlobalChi2() , 1, 0, 10, 10./0.1);
+    FillHist("TL_secondLepton_Chi2_1_control_PU", lep[1].GlobalChi2() , 1, 0, 10, 10./0.1);
+  }
+  if( FR_muon.size() == 2 ){
+    //==== FR weighted plots
+    FillHist("LL_leadingLepton_Pt_control_PU", lep[0].Pt() , weight*pileup_reweight, 0, 200, 200);
+    FillHist("LL_secondLepton_Pt_control_PU", lep[1].Pt() , weight*pileup_reweight, 0, 200, 200);
+    FillHist("LL_leadingLepton_Eta_control_PU", lep[0].Eta() , weight*pileup_reweight, -3, 3, 6./0.1);
+    FillHist("LL_secondLepton_Eta_control_PU", lep[1].Eta() , weight*pileup_reweight, -3, 3, 6./0.1);
+    FillHist("LL_leadingLepton_RelIso_control_PU", LeptonRelIso[0] , weight*pileup_reweight, 0, 1.0, 10);
+    FillHist("LL_secondLepton_RelIso_control_PU", LeptonRelIso[1] , weight*pileup_reweight, 0, 1.0, 10);
+    FillHist("LL_leadingLepton_Chi2_control_PU", lep[0].GlobalChi2() , weight*pileup_reweight, 0, 10, 10./0.1);
+    FillHist("LL_secondLepton_Chi2_control_PU", lep[1].GlobalChi2() , weight*pileup_reweight, 0, 10, 10./0.1);
+    //==== weight = 1 plots
+    FillHist("LL_leadingLepton_Pt_1_control_PU", lep[0].Pt() , 1, 0, 200, 200);
+    FillHist("LL_secondLepton_Pt_1_control_PU", lep[1].Pt() , 1, 0, 200, 200);
+    FillHist("LL_leadingLepton_Eta_1_control_PU", lep[0].Eta() , 1, -3, 3, 6./0.1);
+    FillHist("LL_secondLepton_Eta_1_control_PU", lep[1].Eta() , 1, -3, 3, 6./0.1);
+    FillHist("LL_leadingLepton_RelIso_1_control_PU", LeptonRelIso[0] , 1, 0, 1.0, 10);
+    FillHist("LL_secondLepton_RelIso_1_control_PU", LeptonRelIso[1] , 1, 0, 1.0, 10);
+    FillHist("LL_leadingLepton_Chi2_1_control_PU", lep[0].GlobalChi2() , 1, 0, 10, 10./0.1);
+    FillHist("LL_secondLepton_Chi2_1_control_PU", lep[1].GlobalChi2() , 1, 0, 10, 10./0.1);
+
+  }
 
 /*
   if( n_triTight_muons == 0 ) weight *= FR_muon.at(0)*FR_muon.at(1)*FR_muon.at(2)/( (1.-FR_muon.at(0))*(1.-FR_muon.at(1))*(1.-FR_muon.at(2)) ); // LLL
@@ -222,16 +268,28 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   else return; // return TTT event
 */
 
-
-  snu::KParticle CR_muon[2];
-  CR_muon[0] = muontriLooseColl.at(0);
-  CR_muon[1] = muontriLooseColl.at(1);
-  FillHist("n_events_control_PU", 0, weight*pileup_reweight, 0, 1, 1);
-  FillHist("mll_control_PU", (CR_muon[0]+CR_muon[1]).M() , weight*pileup_reweight, 0, 200, 200);
-  FillHist("leadingLepton_Pt_control_PU", CR_muon[0].Pt() , weight*pileup_reweight, 0, 200, 200);
-  FillHist("secondLepton_Pt_control_PU", CR_muon[1].Pt() , weight*pileup_reweight, 0, 200, 200);
-  FillHist("leadingLepton_Eta_control_PU", CR_muon[0].Eta() , weight*pileup_reweight, -3, 3, 6./0.1);
-  FillHist("secondLepton_Eta_control_PU", CR_muon[1].Eta() , weight*pileup_reweight, -3, 3, 6./0.1);
+  //==== FR weighted plots
+  FillHist("TT_n_events_control_PU", 0, weight*pileup_reweight, 0, 1, 1);
+  FillHist("TT_mll_control_PU", (lep[0]+lep[1]).M() , weight*pileup_reweight, 0, 200, 200);
+  FillHist("TT_leadingLepton_Pt_control_PU", lep[0].Pt() , weight*pileup_reweight, 0, 200, 200);
+  FillHist("TT_secondLepton_Pt_control_PU", lep[1].Pt() , weight*pileup_reweight, 0, 200, 200);
+  FillHist("TT_leadingLepton_Eta_control_PU", lep[0].Eta() , weight*pileup_reweight, -3, 3, 6./0.1);
+  FillHist("TT_secondLepton_Eta_control_PU", lep[1].Eta() , weight*pileup_reweight, -3, 3, 6./0.1);
+  FillHist("TT_leadingLepton_RelIso_control_PU", LeptonRelIso[0] , weight*pileup_reweight, 0, 1.0, 10);
+  FillHist("TT_secondLepton_RelIso_control_PU", LeptonRelIso[1] , weight*pileup_reweight, 0, 1.0, 10);
+  FillHist("TT_leadingLepton_Chi2_control_PU", lep[0].GlobalChi2() , weight*pileup_reweight, 0, 10, 10./0.1);
+  FillHist("TT_secondLepton_Chi2_control_PU", lep[1].GlobalChi2() , weight*pileup_reweight, 0, 10, 10./0.1);
+  //==== weight = 1 plots
+  FillHist("TT_n_events_1_control_PU", 0, 1, 0, 1, 1);
+  FillHist("TT_mll_1_control_PU", (lep[0]+lep[1]).M() , 1, 0, 200, 200);
+  FillHist("TT_leadingLepton_Pt_1_control_PU", lep[0].Pt() , 1, 0, 200, 200);
+  FillHist("TT_secondLepton_Pt_1_control_PU", lep[1].Pt() , 1, 0, 200, 200);
+  FillHist("TT_leadingLepton_Eta_1_control_PU", lep[0].Eta() , 1, -3, 3, 6./0.1);
+  FillHist("TT_secondLepton_Eta_1_control_PU", lep[1].Eta() , 1, -3, 3, 6./0.1);
+  FillHist("TT_leadingLepton_RelIso_1_control_PU", LeptonRelIso[0] , 1, 0, 1.0, 10);
+  FillHist("TT_secondLepton_RelIso_1_control_PU", LeptonRelIso[1] , 1, 0, 1.0, 10);
+  FillHist("TT_leadingLepton_Chi2_1_control_PU", lep[0].GlobalChi2() , 1, 0, 10, 10./0.1);
+  FillHist("TT_secondLepton_Chi2_1_control_PU", lep[1].GlobalChi2() , 1, 0, 10, 10./0.1);
 
   return;
 }// End of execute event loop
