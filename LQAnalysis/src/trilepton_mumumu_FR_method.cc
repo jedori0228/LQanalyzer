@@ -169,7 +169,7 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
 
   if( n_triLoose_muons != 3 ) return;
 
-  if( muontriLooseColl.at(0).Pt() < 15 ) return;
+  if( muontriLooseColl.at(0).Pt() < 20. ) return;
   FillCutFlow("3muon", weight);
 
   snu::KParticle lep[3], HN[4];
