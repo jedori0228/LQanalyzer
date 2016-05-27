@@ -4,7 +4,7 @@ if [[ $LQANALYZER_DIR == "" ]];
 fi
 
 ########## Tag index
-itag=".1"
+itag=".2"
 tagname=$CATVERSION$itag
 
 
@@ -44,12 +44,10 @@ if [[ $notnew_tag == "False" ]];then
 	    echo "$sline" >> LatestTag.txt
 	fi
     done  < /data1/LQAnalyzer_rootfiles_for_analysis/CATTag/LatestTag.txt
-
+    mv LatestTag.txt /data1/LQAnalyzer_rootfiles_for_analysis/CATTag/LatestTag.txt
 else
     echo "Not adding a new tag"
 fi
-	 
-mv LatestTag.txt /data1/LQAnalyzer_rootfiles_for_analysis/CATTag/LatestTag.txt
 
 rm $LQANALYZER_DIR/scripts/setup/SetBrachAndTag.sh
 echo "export CATVERSION="$CATVERSION >> $LQANALYZER_DIR/scripts/setup/SetBrachAndTag.sh
