@@ -24,7 +24,10 @@ ClassImp (trilepton_mumumu);
   *  This is an Example Cycle. It inherits from AnalyzerCore. The code contains all the base class functions to run the analysis.
   *
   */
-trilepton_mumumu::trilepton_mumumu() :  AnalyzerCore(), out_muons(0)  {
+trilepton_mumumu::trilepton_mumumu() :
+sol_sel_chi2_best(0), sol_sel_chi2_plus(0), sol_sel_chi2_minus(0), sol_sel_chi2_smaller(0), sol_sel_chi2_larger(0), n_gen_pass(0),
+AnalyzerCore(), out_muons(0)
+{
   
   
   // To have the correct name in the log:                                                                                   
@@ -295,88 +298,85 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   bool is_deltaR_OS_min_0p5 = deltaR_OS_min > 0.5;
   bool is_W_pri_lowmass_100 = W_pri_lowmass.M() < 100;
 
-  SetBinInfo(0);
-  // No PU
-  FillHist("HN_mass_class1_cut0", HN[0].M(), weight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
-  FillHist("HN_mass_class2_cut0", HN[1].M(), weight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
-  FillHist("HN_mass_class3_cut0", HN[2].M(), weight, 0, 500, 50);//
-  FillHist("HN_mass_class4_cut0", HN[3].M(), weight, 0, 1000, 100);//
-  FillHist("W_pri_lowmass_mass_cut0", W_pri_lowmass.M(), weight, W_pri_lowmass_x_min, W_pri_lowmass_x_max, (W_pri_lowmass_x_max-W_pri_lowmass_x_min)/W_pri_lowmass_dx);
+  //==== No PU
+  FillHist("HN_mass_class1_cut0", HN[0].M(), weight, 0., 500., 50);
+  FillHist("HN_mass_class2_cut0", HN[1].M(), weight, 0., 500., 50);
+  FillHist("HN_mass_class3_cut0", HN[2].M(), weight, 0, 500, 50);
+  FillHist("HN_mass_class4_cut0", HN[3].M(), weight, 0, 1000, 100);
+  FillHist("W_pri_lowmass_mass_cut0", W_pri_lowmass.M(), weight, 70., 500., 43);
   FillHist("W_pri_highmass_mass_cut0", W_pri_highmass.M(), weight, 0, 1000, 1000);
-  FillHist("deltaR_OS_min_cut0", deltaR_OS_min, weight, 0, 5, 5./0.1);
-  FillHist("gamma_star_mass_cut0", gamma_star.M(), weight, gamma_star_x_min, gamma_star_x_max, (gamma_star_x_max-gamma_star_x_min)/gamma_star_dx);
-  FillHist("z_candidate_mass_cut0", z_candidate.M(), weight, z_candidate_x_min, z_candidate_x_max, (z_candidate_x_max-z_candidate_x_min)/z_candidate_dx);
+  FillHist("deltaR_OS_min_cut0", deltaR_OS_min, weight, 0, 5, 50);
+  FillHist("gamma_star_mass_cut0", gamma_star.M(), weight, 0., 120., 120);
+  FillHist("z_candidate_mass_cut0", z_candidate.M(), weight, 0., 120., 120);
   FillHist("n_jets_cut0", n_jets, weight, 0, 10, 10);
-  FillCLHist(trilephist, "cut0", eventbase->GetEvent(), muontriTightColl, electronColl, jetColl_loose, weight);
+  FillCLHist(trilephist, "cut0", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_loose, weight);
   FillHist("n_events_cut0", 0, weight, 0, 1, 1);
-  // PU
-  FillHist("HN_mass_class1_cut0_PU", HN[0].M(), weight*pileup_reweight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
-  FillHist("HN_mass_class2_cut0_PU", HN[1].M(), weight*pileup_reweight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
-  FillHist("HN_mass_class3_cut0_PU", HN[2].M(), weight*pileup_reweight, 0, 500, 50);//
-  FillHist("HN_mass_class4_cut0_PU", HN[3].M(), weight*pileup_reweight, 0, 1000, 100);//
-  FillHist("W_pri_lowmass_mass_cut0_PU", W_pri_lowmass.M(), weight*pileup_reweight, W_pri_lowmass_x_min, W_pri_lowmass_x_max, (W_pri_lowmass_x_max-W_pri_lowmass_x_min)/W_pri_lowmass_dx);
+  //==== PU
+  FillHist("HN_mass_class1_cut0_PU", HN[0].M(), weight*pileup_reweight, 0., 500., 50);
+  FillHist("HN_mass_class2_cut0_PU", HN[1].M(), weight*pileup_reweight, 0., 500., 50);
+  FillHist("HN_mass_class3_cut0_PU", HN[2].M(), weight*pileup_reweight, 0, 500, 50);
+  FillHist("HN_mass_class4_cut0_PU", HN[3].M(), weight*pileup_reweight, 0, 1000, 100);
+  FillHist("W_pri_lowmass_mass_cut0_PU", W_pri_lowmass.M(), weight*pileup_reweight, 70., 500., 43);
   FillHist("W_pri_highmass_mass_cut0_PU", W_pri_highmass.M(), weight*pileup_reweight, 0, 1000, 1000);
-  FillHist("deltaR_OS_min_cut0_PU", deltaR_OS_min, weight*pileup_reweight, 0, 5, 5./0.1);
-  FillHist("gamma_star_mass_cut0_PU", gamma_star.M(), weight*pileup_reweight, gamma_star_x_min, gamma_star_x_max, (gamma_star_x_max-gamma_star_x_min)/gamma_star_dx);
-  FillHist("z_candidate_mass_cut0_PU", z_candidate.M(), weight*pileup_reweight, z_candidate_x_min, z_candidate_x_max, (z_candidate_x_max-z_candidate_x_min)/z_candidate_dx);
+  FillHist("deltaR_OS_min_cut0_PU", deltaR_OS_min, weight*pileup_reweight, 0, 5, 50);
+  FillHist("gamma_star_mass_cut0_PU", gamma_star.M(), weight*pileup_reweight, 0., 120., 120);
+  FillHist("z_candidate_mass_cut0_PU", z_candidate.M(), weight*pileup_reweight, 0., 120., 120);
   FillHist("n_jets_cut0_PU", n_jets, weight*pileup_reweight, 0, 10, 10);
-  FillCLHist(trilephist, "cut0_PU", eventbase->GetEvent(), muontriTightColl, electronColl, jetColl_loose, weight*pileup_reweight);
+  FillCLHist(trilephist, "cut0_PU", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_loose, weight*pileup_reweight);
   FillHist("n_events_cut0_PU", 0, weight*pileup_reweight, 0, 1, 1);
   if( is_deltaR_OS_min_0p5 ){
-    SetBinInfo(1);
-    // No PU
-    FillHist("HN_mass_class1_cutdR", HN[0].M(), weight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
-    FillHist("HN_mass_class2_cutdR", HN[1].M(), weight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
-    FillHist("HN_mass_class3_cutdR", HN[2].M(), weight, 0, 500, 50);//
-    FillHist("HN_mass_class4_cutdR", HN[3].M(), weight, 0, 1000, 100);//
-    FillHist("W_pri_lowmass_mass_cutdR", W_pri_lowmass.M(), weight, W_pri_lowmass_x_min, W_pri_lowmass_x_max, (W_pri_lowmass_x_max-W_pri_lowmass_x_min)/W_pri_lowmass_dx);
+    //==== No PU
+    FillHist("HN_mass_class1_cutdR", HN[0].M(), weight, 0., 500., 50);
+    FillHist("HN_mass_class2_cutdR", HN[1].M(), weight, 0., 500., 50);
+    FillHist("HN_mass_class3_cutdR", HN[2].M(), weight, 0, 500, 50);
+    FillHist("HN_mass_class4_cutdR", HN[3].M(), weight, 0, 1000, 100);
+    FillHist("W_pri_lowmass_mass_cutdR", W_pri_lowmass.M(), weight, 70., 500., 43);
     FillHist("W_pri_highmass_mass_cutdR", W_pri_highmass.M(), weight, 0, 1000, 1000);
-    FillHist("deltaR_OS_min_cutdR", deltaR_OS_min, weight, 0, 5, 5./0.1);
-    FillHist("gamma_star_mass_cutdR", gamma_star.M(), weight, gamma_star_x_min, gamma_star_x_max, (gamma_star_x_max-gamma_star_x_min)/gamma_star_dx);
-    FillHist("z_candidate_mass_cutdR", z_candidate.M(), weight, z_candidate_x_min, z_candidate_x_max, (z_candidate_x_max-z_candidate_x_min)/z_candidate_dx);
+    FillHist("deltaR_OS_min_cutdR", deltaR_OS_min, weight, 0, 5, 50);
+    FillHist("gamma_star_mass_cutdR", gamma_star.M(), weight, 0., 120., 120);
+    FillHist("z_candidate_mass_cutdR", z_candidate.M(), weight, 0., 120., 120);
     FillHist("n_jets_cutdR", n_jets, weight, 0, 10, 10);
-    FillCLHist(trilephist, "cutdR", eventbase->GetEvent(), muontriTightColl, electronColl, jetColl_loose, weight);
+    FillCLHist(trilephist, "cutdR", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_loose, weight);
     FillHist("n_events_cutdR", 0, weight, 0, 1, 1);
-    // PU
-    FillHist("HN_mass_class1_cutdR_PU", HN[0].M(), weight*pileup_reweight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
-    FillHist("HN_mass_class2_cutdR_PU", HN[1].M(), weight*pileup_reweight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
-    FillHist("HN_mass_class3_cutdR_PU", HN[2].M(), weight*pileup_reweight, 0, 500, 50);//
-    FillHist("HN_mass_class4_cutdR_PU", HN[3].M(), weight*pileup_reweight, 0, 1000, 100);//
-    FillHist("W_pri_lowmass_mass_cutdR_PU", W_pri_lowmass.M(), weight*pileup_reweight, W_pri_lowmass_x_min, W_pri_lowmass_x_max, (W_pri_lowmass_x_max-W_pri_lowmass_x_min)/W_pri_lowmass_dx);
+    //==== PU
+    FillHist("HN_mass_class1_cutdR_PU", HN[0].M(), weight*pileup_reweight, 0., 500., 50);
+    FillHist("HN_mass_class2_cutdR_PU", HN[1].M(), weight*pileup_reweight, 0., 500., 50);
+    FillHist("HN_mass_class3_cutdR_PU", HN[2].M(), weight*pileup_reweight, 0, 500, 50);
+    FillHist("HN_mass_class4_cutdR_PU", HN[3].M(), weight*pileup_reweight, 0, 1000, 100);
+    FillHist("W_pri_lowmass_mass_cutdR_PU", W_pri_lowmass.M(), weight*pileup_reweight, 70., 500., 43);
     FillHist("W_pri_highmass_mass_cutdR_PU", W_pri_highmass.M(), weight*pileup_reweight, 0, 1000, 1000);
-    FillHist("deltaR_OS_min_cutdR_PU", deltaR_OS_min, weight*pileup_reweight, 0, 5, 5./0.1);
-    FillHist("gamma_star_mass_cutdR_PU", gamma_star.M(), weight*pileup_reweight, gamma_star_x_min, gamma_star_x_max, (gamma_star_x_max-gamma_star_x_min)/gamma_star_dx);
-    FillHist("z_candidate_mass_cutdR_PU", z_candidate.M(), weight*pileup_reweight, z_candidate_x_min, z_candidate_x_max, (z_candidate_x_max-z_candidate_x_min)/z_candidate_dx);
+    FillHist("deltaR_OS_min_cutdR_PU", deltaR_OS_min, weight*pileup_reweight, 0, 5, 50);
+    FillHist("gamma_star_mass_cutdR_PU", gamma_star.M(), weight*pileup_reweight, 0., 120., 120);
+    FillHist("z_candidate_mass_cutdR_PU", z_candidate.M(), weight*pileup_reweight, 0., 120., 120);
     FillHist("n_jets_cutdR_PU", n_jets, weight*pileup_reweight, 0, 10, 10);
-    FillCLHist(trilephist, "cutdR_PU", eventbase->GetEvent(), muontriTightColl, electronColl, jetColl_loose, weight*pileup_reweight);
+    FillCLHist(trilephist, "cutdR_PU", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_loose, weight*pileup_reweight);
     FillHist("n_events_cutdR_PU", 0, weight*pileup_reweight, 0, 1, 1);
     if( is_W_pri_lowmass_100 ){
-      SetBinInfo(2);
-      // No PU
-      FillHist("HN_mass_class1_cutdR_cutW", HN[0].M(), weight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
-      FillHist("HN_mass_class2_cutdR_cutW", HN[1].M(), weight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
-      FillHist("W_pri_lowmass_mass_cutdR_cutW", W_pri_lowmass.M(), weight, W_pri_lowmass_x_min, W_pri_lowmass_x_max, (W_pri_lowmass_x_max-W_pri_lowmass_x_min)/W_pri_lowmass_dx);
+      //==== No PU
+      FillHist("HN_mass_class1_cutdR_cutW", HN[0].M(), weight, 0., 100., 10);
+      FillHist("HN_mass_class2_cutdR_cutW", HN[1].M(), weight, 0., 100., 10);
+      FillHist("W_pri_lowmass_mass_cutdR_cutW", W_pri_lowmass.M(), weight, 70., 120., 10);
       FillHist("W_pri_highmass_mass_cutdR_cutW", W_pri_highmass.M(), weight, 0, 1000, 1000);
-      FillHist("deltaR_OS_min_cutdR_cutW", deltaR_OS_min, weight, 0, 5, 5./0.1);
-      FillHist("gamma_star_mass_cutdR_cutW", gamma_star.M(), weight, gamma_star_x_min, gamma_star_x_max, (gamma_star_x_max-gamma_star_x_min)/gamma_star_dx);
-      FillHist("z_candidate_mass_cutdR_cutW", z_candidate.M(), weight, z_candidate_x_min, z_candidate_x_max, (z_candidate_x_max-z_candidate_x_min)/z_candidate_dx);
+      FillHist("deltaR_OS_min_cutdR_cutW", deltaR_OS_min, weight, 0, 5, 50);
+      FillHist("gamma_star_mass_cutdR_cutW", gamma_star.M(), weight, 0., 120., 24);
+      FillHist("z_candidate_mass_cutdR_cutW", z_candidate.M(), weight, 0., 120., 24);
       FillHist("n_jets_cutdR_cutW", n_jets, weight, 0, 10, 10);
-      FillCLHist(trilephist, "cutdR_cutW", eventbase->GetEvent(), muontriTightColl, electronColl, jetColl_loose, weight);
+      FillCLHist(trilephist, "cutdR_cutW", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_loose, weight);
       FillHist("n_events_cutdR_cutW", 0, weight, 0, 1, 1);
-      // PU
-      FillHist("HN_mass_class1_cutdR_cutW_PU", HN[0].M(), weight*pileup_reweight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
-      FillHist("HN_mass_class2_cutdR_cutW_PU", HN[1].M(), weight*pileup_reweight, HN_x_min, HN_x_max, (HN_x_max-HN_x_min)/HN_dx);
-      FillHist("W_pri_lowmass_mass_cutdR_cutW_PU", W_pri_lowmass.M(), weight*pileup_reweight, W_pri_lowmass_x_min, W_pri_lowmass_x_max, (W_pri_lowmass_x_max-W_pri_lowmass_x_min)/W_pri_lowmass_dx);
+      //==== PU
+      FillHist("HN_mass_class1_cutdR_cutW_PU", HN[0].M(), weight*pileup_reweight, 0., 100., 10);
+      FillHist("HN_mass_class2_cutdR_cutW_PU", HN[1].M(), weight*pileup_reweight, 0., 100., 10);
+      FillHist("W_pri_lowmass_mass_cutdR_cutW_PU", W_pri_lowmass.M(), weight*pileup_reweight, 70., 120., 10);
       FillHist("W_pri_highmass_mass_cutdR_cutW_PU", W_pri_highmass.M(), weight*pileup_reweight, 0, 1000, 1000);
-      FillHist("deltaR_OS_min_cutdR_cutW_PU", deltaR_OS_min, weight*pileup_reweight, 0, 5, 5./0.1);
-      FillHist("gamma_star_mass_cutdR_cutW_PU", gamma_star.M(), weight*pileup_reweight, gamma_star_x_min, gamma_star_x_max, (gamma_star_x_max-gamma_star_x_min)/gamma_star_dx);
-      FillHist("z_candidate_mass_cutdR_cutW_PU", z_candidate.M(), weight*pileup_reweight, z_candidate_x_min, z_candidate_x_max, (z_candidate_x_max-z_candidate_x_min)/z_candidate_dx);
+      FillHist("deltaR_OS_min_cutdR_cutW_PU", deltaR_OS_min, weight*pileup_reweight, 0, 5, 50);
+      FillHist("gamma_star_mass_cutdR_cutW_PU", gamma_star.M(), weight*pileup_reweight, 0., 120., 24);
+      FillHist("z_candidate_mass_cutdR_cutW_PU", z_candidate.M(), weight*pileup_reweight, 0., 120., 24);
       FillHist("n_jets_cutdR_cutW_PU", n_jets, weight*pileup_reweight, 0, 10, 10);
-      FillCLHist(trilephist, "cutdR_cutW_PU", eventbase->GetEvent(), muontriTightColl, electronColl, jetColl_loose, weight*pileup_reweight);
+      FillCLHist(trilephist, "cutdR_cutW_PU", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_loose, weight*pileup_reweight);
       FillHist("n_events_cutdR_cutW_PU", 0, weight*pileup_reweight, 0, 1, 1);
     }
   }
-  
+ 
   return;
 }// End of execute event loop
   
@@ -385,6 +385,30 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
 void trilepton_mumumu::EndCycle()throw( LQError ){
   
   Message("In EndCycle" , INFO);
+  cout
+  << "n_gen_pass = " << n_gen_pass << endl
+  << "best = " << sol_sel_chi2_best/n_gen_pass << endl
+  << "plus = " << sol_sel_chi2_plus/n_gen_pass << endl
+  << "minus = " << sol_sel_chi2_minus/n_gen_pass << endl
+  << "smaller = " << sol_sel_chi2_smaller/n_gen_pass << endl
+  << "larger = " << sol_sel_chi2_larger/n_gen_pass << endl;
+
+  TH1F* GEN_solution_selection_chi2 = new TH1F("GEN_solution_selection_chi2", "", 6, 0, 6);
+  GEN_solution_selection_chi2->GetXaxis()->SetBinLabel(1, "n_gen_pass");
+  GEN_solution_selection_chi2->GetXaxis()->SetBinLabel(2, "best");
+  GEN_solution_selection_chi2->GetXaxis()->SetBinLabel(3, "plus");
+  GEN_solution_selection_chi2->GetXaxis()->SetBinLabel(4, "minus");
+  GEN_solution_selection_chi2->GetXaxis()->SetBinLabel(5, "smaller");
+  GEN_solution_selection_chi2->GetXaxis()->SetBinLabel(6, "larger");
+  GEN_solution_selection_chi2->SetBinContent(1, n_gen_pass);
+  GEN_solution_selection_chi2->SetBinContent(2, sol_sel_chi2_best);
+  GEN_solution_selection_chi2->SetBinContent(3, sol_sel_chi2_plus);
+  GEN_solution_selection_chi2->SetBinContent(4, sol_sel_chi2_minus);
+  GEN_solution_selection_chi2->SetBinContent(5, sol_sel_chi2_smaller);
+  GEN_solution_selection_chi2->SetBinContent(6, sol_sel_chi2_larger);
+
+  m_outputFile->cd();
+  GEN_solution_selection_chi2->Write();
 
 }
 
@@ -474,60 +498,20 @@ void trilepton_mumumu::ClearOutputVectors() throw(LQError) {
   out_electrons.clear();
 }
 
-
-void trilepton_mumumu::SetBinInfo(int cut){
-  if(cut==0){ // no cut
-    HN_x_min=0; HN_x_max=500; HN_dx=10;
-    W_pri_lowmass_x_min=70; W_pri_lowmass_x_max=500; W_pri_lowmass_dx=10;
-    dR_x_min=0, dR_x_max=5, dR_dx=0.1;
-    gamma_star_x_min=0, gamma_star_x_max=120, gamma_star_dx=1;
-    z_candidate_x_min=0, z_candidate_x_max=120, z_candidate_dx=1;
-  }
-  if(cut==1){ // "dR_OS_min > 0.5"
-    HN_x_min=0; HN_x_max=500; HN_dx=10;
-    W_pri_lowmass_x_min=70; W_pri_lowmass_x_max=500; W_pri_lowmass_dx=10;
-    dR_x_min=0, dR_x_max=5, dR_dx=0.1;
-    gamma_star_x_min=0, gamma_star_x_max=120, gamma_star_dx=1;
-    z_candidate_x_min=0, z_candidate_x_max=120, z_candidate_dx=1;
-  }
-  if(cut==2){ // "dR_OS_min > 0.5", "W_pri < 100 GeV"
-    HN_x_min=0; HN_x_max=100; HN_dx=10;
-    W_pri_lowmass_x_min=70; W_pri_lowmass_x_max=120; W_pri_lowmass_dx=5;
-    dR_x_min=0, dR_x_max=5, dR_dx=0.5;
-    gamma_star_x_min=0, gamma_star_x_max=120, gamma_star_dx=5;
-    z_candidate_x_min=0, z_candidate_x_max=120, z_candidate_dx=5;
-  }
-  if(cut==3){
-    HN_x_min=0; HN_x_max=100; HN_dx=10;
-    W_pri_lowmass_x_min=70; W_pri_lowmass_x_max=120; W_pri_lowmass_dx=5;
-    dR_x_min=0, dR_x_max=5, dR_dx=0.5;
-    gamma_star_x_min=0, gamma_star_x_max=120, gamma_star_dx=5;
-    z_candidate_x_min=0, z_candidate_x_max=120, z_candidate_dx=5;
-  }
-  if(cut==4){
-    HN_x_min=0; HN_x_max=100; HN_dx=10;
-    W_pri_lowmass_x_min=70; W_pri_lowmass_x_max=120; W_pri_lowmass_dx=5;
-    dR_x_min=0, dR_x_max=5, dR_dx=0.5;
-    gamma_star_x_min=0, gamma_star_x_max=120, gamma_star_dx=5;
-   z_candidate_x_min=0, z_candidate_x_max=120, z_candidate_dx=5;
-  }
-
-}
-
 void trilepton_mumumu::gen_matching(){
 
   std::vector<snu::KTruth> truthColl;
   eventbase->GetTruthSel()->Selection(truthColl);
 
-  // print truth info
-  cout << "=========================================================" << endl;
-  cout << "truth size = " << truthColl.size() << endl;
-  cout << "index" << '\t' << "pdgid" << '\t' << "mother" << '\t' << "mother pid" << endl;
-  for(unsigned int i=2; i<truthColl.size(); i++){
-    cout << i << '\t' << truthColl.at(i).PdgId() << '\t' << truthColl.at(i).IndexMother() << '\t' << truthColl.at( truthColl.at(i).IndexMother() ).PdgId() << endl;
-  }
+  //==== print truth info
+  //cout << "=========================================================" << endl;
+  //cout << "truth size = " << truthColl.size() << endl;
+  //cout << "index" << '\t' << "pdgid" << '\t' << "mother" << '\t' << "mother pid" << endl;
+  //for(int i=2; i<truthColl.size(); i++){
+  //  cout << i << '\t' << truthColl.at(i).PdgId() << '\t' << truthColl.at(i).IndexMother() << '\t' << truthColl.at( truthColl.at(i).IndexMother() ).PdgId() << endl;
+  //}
 
-  // get reco info here
+  //==== get reco info here
   std::vector<snu::KMuon> muontriTightColl = GetMuons(BaseSelection::MUON_HN_TRI_TIGHT);
   snu::KParticle reco_lep[3];
   for(int i=0;i<3;i++){
@@ -556,25 +540,25 @@ void trilepton_mumumu::gen_matching(){
   } // Find l2 and assign l1&l3 in ptorder 
 
   snu::KEvent Evt = eventbase->GetEvent();
-  double MET = Evt.MET(), METphi = Evt.METPhi();
+  double MET = Evt.PFMET(), METphi = Evt.METPhi();
   snu::KParticle reco_MET;
   reco_MET.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET);
 
-  // W_pri : first W
-  // l_1 : lepton from first W
-  // l_2 : lepton from HN
-  // W_sec : W from HN
-  // l_3 : lepton from second W
+  //==== W_pri : first W
+  //==== l_1 : lepton from first W
+  //==== l_2 : lepton from HN
+  //==== W_sec : W from HN
+  //==== l_3 : lepton from second W
   
   int truthmax = truthColl.size();
   vector<int> gen_HN_indices, gen_W_pri_indices, gen_W_sec_indices, gen_l_1_indices, gen_nu_indices, gen_l_3_indices, gen_l_2_indices;
-  snu::KParticle gen_nu, gen_l_1, gen_l_2, gen_l_3;
+  snu::KParticle gen_nu, gen_W_pri, gen_HN, gen_W_sec, gen_l_1, gen_l_2, gen_l_3;
   bool W_sec_in_truth=false, isLowMass = false;
 
-  // check if this is low/high mass region //
+  //==== check if this is low/high mass region
   if(k_sample_name.Contains("HN40_") || k_sample_name.Contains("HN50_") || k_sample_name.Contains("HN60_")) isLowMass = true;
  
-  // find HN index
+  //==== find HN index
   for(int i=2;i<truthmax;i++){
     if(truthColl.at(i).PdgId() == 80000002){
       gen_HN_indices.push_back(i);
@@ -582,14 +566,16 @@ void trilepton_mumumu::gen_matching(){
       break;
     }
   }
-  print_all_indices("gen_HN", gen_HN_indices);
+  //print_all_indices("gen_HN", gen_HN_indices);
   if(gen_HN_indices.size() == 0) return;
 
-  // low mass region //
+  //======================
+  //==== low mass region
+  //======================
   if(isLowMass){
-    // for low mass, W_pri is on-shell
-    // so we can find them in gen particle collections
-    // find W_pri index
+    //==== for low mass, W_pri is on-shell
+    //==== so we can find them in gen particle collections
+    //==== find W_pri index
     for(int i=2;i<truthmax;i++){
       if(abs(truthColl.at(i).PdgId()) == 24){
         gen_W_pri_indices.push_back(i);
@@ -597,24 +583,31 @@ void trilepton_mumumu::gen_matching(){
         break;
       }
     }
-    print_all_indices("gen_W_pri", gen_W_pri_indices);
+    //print_all_indices("gen_W_pri", gen_W_pri_indices);
+    if(gen_W_pri_indices.size() == 0) return;
 
-    // find l_1 at gen. level
+    //==== find l_1 at gen. level
     for(int i=2;i<truthmax;i++){
       for(unsigned int j=0;j<gen_W_pri_indices.size();j++){
+        //==== 1) |PID| = 13
+        //==== 2) Mother = W_pri
         if(abs(truthColl.at(i).PdgId()) == 13 && truthColl.at(i).IndexMother() == gen_W_pri_indices.at(j) ){
           gen_l_1_indices.push_back(i);
           find_decay(truthColl, i, gen_l_1_indices);
           break;
         }
       }
+      if(gen_l_1_indices.size() != 0) break;
     }
-    print_all_indices("gen_l_1", gen_l_1_indices);
+    //print_all_indices("gen_l_1", gen_l_1_indices);
+    if(gen_l_1_indices.size() == 0) return;
 
-    // as m(HN) goes closer to W mass, W_sec starting to appear in truth coll
-    // if W_sec is virtual, it may not appear in the gen particle collections
-    // check W_sec exists
+    //==== As m(HN) goes closer to W mass, W_sec starting to appear in truth coll
+    //==== if W_sec is virtual, it may not appear in the gen particle collections
+    //==== check W_sec exists
     for(int i=2;i<truthmax;i++){
+      //==== 1) |PID| = 24
+      //==== 2) Mother's PID = 80000002
       if(fabs(truthColl.at(i).PdgId()) == 24 && truthColl.at(truthColl.at(i).IndexMother()).PdgId() == 80000002){
         gen_W_sec_indices.push_back(i);
         find_decay(truthColl, i, gen_W_sec_indices);
@@ -622,27 +615,33 @@ void trilepton_mumumu::gen_matching(){
         break;
       }
     }
-    print_all_indices("gen_W_sec", gen_W_sec_indices);
+    //print_all_indices("gen_W_sec", gen_W_sec_indices);
 
-    // no W_sec in truthColl index case
+    //==== no W_sec in truthColl index case
     if(!W_sec_in_truth){
-      cout << "[No W_sec!]" << endl;
+      //cout << "[No W_sec!]" << endl;
 
-      // find nu at gen. level
+      //==== find nu at gen. level
       for(int i=2;i<truthmax;i++){
         for(unsigned int j=0;j<gen_HN_indices.size();j++){
+          //==== 1) PID = 14
+          //==== 2) Mother = {HN}
           if(abs(truthColl.at(i).PdgId()) == 14 && truthColl.at(i).IndexMother() == gen_HN_indices.at(j) ){
             gen_nu_indices.push_back(i);
             find_decay(truthColl, i, gen_nu_indices);
             break;
           }
         }
+        if(gen_nu_indices.size() != 0) break;
       }
-      print_all_indices("gen_nu", gen_nu_indices);
+      //print_all_indices("gen_nu", gen_nu_indices);
+      if(gen_nu_indices.size() == 0) return;
 
-      // find l_3 at gen. level
+      //==== find l_3 at gen. level
       for(int i=2;i<truthmax;i++){
         for(unsigned int j=0;j<gen_HN_indices.size();j++){
+          //==== 1) PID = PID of l_1 (SS)
+          //==== 2) Mother = {HN}
           if(truthColl.at(i).PdgId() == truthColl.at(gen_l_1_indices.at(0)).PdgId() && truthColl.at(i).IndexMother() == gen_HN_indices.at(j) ){
             gen_l_3_indices.push_back(i);
             find_decay(truthColl, i, gen_l_3_indices);
@@ -650,59 +649,75 @@ void trilepton_mumumu::gen_matching(){
           }
         }
       }
-      print_all_indices("gen_l_3", gen_l_3_indices);
+      //print_all_indices("gen_l_3", gen_l_3_indices);
+      if(gen_l_3_indices.size() == 0) return;
 
-      // find l_2 at gen. level
+      //==== find l_2 at gen. level
       for(int i=2;i<truthmax;i++){
         for(unsigned int j=0;j<gen_HN_indices.size();j++){
+          //==== 1) PID = - (PID of l_1) (OS)
+          //==== 2) Mother = {HN}
           if(truthColl.at(i).PdgId() == -truthColl.at(gen_l_1_indices.at(0)).PdgId() && truthColl.at(i).IndexMother() == gen_HN_indices.at(j) ){
             gen_l_2_indices.push_back(i);
             find_decay(truthColl, i, gen_l_2_indices);
             break;
           }
         }
+        if(gen_l_2_indices.size() != 0) break;
       }
-      print_all_indices("gen_l_2", gen_l_2_indices);
+      //print_all_indices("gen_l_2", gen_l_2_indices);
+      if(gen_l_2_indices.size() == 0) return;
     }
-    // W_sec in truthColl index case
+    //==== W_sec in truthColl index case
     else{
-      cout << "[W_sec!]" << endl;
-
-      // find nu at gen. level
+      //cout << "[W_sec!]" << endl;
+      //==== find nu at gen. level
       for(int i=2;i<truthmax;i++){
         for(unsigned int j=0;j<gen_W_sec_indices.size();j++){
+          //==== 1) |PID| = 14
+          //==== 2) Mother = {W_sec}
           if(abs(truthColl.at(i).PdgId()) == 14 && truthColl.at(i).IndexMother() == gen_W_sec_indices.at(j) ){
             gen_nu_indices.push_back(i);
             find_decay(truthColl, i, gen_nu_indices);
             break;
           }
         }
+        if(gen_nu_indices.size() != 0) break;
       }
-      print_all_indices("gen_nu", gen_nu_indices);
+      //print_all_indices("gen_nu", gen_nu_indices);
+      if(gen_nu_indices.size() == 0) return;
 
-      // find l_3 at gen. level
+      //==== find l_3 at gen. level
       for(int i=2;i<truthmax;i++){
         for(unsigned int j=0;j<gen_W_sec_indices.size();j++){
-          if(fabs(truthColl.at(i).PdgId()) == fabs(truthColl.at(gen_l_1_indices.at(0)).PdgId()) && truthColl.at(i).IndexMother() == gen_W_sec_indices.at(j) ){
+          //==== 1) |PID| = 13
+          //==== 2) Mother = {W_sec}
+          if(fabs(truthColl.at(i).PdgId()) == 13 && truthColl.at(i).IndexMother() == gen_W_sec_indices.at(j) ){
             gen_l_3_indices.push_back(i);
             find_decay(truthColl, i, gen_nu_indices);
             break;
           }
         }
+        if(gen_l_3_indices.size() != 0) break;
       }
-      print_all_indices("gen_l_3", gen_l_3_indices);
+      //print_all_indices("gen_l_3", gen_l_3_indices);
+      if(gen_l_3_indices.size() == 0) return;
 
-      // find l_2 at gen. level
+      //==== find l_2 at gen. level
       for(int i=2;i<truthmax;i++){
         for(unsigned int j=0;j<gen_HN_indices.size();j++){
-          if(fabs(truthColl.at(i).PdgId()) == fabs(truthColl.at(gen_l_1_indices.at(0)).PdgId()) && truthColl.at(i).IndexMother() == gen_HN_indices.at(j) ){
+          //==== 1) |PID| = 13
+          //==== 2) Mother = {HN}
+          if(fabs(truthColl.at(i).PdgId()) == 13 && truthColl.at(i).IndexMother() == gen_HN_indices.at(j) ){
             gen_l_2_indices.push_back(i);
             find_decay(truthColl, i, gen_l_2_indices);
             break;
           }
         }
+        if(gen_l_2_indices.size() != 0) break;
       }
-      print_all_indices("gen_l_2", gen_l_2_indices);
+      //print_all_indices("gen_l_2", gen_l_2_indices);
+      if(gen_l_2_indices.size() == 0) return;
       
     }
 
@@ -711,14 +726,12 @@ void trilepton_mumumu::gen_matching(){
     gen_l_3 = truthColl.at( gen_l_3_indices.back() );
     gen_nu = truthColl.at( gen_nu_indices.back() );
 
-    // low mass histograms //
-    
-    snu::KParticle nu_lowmass;
-    nu_lowmass.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET); 
+    //==== solution selection
     double pz_sol_lowmass[2];
     pz_sol_lowmass[0] = solveqdeq(80.4, reco_lep[0]+reco_lep[1]+reco_lep[2], MET, METphi, "m"); // 0 = minus
     pz_sol_lowmass[1] = solveqdeq(80.4, reco_lep[0]+reco_lep[1]+reco_lep[2], MET, METphi, "p"); // 1 = plus
     if( pz_sol_lowmass[0] != pz_sol_lowmass[1] ){
+      FillHist("GEN_all_found", 0, 1, 0, 1, 1);
       n_gen_pass++;
       int best_sel = fabs(pz_sol_lowmass[0]-gen_nu.Pz()) < fabs(pz_sol_lowmass[1]-gen_nu.Pz()) ? 0 : 1;
       int smaller = fabs(pz_sol_lowmass[0]) < fabs(pz_sol_lowmass[1]) ? 0 : 1;
@@ -727,74 +740,110 @@ void trilepton_mumumu::gen_matching(){
       //<< "gen_nu.Pz() = " << gen_nu.Pz() << endl
       //<< "pz_sol_lowmass[0] = " << pz_sol_lowmass[0] << endl
       //<< "pz_sol_lowmass[1] = " << pz_sol_lowmass[1] << endl;
+      FillHist("GEN_chi2_best", pow( (gen_nu.Pz() - pz_sol_lowmass[best_sel])/gen_nu.Pz() , 2), 1, 0, 10000, 10000);
+      FillHist("GEN_chi2_plus", pow( (gen_nu.Pz() - pz_sol_lowmass[1])/gen_nu.Pz() , 2), 1, 0, 10000, 10000);
+      FillHist("GEN_chi2_minus", pow( (gen_nu.Pz() - pz_sol_lowmass[0])/gen_nu.Pz() , 2), 1, 0, 10000, 10000);
+      FillHist("GEN_chi2_smaller", pow( (gen_nu.Pz() - pz_sol_lowmass[smaller])/gen_nu.Pz() , 2), 1, 0, 10000, 10000);
+      FillHist("GEN_chi2_larger", pow( (gen_nu.Pz() - pz_sol_lowmass[larger])/gen_nu.Pz() , 2), 1, 0, 10000, 10000);
+
+      if(best_sel == 0) FillHist("GEN_solsel_minus_0_plus_1", 0, 1, 0, 2, 2);
+      else              FillHist("GEN_solsel_minus_0_plus_1", 1, 1, 0, 2, 2);
+      if(best_sel == smaller) FillHist("GEN_solsel_smaller_0_larger_1", 0, 1, 0, 2, 2);
+      else                    FillHist("GEN_solsel_smaller_0_larger_1", 1, 1, 0, 2, 2);
+
       sol_sel_chi2_best += pow( (gen_nu.Pz() - pz_sol_lowmass[best_sel])/gen_nu.Pz() , 2);
       sol_sel_chi2_plus += pow( (gen_nu.Pz() - pz_sol_lowmass[1])/gen_nu.Pz() , 2);
       sol_sel_chi2_minus += pow( (gen_nu.Pz() - pz_sol_lowmass[0])/gen_nu.Pz() , 2);
       sol_sel_chi2_smaller += pow( (gen_nu.Pz() - pz_sol_lowmass[smaller])/gen_nu.Pz() , 2);
       sol_sel_chi2_larger += pow( (gen_nu.Pz() - pz_sol_lowmass[larger])/gen_nu.Pz() , 2);
     }
+
+
   }
-  // high mass region //
+
+  //=======================
+  //==== high mass region
+  //=======================
   else{
-    // find l_1 at gen. level
+    //==== find l_1 at gen. level
     for(int i=2;i<truthmax;i++){
-      for(unsigned int j=0;j<gen_HN_indices.size();j++){
+      for(unsigned int j=0;j<1;j++){
+        //==== 1) |PID| = 13
+        //==== 2) Mother = Mother of HN.at(0) : becase they are generated at the same time.
         if(abs(truthColl.at(i).PdgId()) == 13 && truthColl.at(i).IndexMother() == truthColl.at(gen_HN_indices.at(j)).IndexMother()){
           gen_l_1_indices.push_back(i);
           find_decay(truthColl, i, gen_l_1_indices);
           break;
         }
       }
+      if(gen_l_1_indices.size() != 0) break;
     }
-    print_all_indices("gen_l_1", gen_l_1_indices);
+    //print_all_indices("gen_l_1", gen_l_1_indices);
+    if(gen_l_1_indices.size() == 0) return;
 
-    // fine l_2 at gen. level
+    //==== fine l_2 at gen. level
     for(int i=2;i<truthmax;i++){
       for(unsigned int j=0;j<gen_HN_indices.size();j++){
+      //==== 1) |PID| = 13
+      //==== 2) Mother = {HN}
         if(abs(truthColl.at(i).PdgId()) == 13 && truthColl.at(i).IndexMother() == gen_HN_indices.at(j) ){
           gen_l_2_indices.push_back(i);
           find_decay(truthColl, i, gen_l_2_indices);
           break;
         }
       }
+      if(gen_l_2_indices.size() != 0) break;
     }
-    print_all_indices("gen_l_2", gen_l_2_indices);    
+    //print_all_indices("gen_l_2", gen_l_2_indices);    
+    if(gen_l_2_indices.size() == 0) return;
 
-    // find W_sec
+    //==== find W_sec
     for(int i=2;i<truthmax;i++){
       for(unsigned int j=0;j<gen_HN_indices.size();j++){
+        //==== 1) |PID| = 24
+        //==== 2) Mother = {HN}
         if(abs(truthColl.at(i).PdgId()) == 24 && truthColl.at(i).IndexMother() == gen_HN_indices.at(j) ){
           gen_W_sec_indices.push_back(i);
           find_decay(truthColl, i, gen_W_sec_indices);
           break;
         }
       }
+      if(gen_W_sec_indices.size() != 0) break;
     }
-    print_all_indices("gen_W_sec", gen_W_sec_indices);
+    //print_all_indices("gen_W_sec", gen_W_sec_indices);
+    if(gen_W_sec_indices.size() == 0) return;
 
-    // find nu at gen. level
+    //==== find nu at gen. level
     for(int i=2;i<truthmax;i++){
       for(unsigned int j=0;j<gen_W_sec_indices.size();j++){
+        //==== 1) |PID| = 14
+        //==== 2) Mother = {W_sec}
         if(abs(truthColl.at(i).PdgId()) == 14 && truthColl.at(i).IndexMother() == gen_W_sec_indices.at(j) ){
           gen_nu_indices.push_back(i);
           find_decay(truthColl, i, gen_nu_indices);
           break;
         }
       }
+      if(gen_nu_indices.size() != 0) break;
     }
-    print_all_indices("gen_nu", gen_nu_indices);
+    //print_all_indices("gen_nu", gen_nu_indices);
+    if(gen_nu_indices.size() == 0) return;
 
-    // find l_3 at gen. level
+    //==== find l_3 at gen. level
     for(int i=2;i<truthmax;i++){
       for(unsigned int j=0;j<gen_W_sec_indices.size();j++){
+        //==== 1) |PID| = 13
+        //==== 2) Mother = {W_sec}
         if(abs(truthColl.at(i).PdgId()) == 13 && truthColl.at(i).IndexMother() == gen_W_sec_indices.at(j) ){
           gen_l_3_indices.push_back(i);
           find_decay(truthColl, i, gen_l_3_indices);
           break;
         }
       }
+      if(gen_l_3_indices.size() != 0) break;
     }
-    print_all_indices("gen_l_3", gen_l_3_indices);
+    //print_all_indices("gen_l_3", gen_l_3_indices);
+    if(gen_l_3_indices.size() == 0) return;
 
     gen_l_1 = truthColl.at( gen_l_1_indices.back() );
     gen_l_2 = truthColl.at( gen_l_2_indices.back() );
@@ -805,26 +854,26 @@ void trilepton_mumumu::gen_matching(){
     for(int i=0; i<3; i++) reco_lep_tlv[i] = reco_lep[i];
     int l_3_cand = find_mlmet_closest_to_W(reco_lep_tlv, reco_MET);
 
-    FillHist("reco_MET", reco_MET.Pt(), 1, 0, 120, 120);
-    FillHist("reco_lep_1_MET", (reco_lep[0] + reco_MET).M() - 80.4, 1, -60, 60, 120);
-    FillHist("reco_lep_2_MET", (reco_lep[1] + reco_MET).M() - 80.4, 1, -60, 60, 120);
-    FillHist("reco_lep_3_MET", (reco_lep[2] + reco_MET).M() - 80.4, 1, -60, 60, 120);
+    FillHist("GEN_reco_MET", reco_MET.Pt(), 1, 0, 120, 120);
+    FillHist("GEN_reco_lep_1_MET", (reco_lep[0] + reco_MET).M() - 80.4, 1, -60, 60, 120);
+    FillHist("GEN_reco_lep_2_MET", (reco_lep[1] + reco_MET).M() - 80.4, 1, -60, 60, 120);
+    FillHist("GEN_reco_lep_3_MET", (reco_lep[2] + reco_MET).M() - 80.4, 1, -60, 60, 120);
 
-    FillHist("l_3_cand", l_3_cand, 1, 0, 3, 3);
-    if( gen_l_3.DeltaR(reco_lep[l_3_cand]) < 0.15 ) FillHist("highmass_mlmet_Wmass_match_gen_l_3", 1, 1, 0, 2, 2);
-    else FillHist("highmass_mlmet_Wmass_match_gen_l_3", 0, 1, 0, 2, 2);
+    FillHist("GEN_l_3_cand", l_3_cand, 1, 0, 3, 3);
+    if( gen_l_3.DeltaR(reco_lep[l_3_cand]) < 0.15 ) FillHist("GEN_highmass_mlmet_Wmass_match_gen_l_3", 1, 1, 0, 2, 2);
+    else FillHist("GEN_highmass_mlmet_Wmass_match_gen_l_3", 0, 1, 0, 2, 2);
 
-    // 1) pt ordering firstly done = m1
+    //==== 1) pt ordering firstly done = m1
     
     int l_1_cand_m1 = SameSign[0], l_SS_rem = SameSign[1], signal_class = 3;
-    // pt ordering reversed for m(HN) >= 700 GeV
+    //==== pt ordering reversed for m(HN) >= 700 GeV
     if( k_sample_name.Contains("HN700_") || k_sample_name.Contains("HN1000_") ){
       signal_class = 4;
       l_1_cand_m1 = SameSign[1];
       l_SS_rem = SameSign[0];
     }
     if( reco_lep[l_1_cand_m1].DeltaR(gen_l_1) < 0.15 ){
-      FillHist("pt_order_first", 1, 1, 0, 2, 2);
+      FillHist("GEN_pt_order_first", 1, 1, 0, 2, 2);
 
       int l_2_cand_m1, l_3_cand_m1;
       if( fabs( (reco_lep[OppSign]+reco_MET).M() - 80.4 ) < fabs( (reco_lep[l_SS_rem]+reco_MET).M() - 80.4 ) ){
@@ -835,18 +884,18 @@ void trilepton_mumumu::gen_matching(){
         l_3_cand_m1 = l_SS_rem;
         l_2_cand_m1 = OppSign;
       }
-      if( gen_l_2.DeltaR( reco_lep[l_2_cand_m1] ) < 0.15 && gen_l_3.DeltaR( reco_lep[l_3_cand_m1] ) < 0.15 ) FillHist("pt_order_first_mlmet_next", 1, 1, 0, 2, 2);
-      else FillHist("pt_order_first_mlmet_next", 0, 1, 0, 2, 2);
+      if( gen_l_2.DeltaR( reco_lep[l_2_cand_m1] ) < 0.15 && gen_l_3.DeltaR( reco_lep[l_3_cand_m1] ) < 0.15 ) FillHist("GEN_pt_order_first_mlmet_next", 1, 1, 0, 2, 2);
+      else FillHist("GEN_pt_order_first_mlmet_next", 0, 1, 0, 2, 2);
 
     }
     else{
-      FillHist("pt_order_first", 0, 1, 0, 2, 2);
+      FillHist("GEN_pt_order_first", 0, 1, 0, 2, 2);
     }
 
-    // 2) mlmet first = m2
+    //==== 2) mlmet first = m2
     
     if( gen_l_3.DeltaR(reco_lep[l_3_cand]) < 0.15 ){
-      FillHist("mlmet_first", 1, 1, 0, 2, 2);      
+      FillHist("GEN_mlmet_first", 1, 1, 0, 2, 2);      
 
       int l_1_cand_m2, l_2_cand_m2;
       if( l_3_cand == OppSign ){
@@ -865,53 +914,48 @@ void trilepton_mumumu::gen_matching(){
         else l_1_cand_m2 = SameSign[0];
       }
 
-      if( gen_l_1.DeltaR( reco_lep[l_1_cand_m2] ) < 0.15 && gen_l_2.DeltaR( reco_lep[l_2_cand_m2] ) < 0.15 ) FillHist("mlmet_first_pt_order_next", 1, 1, 0, 2, 2);
-      else FillHist("mlmet_first_pt_order_next", 0, 1, 0, 2, 2);
+      if( gen_l_1.DeltaR( reco_lep[l_1_cand_m2] ) < 0.15 && gen_l_2.DeltaR( reco_lep[l_2_cand_m2] ) < 0.15 ) FillHist("GEN_mlmet_first_pt_order_next", 1, 1, 0, 2, 2);
+      else FillHist("GEN_mlmet_first_pt_order_next", 0, 1, 0, 2, 2);
 
     }
     else{
-      FillHist("mlmet_first", 0, 1, 0, 2, 2);
+      FillHist("GEN_mlmet_first", 0, 1, 0, 2, 2);
     }
 
 
   }
 
-  snu::KParticle gen_HN = truthColl.at(gen_HN_indices.back());
-  if(k_sample_name.Contains("HN40")) FillHist("gen_HN_mass", gen_HN.M(), 1, 39, 41, 1./0.01);
-  if(k_sample_name.Contains("HN60")) FillHist("gen_HN_mass", gen_HN.M(), 1, 59, 61, 1./0.01);
-  if(k_sample_name.Contains("HN150")) FillHist("gen_HN_mass", gen_HN.M(), 1, 149, 151, 1/0.01);
-  if(k_sample_name.Contains("HN700")) FillHist("gen_HN_mass", gen_HN.M(), 1, 680, 720, 40./1.);
-
-  // histograms
+  //==== histograms
  
-  FillHist("matching_validation_W_pri", (gen_l_1+gen_l_2+gen_l_3+gen_nu).M(), 1, 0, 1100, 110);
-  FillHist("matching_validation_HN", (gen_l_2+gen_l_3+gen_nu).M(), 1, 0, 1100, 110);
-  FillHist("matching_validation_W_sec", (gen_l_3+gen_nu).M(), 1, 0, 100, 100);
+  FillHist("GEN_matching_validation_W_pri", (gen_l_1+gen_l_2+gen_l_3+gen_nu).M(), 1, 0, 1100, 110);
+  FillHist("GEN_matching_validation_HN", (gen_l_2+gen_l_3+gen_nu).M(), 1, 0, 1100, 110);
+  FillHist("GEN_matching_validation_W_sec", (gen_l_3+gen_nu).M(), 1, 0, 100, 100);
 
-  FillHist("gen_l_1_Pt", gen_l_1.Pt(), 1, 0, 100, 100);
-  FillHist("gen_l_2_Pt", gen_l_2.Pt(), 1, 0, 100, 100);
-  FillHist("gen_l_3_Pt", gen_l_3.Pt(), 1, 0, 100, 100);
-  FillHist("gen_nu_Pt", gen_nu.Pt(), 1, 0, 100, 100);
+  FillHist("GEN_gen_l_1_Pt", gen_l_1.Pt(), 1, 0, 100, 100);
+  FillHist("GEN_gen_l_2_Pt", gen_l_2.Pt(), 1, 0, 100, 100);
+  FillHist("GEN_gen_l_3_Pt", gen_l_3.Pt(), 1, 0, 100, 100);
+  FillHist("GEN_gen_nu_Pt", gen_nu.Pt(), 1, 0, 100, 100);
  
   snu::KParticle gen_l_SS;
   if( gen_l_1.Charge() == gen_l_2.Charge() ) gen_l_SS = gen_l_2;
   else gen_l_SS = gen_l_3;
 
-  FillHist("gen_l_SS_Pt", gen_l_SS.Pt(), 1, 0, 100, 100);
+  FillHist("GEN_gen_l_SS_Pt", gen_l_SS.Pt(), 1, 0, 100, 100);
   
-  //check in gen level
-  if( gen_l_1.Pt() > gen_l_SS.Pt() ) FillHist("gen_pri_lep_pt_greater", 1, 1, 0, 2, 2);
-  else FillHist("gen_pri_lep_pt_greater", 0, 1, 0, 2, 2);
+  //==== check in gen level
+  if( gen_l_1.Pt() > gen_l_SS.Pt() ) FillHist("GEN_gen_pri_lep_pt_greater", 1, 1, 0, 2, 2);
+  else FillHist("GEN_gen_pri_lep_pt_greater", 0, 1, 0, 2, 2);
 
   if( reco_lep[SameSign[0]].DeltaR(gen_l_1) < 0.15 
       //&& fabs(reco_lep[SameSign[0]].Pt()-gen_l_1.Pt())/gen_l_1.Pt() < 0.05 
-    ) FillHist("reco_leading_SS_match_gen_l_1", 1, 1, 0, 2, 2);
-  else FillHist("reco_leading_SS_match_gen_l_1", 0, 1, 0, 2, 2); 
+    ) FillHist("GEN_reco_leading_SS_match_gen_l_1", 1, 1, 0, 2, 2);
+  else FillHist("GEN_reco_leading_SS_match_gen_l_1", 0, 1, 0, 2, 2); 
 
   if( reco_lep[SameSign[1]].DeltaR(gen_l_1) < 0.15
       //&& fabs(reco_lep[SameSign[0]].Pt()-gen_l_1.Pt())/gen_l_1.Pt() < 0.05 
-    ) FillHist("reco_subleading_SS_match_gen_l_1", 1, 1, 0, 2, 2);
-  else FillHist("reco_subleading_SS_match_gen_l_1", 0, 1, 0, 2, 2); 
+    ) FillHist("GEN_reco_subleading_SS_match_gen_l_1", 1, 1, 0, 2, 2);
+  else FillHist("GEN_reco_subleading_SS_match_gen_l_1", 0, 1, 0, 2, 2);
+
 
 }
 

@@ -4,7 +4,6 @@
 #include "AnalyzerCore.h"
 #include "Trilepton.h"
 
-
 class trilepton_mumumu : public AnalyzerCore {
 
  public:
@@ -22,12 +21,6 @@ class trilepton_mumumu : public AnalyzerCore {
   void InitialiseAnalysis() throw( LQError );
   void MakeHistograms();
   void FillCutFlow(TString cut, float w);
-  void SetBinInfo(int cut);
-  double HN_x_min, HN_x_max, HN_dx,
-         W_pri_lowmass_x_min, W_pri_lowmass_x_max, W_pri_lowmass_dx,
-         dR_x_min, dR_x_max, dR_dx,
-         gamma_star_x_min, gamma_star_x_max, gamma_star_dx,
-         z_candidate_x_min, z_candidate_x_max, z_candidate_dx;
   void gen_matching();
   void find_decay(std::vector<snu::KTruth> truthcoll, int target_index, std::vector<int>& indices);
   void print_all_indices(TString particle, std::vector<int> vec);
