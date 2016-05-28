@@ -162,13 +162,17 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   }
   FillHist("n_bjets_control_PU", n_bjets, weight*pileup_reweight, 0, 10, 10);
 
-  // define CR         //
-  // SS dimuon + 0 jet //
-  if( n_triLoose_muons != 2 ) return;
-  if( n_triTight_muons != 2 ) return;
-  if( n_jets != 0 ) return;
-  if( muontriLooseColl.at(0).Charge() != muontriLooseColl.at(1).Charge() ) return;
-  if( muontriLooseColl.at(0).Pt() < 20. ) return;
+  //================
+  //==== define CR
+  //================
+
+  //==== 1) SS dimuon
+  if( ! (n_triLoose_muons == 2) ) return;
+  if( ! (n_triTight_muons == 2) ) return;
+  if( ! (muontriLooseColl.at(0).Charge() == muontriLooseColl.at(1).Charge()) ) return;
+  //==== 2) jets...
+  //if( ! n_jets == 0 ) return;
+  if( ! n_bjets > 0) return;
 
   snu::KMuon lep[2];
   double LeptonRelIso[2]; 
@@ -182,23 +186,23 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   FillHist("TT_mll_control_PU", (lep[0]+lep[1]).M() , weight*pileup_reweight, 0, 200, 200);
   FillHist("TT_leadingLepton_Pt_control_PU", lep[0].Pt() , weight*pileup_reweight, 0, 200, 200);
   FillHist("TT_secondLepton_Pt_control_PU", lep[1].Pt() , weight*pileup_reweight, 0, 200, 200);
-  FillHist("TT_leadingLepton_Eta_control_PU", lep[0].Eta() , weight*pileup_reweight, -3, 3, 6./0.1);
-  FillHist("TT_secondLepton_Eta_control_PU", lep[1].Eta() , weight*pileup_reweight, -3, 3, 6./0.1);
+  FillHist("TT_leadingLepton_Eta_control_PU", lep[0].Eta() , weight*pileup_reweight, -3, 3, 60);
+  FillHist("TT_secondLepton_Eta_control_PU", lep[1].Eta() , weight*pileup_reweight, -3, 3, 60);
   FillHist("TT_leadingLepton_RelIso_control_PU", LeptonRelIso[0] , weight*pileup_reweight, 0, 1.0, 10);
   FillHist("TT_secondLepton_RelIso_control_PU", LeptonRelIso[1] , weight*pileup_reweight, 0, 1.0, 10);
-  FillHist("TT_leadingLepton_Chi2_control_PU", lep[0].GlobalChi2() , weight*pileup_reweight, 0, 10, 10./0.1);
-  FillHist("TT_secondLepton_Chi2_control_PU", lep[1].GlobalChi2() , weight*pileup_reweight, 0, 10, 10./0.1);
+  FillHist("TT_leadingLepton_Chi2_control_PU", lep[0].GlobalChi2() , weight*pileup_reweight, 0, 10, 100);
+  FillHist("TT_secondLepton_Chi2_control_PU", lep[1].GlobalChi2() , weight*pileup_reweight, 0, 10, 100);
   //==== weight = 1 plots
   FillHist("TT_n_events_1_control_PU", 0, 1, 0, 1, 1);
   FillHist("TT_mll_1_control_PU", (lep[0]+lep[1]).M() , 1, 0, 200, 200);
   FillHist("TT_leadingLepton_Pt_1_control_PU", lep[0].Pt() , 1, 0, 200, 200);
   FillHist("TT_secondLepton_Pt_1_control_PU", lep[1].Pt() , 1, 0, 200, 200);
-  FillHist("TT_leadingLepton_Eta_1_control_PU", lep[0].Eta() , 1, -3, 3, 6./0.1);
-  FillHist("TT_secondLepton_Eta_1_control_PU", lep[1].Eta() , 1, -3, 3, 6./0.1);
+  FillHist("TT_leadingLepton_Eta_1_control_PU", lep[0].Eta() , 1, -3, 3, 60);
+  FillHist("TT_secondLepton_Eta_1_control_PU", lep[1].Eta() , 1, -3, 3, 60);
   FillHist("TT_leadingLepton_RelIso_1_control_PU", LeptonRelIso[0] , 1, 0, 1.0, 10);
   FillHist("TT_secondLepton_RelIso_1_control_PU", LeptonRelIso[1] , 1, 0, 1.0, 10);
-  FillHist("TT_leadingLepton_Chi2_1_control_PU", lep[0].GlobalChi2() , 1, 0, 10, 10./0.1);
-  FillHist("TT_secondLepton_Chi2_1_control_PU", lep[1].GlobalChi2() , 1, 0, 10, 10./0.1);
+  FillHist("TT_leadingLepton_Chi2_1_control_PU", lep[0].GlobalChi2() , 1, 0, 10, 100);
+  FillHist("TT_secondLepton_Chi2_1_control_PU", lep[1].GlobalChi2() , 1, 0, 10, 100);
 
   return;
 
