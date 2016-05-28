@@ -162,7 +162,7 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   // (jit->Pt() >= 20.) && fabs(jit->Eta()) < 2.5   && PassUserID(PFJET_LOOSE, *jit) && jit->PileupJetIDLoose() //
   std::vector<snu::KJet> jetColl_lepveto;
   //eventbase->GetJetSel()->JetHNSelection(jetColl_lepveto, muontriTightColl, electronTightColl); // HNSelection is too tight
-  eventbase->GetJetSel()->SetEta(5.0);
+  eventbase->GetJetSel()->SetEta(2.4);
   //eventbase->GetJetSel()->JetSelectionLeptonVeto(jetColl_lepveto, muontriTightColl, electronTightColl);
   eventbase->GetJetSel()->JetSelectionLeptonVeto(jetColl_lepveto, AnalyzerCore::GetMuons("veto"), AnalyzerCore::GetElectrons(false,false, "veto") );
 

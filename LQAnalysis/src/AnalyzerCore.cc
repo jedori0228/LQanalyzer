@@ -130,7 +130,7 @@ std::vector<snu::KJet> AnalyzerCore::GetJets(TString label){
   else  if(label.Contains("HNtriFRTagJet")){
 		eventbase->GetJetSel()->SetID(BaseSelection::PFJET_LOOSE);
 		eventbase->GetJetSel()->SetPt(40.);
-		eventbase->GetJetSel()->SetEta(3.0);
+		eventbase->GetJetSel()->SetEta(2.4);
 		eventbase->GetJetSel()->JetSelectionLeptonVeto(jetColl, GetMuons("veto"), GetElectrons(false,false, "veto"));
   }
   else  if(label.Contains("ApplyLeptonVeto")){

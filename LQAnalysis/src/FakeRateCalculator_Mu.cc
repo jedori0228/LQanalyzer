@@ -161,7 +161,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   //}
 
   std::vector<snu::KJet> jetColl_lepveto;
-  eventbase->GetJetSel()->SetEta(5.0);
+  eventbase->GetJetSel()->SetEta(2.4);
   //==== should remove the loosest leptons in the analysis
   eventbase->GetJetSel()->JetSelectionLeptonVeto(jetColl_lepveto, AnalyzerCore::GetMuons("veto"), AnalyzerCore::GetElectrons(false,false, "veto") );
 
