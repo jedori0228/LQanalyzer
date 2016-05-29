@@ -155,6 +155,10 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   // CR related variables //
   FillHist("n_tight_muons_control_PU", n_triTight_muons, weight*pileup_reweight, 0, 10, 10);
   FillHist("n_loose_muons_control_PU", n_triLoose_muons, weight*pileup_reweight, 0, 10, 10);
+  if( n_triTight_muons == 2 && n_triLoose_muons == 2){
+    int isSS = muontriLooseColl.at(0).Charge() == muontriLooseColl.at(1).Charge() ? 1 : 0;
+    FillHist("2Muons_OS0_SS1_control_PU", isSS, weight*pileup_reweight, 0, 2, 2);
+  }
   FillHist("n_jets_control_PU", n_jets, weight*pileup_reweight, 0, 10, 10);
   int n_bjets=0;
   for(UInt_t j=0; j < n_jets; j++){
@@ -171,8 +175,10 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   if( ! (n_triTight_muons == 2) ) return;
   if( ! (muontriLooseColl.at(0).Charge() == muontriLooseColl.at(1).Charge()) ) return;
   //==== 2) jets...
-  //if( ! n_jets == 0 ) return;
-  if( ! n_bjets > 0) return;
+  if( ! n_jets == 0 ) return; // CR1
+  //if( ! n_bjets > 0) return; // CR2
+
+  if( muontriLooseColl.at(0).Pt() < 20. ) return;
 
   snu::KMuon lep[2];
   double LeptonRelIso[2]; 
