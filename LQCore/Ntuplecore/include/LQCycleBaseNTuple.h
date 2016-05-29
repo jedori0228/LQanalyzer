@@ -44,6 +44,8 @@ public:
   void SetCFStatus( bool type);
   void SetSampleName( TString sample);
   void SetDataChannel(TString channel);
+  void SetJskimFlag1(TString jf1);
+  void SetJskimFlag2(TString jf2);
 
   void SetNSampleEvents(double nev);
   void SetOutPutStep(int step);
@@ -57,6 +59,8 @@ public:
   TString k_sample_name;
   TString k_channel;
 TString muscale_fitParametersFile;
+  TString k_jskim_flag_1;
+  TString k_jskim_flag_2;
   
   // How many entries in the fullsample
   double sample_entries;

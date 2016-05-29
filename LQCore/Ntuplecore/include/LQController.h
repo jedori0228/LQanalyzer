@@ -60,6 +60,8 @@ class LQController  {
   void RunNtupleEvent(Long64_t ev);
   void RunNonPrompt(TString np);
   void RunChargeFlip(TString cf);
+  void SetJskimFlag1(TString jf1);
+  void SetJskimFlag2(TString jf2);
 
   std::pair< Double_t, Double_t> GetTotalEvents() throw(LQError);
   float CalculateWeight() throw (LQError);
@@ -76,6 +78,8 @@ class LQController  {
   TString completename;
   bool runnp;
   bool runcf;
+  TString jskimflag1;
+  TString jskimflag2;
   mutable LQLogger m_logger;
   
   float target_luminosity;

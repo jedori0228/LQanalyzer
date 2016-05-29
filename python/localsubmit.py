@@ -39,6 +39,8 @@ parser.add_option("-m", "--useskim", dest="useskim", default="Lepton", help="Run
 parser.add_option("-P", "--runnp", dest="runnp", default="runnp", help="Run fake mode for np bkg?")
 parser.add_option("-Q", "--runcf", dest="runcf", default="runcf", help="Run fake mode for np bkg?")
 parser.add_option("-b", "--usebatch", dest="usebatch", default="usebatch", help="Run in batch queue?")
+parser.add_option("-z", "--jskimflag1", dest="jskimflag1", default="", help="jskim flag 1")
+parser.add_option("-Z", "--jskimflag2", dest="jskimflag2", default="", help="jskim flag 2")
 
 
 ###################################################
@@ -54,6 +56,8 @@ loglevel = options.loglevel
 runnp = options.runnp
 runcf = options.runcf
 usebatch =options.usebatch
+jskimflag1 = options.jskimflag1
+jskimflag2 = options.jskimflag2
 ### THESE ARE OPTIONS THAT CAN BE INCLUDED but not in example
 tree = options.tree
 number_of_events_per_job= int(options.nevents)
@@ -299,7 +303,6 @@ if number_of_cores < 0:
 ##################################################################################################################            
 ##### FINISHED CONFIGURATION
 ##################################################################################################################
-singlejob = number_of_cores==1            
 
 
 
@@ -563,22 +566,22 @@ if running_batch:
             if running_large_sample:
                 if number_of_cores > 100:
                     number_of_cores=100
-            else:
-                if n_user_qsub_jobs > 300:
-                    number_of_cores=5
-                elif n_user_qsub_jobs > 200:
-                    number_of_cores=15
-                elif n_user_qsub_jobs > 100:
-                    number_of_cores=20
-                elif n_user_qsub_jobs > 60:
-                    number_of_cores=30
-                elif n_user_qsub_jobs > 40:
-                    number_of_cores=50
-                else:
-                    if n_qsub_jobs < 30:
-                        number_of_cores=100
-                    else:
-                         number_of_cores=50
+            #else:
+                #if n_user_qsub_jobs > 300:
+                #    number_of_cores=5
+                #elif n_user_qsub_jobs > 200:
+                #    number_of_cores=15
+                #elif n_user_qsub_jobs > 100:
+                #    number_of_cores=20
+                #elif n_user_qsub_jobs > 60:
+                #    number_of_cores=30
+                #elif n_user_qsub_jobs > 40:
+                #    number_of_cores=50
+                #else:
+                #    if n_qsub_jobs < 30:
+                #        number_of_cores=100
+                #    else:
+                #         number_of_cores=50
         else:
             if number_of_cores > 100:
                 number_of_cores = 100
@@ -598,6 +601,7 @@ if number_of_cores > number_of_files:
     number_of_cores = number_of_files
 print "Splitting job into " + str(number_of_cores) + " subjobs"
 
+singlejob = number_of_cores==1
 
 ############################################################  
 ### Do not change njobs if using batch 
@@ -712,7 +716,7 @@ for line in fr:
             filelist = output+ "Job_" + str(count) + "/" + sample + "_%s" % (count) + ".txt"
             fwrite = open(filelist, 'w')
             configfile=open(runscript,'w')
-            configfile.write(makeConfigFile(loglevel, outsamplename, filelist, tree, cycle, count, outputdir_tmp, outputdir, number_of_events_per_job, logstep, skipev, datatype, original_channel, data_lumi, totalev, xsec, tar_lumi, eff_lumi, useskinput, runevent, list_of_extra_lib, runnp,runcf)) #job, input, sample, ver, output
+            configfile.write(makeConfigFile(loglevel, outsamplename, filelist, tree, cycle, count, outputdir_tmp, outputdir, number_of_events_per_job, logstep, skipev, datatype, original_channel, data_lumi, totalev, xsec, tar_lumi, eff_lumi, useskinput, runevent, list_of_extra_lib, runnp,runcf,jskimflag1,jskimflag2)) #job, input, sample, ver, output
             configfile.close()
             if str(DEBUG) == "True":
                 print "Making file : " + printedrunscript
@@ -737,7 +741,7 @@ for line in fr:
                 filelist = output+ "Job_" + str(count) + "/" + sample + "_%s" % (count) + ".txt"
                 fwrite = open(filelist, 'w')
                 configfile=open(runscript,'w')
-                configfile.write(makeConfigFile(loglevel,outsamplename, filelist, tree, cycle, count, outputdir_tmp,outputdir, number_of_events_per_job, logstep, skipev, datatype , original_channel, data_lumi, totalev, xsec, tar_lumi, eff_lumi, useskinput, runevent,list_of_extra_lib, runnp, runcf))
+                configfile.write(makeConfigFile(loglevel,outsamplename, filelist, tree, cycle, count, outputdir_tmp,outputdir, number_of_events_per_job, logstep, skipev, datatype , original_channel, data_lumi, totalev, xsec, tar_lumi, eff_lumi, useskinput, runevent,list_of_extra_lib, runnp, runcf,jskimflag1,jskimflag2))
                 configfile.close()
                 fwrite.write(line)
                 filesprocessed+=1

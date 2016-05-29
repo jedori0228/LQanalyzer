@@ -107,7 +107,7 @@ def make_batch_script(workdir, jname, lqdir, macroname):
     return config
 
 
-def makeConfigFile(log,sample, input, tree, cycle, ver, output_tmp, output, nevents, outstep, skipev, datatype, channel, period, totalmcevents, xsec, tar_lumi, eff_lumi, useSKinput, runevent, libraries, runnp, runcf):
+def makeConfigFile(log,sample, input, tree, cycle, ver, output_tmp, output, nevents, outstep, skipev, datatype, channel, period, totalmcevents, xsec, tar_lumi, eff_lumi, useSKinput, runevent, libraries, runnp, runcf, jskimflag1, jskimflag2):
 
     config='{\n'
     config+='    gEnv->SetValue("TFile.AsyncPrefetching", 1);\n'
@@ -165,6 +165,8 @@ def makeConfigFile(log,sample, input, tree, cycle, ver, output_tmp, output, neve
         config+='   analysis.SetMCCrossSection(' + str(xsec) +');\n'
     config+='   analysis.RunNonPrompt("' +runnp+'");\n'
     config+='   analysis.RunChargeFlip("' +runcf+'");\n'
+    config+='   analysis.SetJskimFlag1("' +jskimflag1+'");\n'
+    config+='   analysis.SetJskimFlag2("' +jskimflag2+'");\n'
     config+='   analysis.SetName("' + sample + '",'+ str(ver) +',"'+ output_tmp +'");\n'                        
     config+='   analysis.Initialize();\n'
     config+='   analysis.ExecuteCycle();\n'

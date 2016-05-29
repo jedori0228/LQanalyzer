@@ -16,7 +16,7 @@
 
 ClassImp( LQCycleBaseNTuple);
 
-LQCycleBaseNTuple::LQCycleBaseNTuple() : LQCycleBaseBase(), m_outputFile(0),m_outputTrees(),m_outputVarPointers(), k_isdata(false) ,k_running_nonprompt(false), k_running_chargeflip(false), k_sample_name(""), sample_entries(-999), output_interval(10000), events_to_process(-1){
+LQCycleBaseNTuple::LQCycleBaseNTuple() : LQCycleBaseBase(), m_outputFile(0),m_outputTrees(),m_outputVarPointers(), k_isdata(false) ,k_running_nonprompt(false), k_running_chargeflip(false), k_sample_name(""), k_jskim_flag_1(""), k_jskim_flag_2(""), sample_entries(-999), output_interval(10000), events_to_process(-1){
 
 
  
@@ -108,6 +108,14 @@ void LQCycleBaseNTuple::SetDataChannel( TString channel){
 
 void LQCycleBaseNTuple::SetNSampleEvents(double nev){
   sample_entries = nev;
+}
+
+void LQCycleBaseNTuple::SetJskimFlag1(TString jf1){
+  k_jskim_flag_1 = jf1;
+}
+
+void LQCycleBaseNTuple::SetJskimFlag2(TString jf2){
+  k_jskim_flag_2 = jf2;
 }
 
 TFile* LQCycleBaseNTuple::GetOutputFile(){

@@ -27,7 +27,7 @@
 #include <TSystem.h>
 #include <TChain.h>
 
-LQController::LQController():inputType(NOTSET), outputLevelString("INFO"), CycleName("Analyzer"), jobName("Test"), treeName("rootTupleTree/tree"),filelist(""), fullfilelist(""), completename(""),runnp(false), runcf(false), m_logger( "LQCycleController") , target_luminosity(1.),  sample_crosssection(-999.), effective_luminosity(1.), n_total_event(-1.),  nevents_to_process(-1), m_isInitialized( kFALSE ), n_ev_to_skip(0), v_libnames(0), list_to_run(0),single_ev(0), run_single_event(false), total_events_beforeskim(0), total_events_afterskim(0),output_step(10000), channel(""), k_period("NOTSET"), kLQInput(true){
+LQController::LQController():inputType(NOTSET), outputLevelString("INFO"), CycleName("Analyzer"), jobName("Test"), treeName("rootTupleTree/tree"),filelist(""), fullfilelist(""), completename(""),runnp(false), runcf(false), jskimflag1(""), jskimflag2(""), m_logger( "LQCycleController") , target_luminosity(1.),  sample_crosssection(-999.), effective_luminosity(1.), n_total_event(-1.),  nevents_to_process(-1), m_isInitialized( kFALSE ), n_ev_to_skip(0), v_libnames(0), list_to_run(0),single_ev(0), run_single_event(false), total_events_beforeskim(0), total_events_afterskim(0),output_step(10000), channel(""), k_period("NOTSET"), kLQInput(true){
   
   chain = NULL;
   h_timing_hist = new TH1F ("CycleTiming","Timing", 7,0.,7.);
@@ -133,6 +133,13 @@ void LQController::RunChargeFlip(TString cf){
   if(cf.Contains("True")) runcf = true;
   else runcf = false;
   if(cf.Contains("True"))m_logger << INFO << "Running ChargeFlip background estimate" << LQLogger::endmsg;
+}
+
+void LQController::SetJskimFlag1(TString jf1){
+  jskimflag1 = jf1;
+}
+void LQController::SetJskimFlag2(TString jf2){
+  jskimflag2 = jf2;
 }
 
 
@@ -506,6 +513,9 @@ void LQController::ExecuteCycle() throw( LQError ) {
     cycle->SetNPStatus(runnp);
     cycle->SetCFStatus(runcf);
     cycle->SetSampleName(jobName);
+
+    cycle->SetJskimFlag1(jskimflag1);
+    cycle->SetJskimFlag2(jskimflag2);
     
     Long64_t nentries = cycle->GetNEntries(); /// This is total number of events in Input list    
     if(n_ev_to_skip > nentries) n_ev_to_skip =0;
