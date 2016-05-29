@@ -50,19 +50,19 @@ void trilepton_mumumu_CR_FR_method::InitialiseAnalysis() throw( LQError ) {
   string lqdir = getenv("LQANALYZER_DIR");
 
   //==== dijet topology
-  TFile* file = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_dijet_topology.root").c_str() );
-  hist_trimuon_FR[0] = (TH2F*)file->Get("events_F")->Clone();
+  //TFile* file = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_Dijet.root").c_str() );
+  //hist_trimuon_FR[0] = (TH2F*)file->Get("Dijet_events_F")->Clone();
   //==== HighdXY muons
-  //TFile* file = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_HighdXY.root").c_str() );
-  //hist_trimuon_FR[0] = (TH2F*)file->Get("HighdXY_events_F")->Clone();
+  //TFile* file = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_SingleMuon_HighdXY.root").c_str() );
+  //hist_trimuon_FR[0] = (TH2F*)file->Get("SingleMuon_HighdXY_events_F")->Clone();
   //==== DiMuonHighdXY muons
   //TFile* file = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_DiMuon_HighdXY.root").c_str() );
   //hist_trimuon_FR[0] = (TH2F*)file->Get("DiMuon_HighdXY_events_F")->Clone();
   //==== DiMuonHighdXY muons + n_jet bins
-  //TFile* file = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_DiMuon_HighdXY_0jet.root").c_str() );
-  //hist_trimuon_FR[0] = (TH2F*)file->Get("DiMuon_HighdXY_0jet_events_F")->Clone();
-  //TFile* file_withjet = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_DiMuon_HighdXY_withjet.root").c_str() );
-  //hist_trimuon_FR[1] = (TH2F*)file_withjet->Get("DiMuon_HighdXY_withjet_events_F")->Clone();
+  TFile* file = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_DiMuon_HighdXY_0jet.root").c_str() );
+  hist_trimuon_FR[0] = (TH2F*)file->Get("DiMuon_HighdXY_0jet_events_F")->Clone();
+  TFile* file_withjet = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_DiMuon_HighdXY_withjet.root").c_str() );
+  hist_trimuon_FR[1] = (TH2F*)file_withjet->Get("DiMuon_HighdXY_withjet_events_F")->Clone();
 
   TH1I* hist_bins = (TH1I*)file->Get("hist_bins");
   FR_n_pt_bin = hist_bins->GetBinContent(1);
@@ -191,8 +191,8 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   if(   n_triTight_muons == 2 ) return; // return for TT case
   if( ! (muontriLooseColl.at(0).Charge() == muontriLooseColl.at(1).Charge()) ) return;
   //==== 2) jets...
-  //if( ! n_jets == 0 ) return;
-  if( ! n_bjets > 0) return;
+  if( ! n_jets == 0 ) return; // CR1
+  //if( ! n_bjets > 0) return; // CR2
 
   if( muontriLooseColl.at(0).Pt() < 20. ) return;
 
