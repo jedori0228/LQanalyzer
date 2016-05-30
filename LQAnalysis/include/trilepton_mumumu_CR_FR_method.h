@@ -21,16 +21,10 @@ class trilepton_mumumu_CR_FR_method : public AnalyzerCore {
   void InitialiseAnalysis() throw( LQError );
   void MakeHistograms();
   void FillCutFlow(TString cut, float w);
-  void SetBinInfo(int cut);
-  double HN_x_min, HN_x_max, HN_dx,
-         W_pri_lowmass_x_min, W_pri_lowmass_x_max, W_pri_lowmass_dx,
-         dR_x_min, dR_x_max, dR_dx,
-         gamma_star_x_min, gamma_star_x_max, gamma_star_dx,
-         z_candidate_x_min, z_candidate_x_max, z_candidate_dx;
 
-  TH2F* hist_trimuon_FR[2];
-  int FR_n_pt_bin, FR_n_eta_bin;
-  double get_FR(snu::KParticle muon, int n_jets);
+  TH2F* hist_trimuon_FR[10];
+  int FR_n_pt_bin[10], FR_n_eta_bin[10];
+  double get_FR(snu::KParticle muon, TString whichFR, int n_jets);
 
  private:
   

@@ -153,6 +153,7 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   int n_jets = jetColl_lepveto.size();
 
   // CR related variables //
+  //FillHist("n_tight_muons_control_PU", n_triTight_muons, weight*pileup_reweight, 0, 10, 10);
   FillHist("n_tight_muons_control_PU", n_triTight_muons, weight*pileup_reweight, 0, 10, 10);
   FillHist("n_loose_muons_control_PU", n_triLoose_muons, weight*pileup_reweight, 0, 10, 10);
   if( n_triTight_muons == 2 && n_triLoose_muons == 2){
@@ -175,8 +176,14 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   if( ! (n_triTight_muons == 2) ) return;
   if( ! (muontriLooseColl.at(0).Charge() == muontriLooseColl.at(1).Charge()) ) return;
   //==== 2) jets...
-  if( ! n_jets == 0 ) return; // CR1
-  //if( ! n_bjets > 0) return; // CR2
+  bool isCR = true;
+  if(k_jskim_flag_2 == "CR1"){
+    isCR = (n_jets == 0);
+  }
+  if(k_jskim_flag_2 == "CR2"){
+    isCR = (n_bjets > 0);
+  }
+  if(!isCR) return;
 
   if( muontriLooseColl.at(0).Pt() < 20. ) return;
 
@@ -189,7 +196,7 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
 
   //==== FR weighted plots
   FillHist("TT_n_events_control_PU", 0, weight*pileup_reweight, 0, 1, 1);
-  FillHist("TT_mll_control_PU", (lep[0]+lep[1]).M() , weight*pileup_reweight, 0, 200, 200);
+  FillHist("TT_mll_control_PU", (lep[0]+lep[1]).M() , weight*pileup_reweight, 0, 500, 500);
   FillHist("TT_leadingLepton_Pt_control_PU", lep[0].Pt() , weight*pileup_reweight, 0, 200, 200);
   FillHist("TT_secondLepton_Pt_control_PU", lep[1].Pt() , weight*pileup_reweight, 0, 200, 200);
   FillHist("TT_leadingLepton_Eta_control_PU", lep[0].Eta() , weight*pileup_reweight, -3, 3, 60);
@@ -200,7 +207,7 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   FillHist("TT_secondLepton_Chi2_control_PU", lep[1].GlobalChi2() , weight*pileup_reweight, 0, 10, 100);
   //==== weight = 1 plots
   FillHist("TT_n_events_1_control_PU", 0, 1, 0, 1, 1);
-  FillHist("TT_mll_1_control_PU", (lep[0]+lep[1]).M() , 1, 0, 200, 200);
+  FillHist("TT_mll_1_control_PU", (lep[0]+lep[1]).M() , 1, 0, 500, 500);
   FillHist("TT_leadingLepton_Pt_1_control_PU", lep[0].Pt() , 1, 0, 200, 200);
   FillHist("TT_secondLepton_Pt_1_control_PU", lep[1].Pt() , 1, 0, 200, 200);
   FillHist("TT_leadingLepton_Eta_1_control_PU", lep[0].Eta() , 1, -3, 3, 60);

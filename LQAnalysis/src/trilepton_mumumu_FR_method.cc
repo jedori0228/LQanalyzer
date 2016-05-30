@@ -48,25 +48,31 @@ void trilepton_mumumu_FR_method::InitialiseAnalysis() throw( LQError ) {
   //
 
   string lqdir = getenv("LQANALYZER_DIR");
+  TFile* file[5];
 
   //==== dijet topology
-  //TFile* file = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_Dijet.root").c_str() );
-  //hist_trimuon_FR[0] = (TH2F*)file->Get("Dijet_events_F")->Clone();
+  file[0] = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_Dijet.root").c_str() );
+  hist_trimuon_FR[0] = (TH2F*)file[0]->Get("Dijet_events_F")->Clone();
   //==== HighdXY muons
-  //TFile* file = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_SingleMuon_HighdXY.root").c_str() );
-  //hist_trimuon_FR[0] = (TH2F*)file->Get("SingleMuon_HighdXY_events_F")->Clone();
+  file[1] = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_SingleMuon_HighdXY.root").c_str() );
+  hist_trimuon_FR[1] = (TH2F*)file[1]->Get("SingleMuon_HighdXY_events_F")->Clone();
   //==== DiMuonHighdXY muons
-  //TFile* file = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_DiMuon_HighdXY.root").c_str() );
-  //hist_trimuon_FR[0] = (TH2F*)file->Get("DiMuon_HighdXY_events_F")->Clone();
+  file[2] = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_DiMuon_HighdXY.root").c_str() );
+  hist_trimuon_FR[2] = (TH2F*)file[2]->Get("DiMuon_HighdXY_events_F")->Clone();
   //==== DiMuonHighdXY muons + n_jet bins
-  TFile* file = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_DiMuon_HighdXY_0jet.root").c_str() );
-  hist_trimuon_FR[0] = (TH2F*)file->Get("DiMuon_HighdXY_0jet_events_F")->Clone();
-  TFile* file_withjet = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_DiMuon_HighdXY_withjet.root").c_str() );
-  hist_trimuon_FR[1] = (TH2F*)file_withjet->Get("DiMuon_HighdXY_withjet_events_F")->Clone();
+  file[3] = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_DiMuon_HighdXY_0jet.root").c_str() );
+  hist_trimuon_FR[3] = (TH2F*)file[3]->Get("DiMuon_HighdXY_0jet_events_F")->Clone();
+  file[4] = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_DiMuon_HighdXY_withjet.root").c_str() );
+  hist_trimuon_FR[4] = (TH2F*)file[4]->Get("DiMuon_HighdXY_withjet_events_F")->Clone();
 
-  TH1I* hist_bins = (TH1I*)file->Get("hist_bins");
-  FR_n_pt_bin = hist_bins->GetBinContent(1);
-  FR_n_eta_bin = hist_bins->GetBinContent(2);
+  for(int i=0; i<5; i++){
+    TH1I* hist_bins = (TH1I*)file[i]->Get("hist_bins");
+    FR_n_pt_bin[i] = hist_bins->GetBinContent(1);
+    FR_n_eta_bin[i] = hist_bins->GetBinContent(2);
+    delete hist_bins;
+    file[i]->Close();
+    delete file[i];
+  }
 
   return;
 }
@@ -190,7 +196,7 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   for(int i=0;i<3;i++){
     lep[i] = muontriLooseColl.at(i);
     if( !eventbase->GetMuonSel()->HNIstriTight(muontriLooseColl.at(i) , false) ){
-      FR_muon.push_back( get_FR(lep[i], n_jets) ); 
+      FR_muon.push_back( get_FR(lep[i], k_jskim_flag_1, n_jets) ); 
     }
   }
 
@@ -518,43 +524,50 @@ void trilepton_mumumu_FR_method::ClearOutputVectors() throw(LQError) {
   out_electrons.clear();
 }
 
-double trilepton_mumumu_FR_method::get_FR(snu::KParticle muon, int n_jets){
+double trilepton_mumumu_FR_method::get_FR(snu::KParticle muon, TString whichFR, int n_jets){
+
+  int FR_index = 0;
+  
+  if(whichFR=="Dijet")         FR_index = 0;
+  if(whichFR=="HighdXY")       FR_index = 1;
+  if(whichFR=="DiMuonHighdXY") FR_index = 2;
+  if(whichFR=="DiMuonHighdXYnjets"){
+    FR_index = 3;
+    if(n_jets>0) FR_index = 4;
+  }
 
   double this_pt = muon.Pt();
   double this_eta = fabs( muon.Eta() );
-
-  if(n_jets > 0) n_jets = 1;
-  if(!hist_trimuon_FR[1]) n_jets = 0;
 
   // FR_n_pt_bin = 7
   // array index      0    1    2    3    4    5    6    7
   // bin numbe          1    2     3    4    5   6     7
   // ptarray[7+1] = {10., 15., 20., 25., 30., 35., 45., 60.}; 
 
-  double ptarray[FR_n_pt_bin+1], etaarray[FR_n_eta_bin+1];
-  //cout << "FR_n_pt_bin = " << FR_n_pt_bin << endl;
-  for(int i=0; i<FR_n_pt_bin; i++){
-    ptarray[i] = hist_trimuon_FR[n_jets]->GetXaxis()->GetBinLowEdge(i+1);
+  double ptarray[FR_n_pt_bin[FR_index]+1], etaarray[FR_n_eta_bin[FR_index]+1];
+  //cout << "FR_n_pt_bin = " << FR_n_pt_bin[FR_index] << endl;
+  for(int i=0; i<FR_n_pt_bin[FR_index]; i++){
+    ptarray[i] = hist_trimuon_FR[FR_index]->GetXaxis()->GetBinLowEdge(i+1);
     //cout << " " << ptarray[i] << endl;
-    if(i==FR_n_pt_bin-1){
-      ptarray[FR_n_pt_bin] = hist_trimuon_FR[n_jets]->GetXaxis()->GetBinUpEdge(i+1);
-      //cout << " " << ptarray[FR_n_pt_bin] << endl;
+    if(i==FR_n_pt_bin[FR_index]-1){
+      ptarray[FR_n_pt_bin[FR_index]] = hist_trimuon_FR[FR_index]->GetXaxis()->GetBinUpEdge(i+1);
+      //cout << " " << ptarray[FR_n_pt_bin[FR_index]] << endl;
     }
   }
-  //cout << "FR_n_eta_bin = " << FR_n_eta_bin << endl;
-  for(int i=0; i<FR_n_eta_bin; i++){
-    etaarray[i] = hist_trimuon_FR[n_jets]->GetYaxis()->GetBinLowEdge(i+1);
+  //cout << "FR_n_eta_bin = " << FR_n_eta_bin[FR_index] << endl;
+  for(int i=0; i<FR_n_eta_bin[FR_index]; i++){
+    etaarray[i] = hist_trimuon_FR[FR_index]->GetYaxis()->GetBinLowEdge(i+1);
     //cout << " " << etaarray[i] << endl;
-    if(i==FR_n_eta_bin-1){
-      etaarray[FR_n_eta_bin] = hist_trimuon_FR[n_jets]->GetYaxis()->GetBinUpEdge(i+1);
-      //cout << " " << etaarray[FR_n_eta_bin] << endl;
+    if(i==FR_n_eta_bin[FR_index]-1){
+      etaarray[FR_n_eta_bin[FR_index]] = hist_trimuon_FR[FR_index]->GetYaxis()->GetBinUpEdge(i+1);
+      //cout << " " << etaarray[FR_n_eta_bin[FR_index]] << endl;
     }
   }
 
   int this_pt_bin;
-  if( this_pt >= ptarray[FR_n_pt_bin] ) this_pt_bin = FR_n_pt_bin;
+  if( this_pt >= ptarray[FR_n_pt_bin[FR_index]] ) this_pt_bin = FR_n_pt_bin[FR_index];
   else{
-    for(int i=0; i<FR_n_pt_bin; i++){
+    for(int i=0; i<FR_n_pt_bin[FR_index]; i++){
       if( ptarray[i] <= this_pt && this_pt < ptarray[i+1] ){
         this_pt_bin = i+1;
         break;
@@ -562,9 +575,9 @@ double trilepton_mumumu_FR_method::get_FR(snu::KParticle muon, int n_jets){
     }
   }
   int this_eta_bin;
-  if( this_eta >= etaarray[FR_n_eta_bin] ) this_eta_bin = FR_n_eta_bin;
+  if( this_eta >= etaarray[FR_n_eta_bin[FR_index]] ) this_eta_bin = FR_n_eta_bin[FR_index];
   else{
-    for(int i=0; i<FR_n_eta_bin; i++){
+    for(int i=0; i<FR_n_eta_bin[FR_index]; i++){
       if( etaarray[i] <= this_eta && this_eta < etaarray[i+1] ){
         this_eta_bin = i+1;
         break;
@@ -572,7 +585,7 @@ double trilepton_mumumu_FR_method::get_FR(snu::KParticle muon, int n_jets){
     }
   }
 
-  return hist_trimuon_FR[n_jets]->GetBinContent(this_pt_bin, this_eta_bin);
+  return hist_trimuon_FR[FR_index]->GetBinContent(this_pt_bin, this_eta_bin);
 
 }
 
