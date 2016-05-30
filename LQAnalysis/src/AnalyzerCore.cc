@@ -32,6 +32,7 @@
 AnalyzerCore::AnalyzerCore() : LQCycleBase(), MCweight(-999.) {
 
   TH1::SetDefaultSumw2(true);  
+  TH1::AddDirectory(kFALSE);
   /// clear list of triggers stored in KTrigger
   triggerlist.clear();
   // If running on LQNtuples this is not important.
@@ -2823,7 +2824,7 @@ void AnalyzerCore::WriteHists(){
   for(map<TString, TH1*>::iterator mapit = maphist.begin(); mapit != maphist.end(); mapit++){
     
     
-    
+   /* 
     if(mapit->first.Contains("closejet")){
       if(!m_outputFile->GetDirectory( "closejet" )){
 	Dir = m_outputFile->mkdir("closejet");
@@ -2951,11 +2952,12 @@ void AnalyzerCore::WriteHists(){
     }
 
 
-
     
     else {
       mapit->second->Write();
     }
+*/
+    mapit->second->Write();
   }
 
   for(map<TString, TH2*>::iterator mapit = maphist2D.begin(); mapit != maphist2D.end(); mapit++){
