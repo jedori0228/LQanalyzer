@@ -6,14 +6,14 @@ runSignal=$2
 runDoubleMuon=$3
 runFRMethod=$4
 whichFR=$5
+runCutOpt=$6
 
 if [[ $runMC  == "true" ]]; 
 then
     source functions.sh
     cycle="trilepton_mumumu"
+    outdirname="trilepton_mumumu"
     skinput="True"
-#    useskim="NoCut"
-    outputdir=$LQANALYZER_DIR"/data/output/trilepton_mumumu/"
     #### JOB CONFIGURATION
     njobs=100
     data_lumi="AtoD"
@@ -28,10 +28,19 @@ then
       declare -a input_samples=("HN40_mumumu_new" "HN50_mumumu_new" "HN60_mumumu_new" "HN90_mumumu_new" "HN100_mumumu_new" "HN150_mumumu_new" "HN200_mumumu_new" "HN300_mumumu_new" "HN400_mumumu_new" "HN500_mumumu_new" "HN700_mumumu_new" "HN1000_mumumu_new")
     fi
 
-    #declare -a input_samples=("HN40_mumumu_new")
+    if [[ $runCutOpt == "runCutOptNtuple" ]];
+    then
+      k_jskim_flag_2="runCutOptNtuple"
+      outdirname="trilepton_mumumu_cutop"
+    fi
+
+    outputdir=$LQANALYZER_DIR"/data/output/"$outdirname"/"
+
+    #### for debugging
+    declare -a input_samples=("DY10to50")
     #outputdir=$LQANALYZER_DIR"/"
 
-    source submit.sh $1
+    source submit.sh
 fi
     
 
@@ -40,32 +49,17 @@ if [[ $runDoubleMuon  == "true" ]];
 then
     source functions.sh
     cycle="trilepton_mumumu"
-    outputdir=$LQANALYZER_DIR"/data/output/trilepton_mumumu/period/"
+    outdirname="trilepton_mumumu/period"
     jskimflag1=$whichFR
     if [[ $runFRMethod == "true" ]];
     then
-        cycle="trilepton_mumumu_FR_method"
-        if [[ $whichFR == "Dijet" ]];
-        then
-          outputdir=$LQANALYZER_DIR"/data/output/trilepton_mumumu/FR_weighted/dijet_topology/"
-        fi
-
-        if [[ $whichFR == "HighdXY" ]];
-        then
-          outputdir=$LQANALYZER_DIR"/data/output/trilepton_mumumu/FR_weighted/HighdXY/"
-        fi
-
-        if [[ $whichFR == "DiMuonHighdXY" ]];
-        then
-          outputdir=$LQANALYZER_DIR"/data/output/trilepton_mumumu/FR_weighted/DiMuon_HighdXY/"
-        fi
-
-        if [[ $whichFR == "DiMuonHighdXYnjets" ]];
-        then
-          outputdir=$LQANALYZER_DIR"/data/output/trilepton_mumumu/FR_weighted/DiMuon_HighdXY_n_jets/"
-        fi
-
-        #outputdir=$LQANALYZER_DIR"/"
+      cycle="trilepton_mumumu_FR_method"
+      outdirname="trilepton_mumumu/FR_weighted/"$whichFR
+      if [[ $runCutOpt == "runCutOptNtuple" ]];
+      then
+        k_jskim_flag_2="runCutOptNtuple"
+        outdirname="trilepton_mumumu_cutop/FR_weighted/"$whichFR
+      fi
     fi
     skinput="True"
     stream="muon"
@@ -80,10 +74,18 @@ then
     usebatch="True"
     declare -a input_samples=("A" "B" "C" "D")
 
+    outputdir=$LQANALYZER_DIR"/data/output/"$outdirname"/"
+
+    #### for debugging
     #declare -a input_samples=("A")
     #outputdir=$LQANALYZER_DIR"/"
 
-    source submit.sh $1
+    #### 18 GeV check
+    #declare -a input_samples=("A" "B" "C" "D")
+    #outputdir=$LQANALYZER_DIR"/data/output/18GeVmumumumu/"
+    #skinput="False"
+
+    source submit.sh
 fi     
 
 

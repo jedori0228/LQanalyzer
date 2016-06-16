@@ -15,9 +15,6 @@
 #include "EventBase.h"                                                                                  
 #include "BaseSelection.h"
 
-#define FR_n_pt_bin 7
-#define FR_n_eta_bin 4
-
 //// Needed to allow inheritance for use in LQCore/core classes
 ClassImp (trilepton_mumumu_CR);
 
@@ -153,7 +150,6 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   int n_jets = jetColl_lepveto.size();
 
   // CR related variables //
-  //FillHist("n_tight_muons_control_PU", n_triTight_muons, weight*pileup_reweight, 0, 10, 10);
   FillHist("n_tight_muons_control_PU", n_triTight_muons, weight*pileup_reweight, 0, 10, 10);
   FillHist("n_loose_muons_control_PU", n_triLoose_muons, weight*pileup_reweight, 0, 10, 10);
   if( n_triTight_muons == 2 && n_triLoose_muons == 2){
@@ -162,7 +158,7 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   }
   FillHist("n_jets_control_PU", n_jets, weight*pileup_reweight, 0, 10, 10);
   int n_bjets=0;
-  for(UInt_t j=0; j < n_jets; j++){
+  for(unsigned int j=0; j<n_jets; j++){
     if(jetColl_lepveto.at(j).CombinedSecVertexBtag() > 0.679) n_bjets++;
   }
   FillHist("n_bjets_control_PU", n_bjets, weight*pileup_reweight, 0, 10, 10);

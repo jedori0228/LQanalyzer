@@ -59,6 +59,8 @@ class TriLeptonPlots : public StdPlots{
   /// function to write out hists
   void Write();
 
+  bool isPlotsFilled;
+
  private:
   std::map<TString, TH1*> map_sig; 
   std::map<TString, TH2*> map_sig2; 

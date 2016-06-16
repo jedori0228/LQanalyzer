@@ -5,7 +5,8 @@
 
 using namespace std;
 
-TriLeptonPlots::TriLeptonPlots(TString name){
+TriLeptonPlots::TriLeptonPlots(TString name) : isPlotsFilled(false)
+{
 
   TH1::SetDefaultSumw2(true);
   map_sig["h_Njets"]                  =     new TH1F("h_Njets_"             + name,"number of jets",10,0,10);
@@ -70,7 +71,9 @@ TriLeptonPlots::TriLeptonPlots(TString name){
 
 
 void TriLeptonPlots::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std::vector<snu::KElectron>& electrons, std::vector<snu::KJet>& jets, Double_t weight) {
-  
+
+  isPlotsFilled = true;
+ 
   Fill("h_Nmuons" ,muons.size(), weight);
   Fill("h_Nelectrons" ,electrons.size(), weight);
   //if(! (muons.size()==3 || electrons.size()==3 || (electrons.size() == 2 && muons.size() ==1) || (electrons.size() == 1 && muons.size() ==2) )) return;
@@ -222,6 +225,8 @@ void TriLeptonPlots::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std::v
 
 
 void TriLeptonPlots::Write() {
+
+  if(!isPlotsFilled) return;
  
   for(map<TString, TH1*>::iterator it = map_sig.begin(); it != map_sig.end(); it++){
     it->second->Write();

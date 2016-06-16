@@ -346,6 +346,23 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
       HN[3] = W_sec + lep[OppSign]; // [class4]
   }
 
+  //==== THESE LINES ARE FOR CUT OPTIMIZATION STUDY
+
+  if(k_jskim_flag_2 == "runCutOptNtuple"){
+    double cutop[100];
+    cutop[0] = lep[0].Pt();
+    cutop[1] = lep[1].Pt();
+    cutop[2] = lep[2].Pt();
+    cutop[3] = deltaR_OS_min;
+    cutop[4] = HN[0].M();
+    cutop[5] = HN[1].M();
+    cutop[6] = W_pri_lowmass.M();
+    cutop[7] = weight*pileup_reweight;
+    FillNtp("cutop", cutop);
+
+    return;
+  }
+
   bool is_deltaR_OS_min_0p5 = deltaR_OS_min > 0.5;
   bool is_W_pri_lowmass_100 = W_pri_lowmass.M() < 100;
 
@@ -507,7 +524,9 @@ void trilepton_mumumu_FR_method::MakeHistograms(){
   /**
   *  Remove//Overide this trilepton_mumumu_FR_methodCore::MakeHistograms() to make new hists for your analysis
   **/
-  
+
+  MakeNtp("cutop", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_0_mass:HN_1_mass:W_pri_lowmass_mass:weight");
+
 }
 
 
@@ -528,10 +547,10 @@ double trilepton_mumumu_FR_method::get_FR(snu::KParticle muon, TString whichFR, 
 
   int FR_index = 0;
   
-  if(whichFR=="Dijet")         FR_index = 0;
-  if(whichFR=="HighdXY")       FR_index = 1;
-  if(whichFR=="DiMuonHighdXY") FR_index = 2;
-  if(whichFR=="DiMuonHighdXYnjets"){
+  if(whichFR=="dijet_topology") FR_index = 0;
+  if(whichFR=="HighdXY")        FR_index = 1;
+  if(whichFR=="DiMuon_HighdXY") FR_index = 2;
+  if(whichFR=="DiMuon_HighdXY_n_jets"){
     FR_index = 3;
     if(n_jets>0) FR_index = 4;
   }

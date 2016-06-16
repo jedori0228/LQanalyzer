@@ -414,10 +414,10 @@ double trilepton_mumumu_CR_FR_method::get_FR(snu::KParticle muon, TString whichF
 
   int FR_index = 0;
 
-  if(whichFR=="Dijet")         FR_index = 0;
-  if(whichFR=="HighdXY")       FR_index = 1;
-  if(whichFR=="DiMuonHighdXY") FR_index = 2;
-  if(whichFR=="DiMuonHighdXYnjets"){
+  if(whichFR=="dijet_topology") FR_index = 0;
+  if(whichFR=="HighdXY")        FR_index = 1;
+  if(whichFR=="DiMuon_HighdXY") FR_index = 2;
+  if(whichFR=="DiMuon_HighdXY_n_jets"){
     FR_index = 3;
     if(n_jets>0) FR_index = 4;
   }

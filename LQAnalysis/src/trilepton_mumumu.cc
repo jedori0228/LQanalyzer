@@ -26,9 +26,9 @@ ClassImp (trilepton_mumumu);
  *  This is an Example Cycle. It inherits from AnalyzerCore. The code contains all the base class functions to run the analysis.
  *
  */
-trilepton_mumumu::trilepton_mumumu() :
-sol_sel_chi2_best(0), sol_sel_chi2_plus(0), sol_sel_chi2_minus(0), sol_sel_chi2_smaller(0), sol_sel_chi2_larger(0), n_gen_pass(0),
-AnalyzerCore(), out_muons(0)
+trilepton_mumumu::trilepton_mumumu() : AnalyzerCore(),
+n_gen_pass(0), sol_sel_chi2_best(0), sol_sel_chi2_plus(0), sol_sel_chi2_minus(0), sol_sel_chi2_smaller(0), sol_sel_chi2_larger(0),
+out_muons(0)
 {
 
   
@@ -87,14 +87,10 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   /// Trigger List (specific to muons channel)
   std::vector<TString> triggerslist;
   triggerslist.push_back("HLT_Mu17_TkMu8_v");
-    
   if(!PassTrigger(triggerslist, prescale)) return;
-  
   //// if the trigger that fired the event is prescaled you can reweight the event accordingly using the variable prescale
-  
   FillCutFlow("TriggerCut", weight);
   m_logger << DEBUG << "passedTrigger "<< LQLogger::endmsg;
-  
   
   /// Check the event has a "Good" Primary vertex
   /// Good is taken from https://twiki.cern.ch/twiki/bin/viewauth/CMS/TrackingPFGJob:
@@ -137,8 +133,70 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   //CorrectMuonMomentum(muonHighPtColl);
   
   /// Example of how to get fake weight for dimuon channel
-  //std::vector<snu::KMuon> muonLooseColl;
-  //eventbase->GetMuonSel()->HNLooseMuonSelection(muonLooseColl);
+  std::vector<snu::KMuon> muonLooseColl;
+  eventbase->GetMuonSel()->HNLooseMuonSelection(muonLooseColl);
+
+
+  //==============================================================================
+
+  if(LQinput){
+    unsigned int n_muon = muonLooseColl.size();
+    if( n_muon != 4 ) return;
+    std::vector<snu::KMuon> muon_plus, muon_minus;
+    int total_charge = 0;
+    for(unsigned int i=0; i<4; i++){
+      total_charge += muonLooseColl.at(i).Charge();
+      if(muonLooseColl.at(i).Charge() > 0) muon_plus.push_back(muonLooseColl.at(i));
+      if(muonLooseColl.at(i).Charge() < 0) muon_minus.push_back(muonLooseColl.at(i));
+    }
+    if(total_charge != 0) return;
+
+    double mllll = (muon_plus.at(0) + muon_minus.at(0) + muon_plus.at(1) + muon_minus.at(1)).M();
+    double m_00 = (muon_plus.at(0) + muon_minus.at(0)).M(),
+           m_11 = (muon_plus.at(1) + muon_minus.at(1)).M();
+    double m_01 = (muon_plus.at(0) + muon_minus.at(1)).M(),
+           m_10 = (muon_plus.at(1) + muon_minus.at(0)).M();
+
+    double m11(0.), m12(0.), m21(0.), m22(0.);
+    if(m_00 > m_01){
+      m11 = max(m_00, m_11);
+      m12 = min(m_00, m_11);
+      m21 = max(m_01, m_10);
+      m22 = min(m_01, m_10);
+    }
+    else{
+      m11 = max(m_01, m_10);
+      m12 = min(m_01, m_10);
+      m21 = max(m_00, m_11);
+      m22 = min(m_00, m_11);
+    }
+    
+    double m_Y = 9.46, sigma_Y = 0.25;
+
+    bool mass_cut(false);
+
+    if( fabs(m11-m_Y) <= 3*sigma_Y && m12 <= m_Y - 3*sigma_Y ) mass_cut = true;
+    if( fabs(m21-m_Y) <= 3*sigma_Y && m22 <= m_Y - 3*sigma_Y ) mass_cut = true;
+
+    FillHist("m11_vs_m12", m11, m12, weight*pileup_reweight, 5, 15, 50, 5, 15, 50);
+    FillHist("m21_vs_m22", m21, m22, weight*pileup_reweight, 5, 15, 50, 5, 15, 50);
+
+    if( !mass_cut ) return;
+
+    FillHist("mllll", mllll,  weight*pileup_reweight, 0, 30, 30);
+    for(unsigned int i=0; i<4; i++){
+      snu::KMuon thismuon = muonLooseColl.at(i);
+      TString string_mu = "mu_"+TString::Itoa(i,10);
+      FillHist(string_mu+"_pt", thismuon.Pt(), weight*pileup_reweight, 0, 100, 100);
+      FillHist(string_mu+"_eta", thismuon.Eta(), weight*pileup_reweight, -3, 3, 60);
+      FillHist(string_mu+"_dXY", fabs(thismuon.dXY()), weight*pileup_reweight, 0, 10, 1000);
+    }
+
+
+    return;
+  }
+
+  //==============================================================================
   
   std::vector<snu::KMuon> muontriTightColl;
   eventbase->GetMuonSel()->HNtriTightMuonSelection(muontriTightColl);
@@ -293,6 +351,23 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
       HN[3] = W_sec + lep[OppSign]; // [class4]
   }
 
+  //==== THESE LINES ARE FOR CUT OPTIMIZATION STUDY
+
+  if(k_jskim_flag_2 == "runCutOptNtuple"){
+    double cutop[100];
+    cutop[0] = lep[0].Pt();
+    cutop[1] = lep[1].Pt();
+    cutop[2] = lep[2].Pt();
+    cutop[3] = deltaR_OS_min;
+    cutop[4] = HN[0].M();
+    cutop[5] = HN[1].M();
+    cutop[6] = W_pri_lowmass.M();
+    cutop[7] = weight*pileup_reweight;
+    FillNtp("cutop", cutop);
+
+    return;
+  }
+  
   bool is_deltaR_OS_min_0p5 = deltaR_OS_min > 0.5;
   bool is_W_pri_lowmass_100 = W_pri_lowmass.M() < 100;
 
@@ -427,6 +502,12 @@ void trilepton_mumumu::BeginCycle() throw( LQError ){
   //DeclareVariable(out_electrons, "Signal_Electrons", "LQTree");
   //DeclareVariable(out_muons, "Signal_Muons");
 
+
+  //==== when using LQNtuple
+  if(LQinput){ 
+    triggerlist.clear();
+    AddTriggerToList("HLT_Mu17_TkMu8_v");
+  }
   
   return;
   
@@ -479,7 +560,9 @@ void trilepton_mumumu::MakeHistograms(){
   /**
   *  Remove//Overide this trilepton_mumumuCore::MakeHistograms() to make new hists for your analysis
   **/
-  
+ 
+  MakeNtp("cutop", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_0_mass:HN_1_mass:W_pri_lowmass_mass:weight");
+ 
 }
 
 
