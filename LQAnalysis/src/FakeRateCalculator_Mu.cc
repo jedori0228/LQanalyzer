@@ -591,7 +591,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
      int sum_charge = TagZ_muons.at(0).Charge() + TagZ_muons.at(1).Charge() + TagZ_muons.at(2).Charge();
      if( abs(sum_charge) != 3 && TagZ_muons.at(0).Pt() > 20. ){
 
-				double m_z = 91.1876;
+        double m_z = 91.1876;
         //==== find opp sign and SS
         snu::KMuon muon_OS, muon_SS[2];
         if     ( TagZ_muons.at(0).Charge()==TagZ_muons.at(1).Charge() ){
@@ -621,20 +621,20 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
                           ( fabs(   muon_OS.dXY())<0.01 &&    muon_OS.LeptonRelIso()<0.1 );
         }
 
-				//==== z region test
-				double z_width[6] = {5., 10., 15., 20., 25., 30.};
-				for(unsigned int i=0; i<6; i++){
+        //==== z region test
+        double z_width[6] = {5., 10., 15., 20., 25., 30.};
+        for(unsigned int i=0; i<6; i++){
           TString str_this_width = TString::Itoa(z_width[i], 10);
           int index_z_candidate = 0;
           int n_z_candidate = 0;
           double temp_m = 0.;
-					for(int j=0; j<2; j++){
-						if( fabs(m_z_candidate[j] - m_z) < z_width[i] && both_tight[i]  ){
+          for(int j=0; j<2; j++){
+            if( fabs(m_z_candidate[j] - m_z) < z_width[i] && both_tight[i]  ){
               index_z_candidate = j;
               n_z_candidate++;
               temp_m = m_z_candidate[j];
-						}
-					}
+            }
+          }
 
           FillHist("DiMuonTrigger_TagZ_n_m_z_candidate_width_"+str_this_width, n_z_candidate, weight, 0, 4, 4);
           if(n_z_candidate==1){
@@ -662,11 +662,11 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
             
           }
 
-				}
+        }
 
 
 
-			}
+      }
 
     }
 
