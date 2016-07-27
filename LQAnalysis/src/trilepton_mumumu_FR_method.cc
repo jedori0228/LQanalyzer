@@ -51,19 +51,19 @@ void trilepton_mumumu_FR_method::InitialiseAnalysis() throw( LQError ) {
   TFile* file[5];
 
   //==== dijet topology
-  file[0] = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_Dijet.root").c_str() );
-  hist_trimuon_FR[0] = (TH2F*)file[0]->Get("Dijet_events_F")->Clone();
+  file[0] = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_SingleMuonTrigger_Dijet.root").c_str() );
+  hist_trimuon_FR[0] = (TH2F*)file[0]->Get("SingleMuonTrigger_Dijet_events_F")->Clone();
   //==== HighdXY muons
-  file[1] = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_SingleMuon_HighdXY.root").c_str() );
-  hist_trimuon_FR[1] = (TH2F*)file[1]->Get("SingleMuon_HighdXY_events_F")->Clone();
+  file[1] = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_SingleMuonTrigger_HighdXY.root").c_str() );
+  hist_trimuon_FR[1] = (TH2F*)file[1]->Get("SingleMuonTrigger_HighdXY_events_F")->Clone();
   //==== DiMuonHighdXY muons
-  file[2] = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_DiMuon_HighdXY.root").c_str() );
-  hist_trimuon_FR[2] = (TH2F*)file[2]->Get("DiMuon_HighdXY_events_F")->Clone();
+  file[2] = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_DiMuonTrigger_HighdXY.root").c_str() );
+  hist_trimuon_FR[2] = (TH2F*)file[2]->Get("DiMuonTrigger_HighdXY_events_F")->Clone();
   //==== DiMuonHighdXY muons + n_jet bins
-  file[3] = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_DiMuon_HighdXY_0jet.root").c_str() );
-  hist_trimuon_FR[3] = (TH2F*)file[3]->Get("DiMuon_HighdXY_0jet_events_F")->Clone();
-  file[4] = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_DiMuon_HighdXY_withjet.root").c_str() );
-  hist_trimuon_FR[4] = (TH2F*)file[4]->Get("DiMuon_HighdXY_withjet_events_F")->Clone();
+  file[3] = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_DiMuonTrigger_HighdXY_0jet.root").c_str() );
+  hist_trimuon_FR[3] = (TH2F*)file[3]->Get("DiMuonTrigger_HighdXY_0jet_events_F")->Clone();
+  file[4] = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_DiMuonTrigger_HighdXY_withjet.root").c_str() );
+  hist_trimuon_FR[4] = (TH2F*)file[4]->Get("DiMuonTrigger_HighdXY_withjet_events_F")->Clone();
 
   for(int i=0; i<5; i++){
     TH1I* hist_bins = (TH1I*)file[i]->Get("hist_bins");
@@ -73,6 +73,9 @@ void trilepton_mumumu_FR_method::InitialiseAnalysis() throw( LQError ) {
     file[i]->Close();
     delete file[i];
   }
+
+  TFile* file_FR_SF = new TFile( (lqdir+"/data/rootfiles/8TeV_trimuon_FR_SF_SingleMuonTrigger_QCD_single.root").c_str() );
+  hist_trimuon_FR_SF = (TH1F*)file_FR_SF->Get("SingleMuonTrigger_MCTruth_pt_F");
 
   return;
 }
@@ -201,33 +204,19 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   }
 
 
-  // fake method weighting
+  //==== fake method weighting
   if( n_triTight_muons == 3 ) return; // return TTT case
   for(unsigned int i=0; i<FR_muon.size(); i++){
     weight *= FR_muon.at(i)/( 1.-FR_muon.at(i) );
   }
   if( FR_muon.size() == 2 ) weight *= -1.; // minus sign for TLL
 
-/*
-  if( n_triTight_muons == 0 ) weight *= FR_muon.at(0)*FR_muon.at(1)*FR_muon.at(2)/( (1.-FR_muon.at(0))*(1.-FR_muon.at(1))*(1.-FR_muon.at(2)) ); // LLL
-  else if ( n_triTight_muons == 1) weight *= -FR_muon.at(0)*FR_muon.at(1)/( (1.-FR_muon.at(0))*(1.-FR_muon.at(1)) ); // TLL
-  else if ( n_triTight_muons == 2) weight *= FR_muon.at(0)/(1.-FR_muon.at(0)); // TTL
-  else return; // return TTT event
-*/
-/*
-  double FR_muon[3];
-  for(int i=0; i<3; i++) FR_muon[i] = get_FR(lep[i]);
-  if( n_triTight_muons == 0 ) weight *= FR_muon[0]*FR_muon[1]*FR_muon[2]/( (1.-FR_muon[0])*(1.-FR_muon[1])*(1.-FR_muon[2]) ); // LLL
-  else if ( n_triTight_muons == 1) weight *= -FR_muon[1]*FR_muon[2]/( (1.-FR_muon[1])*(1.-FR_muon[2]) ); // TLL
-  else if ( n_triTight_muons == 2) weight *= FR_muon[2]/(1.-FR_muon[2]); // TTL
-  else return; // return TTT event
-*/
-
-
   // MC samples has m(ll)_saveflavour > 4 GeV cut at gen level
   // MADGRAPH : https://github.com/cms-sw/genproductions/blob/master/bin/MadGraph5_aMCatNLO/cards/production/13TeV/WZTo3LNu01j_5f_NLO_FXFX/WZTo3LNu01j_5f_NLO_FXFX_run_card.dat#L130
   // POWHEG   : https://github.com/cms-sw/genproductions/blob/master/bin/Powheg/production/WZTo3lNu_NNPDF30_13TeV/WZ_lllnu_NNPDF30_13TeV.input#L2
-  if( ! (lep[0]+lep[1]).M() > 4 || ! (lep[0]+lep[2]).M() > 4 || ! (lep[1]+lep[2]).M() > 4 ) return;
+  if( (lep[0]+lep[1]).M() <= 4. ||
+      (lep[0]+lep[2]).M() <= 4. ||
+      (lep[1]+lep[2]).M() <= 4.    ) return;
   FillCutFlow("mllsf4", weight);
 
   int OppSign, SameSign[2]; // SameSign[0].Pt() > SameSign[1].Pt()
@@ -604,7 +593,11 @@ double trilepton_mumumu_FR_method::get_FR(snu::KParticle muon, TString whichFR, 
     }
   }
 
-  return hist_trimuon_FR[FR_index]->GetBinContent(this_pt_bin, this_eta_bin);
+  double this_FR = hist_trimuon_FR[FR_index]->GetBinContent(this_pt_bin, this_eta_bin);
+  double FR_SF = hist_trimuon_FR_SF->GetBinContent(this_pt_bin);
+
+  return this_FR;
+  //return this_FR*FR_SF;
 
 }
 
