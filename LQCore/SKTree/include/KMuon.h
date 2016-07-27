@@ -170,6 +170,8 @@ namespace snu {
     
     inline Double_t PtShiftedUp() const {return muon_pt_up;}
     inline Double_t PtShiftedDown() const {return muon_pt_down;}
+
+    Double_t LeptonRelIso();
     
   protected:
     /// Reset function.                                                                  

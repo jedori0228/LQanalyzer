@@ -512,3 +512,7 @@ void KMuon::SetShiftedEUp(double pt_up){
 void KMuon::SetShiftedEDown(double pt_down){
   muon_pt_down= pt_down;
 }
+
+Double_t KMuon::LeptonRelIso(){
+  return (SumIsoCHDR03() + std::max(0.0, SumIsoNHDR03() + SumIsoPHDR03() - 0.5* SumPUIsoR03()))/Pt();
+}
