@@ -231,7 +231,10 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   //==== MC samples has m(ll)_saveflavour > 4 GeV cut at gen level
   //==== MADGRAPH : https://github.com/cms-sw/genproductions/blob/master/bin/MadGraph5_aMCatNLO/cards/production/13TeV/WZTo3LNu01j_5f_NLO_FXFX/WZTo3LNu01j_5f_NLO_FXFX_run_card.dat#L130
   //==== POWHEG   : https://github.com/cms-sw/genproductions/blob/master/bin/Powheg/production/WZTo3lNu_NNPDF30_13TeV/WZ_lllnu_NNPDF30_13TeV.input#L2
-  if( ! (lep[0]+lep[1]).M() > 4 || ! (lep[0]+lep[2]).M() > 4 || ! (lep[1]+lep[2]).M() > 4 ) return;
+  if( (lep[0]+lep[1]).M() <= 4. || 
+      (lep[0]+lep[2]).M() <= 4. ||
+      (lep[1]+lep[2]).M() <= 4.    ) return;
+
   FillCutFlow("mllsf4", weight);
 
   int OppSign, SameSign[2]; // SameSign[0].Pt() > SameSign[1].Pt()
