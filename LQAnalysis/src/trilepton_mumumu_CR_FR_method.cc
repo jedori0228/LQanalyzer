@@ -212,28 +212,29 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   //bool isHighdXYTwoMuon   = n_triHighdXYLoose_muons == 2 && n_triHighdXYTight_muons != 2; // No TT case
   bool isHighdXYThreeMuon = n_triHighdXYLoose_muons == 3 && n_triHighdXYTight_muons != 3; // No TTT case
 
-  if(k_jskim_flag_2 == "CR1"){
+  if(k_jskim_flag_2 == "SS_0jet_vetoLowRes"){
     if( !isTwoMuon ) return;
     n_muons = 2;
     bool isSS = muontriLooseColl.at(0).Charge() == muontriLooseColl.at(1).Charge();
     double m_dimuon = ( muontriLooseColl.at(0) + muontriLooseColl.at(1) ).M();
     isCR = isTwoMuon && isSS && (n_jets == 0) && (m_dimuon > 15.);
   }
-  if(k_jskim_flag_2 == "CR2"){
+  if(k_jskim_flag_2 == "SS_AL1bjet_vetoLowRes"){
     if( !isTwoMuon ) return;
     n_muons = 2;
     bool isSS = muontriLooseColl.at(0).Charge() == muontriLooseColl.at(1).Charge();
     double m_dimuon = ( muontriLooseColl.at(0) + muontriLooseColl.at(1) ).M();
     isCR = isTwoMuon && isSS && (n_bjets > 0) && (m_dimuon > 15.);
   }
-  if(k_jskim_flag_2 == "CR3"){
+  if(k_jskim_flag_2 == "SS_AL2bjet_vetoLowRes"){
     if( !isTwoMuon ) return;
     n_muons = 2;
     bool isSS = muontriLooseColl.at(0).Charge() == muontriLooseColl.at(1).Charge();
     double m_dimuon = ( muontriLooseColl.at(0) + muontriLooseColl.at(1) ).M();
-    isCR = isTwoMuon && !isSS && (n_bjets > 0) && (m_dimuon > 15.);
+    if( isTwoMuon && isSS && (n_bjets > 1) ) FillHist("TT_mll_low_control_PU", m_dimuon , weight*pileup_reweight, 0, 20, 200);
+    isCR = isTwoMuon && isSS && (n_bjets > 1) && (m_dimuon > 15.);
   }
-  if(k_jskim_flag_2 == "CR4"){
+  if(k_jskim_flag_2 == "WZ"){
     if( !isThreeMuon ) return;
     n_muons = 3;
     snu::KMuon lep[3];
@@ -258,7 +259,7 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
       m_Z_candidate = m_OS[1];
       W_muons_candidate_index = 0;
     }
-    if( fabs(m_Z_candidate-m_Z) > 10. ) return;
+    if( fabs(m_Z_candidate-m_Z) > 20. ) return;
     snu::KEvent Evt = eventbase->GetEvent();
     double MET = Evt.PFMET(), METphi = Evt.PFMETphi();
     if( MET < 20. ) return;
@@ -269,14 +270,14 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
     FillHist("TT_mT_W_control_PU", mT_W, weight*pileup_reweight, 0., 300., 300);
     FillHist("TT_mT_W_1_control_PU", mT_W, 1, 0., 300., 300);
   }
-  if(k_jskim_flag_2 == "CR5"){
+  if(k_jskim_flag_2 == "3HighdXYMuon"){
     n_muons = 3;
     isCR = isHighdXYThreeMuon;
   }
 
   if(!isCR) return;
 
-  if(k_jskim_flag_2 == "CR5"){
+  if(k_jskim_flag_2 == "3HighdXYMuon"){
     if( muontriHighdXYLooseColl.at(0).Pt() < 20. ) return;
   }
   else{
@@ -296,7 +297,7 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   vector<double> FR_muon;
   double LeptonRelIso[n_muons];
   for(int i=0;i<n_muons;i++){
-    if(k_jskim_flag_2 == "CR5"){
+    if(k_jskim_flag_2 == "3HighdXYMuon"){
       lep[i] = muontriHighdXYLooseColl.at(i);
     }
     else{
@@ -371,10 +372,14 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   else return; // return TTT event
 */
 
+  snu::KEvent Evt = eventbase->GetEvent();
+  double MET = Evt.PFMET(), METphi = Evt.PFMETphi();
+
   //==== FR weighted plots
   FillHist("TT_n_events_control_PU", 0, weight*pileup_reweight, 0, 1, 1);
-  FillHist("TT_n_jets_PU", n_jets, weight*pileup_reweight, 0, 10, 10);
-  FillHist("TT_n_bjets_PU", n_bjets, weight*pileup_reweight, 0, 10, 10);
+  FillHist("TT_n_jets_control_PU", n_jets, weight*pileup_reweight, 0, 10, 10);
+  FillHist("TT_n_bjets_control_PU", n_bjets, weight*pileup_reweight, 0, 10, 10);
+  FillHist("TT_PFMET_control_PU", MET, weight*pileup_reweight, 0, 500, 500);
   FillHist("TT_mll_control_PU", (lep[0]+lep[1]).M() , weight*pileup_reweight, 0, 500, 500);
   FillHist("TT_leadingLepton_Pt_control_PU", lep[0].Pt() , weight*pileup_reweight, 0, 200, 200);
   FillHist("TT_leadingLepton_Eta_control_PU", lep[0].Eta() , weight*pileup_reweight, -3, 3, 60);
@@ -387,8 +392,9 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
 
   //==== weight = 1 plots
   FillHist("TT_n_events_1_control_PU", 0, 1., 0, 1, 1);
-  FillHist("TT_n_jets_PU", n_jets, 1., 0, 10, 10);
-  FillHist("TT_n_bjets_PU", n_bjets, 1., 0, 10, 10);
+  FillHist("TT_n_jets_1_control_PU", n_jets, 1., 0, 10, 10);
+  FillHist("TT_n_bjets_1_control_PU", n_bjets, 1., 0, 10, 10);
+  FillHist("TT_PFMET_1_control_PU", MET, 1., 0, 500, 500);
   FillHist("TT_mll_1_control_PU", (lep[0]+lep[1]).M(), 1., 0, 500, 500);
   FillHist("TT_leadingLepton_Pt_1_control_PU", lep[0].Pt(), 1., 0, 200, 200);
   FillHist("TT_leadingLepton_Eta_1_control_PU", lep[0].Eta(), 1., -3, 3, 60);
