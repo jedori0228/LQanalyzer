@@ -368,9 +368,17 @@ std::vector<snu::KMuon> AnalyzerCore::GetMuons(BaseSelection::ID muid, bool keep
   
   else if(muid == BaseSelection::MUON_HN_FAKELOOSE){   eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_FAKELOOSE, 15., 2.4);}
 
+  else if(muid == BaseSelection::MUON_HN_TRI_NODXYCUT_TIGHT){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_NODXYCUT_TIGHT, 10., 2.5);}
+
+  else if(muid == BaseSelection::MUON_HN_TRI_NODXYCUT_LOOSE){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_NODXYCUT_LOOSE, 10., 2.5);}
+
   else if(muid == BaseSelection::MUON_HN_TRI_TIGHT){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_TIGHT, 10., 2.5);}
 
   else if(muid == BaseSelection::MUON_HN_TRI_LOOSE){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_LOOSE, 10., 2.5);}
+
+  else if(muid == BaseSelection::MUON_HN_TRI_HIGHDXY_TIGHT){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_HIGHDXY_TIGHT, 10., 2.5);}
+
+  else if(muid == BaseSelection::MUON_HN_TRI_HIGHDXY_LOOSE){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_HIGHDXY_LOOSE, 10., 2.5);}
 
   // Veto cut
   else if(muid == BaseSelection::MUON_HN_VETO){   eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_VETO, 10., 2.4);}
@@ -1577,8 +1585,8 @@ void AnalyzerCore::WriteCLHists(){
   
   for(map<TString, TriLeptonPlots*>::iterator trilepit = mapCLhistTriLep.begin(); trilepit != mapCLhistTriLep.end(); trilepit++){
 
-    Dir = m_outputFile->mkdir(trilepit->first);
-    m_outputFile->cd( Dir->GetName() );
+    //Dir = m_outputFile->mkdir(trilepit->first);
+    //m_outputFile->cd( Dir->GetName() );
     trilepit->second->Write();
     m_outputFile->cd();
   }

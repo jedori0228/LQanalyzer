@@ -100,7 +100,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
    std::vector<TString> triggerslist;
    triggerslist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
    
-   float trigger_ps_weight= ApplyPrescale("HLT_IsoMu20", TargetLumi,lumimask);
+   //float trigger_ps_weight= ApplyPrescale("HLT_IsoMu20", TargetLumi,lumimask);
    
    if(!PassTrigger(triggerslist, prescale)) return;
    FillCutFlow("TriggerCut", weight);

@@ -158,8 +158,12 @@ bool MuonSelection::PassUserID(ID id, snu::KMuon mu){
   if ( id == MUON_TOP_VETO) return TopVetoMuonSelection(mu);
   if ( id == MUON_TOP_LOOSE) return TopLooseMuonSelection(mu);
   if ( id == MUON_TOP_TIGHT) return TopTightMuonSelection(mu);
+  if ( id == MUON_HN_TRI_NODXYCUT_TIGHT) return HNtriNodXYCutTightMuonSelection(mu);
+  if ( id == MUON_HN_TRI_NODXYCUT_LOOSE) return HNtriNodXYCutLooseMuonSelection(mu);
   if ( id == MUON_HN_TRI_TIGHT) return HNtriTightMuonSelection(mu);
   if ( id == MUON_HN_TRI_LOOSE) return HNtriLooseMuonSelection(mu);
+  if ( id == MUON_HN_TRI_HIGHDXY_TIGHT) return HNtriHighdXYTightMuonSelection(mu);
+  if ( id == MUON_HN_TRI_HIGHDXY_LOOSE) return HNtriHighdXYLooseMuonSelection(mu);
   return false;
   
 }
@@ -187,7 +191,7 @@ bool MuonSelection::HNLooseMuonSelection(KMuon mu) {
   bool pass_selection(true);
   
   LeptonRelIso = (mu.RelIso04());
-  if(!PassID(MUON_POG_TIGHT, mu)) pass_selection =false;
+  if(!POGID(mu, MUON_POG_TIGHT)) pass_selection =false;
   if(!(LeptonRelIso < 0.6)) pass_selection = false;
   if(( mu.Pt() < 10. ))  pass_selection = false;
   if(( fabs(mu.Eta()) < 2.4 ))  pass_selection = false;
@@ -211,7 +215,7 @@ bool MuonSelection::HNIsTight(KMuon muon, bool m_debug){
   if(!(fabs(muon.dXY())< 0.05 ))  pass_selection = false;
 
   /// TIGHT MUON from muon POG
-  if(!PassID(MUON_POG_TIGHT, muon, m_debug)) pass_selection =false;
+  if(!POGID(muon, MUON_POG_TIGHT)) pass_selection =false;
 
   return pass_selection;
 }
@@ -256,7 +260,7 @@ bool MuonSelection::HNTightMuonSelection(KMuon mu) {
   else return false;
 }
 
-bool MuonSelection::HNtriTightMuonSelection(KMuon muon) {
+bool MuonSelection::HNtriNodXYCutTightMuonSelection(KMuon muon) {
 
   bool pass_selection(true);
 
@@ -268,8 +272,6 @@ bool MuonSelection::HNtriTightMuonSelection(KMuon muon) {
   if(( muon.Pt() < 10. )) pass_selection = false;
   if(!(fabs(muon.Eta()) < 2.4)) pass_selection =false;
   if(!( LeptonRelIso < 0.05)) pass_selection = false;
-  if(!(fabs(muon.dXY()) < 0.005 )) pass_selection = false;
-  if(!(fabs(muon.dXYSig()) < 3. )) pass_selection = false;
 
   /// TIGHT MUON from muon POG
   if(!PassID(MUON_POG_TIGHT, muon)) pass_selection =false;
@@ -278,7 +280,7 @@ bool MuonSelection::HNtriTightMuonSelection(KMuon muon) {
 
 }
 
-bool MuonSelection::HNtriLooseMuonSelection(KMuon muon) {
+bool MuonSelection::HNtriNodXYCutLooseMuonSelection(KMuon muon) {
 
   bool pass_selection(true);
 
@@ -290,11 +292,61 @@ bool MuonSelection::HNtriLooseMuonSelection(KMuon muon) {
   if(( muon.Pt() < 10. )) pass_selection = false;
   if(!(fabs(muon.Eta()) < 2.4)) pass_selection =false;
   if(!( LeptonRelIso < 0.6)) pass_selection = false;
-  if(!(fabs(muon.dXY()) < 0.005 )) pass_selection = false;
-  if(!(fabs(muon.dXYSig()) < 3. )) pass_selection = false;
 
   /// TIGHT MUON from muon POG
   if(!PassID(MUON_POG_TIGHT, muon)) pass_selection =false;
+
+  return pass_selection;
+
+}
+
+bool MuonSelection::HNtriTightMuonSelection(KMuon muon) {
+
+  bool pass_selection(true);
+
+  if(!HNtriNodXYCutTightMuonSelection(muon)) pass_selection = false;
+  if(!(fabs(muon.dXY()) < 0.005 )) pass_selection = false;
+  if(!(fabs(muon.dXYSig()) < 3. )) pass_selection = false;
+  if(!(fabs(muon.dZ()) < 0.10 )) pass_selection = false;
+
+  return pass_selection;
+
+}
+
+bool MuonSelection::HNtriLooseMuonSelection(KMuon muon) {
+
+  bool pass_selection(true);
+
+  if(!HNtriNodXYCutLooseMuonSelection(muon)) pass_selection = false;
+  if(!(fabs(muon.dXY()) < 0.005 )) pass_selection = false;
+  if(!(fabs(muon.dXYSig()) < 3. )) pass_selection = false;
+  if(!(fabs(muon.dZ()) < 0.10 )) pass_selection = false;
+
+  return pass_selection;
+
+}
+
+bool MuonSelection::HNtriHighdXYTightMuonSelection(KMuon muon) {
+
+  bool pass_selection(true);
+
+  if(!HNtriNodXYCutTightMuonSelection(muon)) pass_selection = false;
+  if(!(fabs(muon.dXY()) < 1. )) pass_selection = false;
+  if(!(fabs(muon.dXYSig()) > 4. )) pass_selection = false;
+  if(!(fabs(muon.dZ()) < 0.10 )) pass_selection = false;
+
+  return pass_selection;
+
+}
+
+bool MuonSelection::HNtriHighdXYLooseMuonSelection(KMuon muon) {
+
+  bool pass_selection(true);
+
+  if(!HNtriNodXYCutLooseMuonSelection(muon)) pass_selection = false;
+  if(!(fabs(muon.dXY()) < 1. )) pass_selection = false;
+  if(!(fabs(muon.dXYSig()) > 4. )) pass_selection = false;
+  if(!(fabs(muon.dZ()) < 0.10 )) pass_selection = false;
 
   return pass_selection;
 
@@ -397,20 +449,20 @@ bool MuonSelection::PassID(ID id, snu::KMuon mu, bool m_debug){
       passID = false;
       if(m_debug)cout << "PassID: Fail ActiveLayer " << endl;
     }
-    if( fabs(mu.dXY())    >= 0.2) {
-      passID = false;
-      if(m_debug)cout << "PassID: Fail dXY" << endl;
-    }
-    if( fabs(mu.dZ())    >= 0.5) {
-      passID = false;
-      if(m_debug)cout << "PassID: Fail dZ" << endl;
-    }
+    //if( fabs(mu.dXY())    >= 0.2) {
+    //  passID = false;
+    //  if(m_debug)cout << "PassID: Fail dXY" << endl;
+    //}
+    //if( fabs(mu.dZ())    >= 0.5) {
+    //  passID = false;
+    //  if(m_debug)cout << "PassID: Fail dZ" << endl;
+    //}
     if( mu.GlobalChi2() >=  10.){
       passID = false;
       if(m_debug) cout << "PassID: Fail  Chi2" << endl;
     }
   }
-  
+
   else{
     cout << "Invalid ID set for muon selection" << endl;
   }
