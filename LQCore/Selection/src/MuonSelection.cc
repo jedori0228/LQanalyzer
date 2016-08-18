@@ -158,6 +158,8 @@ bool MuonSelection::PassUserID(ID id, snu::KMuon mu){
   if ( id == MUON_TOP_VETO) return TopVetoMuonSelection(mu);
   if ( id == MUON_TOP_LOOSE) return TopLooseMuonSelection(mu);
   if ( id == MUON_TOP_TIGHT) return TopTightMuonSelection(mu);
+  if ( id == MUON_HN_TRI_TIGHT) return HNtriTightMuonSelection(mu);
+  if ( id == MUON_HN_TRI_LOOSE) return HNtriLooseMuonSelection(mu);
   return false;
   
 }
@@ -254,7 +256,49 @@ bool MuonSelection::HNTightMuonSelection(KMuon mu) {
   else return false;
 }
 
+bool MuonSelection::HNtriTightMuonSelection(KMuon muon) {
 
+  bool pass_selection(true);
+
+  if(muon.Pt() == 0.) return false;
+
+  LeptonRelIso = muon.RelIso04();
+
+  /// TIGHT MUON SELECTION
+  if(( muon.Pt() < 10. )) pass_selection = false;
+  if(!(fabs(muon.Eta()) < 2.4)) pass_selection =false;
+  if(!( LeptonRelIso < 0.05)) pass_selection = false;
+  if(!(fabs(muon.dXY()) < 0.005 )) pass_selection = false;
+  if(!(fabs(muon.dXYSig()) < 3. )) pass_selection = false;
+
+  /// TIGHT MUON from muon POG
+  if(!PassID(MUON_POG_TIGHT, muon)) pass_selection =false;
+
+  return pass_selection;
+
+}
+
+bool MuonSelection::HNtriLooseMuonSelection(KMuon muon) {
+
+  bool pass_selection(true);
+
+  if(muon.Pt() == 0.) return false;
+
+  LeptonRelIso = muon.RelIso04();
+
+  /// TIGHT MUON SELECTION
+  if(( muon.Pt() < 10. )) pass_selection = false;
+  if(!(fabs(muon.Eta()) < 2.4)) pass_selection =false;
+  if(!( LeptonRelIso < 0.6)) pass_selection = false;
+  if(!(fabs(muon.dXY()) < 0.005 )) pass_selection = false;
+  if(!(fabs(muon.dXYSig()) < 3. )) pass_selection = false;
+
+  /// TIGHT MUON from muon POG
+  if(!PassID(MUON_POG_TIGHT, muon)) pass_selection =false;
+
+  return pass_selection;
+
+}
 
 ////////// PREDEFINED MUON SELECTIONS FOR TOP ANALYSIS
 
@@ -306,7 +350,6 @@ bool MuonSelection::TopTightMuonSelection(KMuon mu) {
 
 }
 
-
 /// NO LONGER NEEDED
 bool MuonSelection::PassID(ID id, snu::KMuon mu, bool m_debug){
   
@@ -317,7 +360,7 @@ bool MuonSelection::PassID(ID id, snu::KMuon mu, bool m_debug){
     if(!(mu.IsPF() == 1)) {
       passID = false;
       if(m_debug)cout << "PassID: Fail isPF" << endl;
-    }
+   }
     if(!(mu.IsGlobal()==1 || mu.IsTracker() == 1 )){
       passID = false; 
       if(m_debug){

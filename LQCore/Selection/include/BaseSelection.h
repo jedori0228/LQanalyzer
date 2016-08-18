@@ -63,6 +63,8 @@ class BaseSelection {
     PHOTON_POG_LOOSE               = 36, 
     PHOTON_POG_MEDIUM              = 37, 
     PHOTON_POG_TIGHT               = 38, 
+    MUON_HN_TRI_TIGHT              = 39,
+    MUON_HN_TRI_LOOSE              = 40,
   };
 
   Int_t ifid;
