@@ -160,11 +160,8 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   //std::vector<snu::KMuon> muonLooseColl;
   //eventbase->GetMuonSel()->HNLooseMuonSelection(muonLooseColl);
   
-  std::vector<snu::KMuon> muontriTightColl;
-  eventbase->GetMuonSel()->HNtriTightMuonSelection(muontriTightColl);
-  std::vector<snu::KMuon> muontriLooseColl;
-  eventbase->GetMuonSel()->HNtriLooseMuonSelection(muontriLooseColl);
-  
+  std::vector<snu::KMuon> muontriTightColl = GetMuons("HNtriTight");
+  std::vector<snu::KMuon> muontriLooseColl = GetMuons("HNtriLoose"); 
   std::vector<snu::KElectron> electronTightColl;
   eventbase->GetElectronSel()->HNTightElectronSelection(electronTightColl);
 
@@ -198,7 +195,7 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   vector<double> FR_muon;
   for(int i=0;i<3;i++){
     lep[i] = muontriLooseColl.at(i);
-    if( !eventbase->GetMuonSel()->HNIstriTight(muontriLooseColl.at(i) , false) ){
+    if( !eventbase->GetMuonSel()->HNtriTightMuonSelection(muontriLooseColl.at(i)) ){
       FR_muon.push_back( get_FR(lep[i], k_jskim_flag_1, n_jets) ); 
     }
   }

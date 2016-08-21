@@ -260,6 +260,11 @@ std::vector<snu::KMuon> AnalyzerCore::GetMuons(TString label){
 
   std::vector<snu::KMuon> muonColl;
 
+  if(label.Contains("HNtri")){
+    eventbase->GetMuonSel()->SelectHNtriMuons(muonColl, label);
+    return muonColl;
+  }
+
   if(label.Contains("veto")){
     eventbase->GetMuonSel()->HNVetoMuonSelection(muonColl);
     return  GetTruePrompt(muonColl, true);

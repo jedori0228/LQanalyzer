@@ -198,10 +198,8 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
 
   //==============================================================================
   
-  std::vector<snu::KMuon> muontriTightColl;
-  eventbase->GetMuonSel()->HNtriTightMuonSelection(muontriTightColl);
-  std::vector<snu::KMuon> muontriLooseColl;
-  eventbase->GetMuonSel()->HNtriLooseMuonSelection(muontriLooseColl);
+  std::vector<snu::KMuon> muontriTightColl = GetMuons("HNtriTight");
+  std::vector<snu::KMuon> muontriLooseColl = GetMuons("HNtriLoose");
   
   std::vector<snu::KElectron> electronTightColl;
   eventbase->GetElectronSel()->HNTightElectronSelection(electronTightColl);
@@ -588,16 +586,18 @@ void trilepton_mumumu::gen_matching(){
   eventbase->GetTruthSel()->Selection(truthColl);
 
   //==== print truth info
+  //cout << endl;
+  //cout << "=========================================================" << endl;
+  //cout << "Event number = " << eventbase->GetEvent().EventNumber() << endl;
   //cout << "=========================================================" << endl;
   //cout << "truth size = " << truthColl.size() << endl;
-  //cout << "index" << '\t' << "pdgid" << '\t' << "mother" << '\t' << "mother pid" << endl;
-  //for(int i=2; i<truthColl.size(); i++){
-  //  cout << i << '\t' << truthColl.at(i).PdgId() << '\t' << truthColl.at(i).IndexMother() << '\t' << truthColl.at( truthColl.at(i).IndexMother() ).PdgId() << endl;
+  //cout << "index" << '\t' << "pdgid" << '\t' << "mother" << '\t' << "mother pid" << '\t' << "pt" << '\t' << "eta" << '\t' << "phi" << endl;
+  //for(unsigned int i=2; i<truthColl.size(); i++){
+  //  cout << i << '\t' << truthColl.at(i).PdgId() << '\t' << truthColl.at(i).IndexMother() << '\t' << truthColl.at( truthColl.at(i).IndexMother() ).PdgId() << '\t' << truthColl.at(i).Pt() << '\t' << truthColl.at(i).Eta() << '\t' << truthColl.at(i).Phi() << endl;
   //}
 
   //==== get reco info here
-  std::vector<snu::KMuon> muontriTightColl;
-  eventbase->GetMuonSel()->HNtriTightMuonSelection(muontriTightColl);
+  std::vector<snu::KMuon> muontriTightColl = GetMuons("HNtriTight");
   snu::KParticle reco_lep[3];
   for(int i=0;i<3;i++){
     reco_lep[i] = muontriTightColl.at(i);

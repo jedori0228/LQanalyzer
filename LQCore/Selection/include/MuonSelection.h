@@ -36,16 +36,15 @@ class MuonSelection : public BaseSelection {
   void HNLooseMuonSelection03(std::vector<snu::KMuon>& leptonColl, bool m_debug = false);
   void HNLooseMuonSelection05(std::vector<snu::KMuon>& leptonColl, bool m_debug = false);
   void HNVetoMuonSelection(std::vector<snu::KMuon>& leptonColl, bool m_debug = false);
+
   //// Trimuon
-  bool HNIstriTight(snu::KMuon muon,  bool m_debug = false);
-  void HNtriTightMuonSelection(std::vector<snu::KMuon>& leptonColl, bool m_debug = false);
-  void HNtriLooseMuonSelection(std::vector<snu::KMuon>& leptonColl, bool m_debug = false);
-  //// Trimuon channel fake study : large dXY muons
-  bool HNIstriHighdXYTight(snu::KMuon muon,  bool m_debug = false);
-  void HNtriHighdXYTightMuonSelection(std::vector<snu::KMuon>& leptonColl, bool m_debug = false);
-  void HNtriHighdXYLooseMuonSelection(std::vector<snu::KMuon>& leptonColl, bool m_debug = false);
-  void HNtriNodXYCutTightMuonSelection(std::vector<snu::KMuon>& leptonColl, bool m_debug = false);
-  void HNtriNodXYCutLooseMuonSelection(std::vector<snu::KMuon>& leptonColl, bool m_debug = false);
+  void SelectHNtriMuons(std::vector<snu::KMuon>& leptonColl, TString muid);
+  bool HNtriNodXYCutTightMuonSelection(snu::KMuon mu);
+  bool HNtriNodXYCutLooseMuonSelection(snu::KMuon mu);
+  bool HNtriTightMuonSelection(snu::KMuon mu);
+  bool HNtriLooseMuonSelection(snu::KMuon mu);
+  bool HNtriHighdXYTightMuonSelection(snu::KMuon mu);
+  bool HNtriHighdXYLooseMuonSelection(snu::KMuon mu);
 
   //// Top analysis selection
   void TopTightMuonSelection(std::vector<snu::KMuon>& leptonColl, bool m_debug = false);

@@ -73,6 +73,9 @@ TriLeptonPlots::TriLeptonPlots(TString name) : isPlotsFilled(false)
   map_sig["h_TTL_leadingLepton_Eta"]       =     new TH1F("h_TTL_leadingLepton_Eta_"  + name,"TTL leading lepton eta",60,-3.,3.);
   map_sig["h_TTL_secondLepton_Eta"]        =     new TH1F("h_TTL_secondLepton_Eta_"   + name,"TTL second lepton eta",60,-3.,3.);
   map_sig["h_TTL_thirdLepton_Eta"]         =     new TH1F("h_TTL_thirdLepton_Eta_"    + name,"TTL third lepton eta",60,-3.,3.);
+  map_sig["h_TTL_mTT"]                     =     new TH1F("h_TTL_mTT_"                + name,"TTL m(TT)", 200, 0., 200.);
+  map_sig["h_TTL_PFMET"]                   =     new TH1F("h_TTL_PFMET_"              + name,"TTL PFMET", 200, 0., 200.);
+  map_sig["h_TTL_cutMET_mTT"]              =     new TH1F("h_TTL_cutMET_mTT_"         + name,"TTL m(TT), PFMET < 40 GeV", 200, 0., 200.);
   //==== TLL
   map_sig["h_TLL_Lepton_Pt"]               =     new TH1F("h_TLL_Lepton_Pt_"          + name,"TLL lepton pt",100,0,500);
   map_sig["h_TLL_leadingLepton_Pt"]        =     new TH1F("h_TLL_leadingLepton_Pt_"   + name,"TLL leading lepton pt",100,0,500);
@@ -82,6 +85,7 @@ TriLeptonPlots::TriLeptonPlots(TString name) : isPlotsFilled(false)
   map_sig["h_TLL_leadingLepton_Eta"]       =     new TH1F("h_TLL_leadingLepton_Eta_"  + name,"TLL leading lepton eta",60,-3.,3.);
   map_sig["h_TLL_secondLepton_Eta"]        =     new TH1F("h_TLL_secondLepton_Eta_"   + name,"TLL second lepton eta",60,-3.,3.);
   map_sig["h_TLL_thirdLepton_Eta"]         =     new TH1F("h_TLL_thirdLepton_Eta_"    + name,"TLL third lepton eta",60,-3.,3.);
+  map_sig["h_TLL_mTL_Z"]                   =     new TH1F("h_TLL_mTL_Z_"              + name,"TLL m(TL), close to Z", 200, 0., 200.);
   //==== LLL
   map_sig["h_LLL_Lepton_Pt"]               =     new TH1F("h_LLL_Lepton_Pt_"          + name,"LLL lepton pt",100,0,500);
   map_sig["h_LLL_leadingLepton_Pt"]        =     new TH1F("h_LLL_leadingLepton_Pt_"   + name,"LLL leading lepton pt",100,0,500);
@@ -125,16 +129,38 @@ void TriLeptonPlots::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std::v
     if(muons[0].Charge() != muons[2].Charge())    Fill("h_osllmass", (muons[0]+muons[2]).M(),weight);
     if(muons[1].Charge() != muons[2].Charge())    Fill("h_osllmass", (muons[1]+muons[2]).M(),weight);
 
-    int imu=0, n_tight=0;
-
+    int n_tight = 0;
+    std::vector<snu::KMuon> tightmuons, loosemuons;
     for(std::vector<snu::KMuon>::iterator muit = muons.begin(); muit != muons.end(); muit++){
-      float LeptonRelIso = (muit->SumIsoCHDR03() + std::max(0.0, muit->SumIsoNHDR03() + muit->SumIsoPHDR03() - 0.5* muit->SumPUIsoR03()))/muit->Pt() ;
-      if(LeptonRelIso<0.1) n_tight++;
+      if( muit->LeptonRelIso() < 0.1 ){ // change this when tight ID is changed
+        n_tight++;
+        tightmuons.push_back(*muit);
+      }
+      else{
+        loosemuons.push_back(*muit);
+      }
     }
     Fill("h_n_tight", n_tight, 1);
 
+    if(n_tight==2){
+      Fill("h_TTL_mTT", (tightmuons.at(0)+tightmuons.at(1)).M(), 1.);
+      Fill("h_TTL_PFMET", ev.PFMET(), 1.);
+      if(ev.PFMET() < 40){
+        Fill("h_TTL_cutMET_mTT", (tightmuons.at(0)+tightmuons.at(1)).M(), 1.);
+      }
+    }
+    if(n_tight==1){
+      double m[2];
+      double m_Z = 91.1876;
+      m[0] = (tightmuons.at(0)+loosemuons.at(0)).M();
+      m[1] = (tightmuons.at(0)+loosemuons.at(1)).M();
+      if( fabs(m[0]-m_Z) < fabs(m[1]-m_Z) ) Fill("h_TLL_mTL_Z", m[0], 1.);
+      else                                  Fill("h_TLL_mTL_Z", m[1], 1.);
+    }
+
+    int imu = 0;
     for(std::vector<snu::KMuon>::iterator muit = muons.begin(); muit != muons.end(); muit++, imu++){
-      float LeptonRelIso = (muit->SumIsoCHDR03() + std::max(0.0, muit->SumIsoNHDR03() + muit->SumIsoPHDR03() - 0.5* muit->SumPUIsoR03()))/muit->Pt() ;
+      float LeptonRelIso = muit->LeptonRelIso();
       Fill("h_Lepton_Pt", muit->Pt(),weight);
       Fill("h_Lepton_Eta",muit->Eta(),weight);
       Fill("h_LeptonRelIso", LeptonRelIso, weight);
