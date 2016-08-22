@@ -271,7 +271,7 @@ bool MuonSelection::HNtriNodXYCutTightMuonSelection(KMuon muon) {
   /// TIGHT MUON SELECTION
   if(( muon.Pt() < 10. )) pass_selection = false;
   if(!(fabs(muon.Eta()) < 2.4)) pass_selection =false;
-  if(!( LeptonRelIso < 0.05)) pass_selection = false;
+  if(!( LeptonRelIso < 0.1)) pass_selection = false;
 
   /// TIGHT MUON from muon POG
   if(!PassID(MUON_POG_TIGHT, muon)) pass_selection =false;
@@ -305,9 +305,8 @@ bool MuonSelection::HNtriTightMuonSelection(KMuon muon) {
   bool pass_selection(true);
 
   if(!HNtriNodXYCutTightMuonSelection(muon)) pass_selection = false;
-  if(!(fabs(muon.dXY()) < 0.005 )) pass_selection = false;
+  if(!(fabs(muon.dXY()) < 0.01 )) pass_selection = false;
   if(!(fabs(muon.dXYSig()) < 3. )) pass_selection = false;
-  if(!(fabs(muon.dZ()) < 0.10 )) pass_selection = false;
 
   return pass_selection;
 
@@ -318,9 +317,8 @@ bool MuonSelection::HNtriLooseMuonSelection(KMuon muon) {
   bool pass_selection(true);
 
   if(!HNtriNodXYCutLooseMuonSelection(muon)) pass_selection = false;
-  if(!(fabs(muon.dXY()) < 0.005 )) pass_selection = false;
+  if(!(fabs(muon.dXY()) < 0.01 )) pass_selection = false;
   if(!(fabs(muon.dXYSig()) < 3. )) pass_selection = false;
-  if(!(fabs(muon.dZ()) < 0.10 )) pass_selection = false;
 
   return pass_selection;
 
@@ -333,7 +331,6 @@ bool MuonSelection::HNtriHighdXYTightMuonSelection(KMuon muon) {
   if(!HNtriNodXYCutTightMuonSelection(muon)) pass_selection = false;
   if(!(fabs(muon.dXY()) < 1. )) pass_selection = false;
   if(!(fabs(muon.dXYSig()) > 4. )) pass_selection = false;
-  if(!(fabs(muon.dZ()) < 0.10 )) pass_selection = false;
 
   return pass_selection;
 
@@ -346,7 +343,6 @@ bool MuonSelection::HNtriHighdXYLooseMuonSelection(KMuon muon) {
   if(!HNtriNodXYCutLooseMuonSelection(muon)) pass_selection = false;
   if(!(fabs(muon.dXY()) < 1. )) pass_selection = false;
   if(!(fabs(muon.dXYSig()) > 4. )) pass_selection = false;
-  if(!(fabs(muon.dZ()) < 0.10 )) pass_selection = false;
 
   return pass_selection;
 
