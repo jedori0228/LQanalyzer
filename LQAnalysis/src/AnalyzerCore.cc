@@ -786,6 +786,7 @@ float AnalyzerCore::ApplyPrescale(vector<TString> triggernames, float tlumi, snu
   for(unsigned int i=0; i < triggernames.size() ; i++){
     if(ApplyPrescale(triggernames.at(i), tlumi, flag) > trigps) trigps = ApplyPrescale(triggernames.at(i),tlumi, flag) ;
   }
+
   if(trigps  > 1.) {m_logger << ERROR << "Error in getting weight for trigger prescale. It cannot be > 1, this means trigger lumi >> total lumi"  << LQLogger::endmsg; exit(0);}
   if(trigps  < 0.) {m_logger << ERROR << "Error in getting weight for trigger prescale. It cannot be < 0, this means trigger lumi >> total lumi"  << LQLogger::endmsg; exit(0);}
   
@@ -1960,9 +1961,11 @@ void AnalyzerCore::CorrectMuonMomentum(vector<snu::KMuon>& k_muons){
   int imu(0);
   for(std::vector<snu::KMuon>::iterator it = k_muons.begin(); it != k_muons.end(); it++, imu++){
     float qter =1.; /// uncertainty
+
     if(k_isdata)rmcor->momcor_data(tlv_muons[imu], float(it->Charge()), eventbase->GetEvent().RunNumber(), qter);
     else rmcor->momcor_mc(tlv_muons[imu], float(it->Charge()), it->ActiveLayer(), qter);
     it->SetPtEtaPhiM(tlv_muons[imu].Pt(),tlv_muons[imu].Eta(), tlv_muons[imu].Phi(), tlv_muons[imu].M());
+    //it->scale(tlv_muons[imu].E()/it->E());
   }
 }
 
