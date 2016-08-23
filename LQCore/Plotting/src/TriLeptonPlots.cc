@@ -133,7 +133,7 @@ void TriLeptonPlots::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std::v
     std::vector<snu::KMuon> tightmuons, loosemuons;
     for(std::vector<snu::KMuon>::iterator muit = muons.begin(); muit != muons.end(); muit++){
       float LeptonRelIso = muit->RelIso04();
-      if(LeptonRelIso<0.05){
+      if(LeptonRelIso<0.1){ // change this when tight ID is changed
         n_tight++;
         tightmuons.push_back(*muit);
       }

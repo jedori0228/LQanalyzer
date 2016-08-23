@@ -29,6 +29,7 @@ AnalyzerCore::AnalyzerCore() : LQCycleBase(), MCweight(-999.),reset_lumi_mask(fa
 
   lumimask= snu::KEvent::missing;
   TH1::SetDefaultSumw2(true);  
+  TH1::AddDirectory(kFALSE);
   /// clear list of triggers stored in KTrigger
   triggerlist.clear();
   // If running on LQNtuples this is not important.
