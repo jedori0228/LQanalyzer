@@ -2622,6 +2622,14 @@ void AnalyzerCore::FillHist(TString histname, float value, float w, float xmin, 
   
 }
 
+void AnalyzerCore::FillUpDownHist(TString histname, float value, float w, float w_err, float xmin, float xmax, int nbins){
+
+  FillHist(histname+"_up", value, w+w_err, xmin, xmax, nbins);
+  FillHist(histname+"_down", value, w-w_err, xmin, xmax, nbins);
+  FillHist(histname, value, w, xmin, xmax, nbins);
+
+}
+
 void AnalyzerCore::FillHist(TString histname, float value1, float value2, float w, float xmin, float xmax, int nbinsx, float ymin, float ymax, int nbinsy){
 
   m_logger << DEBUG << "FillHist : " << histname << LQLogger::endmsg;
