@@ -230,6 +230,7 @@ class AnalyzerCore : public LQCycleBase {
   void FillHist(TString histname, float value, float w );
   void FillHist(TString histname, float value, float w , float xmin, float xmax, int nbins=0);
   void FillHist(TString histname, float value, float w , float xmin[], int nbins=0);
+  void FillUpDownHist(TString histname, float value, float w , float w_err, float xmin, float xmax, int nbins=0);
   void FillHist(TString histname, float value1, float value2, float w , float x[], int nbinsx, float y[], int nbinsy);
   void FillHist(TString histname, float value1,  float value2, float w , float xmin, float xmax, int nbinsx,  float ymin, float ymax, int nbinsy);
 

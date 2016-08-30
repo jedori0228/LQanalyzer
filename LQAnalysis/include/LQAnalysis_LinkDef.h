@@ -20,6 +20,8 @@
 #pragma link C++ class SKTreeValidation+;
 #pragma link C++ class trilepton_mumumu+;
 #pragma link C++ class trilepton_mumumu_FR_method+;
+#pragma link C++ class trilepton_mumumu_CR+;
+#pragma link C++ class trilepton_mumumu_CR_FR_method+;
 #pragma link C++ class FakeRateCalculator_Mu+;
 
 #endif // __CINT__

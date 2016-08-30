@@ -90,101 +90,117 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   if(isData) FillHist("Nvtx_nocut_data",  eventbase->GetEvent().nVertices() ,weight, 0. , 50., 50);
   else  FillHist("Nvtx_nocut_mc",  eventbase->GetEvent().nVertices() ,weight, 0. , 50., 50);
   
-   ///#### CAT:::PassBasicEventCuts is updated: uses selections as described in https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFilters: If you see this is out of date please comment
+  ///#### CAT:::PassBasicEventCuts is updated: uses selections as described in https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFilters: If you see this is out of date please comment
+
+  if(!PassBasicEventCuts()) return;     /// Initial event cuts : 
+  FillCutFlow("EventCut", weight);
+
+  /// #### CAT::: triggers stored are all HLT_Ele/HLT_DoubleEle/HLT_Mu/HLT_TkMu/HLT_Photon/HLT_DoublePhoton
+
+  std::vector<TString> triggerslist;
+  triggerslist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
+
+  //float trigger_ps_weight= ApplyPrescale("HLT_IsoMu20", TargetLumi,lumimask);
+
+  if(!PassTrigger(triggerslist, prescale)) return;
+  FillCutFlow("TriggerCut", weight);
+  // Trigger matching is done using KMuon::TriggerMatched(TString) which returns a bool
+
+  /* // #### CAT::: trigger matching information is stored for muons and electrons for:
+  ///HLT_IsoMu24_eta2p1_v
+  ///HLT_Mu17_Mu8_DZ_v
+  ///HLT_Mu17_TkMu8_DZ_v
+  ///HLT_IsoMu20
+  ///HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v
+  ///HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v
+  ///HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v
+  ///HLT_Ele12_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v
+  ///HLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v
+  ///HLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL_v
+  ///HLT_Ele16_Ele12_Ele8_CaloIdL_TrackIdL_v
+  ///HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v
+  ///HLT_Ele12_CaloIdL_TrackIdL_IsoVL_v
+  ///HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v
+  ///HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v
+  ///HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_
+  ///HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v
+  ///HLT_Ele27_eta2p1_WPLoose_Gsf_TriCentralPFJet30_v
+  */
+
+  m_logger << DEBUG << "passedTrigger "<< LQLogger::endmsg;
+
+
+  if (!eventbase->GetEvent().HasGoodPrimaryVertex()) return; //// Make cut on event wrt vertex
+  /// Has Good Primary vertex:
+  /// if ( vtx.ndof() > 4 &&
+  //   ( (maxAbsZ <=0 ) || std::abs(vtx.z()) <= 24 ) &&
+  //( (maxd0 <=0 ) || std::abs(vtx.position().rho()) <= 2 ) &&
+  //!(vtx.isFake() ) ){
+  FillCutFlow("VertexCut", weight);
+
+
+  /// List of preset muon collections : Can call also POGSoft/POGLoose/POGMedium/POGTight
+  std::vector<snu::KMuon> muonColl = GetMuons(BaseSelection::MUON_NOCUT);  /// No cuts applied
+  std::vector<snu::KMuon> muonVetoColl = GetMuons(BaseSelection::MUON_HN_VETO);  // veto selection
+  std::vector<snu::KMuon> muonLooseColl = GetMuons(BaseSelection::MUON_HN_FAKELOOSE);  // loose selection
+  std::vector<snu::KMuon> muonTightColl = GetMuons(BaseSelection::MUON_HN_TIGHT,false); // tight selection : NonPrompt MC lep removed
+  std::vector<snu::KMuon> muontriTightColl_raw = GetMuons(BaseSelection::MUON_HN_TRI_TIGHT); 
+  std::vector<snu::KMuon> muontriLooseColl_raw = GetMuons(BaseSelection::MUON_HN_TRI_LOOSE);
+
+  std::vector<snu::KMuon> muontriTightColl, muontriLooseColl;
+  for(unsigned int i=0; i<muontriTightColl_raw.size(); i++){
+    snu::KMuon thismuon = muontriTightColl_raw.at(i);
+    if(isData) muontriTightColl.push_back(thismuon);
+    else{
+      if( thismuon.GetParticleType() == snu::KMuon::PROMPT ) muontriTightColl.push_back(thismuon);
+    }
+  }
+  for(unsigned int i=0; i<muontriLooseColl_raw.size(); i++){
+    snu::KMuon thismuon = muontriLooseColl_raw.at(i);
+    if(isData) muontriLooseColl.push_back(thismuon);
+    else{
+      if( thismuon.GetParticleType() == snu::KMuon::PROMPT ) muontriLooseColl.push_back(thismuon);
+    }
+  }
    
-   if(!PassBasicEventCuts()) return;     /// Initial event cuts : 
-   FillCutFlow("EventCut", weight);
+  CorrectMuonMomentum(muonTightColl);
+  float muon_id_iso_sf= MuonScaleFactor(BaseSelection::MUON_POG_TIGHT, muonTightColl,0); ///MUON_POG_TIGHT == MUON_HN_TIGHT
 
-   /// #### CAT::: triggers stored are all HLT_Ele/HLT_DoubleEle/HLT_Mu/HLT_TkMu/HLT_Photon/HLT_DoublePhoton
+  /// List of preset jet collections : NoLeptonVeto/Loose/Medium/Tight/TightLepVeto/HNJets
+  std::vector<snu::KJet> jetColl             = GetJets(BaseSelection::JET_NOLEPTONVETO); // All jets
+  std::vector<snu::KJet> jetColl_loose       = GetJets(BaseSelection::JET_LOOSE); // pt > 10; eta < 5. ; PFlep veto
+  std::vector<snu::KJet> jetColl_tight       = GetJets(BaseSelection::JET_TIGHT);// pt > 20 ; eta < 2.5; PFlep veto
+  std::vector<snu::KJet> jetColl_hn          = GetJets(BaseSelection::JET_HN);// pt > 20 ; eta < 2.5; PFlep veto; pileup ID
 
-   std::vector<TString> triggerslist;
-   triggerslist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
-   
-   //float trigger_ps_weight= ApplyPrescale("HLT_IsoMu20", TargetLumi,lumimask);
-   
-   if(!PassTrigger(triggerslist, prescale)) return;
-   FillCutFlow("TriggerCut", weight);
-   // Trigger matching is done using KMuon::TriggerMatched(TString) which returns a bool
+  FillHist("Njets", jetColl_hn.size() ,weight, 0. , 5., 5);
 
-   /* // #### CAT::: trigger matching information is stored for muons and electrons for:
-   ///HLT_IsoMu24_eta2p1_v
-   ///HLT_Mu17_Mu8_DZ_v
-   ///HLT_Mu17_TkMu8_DZ_v
-   ///HLT_IsoMu20
-   ///HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v
-   ///HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v
-   ///HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v
-   ///HLT_Ele12_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v
-   ///HLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v
-   ///HLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL_v
-   ///HLT_Ele16_Ele12_Ele8_CaloIdL_TrackIdL_v
-   ///HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v
-   ///HLT_Ele12_CaloIdL_TrackIdL_IsoVL_v
-   ///HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v
-   ///HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v
-   ///HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_
-   ///HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v
-   ///HLT_Ele27_eta2p1_WPLoose_Gsf_TriCentralPFJet30_v
-   */
+  /// can call POGVeto/POGLoose/POGMedium/POGTight/ HNVeto/HNLoose/HNTight/NoCut/NoCutPtEta 
+  std::vector<snu::KElectron> electronColl             = GetElectrons(BaseSelection::ELECTRON_POG_TIGHT);
+  std::vector<snu::KElectron> electronLooseColl        = GetElectrons(BaseSelection::ELECTRON_POG_LOOSE);
 
-   m_logger << DEBUG << "passedTrigger "<< LQLogger::endmsg;
+  float weight_trigger_sf = TriggerScaleFactor(electronColl, muonTightColl, "HLT_IsoMu20");
+
+  int njet = jetColl_hn.size();
+  FillHist("GenWeight_NJet" , njet*MCweight + MCweight*0.1, 1., -6. , 6., 12);
+
+  numberVertices = eventbase->GetEvent().nVertices();
+
+  float pileup_reweight=(1.0);
+  if (!k_isdata) {
+    // check if catversion is empty. i.ie, v-7-4-X in which case use reweight class to get weight. In v-7-6-X+ pileupweight is stored in KEvent class, for silver/gold json
+    pileup_reweight = eventbase->GetEvent().PileUpWeight(lumimask);
+
+  }
+
+  FillHist("PileupWeight" ,  pileup_reweight,weight,  0. , 50., 10);
 
 
-   if (!eventbase->GetEvent().HasGoodPrimaryVertex()) return; //// Make cut on event wrt vertex
-   /// Has Good Primary vertex:
-   /// if ( vtx.ndof() > 4 &&
-   //   ( (maxAbsZ <=0 ) || std::abs(vtx.z()) <= 24 ) &&
-   //( (maxd0 <=0 ) || std::abs(vtx.position().rho()) <= 2 ) &&
-   //!(vtx.isFake() ) ){
-   FillCutFlow("VertexCut", weight);
-   
-
-   /// List of preset muon collections : Can call also POGSoft/POGLoose/POGMedium/POGTight
-   std::vector<snu::KMuon> muonColl = GetMuons(BaseSelection::MUON_NOCUT);  /// No cuts applied
-   std::vector<snu::KMuon> muonVetoColl = GetMuons(BaseSelection::MUON_HN_VETO);  // veto selection
-   std::vector<snu::KMuon> muonLooseColl = GetMuons(BaseSelection::MUON_HN_FAKELOOSE);  // loose selection
-   std::vector<snu::KMuon> muonTightColl = GetMuons(BaseSelection::MUON_HN_TIGHT,false); // tight selection : NonPrompt MC lep removed
-   std::vector<snu::KMuon> muontriTightColl = GetMuons(BaseSelection::MUON_HN_TRI_TIGHT); 
-   std::vector<snu::KMuon> muontriLooseColl = GetMuons(BaseSelection::MUON_HN_TRI_LOOSE);
-   
-   CorrectMuonMomentum(muonTightColl);
-   float muon_id_iso_sf= MuonScaleFactor(BaseSelection::MUON_POG_TIGHT, muonTightColl,0); ///MUON_POG_TIGHT == MUON_HN_TIGHT
-
-   /// List of preset jet collections : NoLeptonVeto/Loose/Medium/Tight/TightLepVeto/HNJets
-   std::vector<snu::KJet> jetColl             = GetJets(BaseSelection::JET_NOLEPTONVETO); // All jets
-   std::vector<snu::KJet> jetColl_loose       = GetJets(BaseSelection::JET_LOOSE); // pt > 10; eta < 5. ; PFlep veto
-   std::vector<snu::KJet> jetColl_tight       = GetJets(BaseSelection::JET_TIGHT);// pt > 20 ; eta < 2.5; PFlep veto
-   std::vector<snu::KJet> jetColl_hn          = GetJets(BaseSelection::JET_HN);// pt > 20 ; eta < 2.5; PFlep veto; pileup ID
-   
-   FillHist("Njets", jetColl_hn.size() ,weight, 0. , 5., 5);
-
-   /// can call POGVeto/POGLoose/POGMedium/POGTight/ HNVeto/HNLoose/HNTight/NoCut/NoCutPtEta 
-   std::vector<snu::KElectron> electronColl             = GetElectrons(BaseSelection::ELECTRON_POG_TIGHT);
-   std::vector<snu::KElectron> electronLooseColl        = GetElectrons(BaseSelection::ELECTRON_POG_LOOSE);
-
-   float weight_trigger_sf = TriggerScaleFactor(electronColl, muonTightColl, "HLT_IsoMu20");
-   
-   int njet = jetColl_hn.size();
-   FillHist("GenWeight_NJet" , njet*MCweight + MCweight*0.1, 1., -6. , 6., 12);
-
-   numberVertices = eventbase->GetEvent().nVertices();   
-   
-   float pileup_reweight=(1.0);
-   if (!k_isdata) {
-     // check if catversion is empty. i.ie, v-7-4-X in which case use reweight class to get weight. In v-7-6-X+ pileupweight is stored in KEvent class, for silver/gold json
-     pileup_reweight = eventbase->GetEvent().PileUpWeight(lumimask);
-     
-   }
-   
-   FillHist("PileupWeight" ,  pileup_reweight,weight,  0. , 50., 10);
-
-   
-   if(!isData && !k_running_nonprompt){
-     //weight*=muon_id_iso_sf;
-     weight*=pileup_reweight;
-     //weight*=weight_trigger_sf;
-     //weight*=trigger_ps_weight;
-   }
+  if(!isData && !k_running_nonprompt){
+    //weight*=muon_id_iso_sf;
+    weight*=pileup_reweight;
+    //weight*=weight_trigger_sf;
+    //weight*=trigger_ps_weight;
+  }
 
   int n_triTight_muons = muontriTightColl.size();
   int n_triLoose_muons = muontriLooseColl.size();

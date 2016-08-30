@@ -1,15 +1,15 @@
-#ifndef trilepton_mumumu_FR_method_h
-#define trilepton_mumumu_FR_method_h
+#ifndef trilepton_mumumu_CR_FR_method_h
+#define trilepton_mumumu_CR_FR_method_h
 
 #include "AnalyzerCore.h"
 #include "Trilepton.h"
 
-class trilepton_mumumu_FR_method : public AnalyzerCore {
+class trilepton_mumumu_CR_FR_method : public AnalyzerCore {
 
  public:
   //// constructors                                                                                                                                                             
-  trilepton_mumumu_FR_method();
-  ~trilepton_mumumu_FR_method();
+  trilepton_mumumu_CR_FR_method();
+  ~trilepton_mumumu_CR_FR_method();
 
   /// Functions from core
   virtual void BeginCycle() throw( LQError );
@@ -37,6 +37,6 @@ class trilepton_mumumu_FR_method : public AnalyzerCore {
   std::vector<snu::KElectron> out_electrons;
 
 
-  ClassDef ( trilepton_mumumu_FR_method, 1);
+  ClassDef ( trilepton_mumumu_CR_FR_method, 1);
 };
 #endif

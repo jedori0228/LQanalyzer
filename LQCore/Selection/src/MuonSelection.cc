@@ -305,7 +305,7 @@ bool MuonSelection::HNtriTightMuonSelection(KMuon muon) {
   bool pass_selection(true);
 
   if(!HNtriNodXYCutTightMuonSelection(muon)) pass_selection = false;
-  if(!(fabs(muon.dXY()) < 0.01 )) pass_selection = false;
+  if(!(fabs(muon.dXY()) < 0.05 )) pass_selection = false;
   if(!(fabs(muon.dXYSig()) < 3. )) pass_selection = false;
 
   return pass_selection;
@@ -317,7 +317,7 @@ bool MuonSelection::HNtriLooseMuonSelection(KMuon muon) {
   bool pass_selection(true);
 
   if(!HNtriNodXYCutLooseMuonSelection(muon)) pass_selection = false;
-  if(!(fabs(muon.dXY()) < 0.01 )) pass_selection = false;
+  if(!(fabs(muon.dXY()) < 0.05 )) pass_selection = false;
   if(!(fabs(muon.dXYSig()) < 3. )) pass_selection = false;
 
   return pass_selection;
@@ -449,10 +449,10 @@ bool MuonSelection::PassID(ID id, snu::KMuon mu, bool m_debug){
     //  passID = false;
     //  if(m_debug)cout << "PassID: Fail dXY" << endl;
     //}
-    //if( fabs(mu.dZ())    >= 0.5) {
-    //  passID = false;
-    //  if(m_debug)cout << "PassID: Fail dZ" << endl;
-    //}
+    if( fabs(mu.dZ())    >= 0.5) {
+      passID = false;
+      if(m_debug)cout << "PassID: Fail dZ" << endl;
+    }
     if( mu.GlobalChi2() >=  10.){
       passID = false;
       if(m_debug) cout << "PassID: Fail  Chi2" << endl;
