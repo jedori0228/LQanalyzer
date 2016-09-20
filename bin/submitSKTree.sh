@@ -231,14 +231,21 @@ function mergeoutput
 	    echo "MERGING DATA: Periods C + D"
 	    echo " "
 	    echo "Command:"
-            echo "source hadd.sh "${outputdir_data}" "${job_cycle}"_data_cat_"${submit_version_tag}".root "${outputdir_data}${job_cycle}"'*'"$output_file_skim_tag"'*'"
+            #echo "source hadd.sh "${outputdir_data}" "${job_cycle}"_data_cat_"${submit_version_tag}".root "${outputdir_data}${job_cycle}"'*'"$output_file_skim_tag"'*'"
+            echo "source hadd.sh "${job_output_dir}" "${job_cycle}"_data_cat_"${submit_version_tag}".root "${job_output_dir}/${job_cycle}"'*'"$output_file_skim_tag"'*'"
             echo "############################################################################################################################################################"
 	    echo ""
-            source hadd.sh ${outputdir_data} ${job_cycle}_data_cat_${submit_version_tag}.root ${outputdir_data}${job_cycle}'*'${output_file_skim_tag}'*'
+            #source hadd.sh ${outputdir_data} ${job_cycle}_data_cat_${submit_version_tag}.root ${outputdir_data}${job_cycle}'*'${output_file_skim_tag}'*'
+            source hadd.sh ${job_output_dir} ${job_cycle}_data_cat_${submit_version_tag}.root ${job_output_dir}/${job_cycle}'*'${output_file_skim_tag}'*'
 	    echo ""
-            echo "merged output sent to -----> "${outputdir_data}${job_cycle}"_data_cat_"${submit_version_tag}".root "
-	    
-            mv  ${outputdir_data}/${job_cycle}_data_cat_${submit_version_tag}.root  ${outputdir_mc}/${job_cycle}_data_$1_cat_${submit_version_tag}.root
+            #echo "merged output sent to -----> "${outputdir_data}${job_cycle}"_data_cat_"${submit_version_tag}".root "
+            echo "merged output sent to -----> "${job_output_dir}${job_cycle}"_data_cat_"${submit_version_tag}".root "
+
+      echo "changed_job_output_dir = "$changed_job_output_dir
+      if [[ $changed_job_output_dir == "false" ]];
+          then
+          mv  ${outputdir_data}/${job_cycle}_data_cat_${submit_version_tag}.root  ${outputdir_mc}/${job_cycle}_data_$1_cat_${submit_version_tag}.root
+      fi
 
             echo ""
         fi
