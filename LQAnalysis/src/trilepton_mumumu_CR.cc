@@ -141,27 +141,18 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   std::vector<snu::KMuon> muonVetoColl = GetMuons(BaseSelection::MUON_HN_VETO);  // veto selection
   std::vector<snu::KMuon> muonLooseColl = GetMuons(BaseSelection::MUON_HN_FAKELOOSE);  // loose selection
   std::vector<snu::KMuon> muonTightColl = GetMuons(BaseSelection::MUON_HN_TIGHT,false); // tight selection : NonPrompt MC lep removed
-  std::vector<snu::KMuon> muontriTightColl_raw = GetMuons(BaseSelection::MUON_HN_TRI_TIGHT); 
-  std::vector<snu::KMuon> muontriLooseColl_raw = GetMuons(BaseSelection::MUON_HN_TRI_LOOSE);
-
   std::vector<snu::KMuon> muontriTightColl, muontriLooseColl;
-  for(unsigned int i=0; i<muontriTightColl_raw.size(); i++){
-    snu::KMuon thismuon = muontriTightColl_raw.at(i);
-    if(isData) muontriTightColl.push_back(thismuon);
-    else{
-      if( thismuon.GetParticleType() == snu::KMuon::PROMPT ) muontriTightColl.push_back(thismuon);
-    }
+  if(k_sample_name == "WG_lnuG_madgraph" || k_sample_name == "ZG_llG_MCatNLO"){
+    muontriTightColl = GetMuons(BaseSelection::MUON_HN_TRI_TIGHT); 
+    muontriLooseColl = GetMuons(BaseSelection::MUON_HN_TRI_LOOSE);
   }
-  for(unsigned int i=0; i<muontriLooseColl_raw.size(); i++){
-    snu::KMuon thismuon = muontriLooseColl_raw.at(i);
-    if(isData) muontriLooseColl.push_back(thismuon);
-    else{
-      if( thismuon.GetParticleType() == snu::KMuon::PROMPT ) muontriLooseColl.push_back(thismuon);
-    }
+  else{
+    muontriTightColl = GetMuons(BaseSelection::MUON_HN_TRI_TIGHT, false); 
+    muontriLooseColl = GetMuons(BaseSelection::MUON_HN_TRI_LOOSE, false);
   }
-   
   CorrectMuonMomentum(muonTightColl);
-  float muon_id_iso_sf= MuonScaleFactor(BaseSelection::MUON_POG_TIGHT, muonTightColl,0); ///MUON_POG_TIGHT == MUON_HN_TIGHT
+  float muon_id_iso_sf= MuonScaleFactor(BaseSelection::MUON_POG_TIGHT, muontriTightColl, 0); ///MUON_POG_TIGHT == MUON_HN_TIGHT
+  muon_id_iso_sf *= MuonISOScaleFactor(BaseSelection::MUON_POG_TIGHT, muontriTightColl, 0);
 
   /// List of preset jet collections : NoLeptonVeto/Loose/Medium/Tight/TightLepVeto/HNJets
   std::vector<snu::KJet> jetColl             = GetJets(BaseSelection::JET_NOLEPTONVETO); // All jets
@@ -186,6 +177,7 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   if (!k_isdata) {
     // check if catversion is empty. i.ie, v-7-4-X in which case use reweight class to get weight. In v-7-6-X+ pileupweight is stored in KEvent class, for silver/gold json
     pileup_reweight = eventbase->GetEvent().PileUpWeight(lumimask);
+    //pileup_reweight = eventbase->GetEvent().AltPileUpWeight(lumimask);
 
   }
 
@@ -215,7 +207,7 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   FillHist("n_jets_control_PU", n_jets, weight*pileup_reweight, 0, 10, 10);
   int n_bjets=0;
   for(int j=0; j<n_jets; j++){
-    if(jetColl_loose.at(j).IsBTagged(snu::KJet::cMVAv2, snu::KJet::Medium)) n_bjets++;
+    if(jetColl_loose.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Tight)) n_bjets++;
   }
   FillHist("n_bjets_control_PU", n_bjets, weight*pileup_reweight, 0, 10, 10);
 
@@ -224,8 +216,6 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   //================
 
   std::map< TString, bool > map_whichCR_to_isCR;
-
-  int n_muons(0);
 
   bool isTwoMuon   = n_triLoose_muons == 2 && n_triTight_muons == 2;
   bool isThreeMuon = n_triLoose_muons == 3 && n_triTight_muons == 3;
@@ -275,11 +265,11 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
     lep[1] = muontriLooseColl.at(1);
     lep[2] = muontriLooseColl.at(2);
 
-    bool leadPt20 = muontriLooseColl.at(0).Pt() > 20.;
+    //bool leadPt20 = muontriLooseColl.at(0).Pt() > 20.; // This will be done for the Z-candidate muons
     bool AllSameCharge = ( muontriLooseColl.at(0).Charge() == muontriLooseColl.at(1).Charge() ) &&
                          ( muontriLooseColl.at(0).Charge() == muontriLooseColl.at(2).Charge() );
 
-    if( leadPt20 && !AllSameCharge ){
+    if( !AllSameCharge ){
       snu::KMuon OS, SS[2];
       if     ( muontriLooseColl.at(0).Charge() == muontriLooseColl.at(1).Charge() ){
         SS[0] = muontriLooseColl.at(0);
@@ -303,32 +293,79 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
       m_dimuon[1] = ( SS[1] + OS ).M();
 
       snu::KParticle Z_candidate;
-      snu::KMuon ExtraMuon;
+      snu::KMuon ZMuon, WMuon;
       if( fabs(m_dimuon[0]-m_Z) < fabs(m_dimuon[1]-m_Z) ){
         Z_candidate = SS[0] + OS;
-        ExtraMuon = SS[1];
+        ZMuon = SS[0];
+        WMuon = SS[1];
       }
       else{
         Z_candidate = SS[1] + OS;
-        ExtraMuon = SS[0];
+        ZMuon = SS[1];
+        WMuon = SS[0];
       }
 
-      bool isZresonance = fabs(Z_candidate.M()-m_Z) < 20.;
-      bool PtCutOnExtraMuon = ExtraMuon.Pt() > 20.;
-      bool METCut = MET > 20.;
+      bool ZMuonPtCut = (ZMuon.Pt() > 20.);
+      bool isZresonance = (fabs(Z_candidate.M()-m_Z) < 15.);
+      bool PtCutOnWMuon = (WMuon.Pt() > 20.);
+      bool METCut = (MET > 30.);
+      bool mlllCut = ((SS[0]+SS[1]+OS).M() > 100.);
+      bool mll4 = (m_dimuon[0] < 4.) || (m_dimuon[1] < 4.);
+      bool electronveto = (electronLooseColl.size() == 0);
+      bool bjetveto = (n_bjets == 0);
 
-      if( isZresonance && PtCutOnExtraMuon && METCut ){
+      FillHist("m_Z_candidate_before_cut_WZ_PU", Z_candidate.M(), weight*pileup_reweight, 0, 150, 150);
+      FillHist("m_lll_before_cut_WZ_PU", (SS[0]+SS[1]+OS).M(), weight*pileup_reweight, 0, 500, 500);
+      FillHist("PFMET_before_cut_WZ_PU", MET, weight*pileup_reweight, 0, 500, 500);
+      FillHist("n_electrons_before_cut_WZ_PU", electronLooseColl.size(), weight*pileup_reweight, 0, 10, 10);
+      FillHist("n_bjets_before_cut_WZ_PU", n_bjets, weight*pileup_reweight, 0, 10, 10);
+      FillHist("n_vertices_before_cut_WZ_PU", eventbase->GetEvent().nVertices(), weight*pileup_reweight, 0, 50, 50);
+
+      //==== N-1 plots
+      vector<bool> WZ_cuts;
+      WZ_cuts.push_back( fabs(Z_candidate.M()-m_Z) < 15. );
+      WZ_cuts.push_back( (SS[0]+SS[1]+OS).M() > 100. );
+      WZ_cuts.push_back( n_bjets == 0 );
+      WZ_cuts.push_back( MET > 30 );
+      if( ZMuonPtCut && PtCutOnWMuon && !mll4 && electronveto ){
+        FillHist("N1_preselection_WZ_PU", 0, weight*pileup_reweight, 0, 1, 1);
+        for(unsigned int i=0; i<WZ_cuts.size(); i++){
+          bool this_bool = true;
+          for(unsigned int j=0; j<WZ_cuts.size(); j++){
+            if(j==i) continue;
+            if(!WZ_cuts.at(j)) this_bool = false;
+          }
+          if(this_bool){
+            if(i==0) FillHist("N1_Z_mass_WZ_PU", fabs(Z_candidate.M()-m_Z), weight*pileup_reweight, 0, 60, 60);
+            if(i==1) FillHist("N1_mlll_WZ_PU",  (SS[0]+SS[1]+OS).M(), weight*pileup_reweight, 0, 500, 25);
+            if(i==2) FillHist("N1_n_bjets_WZ_PU", n_bjets, weight*pileup_reweight, 0, 4, 4);
+            if(i==3) FillHist("N1_PFMET_WZ_PU", MET, weight*pileup_reweight, 0, 200, 20);
+          }
+        }
+      }
+
+      if( ZMuonPtCut && isZresonance && PtCutOnWMuon && METCut && mlllCut && !mll4 && electronveto && bjetveto ){
         TString this_suffix = "WZ";
         snu::KParticle nu;
         nu.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET); 
-        snu::KParticle W_candidate = nu+ExtraMuon;
+        snu::KParticle W_candidate = nu+WMuon;
 
         FillHist("n_events_"+this_suffix+"_PU", 0, weight*pileup_reweight, 0, 1, 1);
+        FillHist("n_vertices_"+this_suffix+"_PU", eventbase->GetEvent().nVertices(), weight*pileup_reweight, 0, 50, 50);
         FillHist("n_jets_"+this_suffix+"_PU", n_jets, weight*pileup_reweight, 0, 10, 10);
         FillHist("n_bjets_"+this_suffix+"_PU", n_bjets, weight*pileup_reweight, 0, 10, 10);
         FillHist("PFMET_"+this_suffix+"_PU", MET, weight*pileup_reweight, 0, 500, 500);
+        FillHist("osllmass_"+this_suffix+"_PU", m_dimuon[0], weight*pileup_reweight, 0., 500., 500);
+        FillHist("osllmass_"+this_suffix+"_PU", m_dimuon[1], weight*pileup_reweight, 0., 500., 500);
         FillHist("m_Z_candidate_"+this_suffix+"_PU", Z_candidate.M(), weight*pileup_reweight, 0, 150, 150);
-        FillHist("mt_W_candidate_"+this_suffix+"_PU", W_candidate.Mt(), weight*pileup_reweight, 0, 300, 300);
+        FillHist("mt_W_candidate_"+this_suffix+"_PU", MT(nu, WMuon), weight*pileup_reweight, 0, 300, 300);
+        FillHist("m_lll_"+this_suffix+"_PU", (SS[0]+SS[1]+OS).M(), weight*pileup_reweight, 0, 500, 500);
+        FillHist("WMuon_Pt_"+this_suffix+"_PU", WMuon.Pt(), weight*pileup_reweight, 0, 200, 200);
+        FillHist("Z_candidate_Pt_"+this_suffix+"_PU", Z_candidate.Pt(), weight*pileup_reweight, 0, 400, 400);
+        FillHist("W_candidate_Pt_"+this_suffix+"_PU", W_candidate.Pt(), weight*pileup_reweight, 0, 400, 400);
+        FillHist("n_electron_"+this_suffix+"_PU", electronColl.size(), weight*pileup_reweight, 0, 10, 10);
+        FillHist("dRZMuonWMuon_"+this_suffix+"_PU", ZMuon.DeltaR(WMuon), weight*pileup_reweight, 0, 6, 60);
+        FillHist("dRZMuonWMuon_"+this_suffix+"_PU", OS.DeltaR(WMuon), weight*pileup_reweight, 0, 6, 60);
 
         FillHist("leadingLepton_Pt_"+this_suffix+"_PU", lep[0].Pt() , weight*pileup_reweight, 0, 200, 200);
         FillHist("leadingLepton_Eta_"+this_suffix+"_PU", lep[0].Eta() , weight*pileup_reweight, -3, 3, 60);
@@ -352,22 +389,6 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
 
 
  
-
-/*
-  if(n_muons==3){
-    FillHist("TT_thirdLepton_Pt_control_PU", lep[1].Pt() , weight*pileup_reweight, 0, 200, 200);
-    FillHist("TT_thirdLepton_Eta_control_PU", lep[1].Eta() , weight*pileup_reweight, -3, 3, 60);
-    FillHist("TT_thirdLepton_RelIso_control_PU", LeptonRelIso[1] , weight*pileup_reweight, 0, 1.0, 100);
-    FillHist("TT_thirdLepton_Chi2_control_PU", lep[1].GlobalChi2() , weight*pileup_reweight, 0, 10, 100);
-
-    FillHist("TT_thirdLepton_Pt_1_control_PU", lep[2].Pt(), 1., 0, 200, 200);
-    FillHist("TT_thirdLepton_Eta_1_control_PU", lep[2].Eta(), 1., -3, 3, 60);
-    FillHist("TT_thirdLepton_RelIso_1_control_PU", LeptonRelIso[2], 1., 0, 1.0, 100);
-    FillHist("TT_thirdLepton_Chi2_1_control_PU", lep[2].GlobalChi2(), 1., 0, 10, 100);
-  }
-*/
-
-
 
 
   return;
@@ -467,4 +488,7 @@ void trilepton_mumumu_CR::ClearOutputVectors() throw(LQError) {
   out_muons.clear();
   out_electrons.clear();
 }
+
+
+
 

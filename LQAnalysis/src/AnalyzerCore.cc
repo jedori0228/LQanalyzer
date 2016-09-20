@@ -2112,7 +2112,50 @@ vector<TLorentzVector> AnalyzerCore::MakeTLorentz(vector<snu::KJet> j){
   return tl_jet;
 }
 
+void AnalyzerCore::PutNuPz(TLorentzVector *nu, double Pz){
+  double Px, Py;
+  Px = nu->Px();
+  Py = nu->Py();
+  nu->SetPxPyPzE(Px, Py, Pz, TMath::Sqrt(Px*Px+Py*Py+Pz*Pz));
+}
 
+double AnalyzerCore::solveqdeq(double W_mass, TLorentzVector l1l2l3, double MET, double METphi, TString pm){
+  TLorentzVector met;
+  met.SetPxPyPzE(MET*cos(METphi),
+                 MET*sin(METphi),
+                 0,
+                 MET);
 
+  Double_t d = (W_mass*W_mass)-(l1l2l3.M())*(l1l2l3.M())+2.0*l1l2l3.Px()*met.Px()+2.0*l1l2l3.Py()*met.Py();
+  Double_t a = l1l2l3.E()*l1l2l3.E() - l1l2l3.Pz()*l1l2l3.Pz();
+  Double_t b = d*l1l2l3.Pz();
+  Double_t c = l1l2l3.E()*l1l2l3.E()*met.E()*met.E()-d*d/4.0;
+  if(b*b-4*a*c<0){
+    return b/(2*a);
+  }
+  else{
+    if(pm=="p") return (b+TMath::Sqrt(b*b-4*a*c))/(2*a);
+    else if(pm=="m")  return (b-TMath::Sqrt(b*b-4*a*c))/(2*a);
+    else return 0;
+  }
+}
 
+int AnalyzerCore::find_mlmet_closest_to_W(snu::KParticle lep[], snu::KParticle MET){
+  double m_diff[3];
+  for(int i=0; i<3; i++){
+    //cout << "address of lep["<<i<<"] = " << lep+i << endl;
+    m_diff[i] = fabs( MT( lep[i], MET ) - 80.4 );
+    //m_diff[i] = fabs( (lep[i]+MET).M() - 80.4 );
+    //m_diff[i] = fabs( Mt3(lep[i], MET) );
+  }
+  double m_diff_min = TMath::Min( m_diff[0] , TMath::Min( m_diff[1], m_diff[2] ) );
+  for(int i=0; i<3; i++) if( m_diff_min == m_diff[i] ) return i;
 
+}
+
+double AnalyzerCore::MT(TLorentzVector a, TLorentzVector b){
+
+  double dphi = a.DeltaPhi(b);
+  return TMath::Sqrt( 2.*a.Pt()*b.Pt()*(1.- TMath::Cos(dphi) ) );
+
+}

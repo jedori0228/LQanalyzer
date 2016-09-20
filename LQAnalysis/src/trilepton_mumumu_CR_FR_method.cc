@@ -90,7 +90,8 @@ void trilepton_mumumu_CR_FR_method::InitialiseAnalysis() throw( LQError ) {
   }
 
   TFile* file_FR_SF = new TFile( (lqdir+"/data/rootfiles/13TeV_trimuon_FR_SF_SingleMuonTrigger_QCD_mu.root").c_str() );
-  hist_trimuon_FR_SF = (TH1F*)file_FR_SF->Get("SingleMuonTrigger_MCTruth_pt_F");
+  hist_trimuon_FR_SF = (TH2F*)file_FR_SF->Get("SingleMuonTrigger_MCTruth_events_F");
+  hist_trimuon_FR_SF_pt = (TH1F*)file_FR_SF->Get("SingleMuonTrigger_MCTruth_pt_F");
 
   return;
 
@@ -247,7 +248,7 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   FillHist("n_jets_control_PU", n_jets, weight*pileup_reweight, 0, 10, 10);
   int n_bjets=0;
   for(int j=0; j<n_jets; j++){
-    if(jetColl_loose.at(j).IsBTagged(snu::KJet::cMVAv2, snu::KJet::Medium)) n_bjets++;
+    if(jetColl_loose.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Tight)) n_bjets++;
   }
   FillHist("n_bjets_control_PU", n_bjets, weight*pileup_reweight, 0, 10, 10);
 
@@ -386,11 +387,11 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
     }
 
 
-    bool leadPt20 = muontriLooseColl.at(0).Pt() > 20.;
+    //bool leadPt20 = muontriLooseColl.at(0).Pt() > 20.; // This will be done for the Z-candidate muons
     bool AllSameCharge = ( muontriLooseColl.at(0).Charge() == muontriLooseColl.at(1).Charge() ) &&
                          ( muontriLooseColl.at(0).Charge() == muontriLooseColl.at(2).Charge() );
 
-    if( leadPt20 && !AllSameCharge ){
+    if( !AllSameCharge ){
       snu::KMuon OS, SS[2];
       if     ( muontriLooseColl.at(0).Charge() == muontriLooseColl.at(1).Charge() ){
         SS[0] = muontriLooseColl.at(0);
@@ -414,32 +415,79 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
       m_dimuon[1] = ( SS[1] + OS ).M();
 
       snu::KParticle Z_candidate;
-      snu::KMuon ExtraMuon;
+      snu::KMuon ZMuon, WMuon;
       if( fabs(m_dimuon[0]-m_Z) < fabs(m_dimuon[1]-m_Z) ){
         Z_candidate = SS[0] + OS;
-        ExtraMuon = SS[1];
+        ZMuon = SS[0];
+        WMuon = SS[1];
       }
       else{
         Z_candidate = SS[1] + OS;
-        ExtraMuon = SS[0];
+        ZMuon = SS[1];
+        WMuon = SS[0];
       }
 
-      bool isZresonance = fabs(Z_candidate.M()-m_Z) < 20.;
-      bool PtCutOnExtraMuon = ExtraMuon.Pt() > 20.;
-      bool METCut = MET > 20.;
+      bool ZMuonPtCut = (ZMuon.Pt() > 20.);
+      bool isZresonance = (fabs(Z_candidate.M()-m_Z) < 15.);
+      bool PtCutOnWMuon = (WMuon.Pt() > 20.);
+      bool METCut = (MET > 30.);
+      bool mlllCut = ((SS[0]+SS[1]+OS).M() > 100.);
+      bool mll4 = (m_dimuon[0] < 4.) || (m_dimuon[1] < 4.);
+      bool electronveto = (electronLooseColl.size() == 0);
+      bool bjetveto = (n_bjets == 0);
 
-      if( isZresonance && PtCutOnExtraMuon && METCut ){
+      FillUpDownHist("m_Z_candidate_before_cut_WZ_PU", Z_candidate.M(), weight*FR_reweight, weight_err, 0, 150, 150);
+      FillUpDownHist("m_lll_before_cut_WZ_PU", (SS[0]+SS[1]+OS).M(), weight*FR_reweight, weight_err, 0, 500, 500);
+      FillUpDownHist("PFMET_before_cut_WZ_PU", MET, weight*FR_reweight, weight_err, 0, 500, 500);
+      FillUpDownHist("n_electrons_before_cut_WZ_PU", electronLooseColl.size(), weight*FR_reweight, weight_err, 0, 10, 10);
+      FillUpDownHist("n_bjets_before_cut_WZ_PU", n_bjets, weight*FR_reweight, weight_err, 0, 10, 10);
+      FillUpDownHist("n_vertices_before_cut_WZ_PU", eventbase->GetEvent().nVertices(), weight*FR_reweight, weight_err, 0, 50, 50);
+
+      //==== N-1 plots
+      vector<bool> WZ_cuts;
+      WZ_cuts.push_back( fabs(Z_candidate.M()-m_Z) < 15. );
+      WZ_cuts.push_back( (SS[0]+SS[1]+OS).M() > 100. );
+      WZ_cuts.push_back( n_bjets == 0 );
+      WZ_cuts.push_back( MET > 30 );
+      if( ZMuonPtCut && PtCutOnWMuon && !mll4 && electronveto ){
+        FillHist("N1_preselection_WZ_PU", 0, weight*pileup_reweight, 0, 1, 1);
+        for(unsigned int i=0; i<WZ_cuts.size(); i++){
+          bool this_bool = true;
+          for(unsigned int j=0; j<WZ_cuts.size(); j++){
+            if(j==i) continue;
+            if(!WZ_cuts.at(j)) this_bool = false;
+          }
+          if(this_bool){
+            if(i==0) FillUpDownHist("N1_Z_mass_WZ_PU", fabs(Z_candidate.M()-m_Z), weight*FR_reweight, weight_err, 0, 60, 60);
+            if(i==1) FillUpDownHist("N1_mlll_WZ_PU",  (SS[0]+SS[1]+OS).M(), weight*FR_reweight, weight_err, 0, 500, 25);
+            if(i==2) FillUpDownHist("N1_n_bjets_WZ_PU", n_bjets, weight*FR_reweight, weight_err, 0, 4, 4);
+            if(i==3) FillUpDownHist("N1_PFMET_WZ_PU", MET, weight*FR_reweight, weight_err, 0, 200, 20);
+          }
+        }
+      }
+
+      if( ZMuonPtCut && isZresonance && PtCutOnWMuon && METCut && mlllCut && !mll4 && electronveto && bjetveto ){
         TString this_suffix = "WZ";
         snu::KParticle nu;
         nu.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET);
-        snu::KParticle W_candidate = nu+ExtraMuon;
+        snu::KParticle W_candidate = nu+WMuon;
 
         FillUpDownHist("n_events_"+this_suffix+"_PU", 0, weight*FR_reweight, weight_err, 0, 1, 1);
+        FillUpDownHist("n_vertices_"+this_suffix+"_PU", eventbase->GetEvent().nVertices(), weight*FR_reweight, weight_err, 0, 50, 50);
         FillUpDownHist("n_jets_"+this_suffix+"_PU", n_jets, weight*FR_reweight, weight_err, 0, 10, 10);
         FillUpDownHist("n_bjets_"+this_suffix+"_PU", n_bjets, weight*FR_reweight, weight_err, 0, 10, 10);
         FillUpDownHist("PFMET_"+this_suffix+"_PU", MET, weight*FR_reweight, weight_err, 0, 500, 500);
+        FillUpDownHist("osllmass_"+this_suffix+"_PU", m_dimuon[0], weight*FR_reweight, weight_err, 0., 500., 500);
+        FillUpDownHist("osllmass_"+this_suffix+"_PU", m_dimuon[1], weight*FR_reweight, weight_err, 0., 500., 500);
         FillUpDownHist("m_Z_candidate_"+this_suffix+"_PU", Z_candidate.M(), weight*FR_reweight, weight_err, 0, 150, 150);
-        FillUpDownHist("mt_W_candidate_"+this_suffix+"_PU", W_candidate.Mt(), weight*FR_reweight, weight_err, 0, 300, 300);
+        FillUpDownHist("mt_W_candidate_"+this_suffix+"_PU", MT(nu,WMuon), weight*FR_reweight, weight_err, 0, 300, 300);
+        FillUpDownHist("m_lll_"+this_suffix+"_PU", (SS[0]+SS[1]+OS).M(), weight*FR_reweight, weight_err, 0, 500, 500);
+        FillUpDownHist("WMuon_Pt_"+this_suffix+"_PU", WMuon.Pt(), weight*FR_reweight, weight_err, 0, 200, 200);
+        FillUpDownHist("Z_candidate_Pt_"+this_suffix+"_PU", Z_candidate.Pt(), weight*FR_reweight, weight_err, 0, 400, 400);
+        FillUpDownHist("W_candidate_Pt_"+this_suffix+"_PU", W_candidate.Pt(), weight*FR_reweight, weight_err, 0, 400, 400);
+        FillUpDownHist("n_electron_"+this_suffix+"_PU", electronColl.size(), weight*FR_reweight, weight_err, 0, 10, 10);
+        FillUpDownHist("dRZMuonWMuon_"+this_suffix+"_PU", ZMuon.DeltaR(WMuon), weight*FR_reweight, weight_err, 0, 6, 60);
+        FillUpDownHist("dRZMuonWMuon_"+this_suffix+"_PU", OS.DeltaR(WMuon), weight*FR_reweight, weight_err, 0, 6, 60);
 
         FillUpDownHist("leadingLepton_Pt_"+this_suffix+"_PU", lep[0].Pt() , weight*FR_reweight, weight_err, 0, 200, 200);
         FillUpDownHist("leadingLepton_Eta_"+this_suffix+"_PU", lep[0].Eta() , weight*FR_reweight, weight_err, -3, 3, 60);
@@ -468,7 +516,7 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
 }// End of execute event loop
   
 
-
+	
 void trilepton_mumumu_CR_FR_method::EndCycle()throw( LQError ){
   
   Message("In EndCycle" , INFO);
@@ -624,12 +672,22 @@ double trilepton_mumumu_CR_FR_method::get_FR(snu::KParticle muon, TString whichF
 
   double this_FR = hist_trimuon_FR[FR_index]->GetBinContent(this_pt_bin, this_eta_bin);
   //cout << "this_FR = " << this_FR << endl;
-  double FR_SF = hist_trimuon_FR_SF->GetBinContent(this_pt_bin);
+  double FR_SF = hist_trimuon_FR_SF->GetBinContent(this_pt_bin, this_eta_bin);
+  double FR_SF_pt = hist_trimuon_FR_SF_pt->GetBinContent(this_pt_bin+1); // +1 : SF starts from [0,10] bin..
   //cout << "this_SF = " << FR_SF << endl;
-  double thie_FR_error = hist_trimuon_FR[FR_index]->GetBinError(this_pt_bin, this_eta_bin);
+  double this_FR_error = hist_trimuon_FR[FR_index]->GetBinError(this_pt_bin, this_eta_bin);
 
-  if(geterror) return thie_FR_error;
-  else return this_FR;
-  //return this_FR*FR_SF;
+  if(geterror){
+    if(k_flags.at(1) == "SF") return this_FR_error*FR_SF;
+    else if(k_flags.at(1) == "SF_pt") return this_FR_error*FR_SF_pt;
+    else return this_FR_error;
+  }
+  else{
+    if(k_flags.at(1) == "SF") return this_FR*FR_SF;
+    else if(k_flags.at(1) == "SF_pt") return this_FR*FR_SF_pt;
+    else return this_FR;
+  }
 
 }
+
+

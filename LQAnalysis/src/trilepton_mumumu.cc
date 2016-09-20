@@ -72,7 +72,6 @@ void trilepton_mumumu::InitialiseAnalysis() throw( LQError ) {
 
 void trilepton_mumumu::ExecuteEvents()throw( LQError ){
 
-  
   /// Apply the gen weight 
   if(!isData) weight*=MCweight;
   
@@ -144,27 +143,19 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   std::vector<snu::KMuon> muonVetoColl = GetMuons(BaseSelection::MUON_HN_VETO);  // veto selection
   std::vector<snu::KMuon> muonLooseColl = GetMuons(BaseSelection::MUON_HN_FAKELOOSE);  // loose selection
   std::vector<snu::KMuon> muonTightColl = GetMuons(BaseSelection::MUON_HN_TIGHT,false); // tight selection : NonPrompt MC lep removed
-  std::vector<snu::KMuon> muontriTightColl_raw = GetMuons(BaseSelection::MUON_HN_TRI_TIGHT); 
-  std::vector<snu::KMuon> muontriLooseColl_raw = GetMuons(BaseSelection::MUON_HN_TRI_LOOSE);
-
   std::vector<snu::KMuon> muontriTightColl, muontriLooseColl;
-  for(unsigned int i=0; i<muontriTightColl_raw.size(); i++){
-    snu::KMuon thismuon = muontriTightColl_raw.at(i);
-    if(isData) muontriTightColl.push_back(thismuon);
-    else{
-      if( thismuon.GetParticleType() == snu::KMuon::PROMPT ) muontriTightColl.push_back(thismuon);
-    }
+  if(k_sample_name == "WG_lnuG_madgraph" || k_sample_name == "ZG_llG_MCatNLO"){
+    muontriTightColl = GetMuons(BaseSelection::MUON_HN_TRI_TIGHT);
+    muontriLooseColl = GetMuons(BaseSelection::MUON_HN_TRI_LOOSE);
   }
-  for(unsigned int i=0; i<muontriLooseColl_raw.size(); i++){
-    snu::KMuon thismuon = muontriLooseColl_raw.at(i);
-    if(isData) muontriLooseColl.push_back(thismuon);
-    else{
-      if( thismuon.GetParticleType() == snu::KMuon::PROMPT ) muontriLooseColl.push_back(thismuon);
-    }
+  else{
+    muontriTightColl = GetMuons(BaseSelection::MUON_HN_TRI_TIGHT, false);
+    muontriLooseColl = GetMuons(BaseSelection::MUON_HN_TRI_LOOSE, false);
   }
-   
+
   CorrectMuonMomentum(muonTightColl);
-  float muon_id_iso_sf= MuonScaleFactor(BaseSelection::MUON_POG_TIGHT, muonTightColl,0); ///MUON_POG_TIGHT == MUON_HN_TIGHT
+  float muon_id_iso_sf= MuonScaleFactor(BaseSelection::MUON_POG_TIGHT, muontriTightColl, 0); ///MUON_POG_TIGHT == MUON_HN_TIGHT
+  muon_id_iso_sf *= MuonISOScaleFactor(BaseSelection::MUON_POG_TIGHT, muontriTightColl, 0);
 
   /// List of preset jet collections : NoLeptonVeto/Loose/Medium/Tight/TightLepVeto/HNJets
   std::vector<snu::KJet> jetColl             = GetJets(BaseSelection::JET_NOLEPTONVETO); // All jets
@@ -189,6 +180,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   if (!k_isdata) {
     // check if catversion is empty. i.ie, v-7-4-X in which case use reweight class to get weight. In v-7-6-X+ pileupweight is stored in KEvent class, for silver/gold json
     pileup_reweight = eventbase->GetEvent().PileUpWeight(lumimask);
+    //pileup_reweight = eventbase->GetEvent().AltPileUpWeight(lumimask);
 
   }
 
@@ -219,15 +211,6 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     lep[i] = muontriLooseColl.at(i);
   }
 
-  // MC samples has m(ll)_saveflavour > 4 GeV cut at gen level
-  // MADGRAPH : https://github.com/cms-sw/genproductions/blob/master/bin/MadGraph5_aMCatNLO/cards/production/13TeV/WZTo3LNu01j_5f_NLO_FXFX/WZTo3LNu01j_5f_NLO_FXFX_run_card.dat#L130
-  // POWHEG   : https://github.com/cms-sw/genproductions/blob/master/bin/Powheg/production/WZTo3lNu_NNPDF30_13TeV/WZ_lllnu_NNPDF30_13TeV.input#L2
-  if( (lep[0]+lep[1]).M() <= 4. ||
-      (lep[0]+lep[2]).M() <= 4. ||
-      (lep[1]+lep[2]).M() <= 4.    ) return;
-
-  FillCutFlow("mllsf4", weight);
-
   int OppSign, SameSign[2]; // SameSign[0].Pt() > SameSign[1].Pt()
   if(lep[0].Charge() * lep[1].Charge() > 0){ // Q(0) = Q(1)
     if(lep[1].Charge() * lep[2].Charge() < 0){ // Q(1) != Q(2)
@@ -250,6 +233,14 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     }
   } // Find l2 and assign l1&l3 in ptorder 
   FillCutFlow("2SS1OS", weight);
+
+  // MC samples has m(OS)_saveflavour > 4 GeV cut at gen level
+  // MADGRAPH : https://github.com/cms-sw/genproductions/blob/master/bin/MadGraph5_aMCatNLO/cards/production/13TeV/WZTo3LNu01j_5f_NLO_FXFX/WZTo3LNu01j_5f_NLO_FXFX_run_card.dat#L130
+  // POWHEG   : https://github.com/cms-sw/genproductions/blob/master/bin/Powheg/production/WZTo3lNu_NNPDF30_13TeV/WZ_lllnu_NNPDF30_13TeV.input#L2
+  if( (lep[SameSign[0]]+lep[OppSign]).M() <= 4. ||
+      (lep[SameSign[1]]+lep[OppSign]).M() <= 4.     ) return;
+  FillCutFlow("mllsf4", weight);
+
   if(k_sample_name.Contains("HN")) gen_matching();
 
   ///////////////////////////////////////////
@@ -509,8 +500,8 @@ void trilepton_mumumu::FillCutFlow(TString cut, float weight){
     GetHist("cutflow")->GetXaxis()->SetBinLabel(3,"TriggerCut");
     GetHist("cutflow")->GetXaxis()->SetBinLabel(4,"VertexCut");
     GetHist("cutflow")->GetXaxis()->SetBinLabel(5,"3muon");
-    GetHist("cutflow")->GetXaxis()->SetBinLabel(6,"mllsf4");
-    GetHist("cutflow")->GetXaxis()->SetBinLabel(7,"2SS1OS"); 
+    GetHist("cutflow")->GetXaxis()->SetBinLabel(6,"2SS1OS"); 
+    GetHist("cutflow")->GetXaxis()->SetBinLabel(7,"mllsf4");
     
   }
 }
@@ -903,7 +894,7 @@ void trilepton_mumumu::gen_matching(){
     gen_l_3 = truthColl.at( gen_l_3_indices.back() );
     gen_nu = truthColl.at( gen_nu_indices.back() );
 
-    TLorentzVector reco_lep_tlv[3];
+    snu::KParticle reco_lep_tlv[3];
     for(int i=0; i<3; i++) reco_lep_tlv[i] = reco_lep[i];
     int l_3_cand = find_mlmet_closest_to_W(reco_lep_tlv, reco_MET);
 
@@ -1030,3 +1021,4 @@ void trilepton_mumumu::print_all_indices(TString particle, std::vector<int> vec)
   for(unsigned int i=0; i<vec.size(); i++) cout << " " << vec.at(i) << endl;
 
 }
+

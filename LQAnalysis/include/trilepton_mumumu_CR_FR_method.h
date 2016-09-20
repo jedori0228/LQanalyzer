@@ -2,7 +2,6 @@
 #define trilepton_mumumu_CR_FR_method_h
 
 #include "AnalyzerCore.h"
-#include "Trilepton.h"
 
 class trilepton_mumumu_CR_FR_method : public AnalyzerCore {
 
@@ -23,7 +22,8 @@ class trilepton_mumumu_CR_FR_method : public AnalyzerCore {
   void FillCutFlow(TString cut, float w);
 
   TH2F* hist_trimuon_FR[10];
-  TH1F* hist_trimuon_FR_SF;
+  TH2F* hist_trimuon_FR_SF;
+  TH1F* hist_trimuon_FR_SF_pt;
   int FR_n_pt_bin[10], FR_n_eta_bin[10];
   double get_FR(snu::KParticle muon, TString whichFR, int n_jets, bool geterror);
 

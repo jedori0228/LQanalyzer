@@ -2,7 +2,6 @@
 #define trilepton_mumumu_CR_h
 
 #include "AnalyzerCore.h"
-#include "Trilepton.h"
 
 class trilepton_mumumu_CR : public AnalyzerCore {
 
