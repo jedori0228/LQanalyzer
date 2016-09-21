@@ -196,8 +196,8 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   float pileup_reweight=(1.0);
   if (!k_isdata) {
     // check if catversion is empty. i.ie, v-7-4-X in which case use reweight class to get weight. In v-7-6-X+ pileupweight is stored in KEvent class, for silver/gold json
-    //pileup_reweight = eventbase->GetEvent().PileUpWeight(lumimask);
-    pileup_reweight = eventbase->GetEvent().AltPileUpWeight(lumimask);
+    pileup_reweight = eventbase->GetEvent().PileUpWeight(lumimask);
+    //pileup_reweight = eventbase->GetEvent().AltPileUpWeight(lumimask);
 
   }
    

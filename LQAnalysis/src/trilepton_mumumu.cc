@@ -99,7 +99,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   std::vector<TString> triggerslist;
   triggerslist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
 
-  //float trigger_ps_weight= ApplyPrescale("HLT_IsoMu20", TargetLumi,lumimask);
+  float trigger_ps_weight= ApplyPrescale("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v", TargetLumi,lumimask);
 
   if(!PassTrigger(triggerslist, prescale)) return;
   FillCutFlow("TriggerCut", weight);
@@ -189,9 +189,8 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
 
   if(!isData && !k_running_nonprompt){
     //weight*=muon_id_iso_sf;
-    weight*=pileup_reweight;
     //weight*=weight_trigger_sf;
-    //weight*=trigger_ps_weight;
+    weight*=trigger_ps_weight;
   }
 
   int n_triTight_muons = muontriTightColl.size();
