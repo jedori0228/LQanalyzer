@@ -144,7 +144,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   std::vector<snu::KMuon> muonLooseColl = GetMuons(BaseSelection::MUON_HN_FAKELOOSE);  // loose selection
   std::vector<snu::KMuon> muonTightColl = GetMuons(BaseSelection::MUON_HN_TIGHT,false); // tight selection : NonPrompt MC lep removed
   std::vector<snu::KMuon> muontriTightColl, muontriLooseColl;
-  if(k_sample_name == "WG_lnuG_madgraph" || k_sample_name == "ZG_llG_MCatNLO"){
+  if( k_sample_name.Contains("HN") ){
     muontriTightColl = GetMuons(BaseSelection::MUON_HN_TRI_TIGHT);
     muontriLooseColl = GetMuons(BaseSelection::MUON_HN_TRI_LOOSE);
   }
