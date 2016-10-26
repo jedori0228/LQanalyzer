@@ -151,7 +151,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   float pileup_reweight=(1.0);
   if (!k_isdata) {
     // check if catversion is empty. i.ie, v-7-4-X in which case use reweight class to get weight. In v-7-6-X+ pileupweight is stored in KEvent class, for silver/gold json
-    //pileup_reweight = eventbase->GetEvent().PileUpWeight();
+    pileup_reweight = eventbase->GetEvent().PileUpWeight();
     //pileup_reweight = eventbase->GetEvent().AltPileUpWeight();
 
   }
@@ -432,9 +432,6 @@ void trilepton_mumumu::BeginCycle() throw( LQError ){
   
   Message("In begin Cycle", INFO);
   
-  string analysisdir = getenv("FILEDIR");  
-  if(!k_isdata) reweightPU = new Reweight((analysisdir + "SNUCAT_Pileup.root").c_str());
-
   //
   //If you wish to output variables to output file use DeclareVariable
   // clear these variables in ::ClearOutputVectors function
@@ -451,7 +448,6 @@ void trilepton_mumumu::BeginCycle() throw( LQError ){
 trilepton_mumumu::~trilepton_mumumu() {
   
   Message("In trilepton_mumumu Destructor" , INFO);
-  if(!k_isdata)delete reweightPU;
   
 }
 
