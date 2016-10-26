@@ -12,40 +12,35 @@ declare -a tmplist=('WpWp_qcd_madgraph' 'ZG_llG_MCatNLO' 'ZZ_llnunu_powheg' 'ZZ_
 declare -a hn=('HN_EE_M40' 'HN_EE_M100' 'HN_EE_M500' 'HN_EE_M1500')
 
 declare -a trilep_bkg=(
-'TTG_MCatNLO' 'ttZToLLNuNu_MCatNLO' 'ttWJetsToLNu_MCatNLO' 'WZ_lllnu_MCatNLO' 'WZ_lllnu_powheg' 'WZ_pythia8' 'ZZ_llll_MCatNLO' 'ZZ_llll_powheg' 'ZZ_pythia8' 'WG_lnuG_madgraph' 'ZG_llG_MCatNLO' 'ttHnobb_Powheg' 'WZZ_MCatNLO'
-)
-declare -a trilep_CR_bkg=(
-'WW_llnn_powheg' 'WZ_lllnu_powheg' 'ZZ_llnunu_powheg' 'ZZ_llll_powheg'
-'WZ_lllnu_MCatNLO' 'WZ_llqq_MCatNLO' 'ZZ_llqq_MCatNLO' 'ZZ_llll_MCatNLO'
-'WW_doublescattering'
-'WG_lnuG_madgraph' 'ZG_llG_MCatNLO'
-'WZZ_MCatNLO'
-'ttWJetsToLNu_MCatNLO' 'ttZToLLNuNu_MCatNLO' 'TTG_MCatNLO'
+'WZ_pythia8' 'ZZ_pythia8'
+'ttHnobb_Powheg'
+'WZZ_MCatNLO' 'WWZ_MCatNLO' 'ZZZ_MCatNLO'
+'ttWJets' 'ttZJets'
 'ttHnobb_Powheg'
 )
-declare -a trilep_bkg_miss=(
-'ZG_llG_MCatNLO'
-)
-declare -a trilep_bkg_leptonskim=(
-'WWZ_MCatNLO' 'ZZZ_MCatNLO'
+declare -a trilep_CR_bkg=(
+'WW_pythia8' 'WZ_pythia8' 'ZZ_pythia8'
+'WZZ_MCatNLO' 'WWZ_MCatNLO' 'ZZZ_MCatNLO'
+'ttWJets' 'ttZJets'
+'ttHnobb_Powheg'
 )
 
+declare -a trilep_bkg_miss=(
+'ttWJets' 'ttZJets'
+)
 
 declare -a trilep_fake_bkg=(
 'DY10to50_MCatNLO' 'DY50plus_MCatNLO'
 'singletop_s_MCatNLO' 'singletop_tbar_Powheg' 'singletop_t_Powheg' 'singletop_tbarW_Powheg' 'singletop_tW_Powheg'
-'ttWJetsToLNu_MCatNLO' 'ttWJetsToQQ_MCatNLO' 'ttZToQQ_MCatNLO' 'TTG_MCatNLO' 'ttZToLLNuNu_MCatNLO'
+'ttWJets' 'ttZJets'
 'WJets_MCatNLO'
-'WW_doublescattering'
-'WW_llnn_powheg' 'WZ_lllnu_powheg' 'ZZ_llnunu_powheg' 'ZZ_llll_powheg'
+'WZ_pythia8' 'ZZ_pythia8' 'WW_pythia8'
 'WZZ_MCatNLO' 'WWZ_MCatNLO' 'ZZZ_MCatNLO'
 'TT_MCatNLO'
-'WG_lnuG_madgraph'
 'ttHnobb_Powheg'
 )
 
 declare -a trilep_signal=('HN40_mumumu' 'HN60_mumumu' 'HN150_mumumu' 'HN700_mumumu')
-#declare -a trilep_signal=('HN40_mumumu')
 
 declare -a QCD_FR=(
 'QCD_mu15to20_pythia8' 'QCD_mu20to30_pythia8' 'QCD_mu30to50_pythia8' 'QCD_mu50to80_pythia8' 'QCD_mu80to120_pythia8' 'QCD_mu120to170_pythia8' 'QCD_mu170to300_pythia8' 'QCD_mu300to470_pythia8' 'QCD_mu470to600_pythia8' 'QCD_mu600to800_pythia8' 'QCD_mu800to1000_pythia8' 'QCD_mu1000toINF_pythia8' 

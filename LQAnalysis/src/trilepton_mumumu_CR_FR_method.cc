@@ -26,8 +26,6 @@ ClassImp (trilepton_mumumu_CR_FR_method);
   */
 trilepton_mumumu_CR_FR_method::trilepton_mumumu_CR_FR_method() :  AnalyzerCore(), out_muons(0) {
   
-  rmcor = new rochcor2015();
-  
   // To have the correct name in the log:                                                                                                                            
   SetLogName("trilepton_mumumu_CR_FR_method");
   
@@ -106,11 +104,6 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   /// Apply the gen weight 
   if(!isData) weight*=MCweight;
   
-
-  /// Acts on data to remove bad reconstructed event 
-  if(isData&& (! eventbase->GetEvent().LumiMask(lumimask))) return;
-  
-
   m_logger << DEBUG << "RunNumber/Event Number = "  << eventbase->GetEvent().RunNumber() << " : " << eventbase->GetEvent().EventNumber() << LQLogger::endmsg;
   m_logger << DEBUG << "isData = " << isData << LQLogger::endmsg;
    
@@ -130,7 +123,6 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   std::vector<TString> triggerslist;
   triggerslist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
 
-  //float trigger_ps_weight= ApplyPrescale("HLT_IsoMu20", TargetLumi,lumimask);
 
   if(!PassTrigger(triggerslist, prescale)) return;
   FillCutFlow("TriggerCut", weight);
@@ -218,7 +210,7 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   float pileup_reweight=(1.0);
   if (!k_isdata) {
     // check if catversion is empty. i.ie, v-7-4-X in which case use reweight class to get weight. In v-7-6-X+ pileupweight is stored in KEvent class, for silver/gold json
-    pileup_reweight = eventbase->GetEvent().PileUpWeight(lumimask);
+    //pileup_reweight = eventbase->GetEvent().PileUpWeight();
 
   }
 
@@ -227,9 +219,7 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
 
   if(!isData && !k_running_nonprompt){
     //weight*=muon_id_iso_sf;
-    weight*=pileup_reweight;
     //weight*=weight_trigger_sf;
-    //weight*=trigger_ps_weight;
   }
 
   int n_triTight_muons = muontriTightColl.size();
@@ -448,7 +438,7 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
       WZ_cuts.push_back( fabs(Z_candidate.M()-m_Z) < 15. );
       WZ_cuts.push_back( (SS[0]+SS[1]+OS).M() > 100. );
       WZ_cuts.push_back( n_bjets == 0 );
-      WZ_cuts.push_back( MET > 30 );
+      WZ_cuts.push_back( MET > 30. );
       if( ZMuonPtCut && PtCutOnWMuon && !mll4 && electronveto ){
         FillHist("N1_preselection_WZ_PU", 0, weight*pileup_reweight, 0, 1, 1);
         for(unsigned int i=0; i<WZ_cuts.size(); i++){

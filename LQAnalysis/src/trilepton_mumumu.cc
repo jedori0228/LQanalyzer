@@ -29,8 +29,6 @@ n_gen_pass(0), sol_sel_chi2_best(0), sol_sel_chi2_plus(0), sol_sel_chi2_minus(0)
 out_muons(0)
 {
   
-  rmcor = new rochcor2015();
-  
   // To have the correct name in the log:                                                                                                                            
   SetLogName("trilepton_mumumu");
   
@@ -74,11 +72,6 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
 
   /// Apply the gen weight 
   if(!isData) weight*=MCweight;
-  
-
-  /// Acts on data to remove bad reconstructed event 
-  if(isData&& (! eventbase->GetEvent().LumiMask(lumimask))) return;
-  
 
   m_logger << DEBUG << "RunNumber/Event Number = "  << eventbase->GetEvent().RunNumber() << " : " << eventbase->GetEvent().EventNumber() << LQLogger::endmsg;
   m_logger << DEBUG << "isData = " << isData << LQLogger::endmsg;
@@ -99,32 +92,11 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   std::vector<TString> triggerslist;
   triggerslist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
 
-  //float trigger_ps_weight= ApplyPrescale("HLT_IsoMu20", TargetLumi,lumimask);
+  float trigger_ps_weight= WeightByTrigger("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v", TargetLumi);
 
   if(!PassTrigger(triggerslist, prescale)) return;
   FillCutFlow("TriggerCut", weight);
   // Trigger matching is done using KMuon::TriggerMatched(TString) which returns a bool
-
-  /* // #### CAT::: trigger matching information is stored for muons and electrons for:
-  ///HLT_IsoMu24_eta2p1_v
-  ///HLT_Mu17_Mu8_DZ_v
-  ///HLT_Mu17_TkMu8_DZ_v
-  ///HLT_IsoMu20
-  ///HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v
-  ///HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v
-  ///HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v
-  ///HLT_Ele12_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v
-  ///HLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v
-  ///HLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL_v
-  ///HLT_Ele16_Ele12_Ele8_CaloIdL_TrackIdL_v
-  ///HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v
-  ///HLT_Ele12_CaloIdL_TrackIdL_IsoVL_v
-  ///HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v
-  ///HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v
-  ///HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_
-  ///HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v
-  ///HLT_Ele27_eta2p1_WPLoose_Gsf_TriCentralPFJet30_v
-  */
 
   m_logger << DEBUG << "passedTrigger "<< LQLogger::endmsg;
 
@@ -154,8 +126,8 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   }
 
   CorrectMuonMomentum(muonTightColl);
-  float muon_id_iso_sf= MuonScaleFactor(BaseSelection::MUON_POG_TIGHT, muontriTightColl, 0); ///MUON_POG_TIGHT == MUON_HN_TIGHT
-  muon_id_iso_sf *= MuonISOScaleFactor(BaseSelection::MUON_POG_TIGHT, muontriTightColl, 0);
+  //float muon_id_iso_sf= MuonScaleFactor(BaseSelection::MUON_POG_TIGHT, muontriTightColl, 0); ///MUON_POG_TIGHT == MUON_HN_TIGHT
+  //muon_id_iso_sf *= MuonISOScaleFactor(BaseSelection::MUON_POG_TIGHT, muontriTightColl, 0);
 
   /// List of preset jet collections : NoLeptonVeto/Loose/Medium/Tight/TightLepVeto/HNJets
   std::vector<snu::KJet> jetColl             = GetJets(BaseSelection::JET_NOLEPTONVETO); // All jets
@@ -179,8 +151,8 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   float pileup_reweight=(1.0);
   if (!k_isdata) {
     // check if catversion is empty. i.ie, v-7-4-X in which case use reweight class to get weight. In v-7-6-X+ pileupweight is stored in KEvent class, for silver/gold json
-    pileup_reweight = eventbase->GetEvent().PileUpWeight(lumimask);
-    //pileup_reweight = eventbase->GetEvent().AltPileUpWeight(lumimask);
+    //pileup_reweight = eventbase->GetEvent().PileUpWeight();
+    //pileup_reweight = eventbase->GetEvent().AltPileUpWeight();
 
   }
 
@@ -189,9 +161,8 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
 
   if(!isData && !k_running_nonprompt){
     //weight*=muon_id_iso_sf;
-    weight*=pileup_reweight;
     //weight*=weight_trigger_sf;
-    //weight*=trigger_ps_weight;
+    weight*=trigger_ps_weight;
   }
 
   int n_triTight_muons = muontriTightColl.size();
