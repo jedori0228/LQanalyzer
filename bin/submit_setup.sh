@@ -375,7 +375,7 @@ function print_tag_diff_twotags
 	      NEWTAGS+=(${line})
 	  fi
       fi
-    done < ${CATTAGDIR}/LatestTag.txt
+    done < ${CATTAGDIR}/LatestTag801.txt
 
     for ntag in  ${NEWTAGS[@]};
       do
@@ -416,7 +416,7 @@ function print_tag_diff_vs_currenttag
 	  sline=$(echo $line | head -n1 | awk '{print $1}')
 	  latest_tag=$sline
       fi
-    done < $CATTAGDIR/LatestTag.txt
+    done < $CATTAGDIR/LatestTag801.txt
     
     if [[ $latest_tag == $CATTAG ]];then
 	
@@ -440,7 +440,7 @@ function print_tag_diff_vs_currenttag
 	  fi
 	  NEWTAGS+=(${line})
       fi
-	done < $CATTAGDIR/LatestTag.txt
+	done < $CATTAGDIR/LatestTag801.txt
 	
 	for ntag in  ${NEWTAGS[@]};
 	  do
@@ -1334,6 +1334,10 @@ if [[ $job_data_lumi == "D" ]];
     declare -a data_periods=("D")
 fi
 
+if [[ $job_data_lumi == "E" ]];
+    then
+    declare -a data_periods=("E")
+fi
 
 if [[ $submit_file_tag  != "" ]];
     then

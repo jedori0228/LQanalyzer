@@ -1364,7 +1364,7 @@ if [[ $runDATA  == "true" ]];
       eval input_samples=(\${$ARG[@]})
 
       
-
+      
       source submit.sh
       if [[ ${job_run_fake} == "True" ]];
 	  then
@@ -1398,11 +1398,13 @@ if [[ $runMC  == "true" ]];
     runnp=${job_run_fake}
     runcf=${job_run_flip}
 
+
     if [[ $submit_file_tag  != ""  ]];
         then
 	
         declare -a input_samples=("${submit_file_tag}")
-        echo $submit_file_tag running
+	echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+        echo Running $submit_file_tag.........
 	source submit.sh
     fi
     
