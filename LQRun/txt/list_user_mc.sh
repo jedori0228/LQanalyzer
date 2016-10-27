@@ -40,7 +40,12 @@ declare -a trilep_fake_bkg=(
 'ttHnobb_Powheg'
 )
 
-declare -a trilep_signal=('HN40_mumumu' 'HN60_mumumu' 'HN150_mumumu' 'HN700_mumumu')
+declare -a trilep_signal=(
+'HN150_mumumu_VmuN_0p1'
+'HN40_mumumu_VmuN_0p1'
+'HN60_mumumu_VmuN_0p1'
+'HN700_mumumu_VmuN_0p1'
+)
 
 declare -a QCD_FR=(
 'QCD_mu15to20_pythia8' 'QCD_mu20to30_pythia8' 'QCD_mu30to50_pythia8' 'QCD_mu50to80_pythia8' 'QCD_mu80to120_pythia8' 'QCD_mu120to170_pythia8' 'QCD_mu170to300_pythia8' 'QCD_mu300to470_pythia8' 'QCD_mu470to600_pythia8' 'QCD_mu600to800_pythia8' 'QCD_mu800to1000_pythia8' 'QCD_mu1000toINF_pythia8' 
