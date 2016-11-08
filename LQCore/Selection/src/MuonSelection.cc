@@ -270,8 +270,6 @@ bool MuonSelection::HNtriNodXYCutTightMuonSelection(KMuon muon) {
   LeptonRelIso = muon.RelIso04();
 
   /// TIGHT MUON SELECTION
-  if(( muon.Pt() < 10. )) pass_selection = false;
-  if(!(fabs(muon.Eta()) < 2.4)) pass_selection =false;
   if(!( LeptonRelIso < 0.1)) pass_selection = false;
 
   /// TIGHT MUON from muon POG
@@ -290,8 +288,6 @@ bool MuonSelection::HNtriNodXYCutLooseMuonSelection(KMuon muon) {
   LeptonRelIso = muon.RelIso04();
 
   /// TIGHT MUON SELECTION
-  if(( muon.Pt() < 10. )) pass_selection = false;
-  if(!(fabs(muon.Eta()) < 2.4)) pass_selection =false;
   if(!( LeptonRelIso < 0.6)) pass_selection = false;
 
   /// TIGHT MUON from muon POG

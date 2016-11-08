@@ -465,17 +465,17 @@ std::vector<snu::KMuon> AnalyzerCore::GetMuons(BaseSelection::ID muid, bool keep
   
   else if(muid == BaseSelection::MUON_HN_FAKELOOSE){   eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_FAKELOOSE, 15., 2.4);}
 
-  else if(muid == BaseSelection::MUON_HN_TRI_NODXYCUT_TIGHT){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_NODXYCUT_TIGHT, 10., 2.5);}
+  else if(muid == BaseSelection::MUON_HN_TRI_NODXYCUT_TIGHT){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_NODXYCUT_TIGHT, 10., 2.4);}
 
-  else if(muid == BaseSelection::MUON_HN_TRI_NODXYCUT_LOOSE){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_NODXYCUT_LOOSE, 10., 2.5);}
+  else if(muid == BaseSelection::MUON_HN_TRI_NODXYCUT_LOOSE){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_NODXYCUT_LOOSE, 10., 2.4);}
 
-  else if(muid == BaseSelection::MUON_HN_TRI_TIGHT){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_TIGHT, 10., 2.5);}
+  else if(muid == BaseSelection::MUON_HN_TRI_TIGHT){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_TIGHT, 10., 2.4);}
 
-  else if(muid == BaseSelection::MUON_HN_TRI_LOOSE){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_LOOSE, 10., 2.5);}
+  else if(muid == BaseSelection::MUON_HN_TRI_LOOSE){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_LOOSE, 10., 2.4);}
 
-  else if(muid == BaseSelection::MUON_HN_TRI_HIGHDXY_TIGHT){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_HIGHDXY_TIGHT, 10., 2.5);}
+  else if(muid == BaseSelection::MUON_HN_TRI_HIGHDXY_TIGHT){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_HIGHDXY_TIGHT, 10., 2.4);}
 
-  else if(muid == BaseSelection::MUON_HN_TRI_HIGHDXY_LOOSE){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_HIGHDXY_LOOSE, 10., 2.5);}
+  else if(muid == BaseSelection::MUON_HN_TRI_HIGHDXY_LOOSE){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_HIGHDXY_LOOSE, 10., 2.4);}
 
   // Veto cut
   else if(muid == BaseSelection::MUON_HN_VETO){   eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_VETO, 10., 2.4);}
@@ -493,6 +493,55 @@ std::vector<snu::KMuon> AnalyzerCore::GetMuons(BaseSelection::ID muid, bool keep
   
   return  GetTruePrompt(muonColl, keepfakes);
   
+}
+
+std::vector<snu::KMuon> AnalyzerCore::GetMuons(BaseSelection::ID muid, bool keepfakes, double minPt, double maxEta){
+
+  std::vector<snu::KMuon> muonColl;
+
+  if(muid == BaseSelection::MUON_POG_TIGHT  ||
+     muid == BaseSelection::MUON_POG_MEDIUM||
+     muid == BaseSelection::MUON_POG_LOOSE)
+    {eventbase->GetMuonSel()->SelectMuons(muonColl, muid, minPt, maxEta);}
+
+
+  else if(muid == BaseSelection::MUON_HN_TIGHT){
+
+    if(k_running_nonprompt) eventbase->GetMuonSel()->SelectMuons(muonColl, BaseSelection::MUON_HN_FAKELOOSE, minPt, maxEta);
+    else eventbase->GetMuonSel()->SelectMuons(muonColl, BaseSelection::MUON_HN_TIGHT, minPt, maxEta);
+  }
+
+  else if(muid == BaseSelection::MUON_HN_FAKELOOSE){   eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_FAKELOOSE, minPt, maxEta);}
+
+  else if(muid == BaseSelection::MUON_HN_TRI_NODXYCUT_TIGHT){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_NODXYCUT_TIGHT, minPt, maxEta);}
+
+  else if(muid == BaseSelection::MUON_HN_TRI_NODXYCUT_LOOSE){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_NODXYCUT_LOOSE, minPt, maxEta);}
+
+  else if(muid == BaseSelection::MUON_HN_TRI_TIGHT){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_TIGHT, minPt, maxEta);}
+
+  else if(muid == BaseSelection::MUON_HN_TRI_LOOSE){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_LOOSE, minPt, maxEta);}
+
+  else if(muid == BaseSelection::MUON_HN_TRI_HIGHDXY_TIGHT){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_HIGHDXY_TIGHT, minPt, maxEta);}
+
+  else if(muid == BaseSelection::MUON_HN_TRI_HIGHDXY_LOOSE){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_HIGHDXY_LOOSE, minPt, maxEta);}
+
+  // Veto cut
+  else if(muid == BaseSelection::MUON_HN_VETO){   eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_VETO, 10., 2.4);}
+
+  else if(muid == BaseSelection::MUON_NOCUT){
+    eventbase->GetMuonSel()->SetPt(0.);
+    eventbase->GetMuonSel()->SetEta(5.);
+    eventbase->GetMuonSel()->Selection(muonColl);
+  }
+
+  else {
+    cout << "GetMuons::  does not exist: filling vector with all muons with no cuts applied" << endl;
+    exit(EXIT_FAILURE);
+  }
+
+
+  return  GetTruePrompt(muonColl, keepfakes);
+
 }
 
 
@@ -950,7 +999,10 @@ AnalyzerCore::~AnalyzerCore(){
   }
   maphist2D.clear();
 
-
+  for(map<TString, TNtupleD*>::iterator it = mapntp.begin(); it!= mapntp.end(); it++){
+    delete it->second;
+  }
+  mapntp.clear();
 
   for(map<TString, MuonPlots*>::iterator it = mapCLhistMu.begin(); it != mapCLhistMu.end(); it++){
     delete it->second;
@@ -1549,7 +1601,7 @@ float AnalyzerCore::GetEff(snu::KMuon mu, TString trigname){
      
 
 bool AnalyzerCore::PassTrigger(vector<TString> list, int& prescaler, bool fake_2016 ){
-  
+ 
   if(fake_2016)   return TriggerSelector(list, eventbase->GetTrigger().GetHLTInsideDatasetTriggerNames(), eventbase->GetTrigger().GetHLTInsideDatasetTriggerDecisions(), eventbase->GetTrigger().GetHLTInsideDatasetTriggerPrescales(), prescaler);
 
   
@@ -1610,6 +1662,7 @@ void AnalyzerCore::MakeHistograms(){
   //// Additional plots to make                                                                                
   maphist.clear();
   maphist2D.clear();
+  mapntp.clear();
 
     
 }
@@ -1631,6 +1684,11 @@ void AnalyzerCore::MakeHistograms2D(TString hname, int nbinsx, float xmin, float
 void AnalyzerCore::MakeHistograms2D(TString hname, int nbinsx,  float xbins[], int nbinsy,  float ybins[]) {
 
   maphist2D[hname] =  new TH2D(hname.Data(),hname.Data(),nbinsx , xbins, nbinsy,ybins);
+}
+
+void AnalyzerCore::MakeNtp(TString hname, TString myvar){
+
+  mapntp[hname] =  new TNtupleD(hname.Data(),hname.Data(),myvar.Data());
 }
 
 bool AnalyzerCore::PassBasicEventCuts(){
@@ -1804,6 +1862,14 @@ void AnalyzerCore::FillHist(TString histname, float value, float w){
   return;
 }
 
+void AnalyzerCore::FillNtp(TString hname, Double_t myinput[]){
+
+  if (GetNtp(hname)) GetNtp(hname)->Fill(myinput);
+  else m_logger << INFO << hname << " was NOT found. Check you ntp. " << LQLogger::endmsg;
+
+  return;
+}
+
 void AnalyzerCore::FillCLHist(histtype type, TString hist, vector<snu::KMuon> muons, double w){
 
   if(type==muhist){
@@ -1889,6 +1955,7 @@ void AnalyzerCore::WriteHistograms() throw (LQError){
   // This function is called after the cycle is ran. It wrues all histograms to the output file. This function is not used by user. But by the contrioller code.
   WriteHists();
   WriteCLHists();
+  WriteNtp();
 }
 
   
@@ -1988,6 +2055,18 @@ void AnalyzerCore::WriteHists(){
   return;
 }
 
+void AnalyzerCore::WriteNtp(){
+
+  /// Open Output rootfile
+  m_outputFile->cd();
+
+  for(map<TString, TNtupleD*>::iterator mapit = mapntp.begin(); mapit != mapntp.end(); mapit++){
+    mapit->second->Write();
+  }
+
+  return;
+}
+
 TH1* AnalyzerCore::GetHist(TString hname){
 
   TH1* h = NULL;
@@ -2008,6 +2087,16 @@ TH2* AnalyzerCore::GetHist2D(TString hname){
   else m_logger << DEBUG  << hname << " was not found in map" << LQLogger::endmsg;
 
   return h;
+}
+
+TNtupleD* AnalyzerCore::GetNtp(TString hname){
+
+  TNtupleD* n = NULL;
+  std::map<TString, TNtupleD*>::iterator mapit = mapntp.find(hname);
+  if (mapit != mapntp.end()) return mapit->second;
+  else m_logger << INFO << hname << " was not found in map" << LQLogger::endmsg;
+
+  return n;
 }
 
 
