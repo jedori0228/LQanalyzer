@@ -13,20 +13,26 @@ declare -a hn=('HN_EE_M40' 'HN_EE_M100' 'HN_EE_M500' 'HN_EE_M1500')
 
 declare -a trilep_bkg=(
 'WZ_pythia8' 'ZZ_pythia8'
-'ttHnobb_Powheg'
 'WZZ_MCatNLO' 'WWZ_MCatNLO' 'ZZZ_MCatNLO'
 'ttWJets' 'ttZJets'
 'ttHnobb_Powheg'
 )
+
+declare -a trilep_leptonskim=(
+'ZZ_llll_powheg' 'WZ_lllnu_powheg' 'WG_lnuG_madgraph' 'WGstarToLNuMuMu' 'ZG_llG_MCatNLO'
+)
+
 declare -a trilep_CR_bkg=(
-'WW_pythia8' 'WZ_pythia8' 'ZZ_pythia8'
+'WZ_pythia8' 'ZZ_pythia8' 'WW_pythia8'
+'ZZ_llll_powheg' 'WZ_lllnu_powheg'
+'WG_lnuG_madgraph' 'WGstarToLNuMuMu' 'ZG_llG_MCatNLO'
 'WZZ_MCatNLO' 'WWZ_MCatNLO' 'ZZZ_MCatNLO'
 'ttWJets' 'ttZJets'
 'ttHnobb_Powheg'
 )
 
 declare -a trilep_bkg_miss=(
-'ttWJets' 'ttZJets'
+'DY10to50_MCatNLO' 'DY50plus_MCatNLO' 'ZZ_llll_powheg' 'WZ_lllnu_powheg' 'WG_lnuG_madgraph' 'WGstarToLNuMuMu' 'ZG_llG_MCatNLO'
 )
 
 declare -a trilep_fake_bkg=(
@@ -37,10 +43,12 @@ declare -a trilep_fake_bkg=(
 'WZ_pythia8' 'ZZ_pythia8' 'WW_pythia8'
 'WZZ_MCatNLO' 'WWZ_MCatNLO' 'ZZZ_MCatNLO'
 'TT_MCatNLO'
+'WG_lnuG_madgraph'
 'ttHnobb_Powheg'
 )
 
-declare -a trilep_signal=('HN40_mumumu' 'HN60_mumumu' 'HN150_mumumu' 'HN700_mumumu')
+#declare -a trilep_signal=('HN40_mumumu' 'HN60_mumumu' 'HN150_mumumu' 'HN700_mumumu')
+declare -a trilep_signal=('HN40_mumumu_VmuN_0p1' 'HN60_mumumu_VmuN_0p1' 'HN150_mumumu_VmuN_0p1' 'HN700_mumumu_VmuN_0p1')
 
 declare -a QCD_FR=(
 'QCD_mu15to20_pythia8' 'QCD_mu20to30_pythia8' 'QCD_mu30to50_pythia8' 'QCD_mu50to80_pythia8' 'QCD_mu80to120_pythia8' 'QCD_mu120to170_pythia8' 'QCD_mu170to300_pythia8' 'QCD_mu300to470_pythia8' 'QCD_mu470to600_pythia8' 'QCD_mu600to800_pythia8' 'QCD_mu800to1000_pythia8' 'QCD_mu1000toINF_pythia8' 
