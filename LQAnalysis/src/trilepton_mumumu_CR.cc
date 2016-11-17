@@ -135,7 +135,7 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   std::vector<snu::KMuon> muonLooseColl = GetMuons(BaseSelection::MUON_HN_FAKELOOSE);  // loose selection
   std::vector<snu::KMuon> muonTightColl = GetMuons(BaseSelection::MUON_HN_TIGHT,false); // tight selection : NonPrompt MC lep removed
   std::vector<snu::KMuon> muontriTightColl, muontriLooseColl;
-  if(k_sample_name == "WG_lnuG_madgraph" || k_sample_name == "ZG_llG_MCatNLO"){
+  if( k_sample_name.Contains("HN") ){
     muontriTightColl = GetMuons(BaseSelection::MUON_HN_TRI_TIGHT); 
     muontriLooseColl = GetMuons(BaseSelection::MUON_HN_TRI_LOOSE);
   }
@@ -297,7 +297,17 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
         WMuon = SS[0];
       }
 
-      bool ZMuonPtCut = (ZMuon.Pt() > 20.);
+      snu::KMuon ZMuon_leading, ZMuon_subleading;
+      if( ZMuon.Pt() > OS.Pt() ){
+        ZMuon_leading = ZMuon;
+        ZMuon_subleading = OS;
+      }
+      else{
+        ZMuon_leading = OS;
+        ZMuon_subleading = ZMuon;
+      }
+
+      bool ZMuonPtCut = (ZMuon.Pt() > 20.) || (OS.Pt() > 20.);
       bool isZresonance = (fabs(Z_candidate.M()-m_Z) < 15.);
       bool PtCutOnWMuon = (WMuon.Pt() > 20.);
       bool METCut = (MET > 30.);
@@ -352,12 +362,12 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
         FillHist("m_Z_candidate_"+this_suffix+"_PU", Z_candidate.M(), weight*pileup_reweight, 0, 150, 150);
         FillHist("mt_W_candidate_"+this_suffix+"_PU", MT(nu, WMuon), weight*pileup_reweight, 0, 300, 300);
         FillHist("m_lll_"+this_suffix+"_PU", (SS[0]+SS[1]+OS).M(), weight*pileup_reweight, 0, 500, 500);
-        FillHist("WMuon_Pt_"+this_suffix+"_PU", WMuon.Pt(), weight*pileup_reweight, 0, 200, 200);
         FillHist("Z_candidate_Pt_"+this_suffix+"_PU", Z_candidate.Pt(), weight*pileup_reweight, 0, 400, 400);
         FillHist("W_candidate_Pt_"+this_suffix+"_PU", W_candidate.Pt(), weight*pileup_reweight, 0, 400, 400);
         FillHist("n_electron_"+this_suffix+"_PU", electronColl.size(), weight*pileup_reweight, 0, 10, 10);
         FillHist("dRZMuonWMuon_"+this_suffix+"_PU", ZMuon.DeltaR(WMuon), weight*pileup_reweight, 0, 6, 60);
         FillHist("dRZMuonWMuon_"+this_suffix+"_PU", OS.DeltaR(WMuon), weight*pileup_reweight, 0, 6, 60);
+        FillHist("dRMETWMuon_"+this_suffix+"_PU", nu.DeltaR(WMuon), weight*pileup_reweight, 0, 6, 60);
 
         FillHist("leadingLepton_Pt_"+this_suffix+"_PU", lep[0].Pt() , weight*pileup_reweight, 0, 200, 200);
         FillHist("leadingLepton_Eta_"+this_suffix+"_PU", lep[0].Eta() , weight*pileup_reweight, -3, 3, 60);
@@ -372,7 +382,78 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
         FillHist("thirdLepton_RelIso_"+this_suffix+"_PU", lep[2].RelIso04() , weight*pileup_reweight, 0, 1.0, 100);
         FillHist("thirdLepton_Chi2_"+this_suffix+"_PU", lep[2].GlobalChi2() , weight*pileup_reweight, 0, 10, 100);
 
-      } // Z Resonance
+        FillHist("ZMuon_leading_Pt_"+this_suffix+"_PU", ZMuon_leading.Pt() , weight*pileup_reweight, 0, 200, 200);
+        FillHist("ZMuon_leading_Eta_"+this_suffix+"_PU", ZMuon_leading.Eta() , weight*pileup_reweight, -3, 3, 60);
+        FillHist("ZMuon_leading_RelIso_"+this_suffix+"_PU", ZMuon_leading.RelIso04() , weight*pileup_reweight, 0, 1.0, 100);
+        FillHist("ZMuon_leading_Chi2_"+this_suffix+"_PU", ZMuon_leading.GlobalChi2() , weight*pileup_reweight, 0, 10, 100);
+        FillHist("ZMuon_leading_dXY_"+this_suffix+"_PU", fabs(ZMuon_leading.dXY()) , weight*pileup_reweight, 0, 0.01, 100);
+        FillHist("ZMuon_subleading_Pt_"+this_suffix+"_PU", ZMuon_subleading.Pt() , weight*pileup_reweight, 0, 200, 200);
+        FillHist("ZMuon_subleading_Eta_"+this_suffix+"_PU", ZMuon_subleading.Eta() , weight*pileup_reweight, -3, 3, 60);
+        FillHist("ZMuon_subleading_RelIso_"+this_suffix+"_PU", ZMuon_subleading.RelIso04() , weight*pileup_reweight, 0, 1.0, 100);
+        FillHist("ZMuon_subleading_Chi2_"+this_suffix+"_PU", ZMuon_subleading.GlobalChi2() , weight*pileup_reweight, 0, 10, 100);
+        FillHist("ZMuon_subleading_dXY_"+this_suffix+"_PU", fabs(ZMuon_subleading.dXY()) , weight*pileup_reweight, 0, 0.01, 100);
+        FillHist("WMuon_Pt_"+this_suffix+"_PU", WMuon.Pt() , weight*pileup_reweight, 0, 200, 200);
+        FillHist("WMuon_Eta_"+this_suffix+"_PU", WMuon.Eta() , weight*pileup_reweight, -3, 3, 60);
+        FillHist("WMuon_RelIso_"+this_suffix+"_PU", WMuon.RelIso04() , weight*pileup_reweight, 0, 1.0, 100);
+        FillHist("WMuon_Chi2_"+this_suffix+"_PU", WMuon.GlobalChi2() , weight*pileup_reweight, 0, 10, 100);
+        FillHist("WMuon_dXY_"+this_suffix+"_PU", fabs(WMuon.dXY()) , weight*pileup_reweight, 0, 0.01, 100);
+
+      }
+
+      //==== Z+Jets selection
+      if( ZMuonPtCut && isZresonance && (MET < 20.) && mlllCut && !mll4 && electronveto && bjetveto ){
+        TString this_suffix = "ZJets";
+        snu::KParticle nu;
+        nu.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET);
+        snu::KParticle W_candidate = nu+WMuon;
+
+        FillHist("n_events_"+this_suffix+"_PU", 0, weight*pileup_reweight, 0, 1, 1);
+        FillHist("n_vertices_"+this_suffix+"_PU", eventbase->GetEvent().nVertices(), weight*pileup_reweight, 0, 50, 50);
+        FillHist("n_jets_"+this_suffix+"_PU", n_jets, weight*pileup_reweight, 0, 10, 10);
+        FillHist("n_bjets_"+this_suffix+"_PU", n_bjets, weight*pileup_reweight, 0, 10, 10);
+        FillHist("PFMET_"+this_suffix+"_PU", MET, weight*pileup_reweight, 0, 500, 500);
+        FillHist("osllmass_"+this_suffix+"_PU", m_dimuon[0], weight*pileup_reweight, 0., 500., 500);
+        FillHist("osllmass_"+this_suffix+"_PU", m_dimuon[1], weight*pileup_reweight, 0., 500., 500);
+        FillHist("m_Z_candidate_"+this_suffix+"_PU", Z_candidate.M(), weight*pileup_reweight, 0, 150, 150);
+        FillHist("mt_W_candidate_"+this_suffix+"_PU", MT(nu, WMuon), weight*pileup_reweight, 0, 300, 300);
+        FillHist("m_lll_"+this_suffix+"_PU", (SS[0]+SS[1]+OS).M(), weight*pileup_reweight, 0, 500, 500);
+        FillHist("Z_candidate_Pt_"+this_suffix+"_PU", Z_candidate.Pt(), weight*pileup_reweight, 0, 400, 400);
+        FillHist("W_candidate_Pt_"+this_suffix+"_PU", W_candidate.Pt(), weight*pileup_reweight, 0, 400, 400);
+        FillHist("n_electron_"+this_suffix+"_PU", electronColl.size(), weight*pileup_reweight, 0, 10, 10);
+        FillHist("dRZMuonWMuon_"+this_suffix+"_PU", ZMuon.DeltaR(WMuon), weight*pileup_reweight, 0, 6, 60);
+        FillHist("dRZMuonWMuon_"+this_suffix+"_PU", OS.DeltaR(WMuon), weight*pileup_reweight, 0, 6, 60);
+        FillHist("dRMETWMuon_"+this_suffix+"_PU", nu.DeltaR(WMuon), weight*pileup_reweight, 0, 6, 60);
+
+        FillHist("leadingLepton_Pt_"+this_suffix+"_PU", lep[0].Pt() , weight*pileup_reweight, 0, 200, 200);
+        FillHist("leadingLepton_Eta_"+this_suffix+"_PU", lep[0].Eta() , weight*pileup_reweight, -3, 3, 60);
+        FillHist("leadingLepton_RelIso_"+this_suffix+"_PU", lep[0].RelIso04() , weight*pileup_reweight, 0, 1.0, 100);
+        FillHist("leadingLepton_Chi2_"+this_suffix+"_PU", lep[0].GlobalChi2() , weight*pileup_reweight, 0, 10, 100);
+        FillHist("secondLepton_Pt_"+this_suffix+"_PU", lep[1].Pt() , weight*pileup_reweight, 0, 200, 200);
+        FillHist("secondLepton_Eta_"+this_suffix+"_PU", lep[1].Eta() , weight*pileup_reweight, -3, 3, 60);
+        FillHist("secondLepton_RelIso_"+this_suffix+"_PU", lep[1].RelIso04() , weight*pileup_reweight, 0, 1.0, 100);
+        FillHist("secondLepton_Chi2_"+this_suffix+"_PU", lep[1].GlobalChi2() , weight*pileup_reweight, 0, 10, 100);
+        FillHist("thirdLepton_Pt_"+this_suffix+"_PU", lep[2].Pt() , weight*pileup_reweight, 0, 200, 200);
+        FillHist("thirdLepton_Eta_"+this_suffix+"_PU", lep[2].Eta() , weight*pileup_reweight, -3, 3, 60);
+        FillHist("thirdLepton_RelIso_"+this_suffix+"_PU", lep[2].RelIso04() , weight*pileup_reweight, 0, 1.0, 100);
+        FillHist("thirdLepton_Chi2_"+this_suffix+"_PU", lep[2].GlobalChi2() , weight*pileup_reweight, 0, 10, 100);
+
+        FillHist("ZMuon_leading_Pt_"+this_suffix+"_PU", ZMuon_leading.Pt() , weight*pileup_reweight, 0, 200, 200);
+        FillHist("ZMuon_leading_Eta_"+this_suffix+"_PU", ZMuon_leading.Eta() , weight*pileup_reweight, -3, 3, 60);
+        FillHist("ZMuon_leading_RelIso_"+this_suffix+"_PU", ZMuon_leading.RelIso04() , weight*pileup_reweight, 0, 1.0, 100);
+        FillHist("ZMuon_leading_Chi2_"+this_suffix+"_PU", ZMuon_leading.GlobalChi2() , weight*pileup_reweight, 0, 10, 100);
+        FillHist("ZMuon_leading_dXY_"+this_suffix+"_PU", fabs(ZMuon_leading.dXY()) , weight*pileup_reweight, 0, 0.01, 100);
+        FillHist("ZMuon_subleading_Pt_"+this_suffix+"_PU", ZMuon_subleading.Pt() , weight*pileup_reweight, 0, 200, 200);
+        FillHist("ZMuon_subleading_Eta_"+this_suffix+"_PU", ZMuon_subleading.Eta() , weight*pileup_reweight, -3, 3, 60);
+        FillHist("ZMuon_subleading_RelIso_"+this_suffix+"_PU", ZMuon_subleading.RelIso04() , weight*pileup_reweight, 0, 1.0, 100);
+        FillHist("ZMuon_subleading_Chi2_"+this_suffix+"_PU", ZMuon_subleading.GlobalChi2() , weight*pileup_reweight, 0, 10, 100);
+        FillHist("ZMuon_subleading_dXY_"+this_suffix+"_PU", fabs(ZMuon_subleading.dXY()) , weight*pileup_reweight, 0, 0.01, 100);
+        FillHist("WMuon_Pt_"+this_suffix+"_PU", WMuon.Pt() , weight*pileup_reweight, 0, 200, 200);
+        FillHist("WMuon_Eta_"+this_suffix+"_PU", WMuon.Eta() , weight*pileup_reweight, -3, 3, 60);
+        FillHist("WMuon_RelIso_"+this_suffix+"_PU", WMuon.RelIso04() , weight*pileup_reweight, 0, 1.0, 100);
+        FillHist("WMuon_Chi2_"+this_suffix+"_PU", WMuon.GlobalChi2() , weight*pileup_reweight, 0, 10, 100);
+        FillHist("WMuon_dXY_"+this_suffix+"_PU", fabs(WMuon.dXY()) , weight*pileup_reweight, 0, 0.01, 100);
+
+      }
  
 
     } // Not All Same Charge
