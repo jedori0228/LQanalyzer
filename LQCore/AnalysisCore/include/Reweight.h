@@ -2,7 +2,7 @@
 #define Reweight_h
 
 class TFile;
-class TH1F;
+class TH1D;
 class TString;
 class TDirectory;
 
@@ -15,19 +15,15 @@ class Reweight {
   ~Reweight();
   
   double GetWeight(int nvtx);
-  double GetWeight(int nvtx, int sys);
   TDirectory* getTemporaryDirectory(void) const;
 
  private:
 
   TFile* fileData_;
-  TFile* fileDataUP_;
-  TFile* fileDataDOWN_;
+  TFile* fileMC_;
 
-  TH1F* h_MCmod_;
-  TH1F* h_Data_;
-  TH1F* h_Data_up_;
-  TH1F* h_Data_down_;
+  TH1D* h_MCmod_;
+  TH1D* h_Data_;
 
 };
 

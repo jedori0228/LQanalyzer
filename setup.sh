@@ -67,6 +67,25 @@ fi
 # speficy the LQANALYZER_DIR base directory, i.e., the directory in which this file lives
 export LQANALYZER_DIR=${PWD}
 
+python ${LQANALYZER_DIR}/scripts/CheckEmailIsSetup.py
+cat_email="NULL"
+while read line
+do
+    prefix="email = "
+    if [[ $line == $prefix* ]];
+    then
+        line=${line:${#prefix}}
+        cat_email=$line
+    fi
+done < ${LQANALYZER_DIR}/bin/catconfig
+if [[ $cat_email  == "NULL" ]];
+then
+    echo "Email not setup. run setup.sh again"
+    export LQANALYZER_DIR=""
+    return 1
+fi
+
+
 
 
 ##### Check that this is not the branch and a tag was checked out
@@ -75,10 +94,13 @@ source $LQANALYZER_DIR/scripts/setup/SetBrachAndTag.sh Tag
 source $LQANALYZER_DIR/bin/CheckTag.sh
 
 alias sktree="bash submitSKTree.sh"
+alias sktree_bkg="nohup bash submitSKTree.sh -b True "
 alias new_git_tag="bash "$LQANALYZER_DIR"/scripts/setup/git_newtag.sh"
 alias git_commit_lq="bash scripts/setup/git_commit.sh"
+alias sktree_bkg_log="python python/PrintBkgJob.py"
 
 export LQANALYZER_FILE_DIR="/data1/LQAnalyzer_rootfiles_for_analysis/CATAnalysis2016/"
+export LQANALYZER_LUMIFILE_DIR="/data1/LQAnalyzer_rootfiles_for_analysis/DataSetLists/AnalysisFiles/"
 export LQANALYZER_SKTreeLOG_DIR="/data1/LQAnalyzer_rootfiles_for_analysis/CATSKTreeMaker/"
 export CATTAGDIR="/data1/LQAnalyzer_rootfiles_for_analysis/CATTag/"
 if [ $HOSTNAME == "cmscluster.snu.ac.kr" ];
@@ -99,8 +121,7 @@ export LQANALYZER_INCLUDE_PATH=${LQANALYZER_DIR}/LQAnalysis/include/
 export LQANALYZER_CORE_PATH=${LQANALYZER_DIR}/LQCore/
 
 export isSLC5="False"
-export BTAGDIR=${LQANALYZER_DIR}/BTag/BTagC11/
-export ROCHDIR=${LQANALYZER_DIR}/rochcor2015/rochcor2015C11/
+export BTAGDIR=${LQANALYZER_DIR}/LQAnalysis/src/BTag/BTagC11/
 if [[ "$HOSTNAME" == "cms.snu.ac.kr" ]];
 then 
     export OBJ=obj/cms21
@@ -131,7 +152,11 @@ export LQANALYZER_BIN_PATH=${LQANALYZER_DIR}/bin/
 export SKTREE_INCLUDE_PATH=${LQANALYZER_DIR}/LQCore/SKTree/include/
 ## setup directory to store analysis rootfiles
 export FILEDIR=${LQANALYZER_DIR}/data/rootfiles/
-
+export IDFILEDIR=${LQANALYZER_DIR}/data/ID/
+export LUMIFILEDIR=${LQANALYZER_DIR}/data/Luminosity/
+export TRIGGERFILEDIR=${LQANALYZER_DIR}/data/Trigger/
+export BTAGFILEDIR=${LQANALYZER_DIR}/data/BTag/
+export PILEUPFILEDIR=${LQANALYZER_DIR}/data/Pileup/
 
 
 
@@ -170,7 +195,9 @@ if [ $HOSTNAME == "cmscluster.snu.ac.kr" ];
     export LQANALYZER_LOG_PATH=/data4/CAT_SKTreeOutput/JobOutPut/${USER}/LQanalyzer/data/logfiles/
 fi
 
-python ${LQANALYZER_BIN_PATH}/SetUpWorkSpace.py
+python ${LQANALYZER_DIR}/python/SetUpWorkSpace.py
+python ${LQANALYZER_DIR}/python/BackUpDirectory.py
+python ${LQANALYZER_DIR}/python/SetupEmailList.py
 
 # Setup root area and other paths
  
@@ -218,7 +245,7 @@ export PATH=${LQANALYZER_BIN_PATH}:${PATH}
 export PYTHONPATH=${LQANALYZER_DIR}/python:${PYTHONPATH}
 export PAR_PATH=./:${LQANALYZER_LIB_PATH}
 
-python bin/local_check.py
+python ${LQANALYZER_DIR}/python/local_check.py
 
 if [ ! -d ${LQANALYZER_LOG_PATH} ]; then
     echo Directory ${LQANALYZER_LOG_PATH} does not exist ... creating it

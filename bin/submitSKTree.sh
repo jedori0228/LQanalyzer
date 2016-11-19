@@ -1,10 +1,15 @@
 #!/bin/sh
 ### sets all configurable variables to defaul values
 
-declare -a list_of_catversions=("v8-0-1" "v7-6-6" "v7-6-5" "v7-6-4" "v7-6-3" "v7-6-2" "v7-4-5" "v7-4-4")
+cp $LQANALYZER_LUMIFILE_DIR/datasets_snu* $LQANALYZER_DIR/LQRun/txt/
+cp $LQANALYZER_LUMIFILE_DIR/list_all_mc*  $LQANALYZER_DIR/LQRun/txt/
+
+declare -a list_of_catversions=("v8-0-2" "v8-0-1" "v7-6-6" "v7-6-5" "v7-6-4" "v7-6-3" "v7-6-2" "v7-4-5" "v7-4-4")
 declare -a list_of_skims=("FLATCAT" "SKTree_NoSkim" "SKTree_LeptonSkim" "SKTree_DiLepSkim" "SKTree_TriLepSkim" "NoCut" "Lepton" "DiLep")
 declare -a list_of_sampletags=("ALL" "DATA" "MC" "DoubleEG" "DoubleMuon" "MuonEG" "SingleMuon" "SinglePhoton" "SingleElectron" "SingleLepton")
 declare -a  oldcat=("v7-4-4" "v7-4-5")
+
+python $LQANALYZER_DIR/python/CheckSelection.py
 
 ##### New for sktreemaker only
 logger=""
@@ -20,7 +25,7 @@ runSinglePhoton=false
 
 ## RUN PARAMETERS
 
-job_data_lumi="BtoE"  ###  "C" = period C only   "ALL"  = period C+D
+job_data_lumi="ALL"   ### ALL = "BtoG"  ###  "C" = period C only   "ALL"  = period C+D
 job_logstep=1000
 job_loglevel="INFO"
 job_njobs=5
@@ -28,6 +33,12 @@ job_skim="SKTree_LeptonSkim"
 changed_skim=false
 job_output_dir=""
 
+idname=""
+
+object=""
+idname2=""
+job_run_bkg="False"
+submit_draw="False"
 submit_sk_message=""
 submit_skflag=""
 submit_skinput=true
@@ -188,14 +199,32 @@ function mergeoutput
     if [[ $job_cycle != *"SKTreeMaker"* ]];
         then
 
-        if [[ $job_data_lumi  == "C" ]];
+        if [[ $job_data_lumi  == "B" ]];
             then
             mv  ${outputdir_data}/*${submit_version_tag}*.root ${output_datafile}
-
-
+	    
+	    
+        elif [[ $job_data_lumi  == "C" ]];
+        then
+            mv  ${outputdir_data}/*${submit_version_tag}*.root ${output_datafile}
+	    
+	    
         elif [[ $job_data_lumi  == "D" ]];
+        then
+            mv  ${outputdir_data}/*${submit_version_tag}*.root ${output_datafile}
+	    
+        elif [[ $job_data_lumi  == "E" ]];
             then
             mv  ${outputdir_data}/*${submit_version_tag}*.root ${output_datafile}
+	    
+        elif [[ $job_data_lumi  == "F" ]];
+            then
+            mv  ${outputdir_data}/*${submit_version_tag}*.root ${output_datafile}
+
+        elif [[ $job_data_lumi  == "G" ]];
+            then
+            mv  ${outputdir_data}/*${submit_version_tag}*.root ${output_datafile}
+
 
         else
 	    output_file_skim_tag=$1
@@ -549,6 +578,7 @@ if [[ $submit_file_list  != ""  ]];
 		echo "LQanalyzer::sktree :: WARNING :: Check input list. "$part_of_list" is not a valid input name for latest catversion"
 		echo "###################################################################################################################"
 		echo "Check options using 'sktree -l. If your sample is missing run 'sktree -A' "
+		exit 1
 	    else
 		valid_list_samples=$((valid_list_samples+1))
 	    fi
@@ -743,7 +773,7 @@ fi
 outputdir_cat=$outdir"/data/output/CAT/"
 
 outputdir_analyzer=$outdir"/data/output/CAT/"$submit_analyzer_name
-dir_tag="periodBtoE/"
+dir_tag="periodBtoG/"
 
 if [[  $job_cycle != "SKTreeMaker"* ]];
     then
@@ -755,9 +785,9 @@ if [[  $job_cycle != "SKTreeMaker"* ]];
     if [[ ! -d "${outputdir_analyzer}" ]]; then
 	mkdir ${outputdir_analyzer}
     fi
-    if [[ $job_data_lumi  == "BtoE" ]]
+    if [[ $job_data_lumi  == "BtoG" ]]
 	then
-	dir_tag="periodBtoE/"
+	dir_tag="periodBtoG/"
     fi
 fi
 
@@ -1035,7 +1065,13 @@ fi
 
 if [[ $runMC  == "true" ]];
     then
-    if [[ $job_data_lumi == "C" ]];
+    if [[ $job_data_lumi == "B" ]];
+        then
+        if [[ $job_cycle != *"SKTreeMaker"* ]];
+                then
+                echo $data_lumi_output_message
+                fi
+   elif [[ $job_data_lumi == "C" ]];
 	then
 	if [[ $job_cycle != *"SKTreeMaker"* ]];
 	        then
@@ -1047,8 +1083,32 @@ if [[ $runMC  == "true" ]];
 	        then
 	        echo $data_lumi_output_message
         fi
-	
-    elif [[ $job_data_lumi == "BtoE" ]]
+
+    elif [[ $job_data_lumi == "E" ]]
+        then
+	if [[ $job_cycle != *"SKTreeMaker"* ]];
+	    then
+                echo $data_lumi_output_message
+        fi
+
+    elif [[ $job_data_lumi == "F" ]]
+        then
+	if [[ $job_cycle != *"SKTreeMaker"* ]];
+	    then
+                echo $data_lumi_output_message
+        fi
+
+
+    elif [[ $job_data_lumi == "G" ]]
+        then
+	if [[ $job_cycle != *"SKTreeMaker"* ]];
+	    then
+                echo $data_lumi_output_message
+        fi
+
+
+
+    elif [[ $job_data_lumi == "BtoG" ]]
 	then
 
 	if [[ $job_cycle != *"SKTreeMaker"* ]];
@@ -1105,7 +1165,8 @@ if [[ $job_loglevel != "ERROR" ]]
 fi
 
 
-njobs_output_message="LQanalyzer::sktree :: INFO :: Number of subjobs = "${job_njobs}" (Default)"
+#njobs_output_message="LQanalyzer::sktree :: INFO :: Number of subjobs = "${job_njobs}" (Default)"
+
 if [[ $changed_job_njobs == "true" ]];
     then
     
@@ -1226,6 +1287,19 @@ if [[ $job_cycle != *"SKTreeMaker"* ]];
 fi
 
 
+########## GET EMAIL
+
+cat_email=""
+while read line
+do
+    prefix="email = "
+    if [[ $line == $prefix* ]];
+    then
+        line=${line:${#prefix}}
+        cat_email=$line
+    fi
+done < ${LQANALYZER_DIR}/bin/catconfig
+
 if [[ $submit_analyzer_name == *"SKTreeMaker"* ]];
     then
     
@@ -1304,16 +1378,29 @@ if [[ $submit_analyzer_name == *"SKTreeMaker"* ]];
 	    cp sktree_logger.txt $LQANALYZER_SKTreeLOG_DIR"/"$submit_analyzer_name"_"${submit_version_tag}".log"
 	fi
     fi
-    rm message.txt
     rm edit.sh
     rm sktree_logger.txt
     rm sktree_logger_tmp.txt
 fi
 
+iddir=/data2/CAT_SKTreeOutput/$USER/JobID/
+if [[ ! -d "${iddir}" ]]; then
+    mkdir $iddir
+fi
 
-################  DATA################################################
-### submit this configured job (uses bin/submit.sh)
-######################################################################
+    
+
+runboth="false"
+if [[ $runDATA  == "true" ]];
+    then
+    if [[ $runMC  == "true" ]];
+    then
+	runboth="true"
+	echo "LQanalyzer::sktree :: INFO :: runing MC+DATA, DATA will be run in background"
+    fi
+fi
+
+
 if [[ $runDATA  == "true" ]];
     then
     
@@ -1328,11 +1415,52 @@ if [[ $runDATA  == "true" ]];
 	  then
 	  continue
       fi
+
+
+      JobID=""
+      if [ -f /data2/CAT_SKTreeOutput/JobOutPut/JobID/ID.txt ];
+      then
+	  cp /data2/CAT_SKTreeOutput/JobOutPut/JobID/ID.txt /data2/CAT_SKTreeOutput/$USER/JobID/IDtmp.txt
+	  
+	  while read line
+	  do
+              sline1=$(echo $line | head -n1 | awk '{print $1}')
+              sline2=$(echo $line | head -n1 | awk '{print $2}')
+              sline2=$((sline2+1))
+              new_line=$sline1" "$sline2
+              echo $new_line > /data2/CAT_SKTreeOutput/JobOutPut/JobID/ID.txt
+              JobID=$sline2
+	  done < /data2/CAT_SKTreeOutput/${USER}/JobID/IDtmp.txt
+	  
+      else
+	  if [[ $USER == "jalmond" ]];
+	  then
+              echo "Error in  /data2/CAT_SKTreeOutput/JobOutPut/JobID/ID.txt"
+              exit 1
+	  fi
+	  JobID=$RANDOM
+      fi
+
+      if [ "$JobID" -eq "$JobID" ] 2>/dev/null; then
+          tagger=$JobID
+      else
+          tagger=$RANDOM
+      fi
+      
+
       
       ### set all inputs to default in functions.sh
       source functions.sh
 
+
+      run_in_bkg=${job_run_bkg}
       #### change input to those specified in sktree command
+      if [[ $runboth  == "false" ]];
+      then
+	  run_in_bkg=${job_run_bkg}
+      else
+	  run_in_bkg="True"
+      fi
       nevents=${job_nevents}
       skipevent=${job_nskip}
       runnp=${job_run_fake}
@@ -1346,7 +1474,8 @@ if [[ $runDATA  == "true" ]];
       loglevel=$job_loglevel
       logstep=$job_logstep
       stream=${istream}
-
+      drawhists=${submit_draw}
+      
       if [[ $changed_job_output_dir == "true" ]];
 	  then
 	  outputdir=${job_output_dir}
@@ -1364,14 +1493,34 @@ if [[ $runDATA  == "true" ]];
       eval input_samples=(\${$ARG[@]})
 
       
+      
+      echo "LQanalyzer::sktree :: INFO :: JOB ID["$tagger"]"
+      if [[ ${run_in_bkg} == "True" ]];
+	  then
+	  echo "Job sent to /data2/CAT_SKTreeOutput/"$USER"/CLUSTERLOG"$tagger"/"${tagger}
+	  echo "Job summary will be sent via email when complete:"
+	  logdir=/data2/CAT_SKTreeOutput/$USER/CLUSTERLOG$tagger/
+	  if [[ ! -d "${logdir}" ]]; then
+	      mkdir $logdir
+	  fi
+	  joblogdir=/data2/CAT_SKTreeOutput/$USER/CLUSTERLOG$tagger/${tagger}/
+	  if [[ ! -d "${joblogdir}" ]]; then
+	      mkdir $joblogdir
+	  fi
+	  source submit.sh $tagger &>  $joblogdir/job.txt &
 
-      source submit.sh
+      else
+	  source submit.sh $tagger
+      fi
       if [[ ${job_run_fake} == "True" ]];
 	  then
-	  mergefake $istream
-      
+	  if [[ ${run_in_bkg} != "True" ]];then
+	      mergefake $istream
+	  fi
       else
-	  mergeoutput $istream
+	  if [[ ${run_in_bkg} != "True" ]];then
+	      mergeoutput $istream
+	  fi
       fi
     done
 fi
@@ -1379,10 +1528,46 @@ fi
 if [[ $runMC  == "true" ]];
 
     then
+
+    JobID=""
+    
+    if [ -f /data2/CAT_SKTreeOutput/JobOutPut/JobID/ID.txt ];
+    then
+	cp /data2/CAT_SKTreeOutput/JobOutPut/JobID/ID.txt /data2/CAT_SKTreeOutput/$USER/JobID/IDtmp.txt
+	
+	while read line
+	do
+            sline1=$(echo $line | head -n1 | awk '{print $1}')
+            sline2=$(echo $line | head -n1 | awk '{print $2}')
+	    sline2=$((sline2+1))
+            new_line=$sline1" "$sline2
+            echo $new_line > /data2/CAT_SKTreeOutput/JobOutPut/JobID/ID.txt
+            JobID=$sline2
+	done < /data2/CAT_SKTreeOutput/${USER}/JobID/IDtmp.txt
+	
+    else
+	if [[ $USER == "jalmond" ]];
+	then
+            echo "Error in  /data2/CAT_SKTreeOutput/JobOutPut/JobID/ID.txt"
+            exit 1
+	fi
+	JobID=$RANDOM
+    fi
+
+    
+    tagger=""
+    if [ "$JobID" -eq "$JobID" ] 2>/dev/null; then
+        tagger=$JobID
+    else
+        tagger=$RANDOM
+    fi
+    
+    
     ### set all inputs to default in functions.sh
     source functions.sh
     
     #### change input to those specified in sktree command
+    run_in_bkg=${job_run_bkg}
     cycle=${job_cycle}
     skinput=${submit_skinput}
     useskim=${job_skim}
@@ -1397,20 +1582,62 @@ if [[ $runMC  == "true" ]];
     skipevent=${job_nskip}
     runnp=${job_run_fake}
     runcf=${job_run_flip}
+    drawhists=${submit_draw}
+
+
 
     if [[ $submit_file_tag  != ""  ]];
         then
 	
         declare -a input_samples=("${submit_file_tag}")
-        echo $submit_file_tag running
-	source submit.sh
+	echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+
+	echo "LQanalyzer::sktree :: INFO :: JOB MC ID["$tagger"]"
+
+
+	if [[ ${run_in_bkg} == "True" ]];
+        then
+	    echo "Job sent to /data2/CAT_SKTreeOutput/"$USER"/CLUSTERLOG"$tagger"/"${tagger}
+            echo "Job summary will be sent via email when complete:"
+	    logdir=/data2/CAT_SKTreeOutput/$USER/CLUSTERLOG$tagger/
+            if [[ ! -d "${logdir}" ]]; then
+		mkdir $logdir
+	    fi
+            joblogdir=/data2/CAT_SKTreeOutput/$USER/CLUSTERLOG$tagger/${tagger}/
+            if [[ ! -d "${joblogdir}" ]]; then
+		mkdir $joblogdir
+            fi
+            source submit.sh $tagger &>  $joblogdir/job.txt &
+
+	else
+            source submit.sh $tagger
+	fi
     fi
     
     if [[ $submit_file_list  != ""  ]];
 	then
 	ARG=$submit_file_list
 	eval input_samples=(\${$ARG[@]})
-	source submit.sh
+
+	echo "LQanalyzer::sktree :: INFO :: MC JOB ID["$tagger"]"
+
+	if [[ ${run_in_bkg} == "True" ]];
+        then
+            echo "Job sent to /data2/CAT_SKTreeOutput/"$USER"/CLUSTERLOG"$tagger"/"${tagger}
+            echo "Job summary will be sent via email when complete:"
+	    logdir=/data2/CAT_SKTreeOutput/$USER/CLUSTERLOG$tagger/
+            if [[ ! -d "${logdir}" ]]; then
+		mkdir $logdir
+	    fi
+            joblogdir=/data2/CAT_SKTreeOutput/$USER/CLUSTERLOG$tagger/${tagger}/
+            if [[ ! -d "${joblogdir}" ]]; then
+		mkdir $joblogdir
+            fi
+            source submit.sh $tagger &>  $joblogdir/job.txt &
+	    	    
+	else
+            source submit.sh $tagger
+	fi
     fi
 fi
 

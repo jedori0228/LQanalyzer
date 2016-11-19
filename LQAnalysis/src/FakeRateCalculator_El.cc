@@ -12,7 +12,6 @@ OB * @Package: LQCycles
 #include "FakeRateCalculator_El.h"
 
 //Core includes
-#include "Reweight.h"
 #include "EventBase.h"                                                                                                                           
 #include "BaseSelection.h"
 
@@ -45,7 +44,6 @@ void FakeRateCalculator_El::InitialiseAnalysis() throw( LQError ) {
   // You can out put messages simply with Message function. Message( "comment", output_level)   output_level can be VERBOSE/INFO/DEBUG/WARNING 
   // You can also use m_logger << level << "comment" << int/double  << LQLogger::endmsg;
   //
-
   
   MakeCleverHistograms(sighist_ee, "SingleLooseElJet");
   MakeCleverHistograms(sighist_ee, "SingleTightElJet");
@@ -63,7 +61,7 @@ void FakeRateCalculator_El::InitialiseAnalysis() throw( LQError ) {
 void FakeRateCalculator_El::ExecuteEvents()throw( LQError ){
     
 
-  if(!PassBasicEventCuts()) return;     /// Initial event cuts  
+  if(!PassMETFilter()) return;     /// Initial event cuts  
 
   std::vector<TString> triggerslist_12;
   triggerslist_12.push_back("HLT_Ele12_CaloIdL_TrackIdL_IsoVL_PFJet30_v");
@@ -77,8 +75,6 @@ void FakeRateCalculator_El::ExecuteEvents()throw( LQError ){
 
   std::vector<TString> triggerslist_33;
   triggerslist_33.push_back("HLT_Ele33_CaloIdL_TrackIdL_IsoVL_PFJet30_v");
-
-
 
   // analysis trigger
   std::vector<TString> triggerslist;
@@ -117,7 +113,7 @@ void FakeRateCalculator_El::ExecuteEvents()throw( LQError ){
 
     }
     weight*= id_weight;
-    weight*= reco_weight;
+    //weight*= reco_weight;
   }
 
 
@@ -133,19 +129,17 @@ void FakeRateCalculator_El::ExecuteEvents()throw( LQError ){
   ///triggerslist_singlelep.push_back("HLT_Ele23_WPLoose_Gsf");
 
   float trigger_ps_singlelepweight= WeightByTrigger("HLT_Ele23_WPLoose_Gsf_v", TargetLumi);
-
+  
   if(electronTightColl.size() ==1) {
-    if(PassTrigger(triggerslist_singlelep, prescale) ){
+    if(PassTrigger(triggerslist_singlelep, prescale,true) ){
       FillCLHist(sighist_ee, "SingleElectron_unprescaled", eventbase->GetEvent(), muonColl,electronTightColl,jetCollTight, weight*trigger_ps_singlelepweight);
     }
-
   }
   
-
-
+  
   /// Check single leton legs
   if(electronTightColl.size() ==2) {
-    if( PassTrigger(triggerslist_12leg, prescale)){
+    if( PassTrigger(triggerslist_12leg, prescale,true)){
       if(electronTightColl.at(0).Pt() > 20. && electronTightColl.at(1).Pt() > 15){
         float pr_weight=WeightByTrigger("HLT_Ele12_CaloIdL_TrackIdL_IsoVL_v" , TargetLumi); //HLT_Ele12_CaloIdL_TrackIdL_IsoVL_v
 
@@ -154,7 +148,7 @@ void FakeRateCalculator_El::ExecuteEvents()throw( LQError ){
     }
   }
   if(electronTightColl.size() ==2) {
-    if(PassTrigger(triggerslist_17leg, prescale)){
+    if(PassTrigger(triggerslist_17leg, prescale,true)){
       if(electronTightColl.at(0).Pt() > 20. && electronTightColl.at(1).Pt() > 15){
 	float pr_weight= WeightByTrigger("HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v", TargetLumi);
 	
@@ -163,7 +157,7 @@ void FakeRateCalculator_El::ExecuteEvents()throw( LQError ){
     }
   }
   
-  if(PassTrigger(triggerslist, prescale) ){
+  if(PassTrigger(triggerslist, prescale,true) ){
     if(electronTightColl.size() ==2) {
       if(electronTightColl.at(0).Pt() > 20. && electronTightColl.at(1).Pt() > 15. ){
 	float pr_weight= WeightByTrigger("HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v", TargetLumi);
@@ -175,14 +169,12 @@ void FakeRateCalculator_El::ExecuteEvents()throw( LQError ){
 
   if(electronLooseColl.size()!= 1) return;
 
-  float prescale_trigger =  GetPrescale(electronLooseColl,  PassTrigger(triggerslist_12, prescale), PassTrigger(triggerslist_18, prescale), PassTrigger( triggerslist_23, prescale), PassTrigger(triggerslist_33, prescale), TargetLumi); 
+  float prescale_trigger =  GetPrescale(electronLooseColl,  PassTrigger(triggerslist_12, prescale,true), PassTrigger(triggerslist_18, prescale,true), PassTrigger( triggerslist_23, prescale,true), PassTrigger(triggerslist_33, prescale,true), TargetLumi); 
 
 
   weight*= prescale_trigger;
   
   MakeFakeRatePlots("HNTight", electronTightColl, electronLooseColl,  jetCollTight, jetColl,  prescale_trigger, weight);  
-  
-
   
   bool useevent40 = UseEvent(electronLooseColl , jetColl, 40., prescale_trigger, weight);
   if(useevent40){
@@ -230,31 +222,35 @@ float FakeRateCalculator_El::GetPrescale( std::vector<snu::KElectron> electrons,
     if(electrons.at(0).Pt() >= 35.){
       //HLT_Ele33_CaloIdL_TrackIdL_IsoVL_PFJet30
       if(pass1){
-        prescale_trigger = WeightByTrigger("HLT_Ele33_CaloIdL_TrackIdL_IsoVL_PFJet30_v", fake_total_lum); //// 20 + GeV bins
+	if(isData) return 1.;
+	prescale_trigger = WeightByTrigger("HLT_Ele33_CaloIdL_TrackIdL_IsoVL_PFJet30_v", fake_total_lum); //// 20 + GeV bins
       }
-      else prescale_trigger = 0.;
+      else prescale_trigger = WeightByTrigger("HLT_Ele33_CaloIdL_TrackIdL_IsoVL_PFJet30_v", fake_total_lum)*0.8;
     }
     else  if(electrons.at(0).Pt() >= 25.){
       //HLT_Ele23_CaloIdL_TrackIdL_IsoVL_PFJet30
 
       if(pass2){
+	if(isData) return 1.;
         prescale_trigger =  WeightByTrigger("HLT_Ele23_CaloIdL_TrackIdL_IsoVL_PFJet30_v", fake_total_lum) ; //// 20 + GeV bins
       }
-      else prescale_trigger = 0.;
+      else prescale_trigger =  WeightByTrigger("HLT_Ele23_CaloIdL_TrackIdL_IsoVL_PFJet30_v", fake_total_lum) * 0.8; 
     }
     else   if(electrons.at(0).Pt() >= 20.){
       //HLT_Ele18_CaloIdL_TrackIdL_IsoVL_PFJet30
       if(pass3){
+	if(isData) return 1.;
 	prescale_trigger = WeightByTrigger("HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v", fake_total_lum) ;
       }
-      else prescale_trigger = 0.;
+      else prescale_trigger = WeightByTrigger("HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v", fake_total_lum)*0.8 ;
     }
     else   if(electrons.at(0).Pt() >= 15.){
       //HLT_Ele12_CaloIdL_TrackIdL_IsoVL_PFJet30_
       if(pass4){
+	if(isData) return 1.;
         prescale_trigger = WeightByTrigger("HLT_Ele12_CaloIdL_TrackIdL_IsoVL_PFJet30_v", fake_total_lum) ;
       }
-      else prescale_trigger = 0.;
+      else         prescale_trigger = WeightByTrigger("HLT_Ele12_CaloIdL_TrackIdL_IsoVL_PFJet30_v", fake_total_lum)*0.8 ;
     }
     else{
       prescale_trigger = 0.;
@@ -644,10 +640,6 @@ void FakeRateCalculator_El::BeginCycle() throw( LQError ){
   
   Message("In begin Cycle", INFO);
   
-  string analysisdir = getenv("FILEDIR");  
-  if(!k_isdata) reweightPU = new Reweight((analysisdir + "SNUCAT_Pileup.root").c_str());
-
-  //
   //If you wish to output variables to output file use DeclareVariable
   // clear these variables in ::ClearOutputVectors function
   //DeclareVariable(obj, label, treename );
@@ -667,7 +659,6 @@ void FakeRateCalculator_El::BeginCycle() throw( LQError ){
 FakeRateCalculator_El::~FakeRateCalculator_El() {
   
   Message("In FakeRateCalculator_El Destructor" , INFO);
-  if(!k_isdata)delete reweightPU;
   
 }
 

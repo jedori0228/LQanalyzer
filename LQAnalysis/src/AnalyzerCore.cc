@@ -10,6 +10,7 @@
 /// Local includes 
 #include "AnalyzerCore.h"
 #include "EventBase.h"
+#include "Reweight.h"
 
 //Plotting                                                      
 #include "MuonPlots.h"
@@ -24,13 +25,14 @@
 #include <TFile.h>
 
 
-AnalyzerCore::AnalyzerCore() : LQCycleBase(), MCweight(-999.),reset_lumi_mask(false),changed_target_lumi(false) {
+AnalyzerCore::AnalyzerCore() : LQCycleBase(), MCweight(-999.),reset_lumi_mask(false),changed_target_lumi(false),n_cutflowcuts(0) {
 
-
+  bool debug(false);
+  
   TH1::SetDefaultSumw2(true);  
-  TH1::AddDirectory(kFALSE);
   /// clear list of triggers stored in KTrigger
   triggerlist.clear();
+  cutflow_list.clear();
   // If running on LQNtuples this is not important.
   // If creating an SKTree ntuple this controls what triggers are accessible
   
@@ -45,11 +47,13 @@ AnalyzerCore::AnalyzerCore() : LQCycleBase(), MCweight(-999.),reset_lumi_mask(fa
   //////////////////////////////////////////////////////////////////////  
   //// FakeRate Input file           
   //////////////////////////////////////////////////////////////////////                                                                                                   
-  string analysisdir = getenv("FILEDIR");
+  string analysisdir = getenv("IDFILEDIR");
+  string pileupdir = getenv("PILEUPFILEDIR");
+  string triggerdir = getenv("TRIGGERFILEDIR");
 
   if(1){
-    TFile *infile_sf = TFile::Open((analysisdir+ "gsf_scalefactor_80X.root").c_str());
-
+    TFile *infile_sf = TFile::Open((analysisdir+ "/gsf_scalefactor_80X.root").c_str());
+    CheckFile(infile_sf);
     TDirectory* tempDir = getTemporaryDirectory();
     tempDir->cd();
     ElectronSF_GSF =  dynamic_cast<TH2F*> (( infile_sf->Get("EGamma_SF2D"))->Clone());
@@ -58,8 +62,8 @@ AnalyzerCore::AnalyzerCore() : LQCycleBase(), MCweight(-999.),reset_lumi_mask(fa
     origDir->cd();
   }
   if(1){
-    TFile *infile_sf = TFile::Open((analysisdir+ "egammaEffi_Tight_txt_SF2D.root").c_str());
-    
+    TFile *infile_sf = TFile::Open((analysisdir+ "/egammaEffi_Tight_txt_SF2D.root").c_str());
+    CheckFile(infile_sf);
     TDirectory* tempDir = getTemporaryDirectory();
     tempDir->cd();
     ElectronSF_Tight =  dynamic_cast<TH2F*> (( infile_sf->Get("EGamma_SF2D"))->Clone());
@@ -68,8 +72,8 @@ AnalyzerCore::AnalyzerCore() : LQCycleBase(), MCweight(-999.),reset_lumi_mask(fa
     origDir->cd();
   }
   if(1){
-    TFile *infile_sf = TFile::Open((analysisdir+ "egammaEffi_Medium_txt_SF2D.root").c_str());
-
+    TFile *infile_sf = TFile::Open((analysisdir+ "/egammaEffi_Medium_txt_SF2D.root").c_str());
+    CheckFile(infile_sf);
     TDirectory* tempDir = getTemporaryDirectory();
     tempDir->cd();
     ElectronSF_Medium =  dynamic_cast<TH2F*> (( infile_sf->Get("EGamma_SF2D"))->Clone());
@@ -78,8 +82,8 @@ AnalyzerCore::AnalyzerCore() : LQCycleBase(), MCweight(-999.),reset_lumi_mask(fa
     origDir->cd();
   }
   if(1){
-    TFile *infile_sf = TFile::Open((analysisdir+ "egammaEffi_Loose_txt_SF2D.root").c_str());
-
+    TFile *infile_sf = TFile::Open((analysisdir+ "/egammaEffi_Loose_txt_SF2D.root").c_str());
+    CheckFile(infile_sf);
     TDirectory* tempDir = getTemporaryDirectory();
     tempDir->cd();
     ElectronSF_Loose =  dynamic_cast<TH2F*> (( infile_sf->Get("EGamma_SF2D"))->Clone());
@@ -88,8 +92,8 @@ AnalyzerCore::AnalyzerCore() : LQCycleBase(), MCweight(-999.),reset_lumi_mask(fa
     origDir->cd();
   }
   if(1){
-    TFile *infile_sf = TFile::Open((analysisdir+ "egammaEffi_Veto_txt_SF2D.root").c_str());
-
+    TFile *infile_sf = TFile::Open((analysisdir+ "/egammaEffi_Veto_txt_SF2D.root").c_str());
+    CheckFile(infile_sf);
     TDirectory* tempDir = getTemporaryDirectory();
     tempDir->cd();
     ElectronSF_Veto =  dynamic_cast<TH2F*> (( infile_sf->Get("EGamma_SF2D"))->Clone());
@@ -97,7 +101,7 @@ AnalyzerCore::AnalyzerCore() : LQCycleBase(), MCweight(-999.),reset_lumi_mask(fa
     delete infile_sf;
     origDir->cd();
   }
-  if(1){
+  /*  if(1){
     TFile *infile_sf = TFile::Open((analysisdir+ "eleRECO.txt.egamma_SF2D.root").c_str());
 
     TDirectory* tempDir = getTemporaryDirectory();
@@ -106,10 +110,10 @@ AnalyzerCore::AnalyzerCore() : LQCycleBase(), MCweight(-999.),reset_lumi_mask(fa
     infile_sf->Close();
     delete infile_sf;
     origDir->cd();
-  }
+    }*/
   if(1){
     TFile *infile_sf = TFile::Open((analysisdir+ "MuonID_Z_RunBCD_prompt80X_7p65.root").c_str());
-
+    CheckFile(infile_sf);
     TDirectory* tempDir = getTemporaryDirectory();
     tempDir->cd();
     MuonID_tight =  dynamic_cast<TH2F*> (( infile_sf->Get("MC_NUM_TightIDandIPCut_DEN_genTracks_PAR_pt_spliteta_bin1/abseta_pt_ratio"))->Clone());
@@ -121,7 +125,7 @@ AnalyzerCore::AnalyzerCore() : LQCycleBase(), MCweight(-999.),reset_lumi_mask(fa
   }
   if(1){
     TFile *infile_sf = TFile::Open((analysisdir+ "MuonIso_Z_RunBCD_prompt80X_7p65.root").c_str());
-
+    CheckFile(infile_sf);
     TDirectory* tempDir = getTemporaryDirectory();
     tempDir->cd();
     MuonISO_tight_tightID =  dynamic_cast<TH2F*> (( infile_sf->Get("MC_NUM_TightRelIso_DEN_TightID_PAR_pt_spliteta_bin1/abseta_pt_ratio"))->Clone());
@@ -135,25 +139,46 @@ AnalyzerCore::AnalyzerCore() : LQCycleBase(), MCweight(-999.),reset_lumi_mask(fa
   }
 
   if(1){
-    TFile *infile_sf = TFile::Open((analysisdir+ "SingleMuonTrigger_Z_RunBCD_prompt80X_7p65.root").c_str());
+    TFile *infile_sf = TFile::Open((triggerdir+ "SingleMuonTrigger_Z_RunBCD_prompt80X_7p65.root").c_str());
+    CheckFile(infile_sf);
     TDirectory* tempDir = getTemporaryDirectory();
     tempDir->cd();
     
     // THESE ARE EFFICIENCIES NOT SFS
-    //SingleMuon_274093  =  dynamic_cast<TH2F*> (( infile_sf->Get("IsoMu22_OR_IsoTkMu22_PtEtaBins_Run273158_to_274093/XXXXX))->Clone());
-    //    SingleMuon_276097  =  dynamic_cast<TH2F*> (( infile_sf->Get("IsoMu22_OR_IsoTkMu22_PtEtaBins_Run274094_to_276097/XXXX"))->Clone());
-
+    SingleMuon_274093  =  dynamic_cast<TH2F*> (( infile_sf->Get("IsoMu22_OR_IsoTkMu22_PtEtaBins_Run273158_to_274093/efficienciesDATA/abseta_pt_DATA"))->Clone());
+    SingleMuon_276097  =  dynamic_cast<TH2F*> (( infile_sf->Get("IsoMu22_OR_IsoTkMu22_PtEtaBins_Run274094_to_276097/efficienciesDATA/abseta_pt_DATA"))->Clone());
   }
 
-  cout << "TEST4" << endl;
-    string lqdir = getenv("LQANALYZER_DIR");
-    m_fakeobj = new HNCommonLeptonFakes(lqdir+"/HNCommonLeptonFakes/share/");
+  string lqdir = getenv("LQANALYZER_DIR");
+  m_fakeobj = new HNCommonLeptonFakes(lqdir+"/LQAnalysis/src/HNCommonLeptonFakes/share/");
   
   /// Currently only have csvv2 or cMVAv2 btaggers: In HN we use csvv2 
   /// List of taggers
   std::vector<TString> vtaggers;
   vtaggers.push_back("CSVv2");
   //  vtaggers.push_back("cMVAv2");
+
+
+  SetupSelectionMuon(lqdir + "/CATConfig/SelectionConfig/muons.sel");
+  SetupSelectionMuon(lqdir + "/CATConfig/SelectionConfig/user_muons.sel");
+
+  SetupSelectionElectron(lqdir + "/CATConfig/SelectionConfig/electrons.sel");
+  SetupSelectionElectron(lqdir + "/CATConfig/SelectionConfig/user_electrons.sel");
+  
+  SetupSelectionJet(lqdir + "/CATConfig/SelectionConfig/jets.sel");
+  SetupSelectionJet(lqdir + "/CATConfig/SelectionConfig/user_jets.sel");
+
+
+  if(debug){
+    for( map<TString,vector<pair<TString,float> > >::iterator it=  selectionIDMapfMuon.begin() ; it !=  selectionIDMapfMuon.end(); it++){
+      cout << it->first << endl;
+      for (int i=0 ; i < it->second.size(); i++){
+	cout << it->second.at(i).first << " " << it->second.at(i).second << endl;
+      }
+    }
+  }
+  Message("SetupSelection DONE", DEBUG); 
+
   
   // List of working points
   std::vector<TString> v_wps;
@@ -161,11 +186,24 @@ AnalyzerCore::AnalyzerCore() : LQCycleBase(), MCweight(-999.),reset_lumi_mask(fa
   v_wps.push_back("Medium");
   v_wps.push_back("Tight");
   MapBTagSF = SetupBTagger(vtaggers,v_wps);
+  cout << "                                                  " << endl;
+  cout << "   ########    ###       ###   ###  ###           " << endl;
+  cout << "   ########    ####      ###   ###  ###           " << endl;
+  cout << "   ###         #####     ###   ###  ###           " << endl;
+  cout << "   ###         ### ##    ###   ###  ###           " << endl;
+  cout << "   ########    ###  ##   ###   ###  ###           " << endl;
+  cout << "   ########    ###   ##  ###   ###  ###           " << endl;
+  cout << "        ###    ###    ## ###   ###  ###           " << endl;
+  cout << "        ###    ###     #####   ###  ###           " << endl;
+  cout << "   ########    ###      ####   ########           " << endl;
+  cout << "   ########    ###       ###   ########           " << endl;
+  cout << "                                                  " << endl;
 
+  cout << "##################################################" << endl;
   if(1){
-    ifstream runlumi((lqdir + "/data/rootfiles/lumi_catversion2015.txt").c_str());
+    ifstream runlumi((lqdir + "/data/Luminosity/lumi_catversion2016_" + getenv("CATVERSION")+".txt").c_str());
     if(!runlumi) {
-      cerr << "Did not find "+lqdir + "'data/rootfiles/lumi_catversion2015.txt'), exiting ..." << endl;
+      cerr << "Did not find "+lqdir + "/data/Luminosity/lumi_catversion2016_" + getenv("CATVERSION")+".txt'), exiting ..." << endl;
       exit(EXIT_FAILURE);
     }
     string lline;
@@ -182,56 +220,7 @@ AnalyzerCore::AnalyzerCore() : LQCycleBase(), MCweight(-999.),reset_lumi_mask(fa
       if(trigname=="run" ){
 	is >> run;
 	is >> trig_lumi;
-	cout << "mapLumi[" << run <<" ] = " << trig_lumi << ";" << endl;
-	
-	mapLumi[run] = trig_lumi;
-	continue;
-      }
-      if(trigname=="block" ){
-	is >> run;
-	is >> trig_lumi;
-	cout << "mapLumi[" << run <<" ] = " << trig_lumi << ";" << endl;
-	
-	mapLumiPerBlock[run] = trig_lumi;
-	ostringstream ss;
-	ss << x;
-	mapLumiNamePerBlock[run]="Lumi"+ss.str();
-	x++;
-	continue;
-      }
-      if(trigname=="bad" ){
-	is >> run;
-	is >> trig_lumi;
-	cout << "mapLumi[" << run <<" ] = " << trig_lumi << ";" << endl;
-	mapBadLumi[run] = trig_lumi;
-	continue;
-      }
-    }
-    runlumi.close();
-  }
-
-  cout << "TEST2" << endl;
-  if(1){
-    ifstream runlumi((lqdir + "/data/rootfiles/lumi_catversion2016_801.txt").c_str());
-    if(!runlumi) {
-      cerr << "Did not find "+lqdir + "'data/rootfiles/lumi_catversion2016_801.txt'), exiting ..." << endl;
-      exit(EXIT_FAILURE);
-    }
-    string lline;
-    int x=1;
-    while(getline(runlumi,lline) ){
-      std::istringstream is( lline );
-      
-      string trigname;
-      float trig_lumi;
-      int run;
-      is >> trigname;
-      if(trigname=="###" ) continue;
-      if(trigname=="END") break;
-      if(trigname=="run" ){
-	is >> run;
-	is >> trig_lumi;
-	cout << "mapLumi[" << run <<" ] = " << trig_lumi << ";" << endl;
+	cout << "Run number "<< run <<" ; Muon trigger (unprescaled) luminosity  " << trig_lumi << ";" << endl;
 	
 	mapLumi2016[run] = trig_lumi;
 	continue;
@@ -253,36 +242,14 @@ AnalyzerCore::AnalyzerCore() : LQCycleBase(), MCweight(-999.),reset_lumi_mask(fa
     runlumi.close();
   }
   
-  cout << "reading luminosity file" << endl;
+  cout << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
+
+  cout << "Reading Luminosity File" << endl;
+
   if(1){
-    ifstream triglumi((lqdir + "/data/rootfiles/lumi_catversion2016_801.txt").c_str());
-    if(!triglumi) {
-      cerr << "Did not find "+lqdir + "'data/rootfiles/lumi_catversion2016_801.txt'), exiting ..." << endl;
-      exit(EXIT_FAILURE);
-    }
-    string sline;
-    
-    cout << "Trigname : Lumi pb-1" << endl;
-    while(getline(triglumi,sline) ){
-      std::istringstream is( sline );
-      
-      string trigname;
-      float trig_lumi;
-      is >> trigname;
-      if(trigname=="###" ) continue;
-      is >> trig_lumi;
-      
-      if(trigname=="END") break;
-      cout << trigname << " " << trig_lumi << endl;
-      trigger_lumi_map_cat2015[TString(trigname)] = trig_lumi;
-      continue;
-    }
-    triglumi.close();
-  }
-  if(1){
-    ifstream triglumi2016((lqdir + "/data/rootfiles/triggers_catversion2016_801.txt").c_str());
+    ifstream triglumi2016((lqdir + "/data/Luminosity/triggers_catversion2016_" + getenv("CATVERSION")+".txt").c_str());
     if(!triglumi2016) {
-      cerr << "Did not find "+lqdir + "'data/rootfiles/triggers_catversion2016_801.txt'), exiting ..." << endl;
+      cerr << "Did not find "+lqdir + "/data/Luminosity/triggers_catversion2016_" + getenv("CATVERSION")+".txt'), exiting ..." << endl;
       exit(EXIT_FAILURE);
     }
     string sline2016;
@@ -295,18 +262,222 @@ AnalyzerCore::AnalyzerCore() : LQCycleBase(), MCweight(-999.),reset_lumi_mask(fa
       float trig_lumi;
       is >> trigname;
       if(trigname=="###" ) continue;
-      is >> trig_lumi;
+
       
       if(trigname=="END") break;
-      cout << trigname << " " << trig_lumi << endl;
+      if(!TString(trigname).Contains("Lumi")){
+	is >> trig_lumi;
+	cout << trigname << " " << trig_lumi << endl;
+      }
+      else{
+	string tmp;
+	is >> tmp;
+	is >> trig_lumi;
+	cout << trigname << " " << trig_lumi << endl;
+      }
       trigger_lumi_map_cat2016[TString(trigname)] = trig_lumi;
       continue;
     }
     triglumi2016.close();
   }
   
-  
+  cout <<  "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
+
+  if(!k_isdata) reweightPU = new Reweight((pileupdir + "/DataPileUp_BtoG_2016.root").c_str());
+  //if(!k_isdata) reweightPU = new Reweight((analysisdir + "DataPileUp_2016.root").c_str());
+
+
 }
+
+
+
+void AnalyzerCore::SetupSelectionJet(std::string path_sel){
+  Message("SetupSelectionJet", DEBUG);
+  ifstream jetselconfig(path_sel.c_str());
+  if(!jetselconfig) {
+    cerr << "Did not find "+ path_sel+", exiting ..." << endl;
+    exit(EXIT_FAILURE);
+  }
+  string jetline;
+  int ncuts=0;
+  vector<TString> cutnames;
+  while(getline(jetselconfig,jetline) ){
+    vector<pair<TString,TString> > string_jetsel;
+    vector<pair<TString,float> > float_jetsel;
+    TString idlabel;
+    if (TString(jetline).Contains("webpage")) continue;
+    if (TString(jetline).Contains("ncut")) {
+      std::istringstream is( jetline );
+      string tmp;
+      int itmp;
+      is >> tmp;
+      is >> itmp;
+      ncuts = 2*(itmp +1);
+      continue;
+    }
+    if (TString(jetline).Contains("ptmin")) {
+      std::istringstream is( jetline );
+      string tmp;
+      for (int x =0; x < ncuts; x++){
+        is >> tmp;
+        cutnames.push_back(TString(tmp));
+      }
+    }
+    else{
+      std::istringstream is( jetline );
+      string tmp;
+      float tmpf;
+      for (int x =0; x < ncuts; x++){
+        if ( x%2 ==0) {
+          is >> tmp;
+          continue;
+        }
+
+        if (x > 6 && x < 18){
+          is >> tmp;
+          string_jetsel.push_back(make_pair(cutnames.at(x),tmp) );
+
+        }
+        else if ( x ==1) {is >> idlabel;}
+        else {
+          is >> tmpf;
+          float_jetsel.push_back(make_pair(cutnames.at(x),tmpf));
+        }
+      }
+    }
+    selectionIDMapsJet[idlabel] = string_jetsel;
+    selectionIDMapfJet[idlabel] = float_jetsel;
+  }
+}
+
+void AnalyzerCore::SetupSelectionMuon(std::string path_sel){
+  Message("SetupSelectionMuon", DEBUG);
+  ifstream muonselconfig(path_sel.c_str());
+  if(!muonselconfig) {
+    cerr << "Did not find "+ path_sel+", exiting ..." << endl;
+    exit(EXIT_FAILURE);
+  }
+  string muonline;
+  int ncuts=0;
+  vector<TString> cutnames;
+  while(getline(muonselconfig,muonline) ){
+    vector<pair<TString,TString> > string_muonsel;
+    vector<pair<TString,float> > float_muonsel;
+    TString idlabel;
+    if (TString(muonline).Contains("webpage")) continue;
+    if (TString(muonline).Contains("ncut")) {
+      std::istringstream is( muonline );
+      string tmp;
+      int itmp;
+      is >> tmp;
+      is >> itmp;
+      ncuts = 2*(itmp +1);
+      continue;
+    }
+    if (TString(muonline).Contains("ptmin")) {
+      std::istringstream is( muonline );
+      string tmp;
+      for (int x =0; x < ncuts; x++){
+	is >> tmp;
+	cutnames.push_back(TString(tmp));
+      }
+    }
+    else{
+      std::istringstream is( muonline );
+      string tmp;
+      float tmpf;
+      for (int x =0; x < ncuts; x++){
+	if ( x%2 ==0) {
+	  is >> tmp;
+	  continue;
+	}
+
+	if (x > 10 && x < 16){
+	  is >> tmp;
+	  string_muonsel.push_back(make_pair(cutnames.at(x),tmp) );
+
+	}
+	else if ( x ==1) {is >> idlabel;}
+	else {
+	  is >> tmpf;
+	  float_muonsel.push_back(make_pair(cutnames.at(x),tmpf));
+	}
+      }
+    }
+    selectionIDMapsMuon[idlabel] = string_muonsel;
+    selectionIDMapfMuon[idlabel] = float_muonsel;
+  }
+}
+
+
+void AnalyzerCore::SetupSelectionElectron(std::string path_sel){
+
+  Message("SetupSelectionElectron", DEBUG);
+
+  //// currently hard coded set of cuts
+
+  ifstream elselconfig(path_sel.c_str());
+  if(!elselconfig) {
+    cerr << "Did not find "+ path_sel+", exiting ..." << endl;
+    exit(EXIT_FAILURE);
+  }
+  string elline;
+  vector<TString> cutnames;
+  int ncuts=0;
+  while(getline(elselconfig,elline) ){
+    vector<pair<TString,TString> > string_elsel;
+    vector<pair<TString,float> > float_elsel;
+    TString idlabel;
+    if (TString(elline).Contains("webpage")) continue;
+    if (TString(elline).Contains("ncut")) {
+      std::istringstream is( elline );
+      string tmp;
+      int itmp;
+      is >> tmp;
+      is >> itmp;
+      ncuts = 2*(itmp +1);
+      continue;
+    }
+
+    if (TString(elline).Contains("ptmin")) {
+      std::istringstream is( elline );
+      string tmp;
+      for (int x =0; x < ncuts; x++){
+        is >> tmp;
+        cutnames.push_back(TString(tmp));
+      }
+    }
+    else{
+      std::istringstream is( elline );
+      string tmp;
+      float tmpf;
+
+      for (int x =0; x < ncuts; x++){
+        if ( x%2 ==0) {
+          is >> tmp;
+          continue;
+        }
+
+        if (x > 10 && x < 18){
+          is >> tmp;
+          string_elsel.push_back(make_pair(cutnames.at(x),tmp) );
+        }
+	else  if (x > 26 && x < 30){
+          is >> tmp;
+          string_elsel.push_back(make_pair(cutnames.at(x),tmp) );
+        }
+        else if ( x ==1) {is >> idlabel;}
+        else {
+          is >> tmpf;
+          float_elsel.push_back(make_pair(cutnames.at(x),tmpf));
+        }
+      }
+    }
+    selectionIDMapsElectron[idlabel] = string_elsel;
+    selectionIDMapfElectron[idlabel] = float_elsel;
+  }
+}
+
 
 std::map<TString,BTagSFUtil*> AnalyzerCore::SetupBTagger(std::vector<TString> taggers, std::vector<TString> wps){
   
@@ -389,135 +560,155 @@ bool AnalyzerCore::EtaRegion(TString reg,  std::vector<snu::KMuon> muons){
   return false;
 }
 
-std::vector<snu::KJet> AnalyzerCore::GetJets(BaseSelection::ID jetid){
+
+
+
+std::vector<snu::KJet> AnalyzerCore::GetJets(BaseSelection::ID jetid, float ptcut, float etacut){
+  return GetJets(GetStringID(jetid), ptcut, etacut);
+}
+
+std::vector<snu::KMuon> AnalyzerCore::GetMuons(BaseSelection::ID muonid, float ptcut, float etacut){
+  return GetMuons(GetStringID(muonid), ptcut, etacut);
+}
+
+std::vector<snu::KMuon> AnalyzerCore::GetMuons(BaseSelection::ID muonid, bool keepfake, float ptcut, float etacut){
+  return GetMuons(GetStringID(muonid), true, ptcut, etacut);
+}
+
+std::vector<snu::KElectron> AnalyzerCore::GetElectrons(BaseSelection::ID electronid, float ptcut, float etacut){
+  return GetElectrons(true, true,GetStringID(electronid), ptcut, etacut);
+}
+
+std::vector<snu::KElectron> AnalyzerCore::GetElectrons(bool keepcf, bool keepfake, BaseSelection::ID electronid, float ptcut, float etacut){
+  return GetElectrons(keepcf, keepfake,GetStringID(electronid), ptcut, etacut);
+}
+
+
+
+TString AnalyzerCore::GetStringID(BaseSelection::ID id){
+  if(id == BaseSelection::ELECTRON_POG_VETO ) return "ELECTRON_POG_VETO";
+  if(id == BaseSelection::ELECTRON_POG_LOOSE) return "ELECTRON_POG_LOOSE";
+  if(id == BaseSelection::ELECTRON_POG_MEDIUM) return "ELECTRON_POG_MEDIUM";
+  if(id == BaseSelection::ELECTRON_POG_TIGHT           ) return "ELECTRON_POG_TIGHT";
+  if(id == BaseSelection::ELECTRON_POG_MVATrig) return "ELECTRON_POG_MVATrig";
+  if(id == BaseSelection::ELECTRON_POG_MVANonTrig    ) return "ELECTRON_POG_MVANonTrig";
+  if(id == BaseSelection::ELECTRON_ECAL_FIDUCIAL     ) return "ELECTRON_ECAL_FIDUCIAL";
+  if(id == BaseSelection::ELECTRON_HN_VETO           ) return "ELECTRON_HN_VETO";
+  if(id == BaseSelection::ELECTRON_HN_TIGHT          ) return "ELECTRON_HN_TIGHT";
+  if(id == BaseSelection::ELECTRON_HN_FAKELOOSE      ) return "ELECTRON_HN_FAKELOOSE";
+  if(id == BaseSelection::ELECTRON_HN_FAKELOOSE_NOD0 ) return "ELECTRON_HN_FAKELOOSE_NOD0";
+  if(id == BaseSelection::ELECTRON_TOP_VETO          ) return "ELECTRON_TOP_VETO";
+  if(id == BaseSelection::ELECTRON_TOP_LOOSE         ) return "ELECTRON_TOP_LOOSE";
+  if(id == BaseSelection::ELECTRON_TOP_TIGHT         ) return "ELECTRON_TOP_TIGHT";
+  if(id == BaseSelection::ELECTRON_PTETA             ) return "ELECTRON_PTETA";
+  if(id == BaseSelection::ELECTRON_NOCUT             ) return "ELECTRON_NOCUT";
+  if(id == BaseSelection::MUON_POG_LOOSE             ) return "MUON_POG_LOOSE";
+  if(id == BaseSelection::MUON_POG_MEDIUM            ) return "MUON_POG_MEDIUM";
+  if(id == BaseSelection::MUON_POG_TIGHT             ) return "MUON_POG_TIGHT";
+ if(id == BaseSelection::MUON_HN_VETO               ) return "MUON_HN_VETO";
+ if(id == BaseSelection::MUON_HN_FAKELOOSE          ) return "MUON_HN_FAKELOOSE";
+ if(id == BaseSelection::MUON_HN_TIGHT              ) return "MUON_HN_TIGHT";
+ if(id == BaseSelection::MUON_FAKELOOSE             ) return "MUON_FAKELOOSE";
+ if(id == BaseSelection::MUON_TOP_VETO              ) return "MUON_TOP_VETO";
+ if(id == BaseSelection::MUON_TOP_LOOSE             ) return "MUON_TOP_LOOSE";
+ if(id == BaseSelection::MUON_TOP_TIGHT             ) return "MUON_TOP_TIGHT";
+ if(id == BaseSelection::MUON_PTETA                 ) return "MUON_PTETA";
+ if(id == BaseSelection::MUON_NOCUT                 ) return "MUON_NOCUT";
+ if(id == BaseSelection::PFJET_LOOSE                ) return "PFJET_LOOSE";
+ if(id == BaseSelection::PFJET_MEDIUM               ) return "PFJET_MEDIUM";
+ if(id == BaseSelection::PFJET_TIGHT                ) return "PFJET_TIGHT";
+ if(id == BaseSelection::JET_HN                     ) return "JET_HN";
+ if(id == BaseSelection::JET_HN_TChannel            ) return "JET_HN_TChannel";
+ if(id == BaseSelection::JET_NOLEPTONVETO           ) return "JET_NOLEPTONVETO";
+ if(id == BaseSelection::JET_LOOSE                  ) return "JET_LOOSE";
+ if(id == BaseSelection::JET_TIGHT                  ) return "JET_TIGHT";
+ if(id == BaseSelection::PHOTON_POG_LOOSE           ) return "PHOTON_POG_LOOSE";
+ if(id == BaseSelection::PHOTON_POG_MEDIUM          ) return "PHOTON_POG_MEDIUM";
+ if(id == BaseSelection::PHOTON_POG_TIGHT           ) return "PHOTON_POG_TIGHT";
+ cerr << " ID [--] not found" << endl; exit(EXIT_FAILURE);
+
+}
+
+
+
+std::vector<snu::KJet> AnalyzerCore::GetJets(TString jetid,float ptcut, float etacut){
   
   std::vector<snu::KJet> jetColl;
   
-  if( jetid == BaseSelection::JET_HN){
-    //= loose + pileupID
-    eventbase->GetJetSel()->JetHNSelection(jetColl,GetMuons(BaseSelection::MUON_HN_VETO), GetElectrons(BaseSelection::ELECTRON_HN_VETO), 20., 2.5, false, "Loose");
+  std::map<TString, vector<pair<TString,TString> > >::iterator it = selectionIDMapsJet.find(jetid);
+  if(it== selectionIDMapsJet.end()){
+    cerr << "Jet ID ["+jetid+"] not found" << endl; exit(EXIT_FAILURE);
   }
-  else if( jetid == BaseSelection::JET_HN_TChannel){
-    //= loose + pileupID
-    eventbase->GetJetSel()->JetHNSelection(jetColl,GetMuons(BaseSelection::MUON_HN_VETO), GetElectrons(BaseSelection::ELECTRON_HN_VETO), 20., 5., false, "Loose");
+  else {
+    TString muontag="";
+    TString eltag="";
+    for (unsigned int i=0; i  < it->second.size(); i++){
+      if ( it->second.at(i).first == "remove_near_muonID") muontag =  it->second.at(i).second;
+      if ( it->second.at(i).first == "remove_near_electronID") eltag =  it->second.at(i).second;
+    }
+    if (muontag.Contains("NONE") && eltag.Contains("NONE"))  eventbase->GetJetSel()->SelectJets(isData,jetColl,jetid, ptcut,etacut);
+    else if (muontag.Contains("NONE") || eltag.Contains("NONE")) {    cerr << "cannot choose to remove jets near only one lepton" << endl; exit(EXIT_FAILURE);}
+    else eventbase->GetJetSel()->SelectJets(isData,jetColl, GetMuons(muontag), GetElectrons(eltag) ,jetid, ptcut,etacut);
+    
   }
-  else if(jetid == BaseSelection::JET_NOLEPTONVETO){
-    eventbase->GetJetSel()->SetID(BaseSelection::PFJET_LOOSE);
-    eventbase->GetJetSel()->SetPt(10.);
-    eventbase->GetJetSel()->SetEta(2.5);
-    eventbase->GetJetSel()->Selection(jetColl);
-  }
-  else  if(jetid == BaseSelection::JET_LOOSE){
-    eventbase->GetJetSel()->SetID(BaseSelection::PFJET_LOOSE);
-    eventbase->GetJetSel()->SetPt(10.);
-    eventbase->GetJetSel()->SetEta(2.5);
-    eventbase->GetJetSel()->JetSelectionLeptonVeto(jetColl, GetMuons(BaseSelection::MUON_HN_VETO), GetElectrons(false,false, BaseSelection::ELECTRON_HN_VETO));
-  }
-  
-  
-  else  if(jetid == BaseSelection::JET_TIGHT){
-    /// Uses pileup + tight ID
-    eventbase->GetJetSel()->JetHNSelection(jetColl,GetMuons(BaseSelection::MUON_HN_VETO), GetElectrons(BaseSelection::ELECTRON_HN_VETO), 20., 2.5, false, "Tight" );
-  }
-  else {cout << "Jet collection  not found" << endl; exit(EXIT_FAILURE);}
-  
-  SmearJets(jetColl);
+
 
   return jetColl;
   
 }
 
-std::vector<snu::KMuon> AnalyzerCore::GetMuons(BaseSelection::ID muid){
-  return GetMuons(muid, true);
+std::vector<snu::KMuon> AnalyzerCore::GetMuons(TString muid, float ptcut, float etacut){
+  return GetMuons(muid, true, ptcut, etacut);
 }
 
-std::vector<snu::KMuon> AnalyzerCore::GetMuons(BaseSelection::ID muid, bool keepfakes){
+std::vector<snu::KMuon> AnalyzerCore::GetMuons(TString muid, bool keepfakes, float ptcut, float etacut){
 
   std::vector<snu::KMuon> muonColl;
-  
-  if(muid == BaseSelection::MUON_POG_TIGHT  ||
-     muid == BaseSelection::MUON_POG_MEDIUM||
-     muid == BaseSelection::MUON_POG_LOOSE)
-    {eventbase->GetMuonSel()->SelectMuons(muonColl, muid, 15., 2.4);}
 
-  
-  else if(muid == BaseSelection::MUON_HN_TIGHT){
-    
-    if(k_running_nonprompt) eventbase->GetMuonSel()->SelectMuons(muonColl, BaseSelection::MUON_HN_FAKELOOSE, 15., 2.4);
-    else eventbase->GetMuonSel()->SelectMuons(muonColl, BaseSelection::MUON_HN_TIGHT, 15., 2.4);
+  std::map<TString, vector<pair<TString,TString> > >::iterator it = selectionIDMapsMuon.find(muid);
+  if(it== selectionIDMapsMuon.end()){
+    cerr << "Muon ID ["+muid+"] not found" << endl; exit(EXIT_FAILURE);
   }
-  
-  else if(muid == BaseSelection::MUON_HN_FAKELOOSE){   eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_FAKELOOSE, 15., 2.4);}
-
-  else if(muid == BaseSelection::MUON_HN_TRI_NODXYCUT_TIGHT){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_NODXYCUT_TIGHT, 10., 2.4);}
-
-  else if(muid == BaseSelection::MUON_HN_TRI_NODXYCUT_LOOSE){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_NODXYCUT_LOOSE, 10., 2.4);}
-
-  else if(muid == BaseSelection::MUON_HN_TRI_TIGHT){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_TIGHT, 10., 2.4);}
-
-  else if(muid == BaseSelection::MUON_HN_TRI_LOOSE){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_LOOSE, 10., 2.4);}
-
-  else if(muid == BaseSelection::MUON_HN_TRI_HIGHDXY_TIGHT){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_HIGHDXY_TIGHT, 10., 2.4);}
-
-  else if(muid == BaseSelection::MUON_HN_TRI_HIGHDXY_LOOSE){ eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_TRI_HIGHDXY_LOOSE, 10., 2.4);}
-
-  // Veto cut
-  else if(muid == BaseSelection::MUON_HN_VETO){   eventbase->GetMuonSel()->SelectMuons(muonColl,BaseSelection::MUON_HN_VETO, 10., 2.4);}
-
-  else if(muid == BaseSelection::MUON_NOCUT){
-    eventbase->GetMuonSel()->SetPt(0.); 
-    eventbase->GetMuonSel()->SetEta(5.);    
-    eventbase->GetMuonSel()->Selection(muonColl);
-  }
-  
   else {
-    cout << "GetMuons::  does not exist: filling vector with all muons with no cuts applied" << endl;
-    exit(EXIT_FAILURE);
+    if (ptcut == -999.)  eventbase->GetMuonSel()->SelectMuons(muonColl,muid);
+    else eventbase->GetMuonSel()->SelectMuons(muonColl,muid, ptcut, etacut);
   }
+  //if(k_running_nonprompt) eventbase->GetMuonSel()->SelectMuons(muonColl, BaseSelection::MUON_HN_FAKELOOSE, 15., 2.4);
+  //else eventbase->GetMuonSel()->SelectMuons(muonColl, BaseSelection::MUON_HN_TIGHT, 15., 2.4);
   
   return  GetTruePrompt(muonColl, keepfakes);
   
 }
 
 
-std::vector<snu::KElectron> AnalyzerCore::GetElectrons(BaseSelection::ID elid){
-  return GetElectrons( true,  true, elid);
+std::vector<snu::KElectron> AnalyzerCore::GetElectrons(TString elid,float ptcut, float etacut){
+  return GetElectrons( true,  true, elid, ptcut, etacut);
 }
 
-std::vector<snu::KElectron> AnalyzerCore::GetElectrons(bool keepcf, bool keepfake, BaseSelection::ID elid){
+std::vector<snu::KElectron> AnalyzerCore::GetElectrons(bool keepcf, bool keepfake, TString elid,float ptcut, float etacut){
   
   std::vector<snu::KElectron> electronColl;
-  
-  if(elid == BaseSelection::ELECTRON_POG_TIGHT  || 
-     elid ==  BaseSelection::ELECTRON_POG_MEDIUM|| 
-     elid == BaseSelection::ELECTRON_POG_VETO   ||
-     elid == BaseSelection::ELECTRON_POG_LOOSE) 
-    {eventbase->GetElectronSel()->SelectElectrons(electronColl, elid, 10., 2.5);}
-  
 
-  else if(elid == BaseSelection::ELECTRON_HN_TIGHT){
+
+
+  std::map<TString, vector<pair<TString,TString> > >::iterator it = selectionIDMapsElectron.find(elid);
+  if(it== selectionIDMapsElectron.end()){
+    cerr << "Electron ID ["+elid+"] not found" << endl; exit(EXIT_FAILURE);
+  }
+  else {
+    if (ptcut == -999.)  eventbase->GetElectronSel()->SelectElectrons(electronColl,elid);
+    else eventbase->GetElectronSel()->SelectElectrons(electronColl,elid, ptcut, etacut);
+  }
+  
+  //if(elid == "ELECTRON_HN_TIGHT"){
     /// This is the vector of electrons with optimie cuts
-    std::vector<snu::KElectron> _electronColl;
-    if(k_running_nonprompt) eventbase->GetElectronSel()->SelectElectrons(_electronColl, BaseSelection::ELECTRON_HN_FAKELOOSE_NOD0, 15., 2.5);
-    else eventbase->GetElectronSel()->SelectElectrons(_electronColl,BaseSelection::ELECTRON_HN_TIGHT, 15., 2.5);
-    electronColl =ShiftElectronEnergy(_electronColl, k_running_chargeflip);
-  }
+    //std::vector<snu::KElectron> _electronColl;
+    //if(k_running_nonprompt) eventbase->GetElectronSel()->SelectElectrons(_electronColl, BaseSelection::ELECTRON_HN_FAKELOOSE_NOD0, 15., 2.5);
+    //else eventbase->GetElectronSel()->SelectElectrons(_electronColl,BaseSelection::ELECTRON_HN_TIGHT, 15., 2.5);
+    //electronColl =ShiftElectronEnergy(_electronColl, k_running_chargeflip);
+  // }
    
-  else if(elid == BaseSelection::ELECTRON_HN_FAKELOOSE){   eventbase->GetElectronSel()->SelectElectrons(electronColl,BaseSelection::ELECTRON_HN_FAKELOOSE, 10., 2.5);}
-  else if(elid == BaseSelection::ELECTRON_HN_FAKELOOSE_NOD0){   eventbase->GetElectronSel()->SelectElectrons(electronColl,BaseSelection::ELECTRON_HN_FAKELOOSE_NOD0, 10., 2.5);}
-  
-  // Veto cut
-  else if(elid == BaseSelection::ELECTRON_HN_VETO){   eventbase->GetElectronSel()->SelectElectrons(electronColl,BaseSelection::ELECTRON_HN_VETO, 10., 2.5);}
-  
-  
-  else if(elid == BaseSelection::ELECTRON_PTETA){
-    eventbase->GetElectronSel()->SetPt(20.);
-    eventbase->GetElectronSel()->SetEta(2.5);
-    eventbase->GetElectronSel()->Selection(electronColl);
-  }
-  else if(elid == BaseSelection::ELECTRON_NOCUT){  eventbase->GetElectronSel()->SetPt(0.);   eventbase->GetElectronSel()->SetEta(5.); eventbase->GetElectronSel()->Selection(electronColl);}
-  else  eventbase->GetElectronSel()->SelectElectrons(electronColl, elid, 15., 2.5);
-    
+
   return  GetTruePrompt(electronColl, keepcf, keepfake); 
 
 }
@@ -652,151 +843,31 @@ double AnalyzerCore::TriggerScaleFactor( vector<snu::KElectron> el, vector<snu::
   
   if(isData) return 1.;
   
-  //// ONLY SINGLE MUON TRIGGER SCAKE FACTOR ARE UPDATED
+  //// ONLY SINGLE MUON TRIGGER SCAKE FACTOR ARE UPDATED, OTHERS ARE 2015 SFS
 
   ///https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgHLTScaleFactorMeasurements
-
+  
 
   if(el.size() == 2){
-    //if (trigname.Contains("HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v")) return 0.997*0.997*0.998;
-    if (trigname.Contains("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v")) return 0.995*0.998;
-    if (trigname.Contains("HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW_v")) return 0.997;
-    if (trigname.Contains("HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v")) {
-      float aeta1 = fabs(el.at(0).SCEta());
-      float aeta2 = fabs(el.at(1).SCEta());
-      if ( aeta1 < 1.2 ) {
-	if      ( aeta2 < 1.2 ) return 0.953 + direction*0.023;
-	else if ( aeta2 < 2.4 ) return 0.957 + 0.5*direction*0.027;
-      }
-      else if ( aeta1 < 2.4 ) {
-	if      ( aeta2 < 1.2 ) return 0.967 + 0.5*direction*0.029;
-	else if ( aeta2 < 2.4 ) return 0.989 - direction*0.031;
-      }
-    }
+    return 1.;
   }
 
   if(mu.size() == 1){
     if (trigname.Contains("HLT_IsoMu22") || trigname.Contains("HLT_IsoTkMu22"))  {
       /// https://twiki.cern.ch/twiki/bin/view/CMS/MuonWorkInProgressAndPagResults
-      
-      float mupt=mu.at(0).Pt();
-      if(mupt > 120.) mupt = 119.;
-      if(mupt < 20.) mupt = 21.;
-      if(eventbase->GetEvent().RunNumber()  < 274093){
-	return 1.;
-	//	float sferr = double(direction)*SingleMuon_274093->GetBinError(SingleMuon_274093->FindBin( fabs(mu.at(0).Eta()), mupt) );
-	//return  (1. + sferr)*SingleMuon_274093->GetBinContent( SingleMuon_274093->FindBin(  fabs(mu.at(0).Eta()), mupt) );
-      }
-      else {
-	return 1.;
-	//float sferr = double(direction)*SingleMuon_276097->GetBinError( SingleMuon_276097->FindBin( fabs(mu.at(0).Eta()), mupt) );
-	//return  (1. + sferr)*SingleMuon_276097->GetBinContent( SingleMuon_276097->FindBin(  fabs(mu.at(0).Eta()), mupt) );
-      }
+      return 1.;
 
     }
   }
   if(el.size() == 1){
-
-    // http://fcouderc.web.cern.ch/fcouderc/EGamma/scaleFactors/moriond2016_76X/eleMVATrig/ScaleFactor_GsfElectronToRECO_passingTrigWP80.txt.egamma_egammaPlots.pdf
-    if (trigname.Contains("HLT_Ele23_WPLoose_Gsf_v")) {
-      float el_eta = el.at(0).SCEta();
-      float el_pt = el.at(0).Pt();
-      if(el_pt < 25.){
-	if(el_eta < -1.56) return 0.928;
-	else if(el_eta < -1.4442) return 0.949;
-	else if(el_eta < -0.8) return 0.964;
-	else if(el_eta < 0.) return 0.963;
-	else if(el_eta < 0.8) return 0.985;
-	else if(el_eta < 1.4442) return 0.966;
-	else if(el_eta < 1.56) return 0.903;
-	else return 0.906;
-      }
-      else  if(el_pt < 35.){
-	if(el_eta < -1.56) return 0.937;
-	else if(el_eta < -1.4442) return 0.973;
-	else if(el_eta < -0.8) return 0.983;
-	else if(el_eta < 0.) return 0.985;
-	else if(el_eta < 0.8) return 1.005;
-        else if(el_eta < 1.4442) return 0.984;
-	else if(el_eta < 1.56) return 0.931;
-	else return 0.920;
-      } 
-      else  if(el_pt < 45.){
-	if(el_eta < -1.56) return 0.953;
-	else if(el_eta < -1.4442) return 0.966;
-	else if(el_eta < -0.8) return 0.985;
-	else if(el_eta < 0.) return 0.986;
-	else if(el_eta < 0.8) return 1.001;
-        else if(el_eta < 1.4442) return 0.986;
-	else if(el_eta < 1.56) return 0.955;
-	else return 0.941;
-      } 
-      else  if(el_pt < 55.){
-	if(el_eta < -1.56) return 0.963;
-	else if(el_eta < -1.4442) return 0.972;
-	else if(el_eta < -0.8) return 0.987;
-	else if(el_eta < 0.) return 0.990;
-	else if(el_eta < 0.8) return 1.003;
-        else if(el_eta < 1.4442) return 0.986;
-	else if(el_eta < 1.56) return 0.950;
-	else return 0.950;
-      } 
-      else{
-	if(el_eta < -1.56) return 0.973;
-	else if(el_eta < -1.4442) return 0.975;
-	else if(el_eta < -0.8) return 0.983;
-	else if(el_eta < 0.) return 0.992;
-	else if(el_eta < 0.8) return 1.;
-        else if(el_eta < 1.4442) return 0.985 ;
-	else if(el_eta < 1.56) return 0.991;
-	else return 0.958;
-      }
-      
-    }
+    return 1.;
   } 
 
   if(mu.size() == 2){
-    //if (trigname.Contains("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v")) return (0.993*0.984*0.980*0.968);
-    //if (trigname.Contains("HLT_Mu17_TrkIsoVVL_Mu8_OR_TkMu8_TrkIsoVVL_DZ_v")) return 0.982*0.985*.973;
-    //if (trigname.Contains("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v")) return (0.993*0.984*0.980*0.968);
-    //  new SF frmo AN2015_309_v7.pdf
-    if( (trigname.Contains("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v")) || (trigname.Contains("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v"))){
-      float aeta1 = fabs(mu.at(0).Eta());
-      float aeta2 = fabs(mu.at(1).Eta());
-      
-      if ( aeta1 < 1.2 ) {
-	if      ( aeta2 < 1.2 ) return 0.926 + direction*0.022;
-	else if ( aeta2 < 2.4 ) return 0.943 + 0.5*direction*0.026;
-      }
-      else if ( aeta1 < 2.4 ) {
-	if      ( aeta2 < 1.2 ) return 0.958 + 0.5*direction*0.027;
-	else if ( aeta2 < 2.4 ) return 0.926 - direction*0.027;
-      }
-    }
-  }
-       
-  if( (el.size() == 1) && (mu.size() == 1)){
-    if ((trigname.Contains("HLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v")) ||  (trigname.Contains("HLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL_v"))){
-      float aeta1 = fabs(mu.at(0).Eta());
-      float aeta2 = fabs(el.at(0).SCEta());
-      
-      if ( aeta1 < 1.2 ) {
-	if      ( aeta2 < 1.2 ) return 0.966 + direction*0.022;
-	else if ( aeta2 < 2.4 ) return 0.973 + 0.5*direction*0.025;
-      }
-      else if ( aeta1 < 2.4 ) {
-	if      ( aeta2 < 1.2 ) return 0.981 + 0.5*direction*0.025;
-	else if ( aeta2 < 2.4 ) return 0.984 - direction*0.030;
-      }
-    }
+    return 1.;
   }
   
   
-  /// Trilepton
-  if (trigname.Contains("HLT_TripleMu_12_10_5")) return  0.992*0.986*0.981* 0.982;
-  if (trigname.Contains("HLT_DiMu9_Ele9_CaloIdL_TrackIdL")) return  0.981*0.95;
-  if (trigname.Contains("HLT_Mu8_DiEle12_CaloIdL_TrackIdL")) return 0.966*1.005;
-  if (trigname.Contains("HLT_Ele16_Ele12_Ele8_CaloIdL_TrackIdL")) return 0.990*1.003*0.991*0.998;
   
 
   return 1.;
@@ -821,7 +892,7 @@ double AnalyzerCore::ElectronScaleFactor( BaseSelection::ID elid, vector<snu::KE
     if(elpt > 200.) elpt= 199.;
     if(elpt < 20.) elpt= 21.;
 
-    sf *= ElectronSF_GSF->FindBin(fabs(itel->SCEta()), elpt);
+    sf *= ElectronSF_GSF->GetBinContent(ElectronSF_GSF->FindBin(fabs(itel->SCEta()), elpt));
 
     if(elid==BaseSelection::ELECTRON_POG_TIGHT) {
       
@@ -854,18 +925,29 @@ double AnalyzerCore::ElectronRecoScaleFactor(vector<snu::KElectron> el){
     float elpt= itel->Pt() ;
     if(itel->Pt() > 200.) elpt=119.;
     if(itel->Pt() < 20.) elpt=21.;
-    int bin =  ElectronRECO->FindBin(fabs(itel->SCEta()), elpt);
-    sf *= ElectronRECO->GetBinContent(bin);
+    //int bin =  ElectronRECO->FindBin(fabs(itel->SCEta()), elpt);
+    //sf *= ElectronRECO->GetBinContent(bin);
   }
   
-
   return sf;
+}
+
+float AnalyzerCore::TempPileupWeight(){
+  
+  if(isData) return 1.;
+  else {
+    return reweightPU->GetWeight(eventbase->GetEvent().nVertices());
+  }
+  return 1.;
 }
 
 float AnalyzerCore::WeightByTrigger(vector<TString> triggernames, float tlumi){
 
   if(isData){
     for(unsigned int i=0; i < triggernames.size() ; i++){
+      //// code here sets weight to -99999. if user tries to use incorrect dataset in data 
+      /// datasets for each trigger in 2015 can be seen in following googledoc:
+      //// https://docs.google.com/spreadsheets/d/1BkgAHCC4UtP5sddTZ5G5iWY16BxleuK7rqT-Iz2LHiM/pubhtml?gid=0&single=true
        if(!k_channel.Contains("DoubleMuon")){
 	if(triggernames.at(i).Contains("HLT_Mu17_Mu8_DZ_v"))  return -99999.;
 	if(triggernames.at(i).Contains("HLT_Mu17_Mu8_SameSign_DZ_v"))  return -99999.;
@@ -896,17 +978,18 @@ float AnalyzerCore::WeightByTrigger(vector<TString> triggernames, float tlumi){
 	if(triggernames.at(i).Contains("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v")) return -99999.;
 	if(triggernames.at(i).Contains("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v")) return -99999.;
 	if(triggernames.at(i).Contains("HLT_Ele16_Ele12_Ele8_CaloIdL_TrackIdL_v")) return -99999.;
+	if(triggernames.at(i).Contains("HLT_Ele8_CaloIdM_TrackIdM_PFJet30_v")) return -99999.;
+        if(triggernames.at(i).Contains("HLT_Ele12_CaloIdL_TrackIdL_IsoVL_PFJet30_v")) return -99999.;
+        if(triggernames.at(i).Contains("HLT_Ele12_CaloIdL_TrackIdL_IsoVL_v")) return -99999.;
+        if(triggernames.at(i).Contains("HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v")) return -99999.;
+        if(triggernames.at(i).Contains("HLT_Ele18_CaloIdL_TrackIdL_IsoVL_PFJet30_v")) return -99999.;
+        if(triggernames.at(i).Contains("HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v")) return -99999.;
+        if(triggernames.at(i).Contains("HLT_Ele23_CaloIdL_TrackIdL_IsoVL_PFJet30_v")) return -99999.;
+        if(triggernames.at(i).Contains("HLT_Ele33_CaloIdL_TrackIdL_IsoVL_PFJet30_v")) return -99999.;
+
       }
       if(!k_channel.Contains("SingleElectron")){
 	// Single Electon                                                                                                                                                       
-	if(triggernames.at(i).Contains("HLT_Ele8_CaloIdM_TrackIdM_PFJet30_v")) return -99999.;
-	if(triggernames.at(i).Contains("HLT_Ele12_CaloIdL_TrackIdL_IsoVL_PFJet30_v")) return -99999.;
-	if(triggernames.at(i).Contains("HLT_Ele12_CaloIdL_TrackIdL_IsoVL_v")) return -99999.;
-	if(triggernames.at(i).Contains("HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v")) return -99999.;
-	if(triggernames.at(i).Contains("HLT_Ele18_CaloIdL_TrackIdL_IsoVL_PFJet30_v")) return -99999.;
-	if(triggernames.at(i).Contains("HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v")) return -99999.;
-	if(triggernames.at(i).Contains("HLT_Ele23_CaloIdL_TrackIdL_IsoVL_PFJet30_v")) return -99999.;
-	if(triggernames.at(i).Contains("HLT_Ele33_CaloIdL_TrackIdL_IsoVL_PFJet30_v")) return -99999.;
 	if(triggernames.at(i).Contains("HLT_Ele23_WPLoose_Gsf_v")) return -99999.;
 	if(triggernames.at(i).Contains("HLT_Ele27_WPTight_Gsf_v")) return -99999.;
 	if(triggernames.at(i).Contains("HLT_Ele27_eta2p1_WPLoose_Gsf_v")) return -99999.;
@@ -955,7 +1038,7 @@ float AnalyzerCore::WeightByTrigger(TString triggername, float tlumi){
   
   /// In v766 path lumi is corrected for removal of bad beamspot LS
   // https://github.com/vallot/CATTools/commit/aae3e60b194b1bacf2595a33c8fa27f411dac16b
-  if(k_cat_version == 5){
+  if(k_cat_version > 4){
     for(map<TString, float>::iterator mit = trigger_lumi_map_cat2016.begin(); mit != trigger_lumi_map_cat2016.end(); mit++){
       if(triggername.Contains(mit->first)) return (mit->second / tlumi);
     }
@@ -1025,7 +1108,11 @@ void AnalyzerCore::AddTriggerToList(TString triggername){
 
 AnalyzerCore::~AnalyzerCore(){
   
+
   Message("In AnalyzerCore Destructor" , INFO);
+
+  if(!k_isdata)  delete reweightPU;
+
   if(FRHist) delete FRHist;
 
   for(map<TString, TH1*>::iterator it = maphist.begin(); it!= maphist.end(); it++){
@@ -1078,6 +1165,12 @@ AnalyzerCore::~AnalyzerCore(){
   }
   mapCLhistTriLep.clear();
 
+
+  for(map<TString,TNtupleD*>::iterator it = mapntp.begin(); it!= mapntp.end(); it++){ 
+    delete it->second;
+  }
+  mapntp.clear();
+
   
   delete m_fakeobj;
   delete ElectronSF_GSF;
@@ -1094,8 +1187,8 @@ AnalyzerCore::~AnalyzerCore(){
   delete MuonISO_loose_tightID;
   //delete MuonISO_loose_mediumID;
   //delete MuonISO_loose_looseID;
-  //  delete SingleMuon_274093;
-  //  delete SingleMuon_276097;
+    delete SingleMuon_274093;
+  delete SingleMuon_276097;
 
   for(std::map<TString,BTagSFUtil*>::iterator it = MapBTagSF.begin(); it!= MapBTagSF.end(); it++){
     delete it->second;
@@ -1157,6 +1250,13 @@ void AnalyzerCore::SetUpEvent(Long64_t entry, float ev_weight, TString per) thro
   //
   
   eventbase = new EventBase(lqevent);
+    
+  eventbase->GetElectronSel()->SetIDSMap(selectionIDMapsElectron);
+  eventbase->GetElectronSel()->SetIDFMap(selectionIDMapfElectron);
+  eventbase->GetMuonSel()->SetIDSMap(selectionIDMapsMuon);
+  eventbase->GetMuonSel()->SetIDFMap(selectionIDMapfMuon);
+  eventbase->GetJetSel()->SetIDSMap(selectionIDMapsJet);
+  eventbase->GetJetSel()->SetIDFMap(selectionIDMapfJet);
 
   if(!k_isdata){
     if(!changed_target_lumi){
@@ -1174,6 +1274,7 @@ int AnalyzerCore::VersionStamp(TString cversion){
   else if(cversion.Contains("v7-6-2") || cversion.Contains("v7-6-3") || cversion.Contains("v7-6-4")   ) return 3;
   else if((cversion.Contains("v7-6-5") || cversion.Contains("v7-6-6"))) return 4;
   else if((cversion.Contains("v8-0-1"))) return 5;
+  else if((cversion.Contains("v8-0-2"))) return 6;
   
   return 5;
  
@@ -1230,6 +1331,21 @@ float AnalyzerCore::SumPt( std::vector<snu::KJet> particles){
 }
   
 
+void AnalyzerCore::TruthPrintOut(){
+  if(isData) return;
+  m_logger << INFO<< "RunNumber/Event Number = "  << eventbase->GetEvent().RunNumber() << " : " << eventbase->GetEvent().EventNumber() << LQLogger::endmsg;
+  //cout << "Particle Index |  PdgId  | GenStatus   | Mother PdgId |  Part_Eta | Part_Pt | Part_Phi | Mother Index |   " << endl;
+  for(unsigned int ig=0; ig < eventbase->GetTruth().size(); ig++){
+    if(eventbase->GetTruth().at(ig).IndexMother() <= 0)continue;
+    if(eventbase->GetTruth().at(ig).IndexMother() >= int(eventbase->GetTruth().size()))continue;
+    if (eventbase->GetTruth().at(ig).PdgId() == 2212)  cout << ig + 1 << " | " << eventbase->GetTruth().at(ig).PdgId() << "  |               |         |        |         |         |         |" << endl;
+
+    cout << ig+1 << " |  " <<  eventbase->GetTruth().at(ig).PdgId() << " |  " << eventbase->GetTruth().at(ig).GenStatus() << " |  " << eventbase->GetTruth().at(eventbase->GetTruth().at(ig).IndexMother()).PdgId()<< " |   " << eventbase->GetTruth().at(ig).Eta() << " | " << eventbase->GetTruth().at(ig).Pt() << " | " << eventbase->GetTruth().at(ig).Phi() << " |   " << eventbase->GetTruth().at(ig).IndexMother()  << endl;
+  }
+
+}
+
+
 std::vector<snu::KElectron> AnalyzerCore::ShiftElectronEnergy(std::vector<snu::KElectron> electrons, bool applyshift){
   
   std::vector<snu::KElectron> shiftedel;
@@ -1254,7 +1370,7 @@ bool AnalyzerCore::isPrompt(long pdgid) {
 }
 
 void AnalyzerCore::EndEvent()throw( LQError ){
-
+  
   delete eventbase;                                                                                                            
 
 }
@@ -1264,7 +1380,7 @@ void AnalyzerCore::CheckFile(TFile* file)throw( LQError ){
   if(file) m_logger << INFO << "Analyzer: File " << file->GetName() << " was found." << LQLogger::endmsg;
   else m_logger  << INFO <<"Analyzer  " << file->GetName()  << "  : ERROR Rootfile failed to open." << LQLogger::endmsg;
 
-  if(!file)  throw LQError( "!!! File is not found", LQError::SkipCycle);
+  if(!file) exit(EXIT_FAILURE);
   return;
 }
 
@@ -1280,11 +1396,365 @@ void AnalyzerCore::ListTriggersAvailable(){
 
 
 
-bool AnalyzerCore::PassTrigger(vector<TString> list, int& prescaler){
+
+float AnalyzerCore::PassTrigger(TString trigname,  std::vector<snu::KMuon> muons, std::vector<snu::KElectron> electrons, int& prescaler){
+
+  if(isData){
+    std::vector<TString> list;
+    list.push_back(trigname);
+    if(PassTrigger(list, prescaler)) return 1.;
+    else return 0.;
+  }
+  if(electrons.size() >= 1 && muons.size() >= 1){
+    float trig_eff(1.);
+    if(trigname.Contains("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v")){
+      trig_eff*= GetEff(electrons.at(0), "HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v");
+      trig_eff*= GetEff(muons.at(0), "HLT_Mu8");
+      return trig_eff;
+    }
+    else  return 0.;
+  }
+  else return 0.;
+  
+  return 1.;
+}
+
+
+
+float AnalyzerCore::PassTrigger(TString trigname, std::vector<snu::KElectron> electrons, int& prescaler){
+  
+  if(isData){
+    std::vector<TString> list;
+    list.push_back(trigname);
+    if(PassTrigger(list, prescaler)) return 1.;
+    else return 0.;
+  }
+  
+  if(electrons.size() >=2){
+    float trig_eff(1.);
+    if(trigname.Contains("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v")){
+      
+      trig_eff*= GetEff(electrons.at(0), "HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v");
+      trig_eff*= GetEff(electrons.at(1), "HLT_Ele12_CaloIdL_TrackIdL_IsoVL_v");
+      trig_eff *= 0.995; // DZ efficiency AN2016_228
+      return trig_eff;
+    }
+    else  return 0.;
+  }
+  else return 0.;  
+
+  return 1.;
+}
+
+
+
+float AnalyzerCore::GetEff(snu::KElectron el, TString trigname){
+  float sceta = fabs(el.SCEta());
+  float pt = el.Pt();
+  if (trigname == "HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v"){
+    if(sceta < 0.8){
+      if( pt < 20)return 0.005;
+      else if( pt < 25)return 0.418;
+      else if( pt < 30)return 0.964;
+      else if( pt < 35)return 0.975;
+      else if( pt < 40)return 0.981;
+      else if( pt < 50)return 0.984;
+      else if( pt < 75)return 0.986;
+      else if( pt < 100)return 0.988;
+      else if( pt < 200)return 0.985;
+      else if( pt < 300)return 0.978;
+      else  return 0.966;
+    }
+    else   if(sceta < 1.477){
+      if( pt < 20)return 0.005;
+      else if( pt < 25)return 0.357;
+      else if( pt < 30)return 0.966;
+      else if( pt < 35)return 0.981;
+      else if( pt < 40)return 0.985;
+      else if( pt < 50)return 0.987;
+      else if( pt < 75)return 0.988;
+      else if( pt < 100)return 0.990;
+      else if( pt < 200)return 0.988;
+      else if( pt < 300)return 0.991;
+      else return 0.993;
+    }
+    else   if(sceta < 2.0){
+      if( pt < 20)return 0.12;
+      else if( pt < 25)return 0.372;
+      else if( pt < 30)return 0.980;
+      else if( pt < 35)return 0.991;
+      else if( pt < 40)return 0.993;
+      else if( pt < 50)return 0.995;
+      else if( pt < 75)return 0.995;
+      else if( pt < 100)return 0.996;
+      else if( pt < 200)return 0.997;
+      else if( pt < 300)return 0.994;
+      else if( pt < 2000)return 1.00;
+    }
+    else {
+      if( pt < 20)return 0.003;
+      else if( pt < 25)return 0.198;
+      else if( pt < 30)return 0.939;
+      else if( pt < 35)return 0.984;
+      else if( pt < 40)return 0.989;
+      else if( pt < 50)return 0.990;
+      else if( pt < 75)return 0.993;
+      else if( pt < 100)return 0.997;
+      else if( pt < 200)return 0.996;
+      else if( pt < 300)return 1.00;
+      else if( pt < 2000)return 1.00;
+    }
+  }
+  
+  if (trigname == "HLT_Ele12_CaloIdL_TrackIdL_IsoVL_v"){
+    if(sceta < 0.8){
+      if( pt < 10)return 0.630;
+      else if( pt < 20)return 0.946;
+      else if( pt < 25)return 0.959;
+      else if( pt < 30)return 0.966;
+      else if( pt < 35)return 0.975;
+      else if( pt < 40)return 0.981;
+      else if( pt < 50)return 0.984;
+      else if( pt < 75)return 0.986;
+      else if( pt < 100)return 0.988;
+      else if( pt < 200)return 0.985;
+      else if( pt < 300)return 0.978;
+      else return 0.966;
+    }
+    else   if(sceta < 1.477){
+      if( pt < 10)return 0.578;
+      else if( pt < 20)return 0.953;
+      else if( pt < 25)return 0.971;
+      else if( pt < 30)return 0.976;
+      else if( pt < 35)return 0.981;
+      else if( pt < 40)return 0.985;
+      else if( pt < 50)return 0.987;
+      else if( pt < 75)return 0.988;
+      else if( pt < 100)return 0.990;
+      else if( pt < 200)return 0.988;
+      else if( pt < 300)return 0.991;
+      else  return 0.993;
+    }
+    else   if(sceta < 2.0){
+      if( pt < 10)return 0.517;
+      else if( pt < 20)return 0.934;
+      else if( pt < 25)return 0.984;
+      else if( pt < 30)return 0.991;
+      else if( pt < 35)return 0.991;
+      else if( pt < 40)return 0.993;
+      else if( pt < 50)return 0.995;
+      else if( pt < 75)return 0.995;
+      else if( pt < 100)return 0.996;
+      else if( pt < 200)return 0.997;
+      else if( pt < 300)return 0.994;
+      else  return 1.0;
+    }
+    else {
+      if( pt < 10)return 0.516;
+      else if( pt < 20)return 0.934;
+      else if( pt < 25)return 0.966;
+      else if( pt < 30)return 0.977;
+      else if( pt < 35)return 0.984;
+      else if( pt < 40)return 0.989;
+      else if( pt < 50)return 0.990;
+      else if( pt < 75)return 0.993;
+      else if( pt < 100)return 0.997;
+      else if( pt < 200)return 0.996;
+      else if( pt < 300)return 1.00;
+      else return 1.00;
+    }
+  }
+  
+  return 1.;
+}
+
+
+
+float AnalyzerCore::PassTrigger(TString trigname, std::vector<snu::KMuon> muons, int& prescaler){
+  
+  if(isData){
+    std::vector<TString> list;
+    list.push_back(trigname);
+    if(PassTrigger(list, prescaler)) return 1.;
+    else return 0.;
+  }
+  
+  if(muons.size() >= 2){
+    float trig_eff(1.);
+    if(trigname.Contains("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v")){
+      trig_eff*= GetEff(muons.at(0), "HLT_Mu17");
+      trig_eff*= GetEff(muons.at(1), "HLT_Mu8");
+      return trig_eff;
+    }
+    else return 0.;
+  }
+  
+  if(muons.size() >= 1){
+    if (trigname.Contains("HLT_IsoMu22") || trigname.Contains("HLT_IsoTkMu22"))  {
+      /// https://twiki.cern.ch/twiki/bin/view/CMS/MuonWorkInProgressAndPagResults                                                                                                                                                            
+      float mupt=muons.at(0).Pt();
+      if(mupt > 500.) mupt = 499.;
+      if(mupt < 25.) mupt = 25.;
+      if(eventbase->GetEvent().RunNumber()  < 274093){
+	return  SingleMuon_274093->GetBinContent( SingleMuon_274093->FindBin(  fabs(muons.at(0).Eta()), mupt) );
+      }
+      else {
+	return SingleMuon_276097->GetBinContent( SingleMuon_276097->FindBin(  fabs(muons.at(0).Eta()), mupt) );
+      }
+    }
+    else return 0.;
+  }
+  else return 0.;
+  return 1.;
+}
+
+
+
+
+float AnalyzerCore::GetEff(snu::KMuon mu, TString trigname){
+  float eta = fabs(mu.Eta());
+  float pt = mu.Pt();
+  if (trigname == "HLT_Mu17"){
+    if(eta < 0.8){
+      if( pt < 20)return 0.612;
+      else if( pt < 25)return 0.930;
+      else if( pt < 30)return 0.931;
+      else if( pt < 35)return 0.932;
+      else if( pt < 40)return 0.932;
+      else if( pt < 50)return 0.932;
+      else if( pt < 75)return 0.929;
+      else if( pt < 100)return 0.923;
+      else if( pt < 200)return 0.920;
+      else if( pt < 300)return 0.901;
+      else  return 0.899;
+    }
+    else   if(eta < 1.25){
+      if( pt < 20)return 0.591;
+      else if( pt < 25)return 0.914;
+      else if( pt < 30)return 0.917;
+      else if( pt < 35)return 0.916;
+      else if( pt < 40)return 0.916;
+      else if( pt < 50)return 0.917;
+      else if( pt < 75)return 0.914;
+      else if( pt < 100)return 0.911;
+      else if( pt < 200)return 0.903;
+      else if( pt < 300)return 0.871;
+      else return 0.901;
+    }
+    else   if(eta < 1.6){
+      if( pt < 20)return 0.603;
+      else if( pt < 25)return 0.947;
+      else if( pt < 30)return 0.956;
+      else if( pt < 35)return 0.960;
+      else if( pt < 40)return 0.962;
+      else if( pt < 50)return 0.961;
+      else if( pt < 75)return 0.956;
+      else if( pt < 100)return 0.936;
+      else if( pt < 200)return 0.898;
+      else if( pt < 300)return 0.809;
+      else return 0.718;
+    }
+    else   if(eta < 2.2){
+      if( pt < 20)return 0.565;
+      else if( pt < 25)return 0.902;
+      else if( pt < 30)return 0.920;
+      else if( pt < 35)return 0.928;
+      else if( pt < 40)return 0.934;
+      else if( pt < 50)return 0.936;
+      else if( pt < 75)return 0.936;
+      else if( pt < 100)return 0.928;
+      else if( pt < 200)return 0.896;
+      else if( pt < 300)return 0.786;
+      else return 0.703;
+    }
+    else {
+      if( pt < 20)return 0.470;
+      else if( pt < 25)return 0.778;
+      else if( pt < 30)return 0.817;
+      else if( pt < 35)return 0.842;
+      else if( pt < 40)return 0.858;
+      else if( pt < 50)return 0.876;
+      else if( pt < 75)return 0.886;
+      else if( pt < 100)return 0.886;
+      else if( pt < 200)return 0.872;
+      else if( pt < 300)return 0.837;
+      else return 0.700;
+    }
+  }
+  
+  if (trigname == "HLT_Mu8"){
+    if(eta < 0.8){
+      if( pt < 10)return 0.917;
+      else if( pt < 20)return 0.927;
+      else if( pt < 25)return 0.931;
+      else if( pt < 30)return 0.932;
+      else if( pt < 35)return 0.932;
+      else if( pt < 40)return 0.933;
+      else if( pt < 50)return 0.933;
+      else if( pt < 75)return 0.929;
+      else if( pt < 100)return 0.924;
+      else if( pt < 200)return 0.920;
+      else if( pt < 300)return 0.901;
+      else  return 0.899;
+    }
+    else   if(eta < 1.25){
+      if( pt < 10)return 0.914;
+      else if( pt < 20)return 0.918;
+      else if( pt < 25)return 0.921;
+      else if( pt < 30)return 0.922;
+      else if( pt < 35)return 0.920;
+      else if( pt < 40)return 0.920;
+      else if( pt < 50)return 0.920;
+      else if( pt < 75)return 0.917;
+      else if( pt < 100)return 0.913;
+      else if( pt < 200)return 0.905;
+      else if( pt < 300)return 0.876;
+      else return 0.901;
+    }
+    else   if(eta < 1.6){
+      if( pt < 10)return 0.908;
+      else if( pt < 20)return 0.946;
+      else if( pt < 25)return 0.957;
+      else if( pt < 30)return 0.962;
+      else if( pt < 35)return 0.964;
+      else if( pt < 40)return 0.965;
+      else if( pt < 50)return 0.964;
+      else if( pt < 75)return 0.958;
+      else if( pt < 100)return 0.938;
+      else if( pt < 200)return 0.899;
+      else if( pt < 300)return 0.812;
+      else return 0.718;
+    }
+    else   if(eta < 2.2){
+      if( pt < 10)return 0.869;
+      else if( pt < 20)return 0.915;
+      else if( pt < 25)return 0.932;
+      else if( pt < 30)return 0.937;
+      else if( pt < 35)return 0.941;
+      else if( pt < 40)return 0.943;
+      else if( pt < 50)return 0.944;
+      else if( pt < 75)return 0.941;
+      else if( pt < 100)return 0.932;
+      else if( pt < 200)return 0.899;
+      else if( pt < 300)return 0.791;
+      else return 0.711;
+    }
+  }
+  return 1.;
+}
+
+     
+
+
+bool AnalyzerCore::PassTrigger(vector<TString> list, int& prescaler, bool fake_2016 ){
   
   return TriggerSelector(list, eventbase->GetTrigger().GetHLTInsideDatasetTriggerNames(), eventbase->GetTrigger().GetHLTInsideDatasetTriggerDecisions(), eventbase->GetTrigger().GetHLTInsideDatasetTriggerPrescales(), prescaler);
-  
+ 
+ 
 }
+
+
+
 
 TDirectory* AnalyzerCore::GetTemporaryDirectory(void) const
 {
@@ -1340,26 +1810,31 @@ void AnalyzerCore::MakeHistograms(){
     
 }
 
-void AnalyzerCore::MakeHistograms(TString hname, int nbins, float xbins[]){
-  maphist[hname] =  new TH1F(hname.Data(),hname.Data(),nbins,xbins);
+void AnalyzerCore::MakeHistograms(TString hname, int nbins, float xbins[], TString label){
+  maphist[hname] =  new TH1D(hname.Data(),hname.Data(),nbins,xbins);
+  maphist[hname]->GetXaxis()->SetTitle(label);
 }
 
-void AnalyzerCore::MakeHistograms(TString hname, int nbins, float xmin, float xmax){
+void AnalyzerCore::MakeHistograms(TString hname, int nbins, float xmin, float xmax, TString label){
 
-  maphist[hname] =  new TH1F(hname.Data(),hname.Data(),nbins,xmin,xmax);
+  maphist[hname] =  new TH1D(hname.Data(),hname.Data(),nbins,xmin,xmax);
+  //maphist[hname]->GetXaxis()->SetTitle("TEST");
+  maphist[hname]->GetXaxis()->SetTitle(label);
 }
 
-void AnalyzerCore::MakeHistograms2D(TString hname, int nbinsx, float xmin, float xmax, int nbinsy, float ymin, float ymax) {
+void AnalyzerCore::MakeHistograms2D(TString hname, int nbinsx, float xmin, float xmax, int nbinsy, float ymin, float ymax, TString label) {
 
-  maphist2D[hname] =  new TH2F(hname.Data(),hname.Data(),nbinsx,xmin,xmax, nbinsy,ymin,ymax);
+  maphist2D[hname] =  new TH2D(hname.Data(),hname.Data(),nbinsx,xmin,xmax, nbinsy,ymin,ymax);
+  maphist2D[hname]->GetXaxis()->SetTitle(label);
 }
 
-void AnalyzerCore::MakeHistograms2D(TString hname, int nbinsx,  float xbins[], int nbinsy,  float ybins[]) {
+void AnalyzerCore::MakeHistograms2D(TString hname, int nbinsx,  float xbins[], int nbinsy,  float ybins[], TString label) {
 
-  maphist2D[hname] =  new TH2F(hname.Data(),hname.Data(),nbinsx , xbins, nbinsy,ybins);
+  maphist2D[hname] =  new TH2D(hname.Data(),hname.Data(),nbinsx , xbins, nbinsy,ybins);
+  maphist2D[hname]->GetXaxis()->SetTitle(label);
 }
 
-bool AnalyzerCore::PassBasicEventCuts(){
+bool AnalyzerCore::PassMETFilter(){
   
   bool pass (true);
   
@@ -1391,18 +1866,19 @@ bool AnalyzerCore::PassBasicEventCuts(){
     }
     
     //Bad EE Supercrystal filter (post-ICHEP: extend to include an additional problematic SC --only for 2012)
-    if (!eventbase->GetEvent().PassBadEESupercrystalFilter()) {
-      pass = false;
-      m_logger << DEBUG << "Event Fails PassBadEESupercrystalFilter" << LQLogger::endmsg;
-    }
+    //    if (!eventbase->GetEvent().PassBadEESupercrystalFilter()) {
+    //      pass = false;
+    //      m_logger << DEBUG << "Event Fails PassBadEESupercrystalFilter" << LQLogger::endmsg;
+    //    }
     //}
   return pass;
 }
 
 
 
-void AnalyzerCore::FillHist(TString histname, float value, float w, float xbins[], int nbins){
+void AnalyzerCore::FillHist(TString histname, float value, float w, float xbins[], int nbins , TString label){
   m_logger << DEBUG << "FillHist : " << histname << LQLogger::endmsg;
+
   if(GetHist(histname)) GetHist(histname)->Fill(value, w);
   
   else{
@@ -1411,24 +1887,17 @@ void AnalyzerCore::FillHist(TString histname, float value, float w, float xbins[
       exit(0);
     }
     m_logger << DEBUG << "Making the histogram" << LQLogger::endmsg;
-    MakeHistograms(histname, nbins, xbins);
+    MakeHistograms(histname, nbins, xbins, label);
+    if(GetHist(histname)) GetHist(histname)->GetXaxis()->SetTitle(label);
     if(GetHist(histname)) GetHist(histname)->Fill(value, w);
   }
-
-}
-
-void AnalyzerCore::FillUpDownHist(TString histname, float value, float w, float w_err, float xmin, float xmax, int nbins){
-
-  FillHist(histname+"_up", value, w+w_err, xmin, xmax, nbins);
-  FillHist(histname+"_down", value, w-w_err, xmin, xmax, nbins);
-  FillHist(histname, value, w, xmin, xmax, nbins);
 
 }
 
 
 void AnalyzerCore::FillHistPerLumi(TString histname, float value, float w, float xmin, float xmax,int nbins, int nlumibins){
   
-  if(k_cat_version==4){
+  if(k_cat_version > 4){
     if(nlumibins==10){
       
       if(!GetHist(histname+"_perlumi")) {
@@ -1471,7 +1940,7 @@ void AnalyzerCore::FillHistPerLumi(TString histname, float value, float w, float
 
 }
 
-void AnalyzerCore::FillHist(TString histname, float value, float w, float xmin, float xmax, int nbins){
+void AnalyzerCore::FillHist(TString histname, float value, float w, float xmin, float xmax, int nbins , TString label){
   
   m_logger << DEBUG << "FillHist : " << histname << LQLogger::endmsg;
   if(GetHist(histname)) GetHist(histname)->Fill(value, w);  
@@ -1481,13 +1950,22 @@ void AnalyzerCore::FillHist(TString histname, float value, float w, float xmin, 
       exit(0);
     }
     m_logger << DEBUG << "Making the histogram" << LQLogger::endmsg;
-    MakeHistograms(histname, nbins, xmin, xmax);
+    MakeHistograms(histname, nbins, xmin, xmax, label);
+    if(GetHist(histname)) GetHist(histname)->GetXaxis()->SetTitle(label);
     if(GetHist(histname)) GetHist(histname)->Fill(value, w);
   }
   
 }
 
-void AnalyzerCore::FillHist(TString histname, float value1, float value2, float w, float xmin, float xmax, int nbinsx, float ymin, float ymax, int nbinsy){
+void AnalyzerCore::FillUpDownHist(TString histname, float value, float w, float w_err, float xmin, float xmax, int nbins , TString label){
+
+  FillHist(histname+"_up", value, w+w_err, xmin, xmax, nbins, label);
+  FillHist(histname+"_down", value, w-w_err, xmin, xmax, nbins, label);
+  FillHist(histname, value, w, xmin, xmax, nbins, label);
+
+}
+
+void AnalyzerCore::FillHist(TString histname, float value1, float value2, float w, float xmin, float xmax, int nbinsx, float ymin, float ymax, int nbinsy , TString label){
 
   m_logger << DEBUG << "FillHist : " << histname << LQLogger::endmsg;
   if(GetHist2D(histname)) GetHist2D(histname)->Fill(value1,value2, w);
@@ -1497,13 +1975,14 @@ void AnalyzerCore::FillHist(TString histname, float value1, float value2, float 
       exit(0);
     }
     m_logger << DEBUG << "Making the histogram" << LQLogger::endmsg;
-    MakeHistograms2D(histname, nbinsx, xmin, xmax,nbinsy, ymin, ymax );
+    MakeHistograms2D(histname, nbinsx, xmin, xmax,nbinsy, ymin, ymax , label);
+    if(GetHist2D(histname)) GetHist2D(histname)->GetXaxis()->SetTitle(label);
     if(GetHist2D(histname)) GetHist2D(histname)->Fill(value1,value2, w);
   }
 
 }
 
-void AnalyzerCore::FillHist(TString histname, float valuex, float valuey, float w, float xbins[], int nxbins, float ybins[], int nybins){
+void AnalyzerCore::FillHist(TString histname, float valuex, float valuey, float w, float xbins[], int nxbins, float ybins[], int nybins , TString label){
   m_logger << DEBUG << "FillHist : " << histname << LQLogger::endmsg;
   if(GetHist2D(histname)) GetHist2D(histname)->Fill(valuex,valuey, w);
 
@@ -1513,7 +1992,9 @@ void AnalyzerCore::FillHist(TString histname, float valuex, float valuey, float 
       exit(0);
     }
     m_logger << DEBUG << "Making the histogram" << LQLogger::endmsg;
-    MakeHistograms2D(histname, nxbins, xbins, nybins, ybins );
+    MakeHistograms2D(histname, nxbins, xbins, nybins, ybins , label);
+    if(GetHist2D(histname)) GetHist2D(histname)->GetXaxis()->SetTitle(label);
+    
     if(GetHist2D(histname)) GetHist2D(histname)->Fill(valuex, valuey, w);
   }
 
@@ -1521,7 +2002,7 @@ void AnalyzerCore::FillHist(TString histname, float valuex, float valuey, float 
 
 
 
-void AnalyzerCore::FillHist(TString histname, float value, float w){
+void AnalyzerCore::FillHist(TString histname, float value, float w , TString label){
 
   if(GetHist(histname)) GetHist(histname)->Fill(value, w);  /// Plots Z peak                                   
   else m_logger << INFO << histname << " was NOT found. Will add the histogram to the hist map on first event." << LQLogger::endmsg;
@@ -1669,8 +2150,8 @@ void AnalyzerCore::WriteCLHists(){
   
   for(map<TString, TriLeptonPlots*>::iterator trilepit = mapCLhistTriLep.begin(); trilepit != mapCLhistTriLep.end(); trilepit++){
 
-    //Dir = m_outputFile->mkdir(trilepit->first);
-    //m_outputFile->cd( Dir->GetName() );
+    Dir = m_outputFile->mkdir(trilepit->first);
+    m_outputFile->cd( Dir->GetName() );
     trilepit->second->Write();
     m_outputFile->cd();
   }
@@ -1734,6 +2215,51 @@ TH2* AnalyzerCore::GetHist2D(TString hname){
   else m_logger << DEBUG  << hname << " was not found in map" << LQLogger::endmsg;
 
   return h;
+}
+
+
+
+
+void AnalyzerCore::FillCutFlow(TString cut, float weight){
+
+  bool cut_exists=false;
+
+  for(unsigned int i=0; i < cutflow_list.size();  i++){
+    if (cut == cutflow_list.at(i)) cut_exists=true;
+  }
+
+  if (!cut_exists){
+    n_cutflowcuts=n_cutflowcuts+1;
+    if(GetHist("cutflow")) {
+      
+      map<TString, TH1*>::iterator it = maphist.find("cutflow");
+      vector<float> counters;
+      for(int j = 0; j  < n_cutflowcuts ; j++){
+	counters.push_back(it->second->GetBinContent(1+j));
+      }
+      delete it->second;
+      
+      AnalyzerCore::MakeHistograms("cutflow", n_cutflowcuts,0.,float(n_cutflowcuts));
+      for(unsigned int i=0;i < cutflow_list.size();  i++){
+	GetHist("cutflow")->GetXaxis()->SetBinLabel(i+1,cutflow_list.at(i));
+	GetHist("cutflow")->Fill(cutflow_list.at(i), weight);
+      }
+      GetHist("cutflow")->GetXaxis()->SetBinLabel(n_cutflowcuts,cut);
+      cutflow_list.push_back(cut);
+      
+    }
+    else{
+      AnalyzerCore::MakeHistograms("cutflow", n_cutflowcuts,0.,float(n_cutflowcuts));
+      GetHist("cutflow")->GetXaxis()->SetBinLabel(1,cut);
+      GetHist("cutflow")->Fill(cut,weight);
+      cutflow_list.push_back(cut);
+    }
+  }
+  else {
+    if(GetHist("cutflow")) {
+      GetHist("cutflow")->Fill(cut,weight);
+    }
+  }
 }
 
 
@@ -2013,6 +2539,7 @@ vector<snu::KMuon> AnalyzerCore::GetTruePrompt(vector<snu::KMuon> muons, bool ke
   if(muons.size()==0)return muons;
 
   vector<snu::KMuon> prompt_muons;
+
   for(unsigned int i = 0; i < muons.size(); i++){
     if(!k_isdata){
 
@@ -2021,24 +2548,15 @@ vector<snu::KMuon> AnalyzerCore::GetTruePrompt(vector<snu::KMuon> muons, bool ke
     }// Data
     else prompt_muons.push_back(muons.at(i));
   }/// loop
-
   return prompt_muons;
 
 }
 
 
-void AnalyzerCore::SmearJets(vector<snu::KJet>& k_jets){
-  
-  vector<TLorentzVector> tlv_jets = MakeTLorentz(k_jets);
-  int imu(0);
-  for(std::vector<snu::KJet>::iterator it = k_jets.begin(); it != k_jets.end(); it++, imu++){
-    if(k_isdata)       it->SetPtEtaPhiE(tlv_jets[imu].Pt(),tlv_jets[imu].Eta(), tlv_jets[imu].Phi(), tlv_jets[imu].E());
-    else it->SetPtEtaPhiE(tlv_jets[imu].Pt()*(it->SmearedEnergy()),tlv_jets[imu].Eta(), tlv_jets[imu].Phi(), tlv_jets[imu].E());
-  }
-  
-}
 void AnalyzerCore::CorrectMuonMomentum(vector<snu::KMuon>& k_muons){
-  
+
+  Message("In CorrectMuonMomentum", DEBUG);
+
   vector<TLorentzVector> tlv_muons = MakeTLorentz(k_muons);
   int imu(0);
   for(std::vector<snu::KMuon>::iterator it = k_muons.begin(); it != k_muons.end(); it++, imu++){
@@ -2050,7 +2568,12 @@ void AnalyzerCore::CorrectMuonMomentum(vector<snu::KMuon>& k_muons){
 
 
 float AnalyzerCore::Get_DataDrivenWeight_EM(vector<snu::KMuon> k_muons, vector<snu::KElectron> k_electrons, TString cut){
-  if(k_muons.size()==0 && k_electrons.size()==0) return 0.;
+
+  Message("In Get_DataDrivenWeight_EM", DEBUG);
+  
+  if(k_muons.size()!=1) return 0.;
+  if(k_electrons.size()!=1) return 0.;
+
   bool is_mu1_tight    = IsTight(k_muons.at(0));
   bool is_el1_tight    = IsTight(k_electrons.at(0));
 
@@ -2064,22 +2587,28 @@ float AnalyzerCore::Get_DataDrivenWeight_EM(vector<snu::KMuon> k_muons, vector<s
 
 float AnalyzerCore::Get_DataDrivenWeight_MM(vector<snu::KMuon> k_muons, TString cutID){
 
+  Message("In Get_DataDrivenWeight_MM", DEBUG);
   if(k_muons.size()==0) return 0.;
   float mm_weight = 0.;
+
   if(k_muons.size()==2){
 
     bool is_mu1_tight    = IsTight(k_muons.at(0));
     bool is_mu2_tight    = IsTight(k_muons.at(1));
     
     vector<TLorentzVector> muons=MakeTLorentz(k_muons);
-    mm_weight =m_fakeobj->get_dilepton_mm_eventweight(muons, is_mu1_tight,is_mu2_tight, cutID);
 
+    mm_weight =m_fakeobj->get_dilepton_mm_eventweight(muons, is_mu1_tight,is_mu2_tight, cutID);
+    
   }
   return mm_weight;
 }
 
 
 float AnalyzerCore::Get_DataDrivenWeight_M(vector<snu::KMuon> k_muons, TString cutID){
+
+  Message("In Get_DataDrivenWeight_M", DEBUG);
+
   if(k_muons.size()!=1) return 0.;
 
   bool is_mu1_tight    = IsTight(k_muons.at(0));
@@ -2102,6 +2631,7 @@ float AnalyzerCore::Get_DataDrivenWeight_M(vector<snu::KMuon> k_muons, TString c
 }
 
 float AnalyzerCore::Get_DataDrivenWeight_E(vector<snu::KElectron> k_electrons){
+  Message("In Get_DataDrivenWeight_EE", DEBUG);
   if(k_electrons.size()!=1) return 0.;
 
   bool is_el1_tight    = IsTight(k_electrons.at(0));
@@ -2126,6 +2656,9 @@ float AnalyzerCore::Get_DataDrivenWeight_E(vector<snu::KElectron> k_electrons){
 
 
 float AnalyzerCore::Get_DataDrivenWeight_EE(vector<snu::KElectron> k_electrons){
+
+  Message("In Get_DataDrivenWeight_EE", DEBUG);
+
   if(k_electrons.size()==0) return 0.;
 
   float ee_weight = 0.;
@@ -2146,6 +2679,46 @@ float AnalyzerCore::Get_DataDrivenWeight_EE(vector<snu::KElectron> k_electrons){
 
 
 
+void AnalyzerCore::MakeNtp(TString hname, TString myvar){
+
+  mapntp[hname] =  new TNtupleD(hname.Data(),hname.Data(),myvar.Data());
+}
+
+
+void AnalyzerCore::FillNtp(TString hname, Double_t myinput[]){
+
+  if (GetNtp(hname)) GetNtp(hname)->Fill(myinput);
+  else m_logger << INFO << hname << " was NOT found. Check you ntp. " << LQLogger::endmsg;
+
+  return;
+}
+
+// //
+void AnalyzerCore::WriteNtp(){
+
+  /// Open Output rootfile
+  m_outputFile->cd();
+
+  for(map<TString, TNtupleD*>::iterator mapit = mapntp.begin(); mapit != mapntp.end(); mapit++){
+    mapit->second->Write();
+  }
+
+  return;
+}
+// //
+
+
+
+// //
+TNtupleD* AnalyzerCore::GetNtp(TString hname){
+
+  TNtupleD* n = NULL;
+  std::map<TString, TNtupleD*>::iterator mapit = mapntp.find(hname);
+  if (mapit != mapntp.end()) return mapit->second;
+  else m_logger << INFO << hname << " was not found in map" << LQLogger::endmsg;
+
+  return n;
+}
 
 
 vector<TLorentzVector> AnalyzerCore::MakeTLorentz(vector<snu::KElectron> el){
@@ -2229,3 +2802,6 @@ double AnalyzerCore::MT(TLorentzVector a, TLorentzVector b){
   return TMath::Sqrt( 2.*a.Pt()*b.Pt()*(1.- TMath::Cos(dphi) ) );
 
 }
+
+
+

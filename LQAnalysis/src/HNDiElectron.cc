@@ -11,7 +11,6 @@
 #include "HNDiElectron.h"
 
 //Core includes
-#include "Reweight.h"
 #include "EventBase.h"                                                                                                                           
 #include "BaseSelection.h"
 
@@ -51,51 +50,53 @@ void HNDiElectron::InitialiseAnalysis() throw( LQError ) {
    //// Initialise Plotting class functions
    /// MakeCleverHistograms ( type, "label")  type can be muhist/elhist/jethist/sighist
 
-   MakeCleverHistograms(sighist_ee, "TChannel");
-   MakeCleverHistograms(sighist_ee, "SIGNAL");
-   MakeCleverHistograms(sighist_ee, "SS_SIGNAL");
-   MakeCleverHistograms(sighist_ee, "SIGNAL_4J");
-   MakeCleverHistograms(sighist_ee, "SS_SIGNAL_4J");
-   MakeCleverHistograms(sighist_ee, "SS_SIGNAL_CC");
-   MakeCleverHistograms(sighist_ee, "SS_SIGNAL_noZ");
-   MakeCleverHistograms(sighist_ee, "SS_SIGNAL_BB");
-   MakeCleverHistograms(sighist_ee, "SS_SIGNAL_EE");
-   MakeCleverHistograms(sighist_ee, "SS_SIGNAL_BB_noB");
-   MakeCleverHistograms(sighist_ee, "SS_SIGNAL_EE_noB");
-   MakeCleverHistograms(sighist_ee, "SS_SIGNAL_BB_B");
-   MakeCleverHistograms(sighist_ee, "SS_SIGNAL_EE_B");
-   MakeCleverHistograms(sighist_ee, "SS_SIGNAL_LowPt");
-   MakeCleverHistograms(sighist_ee, "SS_SIGNAL_1Jet");
-   MakeCleverHistograms(sighist_ee, "SS_SIGNAL_Presel");
-   MakeCleverHistograms(sighist_ee, "OS_SIGNAL");
-   MakeCleverHistograms(trilephist,"TriElectron");
-
-   MakeCleverHistograms(trilephist,"TriMuon");
-   MakeCleverHistograms(trilephist,"TriMuon_mass");
-   MakeCleverHistograms(trilephist,"TriMuon_dr");
-   MakeCleverHistograms(trilephist,"TriMuon_dr_nw_ttt");
-   MakeCleverHistograms(trilephist,"TriMuon_dr_nw_ttl");
-   MakeCleverHistograms(trilephist,"TriMuon_dr_nw_tll");
-   MakeCleverHistograms(trilephist,"TriMuon_dr_nw_lll");
-
-   MakeCleverHistograms(trilephist,"TriMuon_dr_ttl");
-   MakeCleverHistograms(trilephist,"TriMuon_dr_tll");
-   MakeCleverHistograms(trilephist,"TriMuon_dr_lll");
-   MakeCleverHistograms(trilephist,"TriMuon_pt_dr");
-   MakeCleverHistograms(trilephist,"TriMuon_bjet");
-   MakeCleverHistograms(trilephist,"TriMuon_nobjet");
-
-   MakeCleverHistograms(sighist_ee, "LowMassRegion");
-   MakeCleverHistograms(sighist_ee, "LowMassRegionCR");
-   MakeCleverHistograms(sighist_ee, "MediumMassRegion");
-   MakeCleverHistograms(sighist_ee, "MediumMassRegionCR");
-   MakeCleverHistograms(sighist_ee, "HighMassRegion");
-   MakeCleverHistograms(sighist_ee, "40MassRegion");
-   MakeCleverHistograms(sighist_ee, "100MassRegion");
-   MakeCleverHistograms(sighist_ee, "500MassRegion");
-   MakeCleverHistograms(sighist_ee, "1500MassRegion");
+   bool runall=false;
+   if (runall){
+     MakeCleverHistograms(sighist_ee, "TChannel");
+     MakeCleverHistograms(sighist_ee, "SIGNAL");
+     MakeCleverHistograms(sighist_ee, "SS_SIGNAL");
+     MakeCleverHistograms(sighist_ee, "SIGNAL_4J");
+     MakeCleverHistograms(sighist_ee, "SS_SIGNAL_4J");
+     MakeCleverHistograms(sighist_ee, "SS_SIGNAL_CC");
+     MakeCleverHistograms(sighist_ee, "SS_SIGNAL_noZ");
+     MakeCleverHistograms(sighist_ee, "SS_SIGNAL_BB");
+     MakeCleverHistograms(sighist_ee, "SS_SIGNAL_EE");
+     MakeCleverHistograms(sighist_ee, "SS_SIGNAL_BB_noB");
+     MakeCleverHistograms(sighist_ee, "SS_SIGNAL_EE_noB");
+     MakeCleverHistograms(sighist_ee, "SS_SIGNAL_BB_B");
+     MakeCleverHistograms(sighist_ee, "SS_SIGNAL_EE_B");
+     MakeCleverHistograms(sighist_ee, "SS_SIGNAL_LowPt");
+     MakeCleverHistograms(sighist_ee, "SS_SIGNAL_1Jet");
+     MakeCleverHistograms(sighist_ee, "SS_SIGNAL_Presel");
+     MakeCleverHistograms(sighist_ee, "OS_SIGNAL");
+     MakeCleverHistograms(trilephist,"TriElectron");
+     
+     MakeCleverHistograms(trilephist,"TriMuon");
+     MakeCleverHistograms(trilephist,"TriMuon_mass");
+     MakeCleverHistograms(trilephist,"TriMuon_dr");
+     MakeCleverHistograms(trilephist,"TriMuon_dr_nw_ttt");
+     MakeCleverHistograms(trilephist,"TriMuon_dr_nw_ttl");
+     MakeCleverHistograms(trilephist,"TriMuon_dr_nw_tll");
+     MakeCleverHistograms(trilephist,"TriMuon_dr_nw_lll");
+     
+     MakeCleverHistograms(trilephist,"TriMuon_dr_ttl");
+     MakeCleverHistograms(trilephist,"TriMuon_dr_tll");
+     MakeCleverHistograms(trilephist,"TriMuon_dr_lll");
+     MakeCleverHistograms(trilephist,"TriMuon_pt_dr");
+     MakeCleverHistograms(trilephist,"TriMuon_bjet");
+     MakeCleverHistograms(trilephist,"TriMuon_nobjet");
+     
+     MakeCleverHistograms(sighist_ee, "LowMassRegion");
+     MakeCleverHistograms(sighist_ee, "LowMassRegionCR");
+     MakeCleverHistograms(sighist_ee, "MediumMassRegion");
+     MakeCleverHistograms(sighist_ee, "MediumMassRegionCR");
+     MakeCleverHistograms(sighist_ee, "HighMassRegion");
+     MakeCleverHistograms(sighist_ee, "40MassRegion");
+     MakeCleverHistograms(sighist_ee, "100MassRegion");
+     MakeCleverHistograms(sighist_ee, "500MassRegion");
+     MakeCleverHistograms(sighist_ee, "1500MassRegion");
    /// only available in v7-6-X branch and newer
-   
+   }
    return;
 }
 
@@ -111,6 +112,29 @@ void HNDiElectron::ExecuteEvents()throw( LQError ){
 
   if(!isData)weight*= MCweight;
   
+  //vector<snu::KTruth> eventbaseGetTruth();
+  /*  if(SameCharge(GetMuons(BaseSelection::MUON_HN_VETO))){
+    cout << GetMuons(BaseSelection::MUON_HN_VETO).at(0).MCMatched() << "  " << GetMuons(BaseSelection::MUON_HN_VETO).at(1).MCMatched() << endl;
+    cout << "Muon 1 " << endl;
+    cout << "isCF = " << GetMuons(BaseSelection::MUON_HN_VETO).at(0).MCIsCF() << endl;
+    cout << "is conv = " << GetMuons(BaseSelection::MUON_HN_VETO).at(0).MCIsFromConversion() << endl;
+    cout << "is from tau = " << GetMuons(BaseSelection::MUON_HN_VETO).at(0).MCFromTau() << endl;
+    cout << "is prompt = " << GetMuons(BaseSelection::MUON_HN_VETO).at(0).MCIsPrompt() << endl;
+    cout << "matched pdgid = " << GetMuons(BaseSelection::MUON_HN_VETO).at(0).MCMatchedPdgId() << endl;
+    cout << "mother pdgid = " << GetMuons(BaseSelection::MUON_HN_VETO).at(0).MotherPdgId() << endl;
+    cout << "--------------------------------- " << endl;
+    cout << "Muon 2 " << endl;
+    cout << "isCF = " << GetMuons(BaseSelection::MUON_HN_VETO).at(1).MCIsCF() << endl;
+    cout << "is conv = " << GetMuons(BaseSelection::MUON_HN_VETO).at(1).MCIsFromConversion() << endl;
+    cout << "is from tau = " << GetMuons(BaseSelection::MUON_HN_VETO).at(1).MCFromTau() << endl;
+    cout << "is prompt = " << GetMuons(BaseSelection::MUON_HN_VETO).at(1).MCIsPrompt() << endl;
+    cout << "matched pdgid = " << GetMuons(BaseSelection::MUON_HN_VETO).at(1).MCMatchedPdgId() << endl;
+    cout << "mother pdgid = " << GetMuons(BaseSelection::MUON_HN_VETO).at(1).MotherPdgId() << endl;
+    cout << "--------------------------------- " << endl;
+    cout << "--------------------------------- " << endl;
+
+    }*/
+  return;
   if(IsSignal()){
     //ListTriggersAvailable();
     vector<int> pt1;
@@ -173,25 +197,24 @@ void HNDiElectron::ExecuteEvents()throw( LQError ){
       }
     }
   }
-
+  
   
   /// FillCutFlow(cut, weight) fills a basic TH1 called cutflow. It is used to check number of events passing different cuts
   /// The string cut must match a bin label in FillCutFlow function
   FillHist("GenWeight" , 1., MCweight,  0. , 2., 2);
-
+  
   if(isData) FillHist("Nvtx_nocut_data",  eventbase->GetEvent().nVertices() ,weight, 0. , 50., 50);
   else  FillHist("Nvtx_nocut_mc",  eventbase->GetEvent().nVertices() ,weight, 0. , 50., 50);
-
-  if(!PassBasicEventCuts()) return;     /// Initial event cuts  
+  
+  //if(!PassBasicEventCuts()) return;     /// Initial event cuts  
   FillCutFlow("EventCut", weight);
   
-  TString analysis_trigger="HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v";
+  TString analysis_trigger="HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v";
   /// Trigger List (unprescaled)
   std::vector<TString> triggerslist;
   triggerslist.push_back(analysis_trigger);
 
   std::vector<snu::KMuon> muonColl = GetMuons(BaseSelection::MUON_HN_VETO); // loose selection                                                                                                                                                                              
-
   
   if(muonColl.size() == 3){
     if(muonColl.at(0).Pt() > 20){
@@ -229,8 +252,10 @@ void HNDiElectron::ExecuteEvents()throw( LQError ){
     }
   }
 
+  //if(!PassTrigger("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v", GetElectrons(BaseSelection::ELECTRON_HN_VETO), prescale)) return;
 
-  if(!PassTrigger(triggerslist, prescale)) return;
+  //return;
+    //if(!PassTrigger(triggerslist, prescale)) return;
   
 
   if(PassTrigger(triggerslist, prescale)){
@@ -273,8 +298,9 @@ void HNDiElectron::ExecuteEvents()throw( LQError ){
   FillHist("Njets", jetColl_hn.size() ,weight, 0. , 5., 5);
 
   
-  BaseSelection::ID elid = BaseSelection::ELECTRON_POG_TIGHT;
-  if(k_running_nonprompt) elid= BaseSelection::ELECTRON_HN_FAKELOOSE_NOD0;
+
+  TString elid = "ELECTRON_POG_TIGHT";
+  if(k_running_nonprompt) elid="ELECTRON_HN_FAKELOOSE_NOD0";
 
   std::vector<snu::KElectron> electronColl             = GetElectrons(true, false,elid);
   
@@ -833,8 +859,6 @@ void HNDiElectron::BeginCycle() throw( LQError ){
   
   Message("In begin Cycle", INFO);
   
-  string analysisdir = getenv("FILEDIR");  
-  if(!k_isdata) reweightPU = new Reweight((analysisdir + "SNUCAT_Pileup.root").c_str());
 
   //
   //If you wish to output variables to output file use DeclareVariable
@@ -852,31 +876,9 @@ void HNDiElectron::BeginCycle() throw( LQError ){
 HNDiElectron::~HNDiElectron() {
   
   Message("In HNDiElectron Destructor" , INFO);
-  if(!k_isdata)delete reweightPU;
   
 }
 
-
-void HNDiElectron::FillCutFlow(TString cut, float weight){
-
-  
-  if(GetHist("cutflow")) {
-    GetHist("cutflow")->Fill(cut,weight);
-   
-  }
-  else{
-    AnalyzerCore::MakeHistograms("cutflow", 10,0.,10.);
-
-    GetHist("cutflow")->GetXaxis()->SetBinLabel(1,"NoCut");
-    GetHist("cutflow")->GetXaxis()->SetBinLabel(2,"EventCut");
-    GetHist("cutflow")->GetXaxis()->SetBinLabel(3,"TriggerWeight");
-    GetHist("cutflow")->GetXaxis()->SetBinLabel(5,"TriggerCut");
-    GetHist("cutflow")->GetXaxis()->SetBinLabel(6,"VertexCut");
-    GetHist("cutflow")->GetXaxis()->SetBinLabel(7,"DiEl_tight");
-   
-    
-  }
-}
 
 
 void HNDiElectron::BeginEvent( )throw( LQError ){
