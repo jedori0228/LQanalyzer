@@ -165,10 +165,7 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   //float muon_id_iso_sf= MuonScaleFactor(BaseSelection::MUON_POG_TIGHT, muonTightColl,0); ///MUON_POG_TIGHT == MUON_HN_TIGHT
 
   /// List of preset jet collections : NoLeptonVeto/Loose/Medium/Tight/TightLepVeto/HNJets
-  std::vector<snu::KJet> jetColl             = GetJets(BaseSelection::JET_NOLEPTONVETO); // All jets
-  std::vector<snu::KJet> jetColl_loose       = GetJets(BaseSelection::JET_LOOSE); // pt > 10; eta < 5. ; PFlep veto
-  std::vector<snu::KJet> jetColl_tight       = GetJets(BaseSelection::JET_TIGHT);// pt > 20 ; eta < 2.5; PFlep veto
-  std::vector<snu::KJet> jetColl_hn          = GetJets(BaseSelection::JET_HN);// pt > 20 ; eta < 2.5; PFlep veto; pileup ID
+  std::vector<snu::KJet> jetColl_hn = GetJets("JET_HN");// pt > 20 ; eta < 2.5; PFlep veto; pileup ID
   
   FillHist("Njets", jetColl_hn.size() ,weight, 0. , 5., 5);
 
@@ -199,7 +196,7 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
 
   int n_triTight_muons = muontriTightColl.size();
   int n_triLoose_muons = muontriLooseColl.size();
-  int n_jets = jetColl_loose.size();
+  int n_jets = jetColl_hn.size();
 
   FillHist("GenWeight_NJet" , n_jets*MCweight + MCweight*0.1, 1., -6. , 6., 12);
 
@@ -215,7 +212,8 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   //for(int i=0;i<k_flags.size();i++) cout << "k_flags = " << k_flags.at(i) << endl;
   for(int i=0;i<3;i++){
     lep[i] = muontriLooseColl.at(i);
-    if( !eventbase->GetMuonSel()->HNtriTightMuonSelection(muontriLooseColl.at(i)) ){
+    //==== find loose but not tight muon ( 0.1 < RelIso (< 0.6) )
+    if( muontriLooseColl.at(i).RelIso04() > 0.1 ){
       FR_muon.push_back( get_FR(lep[i], k_flags.at(0), n_jets, false) );
       FR_error_muon.push_back( get_FR(lep[i], k_flags.at(0), n_jets, true) );
     }
@@ -395,9 +393,9 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   FillUpDownHist("z_candidate_mass_cut0", z_candidate.M(), weight, weight_err, 0., 120., 120);
   FillUpDownHist("n_jets_cut0", n_jets, weight, weight_err, 0, 10, 10);
   FillUpDownHist("n_events_cut0", 0, weight, weight_err, 0, 1, 1);
-  FillCLHist(trilephist, "cut0_up", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_loose, weight+weight_err);
-  FillCLHist(trilephist, "cut0_down", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_loose, weight-weight_err);
-  FillCLHist(trilephist, "cut0", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_loose, weight);
+  FillCLHist(trilephist, "cut0_up", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_hn, weight+weight_err);
+  FillCLHist(trilephist, "cut0_down", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_hn, weight-weight_err);
+  FillCLHist(trilephist, "cut0", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_hn, weight);
   if( is_deltaR_OS_min_0p5 ){
     FillUpDownHist("HN_mass_class1_cutdR", HN[0].M(), weight, weight_err, 0., 500., 50);
     FillUpDownHist("HN_mass_class2_cutdR", HN[1].M(), weight, weight_err, 0., 500., 50);
@@ -410,9 +408,9 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
     FillUpDownHist("z_candidate_mass_cutdR", z_candidate.M(), weight, weight_err, 0., 120., 120);
     FillUpDownHist("n_jets_cutdR", n_jets, weight, weight_err, 0, 10, 10);
     FillUpDownHist("n_events_cutdR", 0, weight, weight_err, 0, 1, 1);
-    FillCLHist(trilephist, "cutdR_up", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_loose, weight+weight_err);
-    FillCLHist(trilephist, "cutdR_down", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_loose, weight-weight_err);
-    FillCLHist(trilephist, "cutdR", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_loose, weight);
+    FillCLHist(trilephist, "cutdR_up", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_hn, weight+weight_err);
+    FillCLHist(trilephist, "cutdR_down", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_hn, weight-weight_err);
+    FillCLHist(trilephist, "cutdR", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_hn, weight);
     if( is_W_pri_lowmass_100 ){
       FillUpDownHist("HN_mass_class1_cutdR_cutW", HN[0].M(), weight, weight_err, 0., 100., 10);
       FillUpDownHist("HN_mass_class2_cutdR_cutW", HN[1].M(), weight, weight_err, 0., 100., 10);
@@ -423,9 +421,9 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
       FillUpDownHist("z_candidate_mass_cutdR_cutW", z_candidate.M(), weight, weight_err, 0., 120., 24);
       FillUpDownHist("n_jets_cutdR_cutW", n_jets, weight, weight_err, 0, 10, 10);
       FillUpDownHist("n_events_cutdR_cutW", 0, weight, weight_err, 0, 1, 1);
-      FillCLHist(trilephist, "cutdR_cutW_up", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_loose, weight+weight_err);
-      FillCLHist(trilephist, "cutdR_cutW_down", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_loose, weight-weight_err);
-      FillCLHist(trilephist, "cutdR_cutW", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_loose, weight);
+      FillCLHist(trilephist, "cutdR_cutW_up", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_hn, weight+weight_err);
+      FillCLHist(trilephist, "cutdR_cutW_down", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_hn, weight-weight_err);
+      FillCLHist(trilephist, "cutdR_cutW", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_hn, weight);
     }
   }   
 

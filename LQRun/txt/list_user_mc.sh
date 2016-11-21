@@ -12,10 +12,11 @@ declare -a tmplist=('WpWp_qcd_madgraph' 'ZG_llG_MCatNLO' 'ZZ_llnunu_powheg' 'ZZ_
 declare -a hn=('HN_EE_M40' 'HN_EE_M100' 'HN_EE_M500' 'HN_EE_M1500')
 
 declare -a trilep_bkg=(
-'WZ_pythia8' 'ZZ_pythia8'
-'WZZ_MCatNLO' 'WWZ_MCatNLO' 'ZZZ_MCatNLO'
-'ttWJets' 'ttZJets'
-'ttHnobb_Powheg'
+'WZTo3LNu_powheg' 'ZZTo4L_powheg'
+'WWW' 'WZZ' 'WWZ' 'ZZZ'
+'ttW' 'ttZ'
+'ttH_nonbb'
+'WGtoLNuG' 'WGtoLNuMM' 'ZGto2LG'
 )
 
 declare -a trilep_leptonskim=(
@@ -23,12 +24,11 @@ declare -a trilep_leptonskim=(
 )
 
 declare -a trilep_CR_bkg=(
-'WZ_pythia8' 'ZZ_pythia8' 'WW_pythia8'
-'ZZ_llll_powheg' 'WZ_lllnu_powheg'
-'WG_lnuG_madgraph' 'WGstarToLNuMuMu' 'ZG_llG_MCatNLO'
-'WZZ_MCatNLO' 'WWZ_MCatNLO' 'ZZZ_MCatNLO'
-'ttWJets' 'ttZJets'
-'ttHnobb_Powheg'
+'WZTo3LNu_powheg' 'ZZTo4L_powheg'
+'WWW' 'WZZ' 'WWZ' 'ZZZ'
+'ttW' 'ttZ'
+'ttH_nonbb'
+'WGtoLNuG' 'WGtoLNuMM' 'ZGto2LG'
 )
 
 declare -a trilep_bkg_miss=(
@@ -36,23 +36,22 @@ declare -a trilep_bkg_miss=(
 )
 
 declare -a trilep_fake_bkg=(
-'DY10to50_MCatNLO' 'DY50plus_MCatNLO'
-'singletop_s_MCatNLO' 'singletop_tbar_Powheg' 'singletop_t_Powheg' 'singletop_tbarW_Powheg' 'singletop_tW_Powheg'
-'ttWJets' 'ttZJets'
-'WJets_MCatNLO'
-'WZ_pythia8' 'ZZ_pythia8' 'WW_pythia8'
-'WZZ_MCatNLO' 'WWZ_MCatNLO' 'ZZZ_MCatNLO'
-'TT_MCatNLO'
-'WG_lnuG_madgraph'
-'ttHnobb_Powheg'
+'DYJets_10to50' 'DYJets'
+'SingleTop_s' 'SingleTop_t' 'SingleTbar_t' 'SingleTop_tW' 'SingleTbar_tW'
+'ttW' 'ttZ'
+'WJets'
+'WZ' 'ZZ' 'WW'
+'WWW' 'WZZ' 'WWZ' 'ZZZ'
+'TTJets_aMC'
+'WGtoLNuG'
+'ttH_nonbb'
 )
 
 #declare -a trilep_signal=('HN40_mumumu' 'HN60_mumumu' 'HN150_mumumu' 'HN700_mumumu')
 declare -a trilep_signal=('HN40_mumumu_VmuN_0p1' 'HN60_mumumu_VmuN_0p1' 'HN150_mumumu_VmuN_0p1' 'HN700_mumumu_VmuN_0p1')
 
 declare -a QCD_FR=(
-'QCD_mu15to20_pythia8' 'QCD_mu20to30_pythia8' 'QCD_mu30to50_pythia8' 'QCD_mu50to80_pythia8' 'QCD_mu80to120_pythia8' 'QCD_mu120to170_pythia8' 'QCD_mu170to300_pythia8' 'QCD_mu300to470_pythia8' 'QCD_mu470to600_pythia8' 'QCD_mu600to800_pythia8' 'QCD_mu800to1000_pythia8' 'QCD_mu1000toINF_pythia8' 
-'QCD_DoubleEM_30to40_pythia8' 'QCD_DoubleEM_40toInf_pythia8' 'QCD_DoubleEM_30toInf_pythia8'
+'QCD_Pt-1000toInf_MuEnriched' 'QCD_Pt-120to170_MuEnriched' 'QCD_Pt-15to20_MuEnriched' 'QCD_Pt-170to300_MuEnriched' 'QCD_Pt-20to30_MuEnriched' 'QCD_Pt-300to470_MuEnriched' 'QCD_Pt-30to50_MuEnriched' 'QCD_Pt-470to600_MuEnriched' 'QCD_Pt-50to80_MuEnriched' 'QCD_Pt-600to800_MuEnriched' 'QCD_Pt-800to1000_MuEnriched' 'QCD_Pt-80to120_MuEnriched'
 )
 
 ## QCD em

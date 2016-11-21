@@ -145,10 +145,7 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   //muon_id_iso_sf *= MuonISOScaleFactor(BaseSelection::MUON_POG_TIGHT, muontriTightColl, 0);
 
   /// List of preset jet collections : NoLeptonVeto/Loose/Medium/Tight/TightLepVeto/HNJets
-  std::vector<snu::KJet> jetColl             = GetJets(BaseSelection::JET_NOLEPTONVETO); // All jets
-  std::vector<snu::KJet> jetColl_loose       = GetJets(BaseSelection::JET_LOOSE); // pt > 10; eta < 5. ; PFlep veto
-  std::vector<snu::KJet> jetColl_tight       = GetJets(BaseSelection::JET_TIGHT);// pt > 20 ; eta < 2.5; PFlep veto
-  std::vector<snu::KJet> jetColl_hn          = GetJets(BaseSelection::JET_HN);// pt > 20 ; eta < 2.5; PFlep veto; pileup ID
+  std::vector<snu::KJet> jetColl_hn = GetJets("JET_HN");// pt > 20 ; eta < 2.5; PFlep veto; pileup ID
    
   FillHist("Njets", jetColl_hn.size() ,weight, 0. , 5., 5);
 
@@ -182,7 +179,7 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
 
   int n_triTight_muons = muontriTightColl.size();
   int n_triLoose_muons = muontriLooseColl.size();
-  int n_jets = jetColl_loose.size();
+  int n_jets = jetColl_hn.size();
 
   FillHist("GenWeight_NJet" , n_jets*MCweight + MCweight*0.1, 1., -6. , 6., 12);
 
@@ -196,7 +193,7 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   FillHist("n_jets_control", n_jets, weight*pileup_reweight, 0., 10., 10);
   int n_bjets=0;
   for(int j=0; j<n_jets; j++){
-    if(jetColl_loose.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Tight)) n_bjets++;
+    if(jetColl_hn.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Tight)) n_bjets++;
   }
   FillHist("n_bjets_control", n_bjets, weight*pileup_reweight, 0., 10., 10);
 
