@@ -49,14 +49,6 @@ class MuonSelection : public BaseSelection {
   bool TopLooseMuonSelection(snu::KMuon mu);
   bool TopVetoMuonSelection(snu::KMuon mu);
 
-  //// HN Trilepton analysis seslection
-  bool HNtriNodXYCutTightMuonSelection(snu::KMuon mu);
-  bool HNtriNodXYCutLooseMuonSelection(snu::KMuon mu);
-  bool HNtriTightMuonSelection(snu::KMuon mu);
-  bool HNtriLooseMuonSelection(snu::KMuon mu);
-  bool HNtriHighdXYTightMuonSelection(snu::KMuon mu);
-  bool HNtriHighdXYLooseMuonSelection(snu::KMuon mu);
-
 
   
   //// General 
