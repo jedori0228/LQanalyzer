@@ -47,7 +47,6 @@ declare -a trilep_fake_bkg=(
 'ttH_nonbb'
 )
 
-#declare -a trilep_signal=('HN40_mumumu' 'HN60_mumumu' 'HN150_mumumu' 'HN700_mumumu')
 declare -a trilep_signal=('HN40_mumumu_VmuN_0p1' 'HN60_mumumu_VmuN_0p1' 'HN150_mumumu_VmuN_0p1' 'HN700_mumumu_VmuN_0p1')
 
 declare -a QCD_FR=(

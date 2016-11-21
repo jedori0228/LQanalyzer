@@ -30,6 +30,7 @@ AnalyzerCore::AnalyzerCore() : LQCycleBase(), MCweight(-999.),reset_lumi_mask(fa
   bool debug(false);
   
   TH1::SetDefaultSumw2(true);  
+  TH1::AddDirectory(kFALSE);
   /// clear list of triggers stored in KTrigger
   triggerlist.clear();
   cutflow_list.clear();

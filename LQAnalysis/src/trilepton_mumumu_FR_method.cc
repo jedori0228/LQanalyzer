@@ -539,6 +539,8 @@ double trilepton_mumumu_FR_method::get_FR(snu::KParticle muon, TString whichFR, 
     if(n_jets>0) FR_index = 4; 
   }
 
+  //cout << "FR_index = " << FR_index << endl;
+
   double this_pt = muon.Pt();
   double this_eta = fabs( muon.Eta() );
 
