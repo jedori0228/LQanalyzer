@@ -26,6 +26,7 @@ ClassImp (trilepton_mumumu);
   */
 trilepton_mumumu::trilepton_mumumu() :  AnalyzerCore(),
 n_gen_pass(0), sol_sel_chi2_best(0), sol_sel_chi2_plus(0), sol_sel_chi2_minus(0), sol_sel_chi2_smaller(0), sol_sel_chi2_larger(0),
+allgenfound(false),
 out_muons(0)
 {
   
@@ -110,12 +111,12 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   //std::vector<snu::KMuon> muonLooseColl = GetMuons(BaseSelection::MUON_HN_FAKELOOSE);  // loose selection
   //std::vector<snu::KMuon> muonTightColl = GetMuons(BaseSelection::MUON_HN_TIGHT,false); // tight selection : NonPrompt MC lep removed
 
-  //==== save gen particles @ snu::KParticle gen_nu, gen_W_pri, gen_HN, gen_W_sec, gen_l_1, gen_l_2, gen_l_3;
-
   std::vector<snu::KMuon> muontriTightColl, muontriLooseColl;
   //==== signal
   if( k_sample_name.Contains("HN") ){
+    //==== save gen particles @ snu::KParticle gen_nu, gen_W_pri, gen_HN, gen_W_sec, gen_l_1, gen_l_2, gen_l_3;
     find_genparticles();
+
     std::vector<snu::KMuon> muontriTightColl_raw = GetMuons("MUON_HN_TRI_TIGHT", true);
     std::vector<snu::KMuon> muontriLooseColl_raw = GetMuons("MUON_HN_TRI_LOOSE", true);
 
@@ -123,19 +124,26 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     //cout << "[gen_l_1] : pt = " << gen_l_1.Pt() << ", eta = " << gen_l_1.Eta() << endl;
     //cout << "[gen_l_2] : pt = " << gen_l_2.Pt() << ", eta = " << gen_l_2.Eta() << endl;
     //cout << "[gen_l_3] : pt = " << gen_l_3.Pt() << ", eta = " << gen_l_3.Eta() << endl;
-    int tight_l_1_index = find_genmatching(gen_l_1, muontriTightColl_raw);
-    int tight_l_2_index = find_genmatching(gen_l_2, muontriTightColl_raw);
-    int tight_l_3_index = find_genmatching(gen_l_3, muontriTightColl_raw);
-    int loose_l_1_index = find_genmatching(gen_l_1, muontriLooseColl_raw);
-    int loose_l_2_index = find_genmatching(gen_l_2, muontriLooseColl_raw);
-    int loose_l_3_index = find_genmatching(gen_l_3, muontriLooseColl_raw);
+    std::vector<int> tight_used, loose_used;
+    tight_used.clear();
+    loose_used.clear();
+    int tight_l_1_index = find_genmatching(gen_l_1, muontriTightColl_raw, tight_used);
+    int tight_l_2_index = find_genmatching(gen_l_2, muontriTightColl_raw, tight_used);
+    int tight_l_3_index = find_genmatching(gen_l_3, muontriTightColl_raw, tight_used);
+    int loose_l_1_index = find_genmatching(gen_l_1, muontriLooseColl_raw, loose_used);
+    int loose_l_2_index = find_genmatching(gen_l_2, muontriLooseColl_raw, loose_used);
+    int loose_l_3_index = find_genmatching(gen_l_3, muontriLooseColl_raw, loose_used);
 
-    if(tight_l_1_index!=-1) muontriTightColl.push_back( muontriTightColl_raw.at(tight_l_1_index) ); 
-    if(tight_l_2_index!=-1) muontriTightColl.push_back( muontriTightColl_raw.at(tight_l_2_index) );
-    if(tight_l_3_index!=-1) muontriTightColl.push_back( muontriTightColl_raw.at(tight_l_3_index) );
-    if(loose_l_1_index!=-1) muontriLooseColl.push_back( muontriLooseColl_raw.at(loose_l_1_index) );
-    if(loose_l_2_index!=-1) muontriLooseColl.push_back( muontriLooseColl_raw.at(loose_l_2_index) );
-    if(loose_l_3_index!=-1) muontriLooseColl.push_back( muontriLooseColl_raw.at(loose_l_3_index) );
+    std::vector<snu::KMuon> muontriTightColl_genorder, muontriLooseColl_genorder;
+    if(tight_l_1_index!=-1) muontriTightColl_genorder.push_back( muontriTightColl_raw.at(tight_l_1_index) ); 
+    if(tight_l_2_index!=-1) muontriTightColl_genorder.push_back( muontriTightColl_raw.at(tight_l_2_index) );
+    if(tight_l_3_index!=-1) muontriTightColl_genorder.push_back( muontriTightColl_raw.at(tight_l_3_index) );
+    if(loose_l_1_index!=-1) muontriLooseColl_genorder.push_back( muontriLooseColl_raw.at(loose_l_1_index) );
+    if(loose_l_2_index!=-1) muontriLooseColl_genorder.push_back( muontriLooseColl_raw.at(loose_l_2_index) );
+    if(loose_l_3_index!=-1) muontriLooseColl_genorder.push_back( muontriLooseColl_raw.at(loose_l_3_index) );
+
+    muontriTightColl = sort_muons_ptorder( muontriTightColl_genorder );
+    muontriLooseColl = sort_muons_ptorder( muontriLooseColl_genorder );
 
   }
   //==== non-prompt : keep fake
@@ -174,7 +182,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     // check if catversion is empty. i.ie, v-7-4-X in which case use reweight class to get weight. In v-7-6-X+ pileupweight is stored in KEvent class, for silver/gold json
     //pileup_reweight = eventbase->GetEvent().PileUpWeight();
     //pileup_reweight = eventbase->GetEvent().AltPileUpWeight();
-
+    pileup_reweight = TempPileupWeight();
   }
 
   FillHist("PileupWeight" ,  pileup_reweight,weight,  0. , 50., 10);
@@ -237,7 +245,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
       (lep[SameSign[1]]+lep[OppSign]).M() <= 4.     ) return;
   FillCutFlow("mllsf4", 1.);
 
-  if(k_sample_name.Contains("HN")) solution_selection_stduy(muontriLooseColl);
+  if(k_sample_name.Contains("HN") && allgenfound) solution_selection_stduy(muontriLooseColl);
 
   ///////////////////////////////////////////
   ////////// m(HN) < 80 GeV region //////////
@@ -417,9 +425,6 @@ void trilepton_mumumu::BeginCycle() throw( LQError ){
   
   Message("In begin Cycle", INFO);
   
-  string analysisdir = getenv("FILEDIR");  
-  if(!k_isdata) reweightPU = new Reweight((analysisdir + "SNUCAT_Pileup.root").c_str());
-
   //
   //If you wish to output variables to output file use DeclareVariable
   // clear these variables in ::ClearOutputVectors function
@@ -436,7 +441,6 @@ void trilepton_mumumu::BeginCycle() throw( LQError ){
 trilepton_mumumu::~trilepton_mumumu() {
   
   Message("In trilepton_mumumu Destructor" , INFO);
-  if(!k_isdata)delete reweightPU;
   
 }
 
@@ -534,6 +538,8 @@ void trilepton_mumumu::find_genparticles(){
   }
   //print_all_indices("gen_HN", gen_HN_indices);
   if(gen_HN_indices.size() == 0) return;
+  int HN_motherindex = truthColl.at( gen_HN_indices.at(0) ).IndexMother();
+  FillHist("TEST_HN_mother_pdgid", abs(truthColl.at(HN_motherindex).PdgId()), 1., 0., 30., 30);
 
   //======================
   //==== low mass region
@@ -691,6 +697,7 @@ void trilepton_mumumu::find_genparticles(){
     gen_l_2 = truthColl.at( gen_l_2_indices.back() );
     gen_l_3 = truthColl.at( gen_l_3_indices.back() );
     gen_nu = truthColl.at( gen_nu_indices.back() );
+    allgenfound = true;
 
   }
 
@@ -782,6 +789,7 @@ void trilepton_mumumu::find_genparticles(){
     gen_l_2 = truthColl.at( gen_l_2_indices.back() );
     gen_l_3 = truthColl.at( gen_l_3_indices.back() );
     gen_nu = truthColl.at( gen_nu_indices.back() );
+    allgenfound = true;
 
   }
 
@@ -958,46 +966,55 @@ void trilepton_mumumu::solution_selection_stduy(std::vector<snu::KMuon> recomuon
   FillHist("GEN_matching_validation_HN", (gen_l_2+gen_l_3+gen_nu).M(), 1., 0., 1100., 110);
   FillHist("GEN_matching_validation_W_sec", (gen_l_3+gen_nu).M(), 1., 0., 100., 100);
 
-  FillHist("GEN_gen_l_1_Pt", gen_l_1.Pt(), 1., 0., 100., 100);
-  FillHist("GEN_gen_l_2_Pt", gen_l_2.Pt(), 1., 0., 100., 100);
-  FillHist("GEN_gen_l_3_Pt", gen_l_3.Pt(), 1., 0., 100., 100);
-  FillHist("GEN_gen_nu_Pt", gen_nu.Pt(), 1., 0., 100., 100);
+  FillHist("GEN_gen_l_1_Pt", gen_l_1.Pt(), 1., 0., 1500., 1500);
+  FillHist("GEN_gen_l_2_Pt", gen_l_2.Pt(), 1., 0., 1500., 1500);
+  FillHist("GEN_gen_l_3_Pt", gen_l_3.Pt(), 1., 0., 1500., 1500);
+  FillHist("GEN_gen_nu_Pt", gen_nu.Pt(), 1., 0., 1500., 1500);
  
   snu::KParticle gen_l_SS;
   if( gen_l_1.Charge() == gen_l_2.Charge() ) gen_l_SS = gen_l_2;
   else gen_l_SS = gen_l_3;
 
-  FillHist("GEN_gen_l_SS_Pt", gen_l_SS.Pt(), 1., 0., 100., 100);
+  FillHist("GEN_gen_l_SS_Pt", gen_l_SS.Pt(), 1., 0., 1500., 1500);
   
   //==== check in gen level
   if( gen_l_1.Pt() > gen_l_SS.Pt() ) FillHist("GEN_gen_pri_lep_pt_greater", 1, 1., 0., 2., 2);
   else FillHist("GEN_gen_pri_lep_pt_greater", 0, 1., 0., 2., 2);
 
-  if( reco_lep[SameSign[0]].DeltaR(gen_l_1) < 0.15 
-      //&& fabs(reco_lep[SameSign[0]].Pt()-gen_l_1.Pt())/gen_l_1.Pt() < 0.05 
-    ) FillHist("GEN_reco_leading_SS_match_gen_l_1", 1, 1., 0., 2., 2);
-  else FillHist("GEN_reco_leading_SS_match_gen_l_1", 0, 1., 0., 2., 2); 
+  FillHist("TEST_leadingSS_pt", reco_lep[SameSign[0]].Pt(), 1., 0., 1500., 1500);
+  FillHist("TEST_DeltaR_gen_l_1_AND_leadingSS", reco_lep[SameSign[0]].DeltaR(gen_l_1), 1., 0., 6., 60);
+  FillHist("TEST_DeltaR_gen_l_1_AND_subleadingSS", reco_lep[SameSign[1]].DeltaR(gen_l_1), 1., 0., 6., 60);
 
-  if( reco_lep[SameSign[1]].DeltaR(gen_l_1) < 0.15
-      //&& fabs(reco_lep[SameSign[0]].Pt()-gen_l_1.Pt())/gen_l_1.Pt() < 0.05 
-    ) FillHist("GEN_reco_subleading_SS_match_gen_l_1", 1, 1., 0., 2., 2);
-  else FillHist("GEN_reco_subleading_SS_match_gen_l_1", 0, 1., 0., 2., 2);
+  if( reco_lep[SameSign[0]].DeltaR(gen_l_1) < 0.15 ){
+    FillHist("GEN_reco_leading_SS_match_gen_l_1", 1, 1., 0., 2., 2);
+  }
+  else{
+    FillHist("GEN_reco_leading_SS_match_gen_l_1", 0, 1., 0., 2., 2); 
+  }
 
+  if( reco_lep[SameSign[1]].DeltaR(gen_l_1) < 0.15 ){
+    FillHist("GEN_reco_subleading_SS_match_gen_l_1", 1, 1., 0., 2., 2);
+  }
+  else{
+    FillHist("GEN_reco_subleading_SS_match_gen_l_1", 0, 1., 0., 2., 2);
+  }
 
 }
 
-int trilepton_mumumu::find_genmatching(snu::KParticle gen, std::vector<snu::KMuon> recos){
+int trilepton_mumumu::find_genmatching(snu::KParticle gen, std::vector<snu::KMuon> recos, std::vector<int>& used_index){
 
   double mindr = 0.1;
   int found=-1;
   for(unsigned int i=0; i<recos.size(); i++){
     //cout << "["<<i<<"th reco] : pt = " << recos.at(i).Pt() << ", eta = " << recos.at(i).Eta() << endl;
     double dr = gen.DeltaR(recos.at(i));
-    if(dr < mindr){
+    bool isthisused = std::find(used_index.begin(), used_index.end(), i) != used_index.end();
+    if(dr < mindr && !isthisused){
       mindr = dr;
       found = i;
     }
   }
+  used_index.push_back(found);
   return found;
 }
 
@@ -1019,3 +1036,23 @@ void trilepton_mumumu::print_all_indices(TString particle, std::vector<int> vec)
 
 }
 
+std::vector<snu::KMuon> trilepton_mumumu::sort_muons_ptorder(std::vector<snu::KMuon> muons){
+
+  std::vector<snu::KMuon> outmuon;
+  while(outmuon.size() != muons.size()){
+    double this_maxpt = 0.;
+    int index(0);
+    for(unsigned int i=0; i<muons.size(); i++){
+      bool isthisused = std::find( outmuon.begin(), outmuon.end(), muons.at(i) ) != outmuon.end();
+      if(isthisused) continue;
+      if( muons.at(i).Pt() > this_maxpt ){
+        index = i;
+        this_maxpt = muons.at(i).Pt();
+      }
+    }
+    outmuon.push_back( muons.at(index) );
+  }
+  return outmuon;
+ 
+
+}

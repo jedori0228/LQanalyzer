@@ -446,9 +446,6 @@ void trilepton_mumumu_FR_method::BeginCycle() throw( LQError ){
   
   Message("In begin Cycle", INFO);
   
-  string analysisdir = getenv("FILEDIR");  
-  if(!k_isdata) reweightPU = new Reweight((analysisdir + "SNUCAT_Pileup.root").c_str());
-
   //
   //If you wish to output variables to output file use DeclareVariable
   // clear these variables in ::ClearOutputVectors function
@@ -465,7 +462,6 @@ void trilepton_mumumu_FR_method::BeginCycle() throw( LQError ){
 trilepton_mumumu_FR_method::~trilepton_mumumu_FR_method() {
   
   Message("In trilepton_mumumu_FR_method Destructor" , INFO);
-  if(!k_isdata)delete reweightPU;
   
 }
 
