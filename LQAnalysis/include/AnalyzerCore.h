@@ -16,10 +16,12 @@ class EventBase;
 #include "BaseSelection.h"
 #include "LQCycleBase.h"
 #include "HNCommonLeptonFakes/HNCommonLeptonFakes/HNCommonLeptonFakes.h"
+#include "rochcor2015/rochcor2015.h"
+#include "rochcor2015/RoccoR.h"
 #include "BTag/BTagSFUtil.h"
 #include "TNtupleD.h"
 #include "TNtuple.h"
-
+#include "TGraphAsymmErrors.h"
 
 class AnalyzerCore : public LQCycleBase {
   
@@ -38,7 +40,7 @@ class AnalyzerCore : public LQCycleBase {
   virtual ~AnalyzerCore();
 
   // SetUpEvent CORE function: accesses event in ntuple
-  virtual void SetUpEvent(Long64_t entry, float ev_weight, TString per)throw( LQError );
+  virtual void SetUpEvent(Long64_t entry, float ev_weight) throw( LQError );
   virtual void EndEvent()throw( LQError );
   virtual void WriteHistograms()throw( LQError );
 
@@ -59,9 +61,19 @@ class AnalyzerCore : public LQCycleBase {
   std::vector<snu::KElectron> GetElectrons(bool keepcf, bool keepfake, TString elid, float ptcut=-999., float etacut = -999.);
   std::vector<snu::KElectron> GetElectrons( TString elid , float ptcut=-999., float etacut = -999.);
 
+  bool Is2015Analysis();
   void SetupSelectionMuon(std::string path_sel);
   void SetupSelectionJet(std::string path_sel);
   void SetupSelectionElectron(std::string path_sel);
+
+  void FillCorrectionHist(string label, string dirname, string filename, string histsname, string histtype);
+  void FillCorrectionHists();
+  TH2F* GetCorrectionHist(TString label);
+  bool CheckCorrectionHist(TString label);
+
+
+  TGraphAsymmErrors* GetCorrectionGraph(TString label);
+  bool CheckCorrectionGraph(TString label);
 
   void FillCutFlow(TString cut, float weight);
 
@@ -94,11 +106,12 @@ class AnalyzerCore : public LQCycleBase {
   float GetDiLepMass(std::vector<snu::KMuon> muons);
   float GetDiLepMass(std::vector<snu::KElectron> electrons);
 
-  double ElectronScaleFactor( BaseSelection::ID elid, vector<snu::KElectron> el, int sys=0);
+  double ElectronScaleFactor( TString  elid, vector<snu::KElectron> el, int sys=0);
   double ElectronRecoScaleFactor(vector<snu::KElectron> el);
 
-  double MuonScaleFactor(BaseSelection::ID muid, vector<snu::KMuon> mu, int sys=0);
-  double MuonISOScaleFactor(BaseSelection::ID muid, vector<snu::KMuon> mu,int sys=0);
+  double MuonScaleFactor(TString  muid, vector<snu::KMuon> mu, int sys=0);
+  double MuonISOScaleFactor(TString muid, vector<snu::KMuon> mu,int sys=0);
+  double MuonTrackingEffScaleFactor(vector<snu::KMuon> mu);
 
   float  JetResCorr(snu::KJet jet, std::vector<snu::KGenJet> genjets);
   float SumPt( std::vector<snu::KJet> particles);
@@ -162,6 +175,9 @@ class AnalyzerCore : public LQCycleBase {
   map<TString, TH1*> maphist;
   map<TString, TH2*> maphist2D;
   map<TString, TNtupleD*> mapntp;
+
+  map<TString, TH2F*>  CorrectionMap;
+  map<TString, TGraphAsymmErrors*>  CorrectionMapGraph;
 
   map<int, float> mapLumi; 
   map<int, float> mapBadLumi; 
@@ -294,10 +310,11 @@ class AnalyzerCore : public LQCycleBase {
   //// Event related                                                                                                                                              
   float TempPileupWeight();
 
-  bool  PassTrigger(std::vector<TString> list, int& prescale, bool fake_2016=false);
-  float PassTrigger(TString trigname, std::vector<snu::KElectron> electrons, int& prescaler);
-  float PassTrigger(TString trigname, std::vector<snu::KMuon> muons, int& prescaler);
-  float PassTrigger(TString trigname,  std::vector<snu::KMuon> muons, std::vector<snu::KElectron> electrons, int& prescaler);
+  bool  PassTrigger(TString list);
+  bool  PassTrigger(std::vector<std::pair<TString,TString> > list);
+  float TriggerEff(TString trigname, std::vector<snu::KElectron> electrons);
+  float TriggerEff(TString trigname, std::vector<snu::KMuon> muons);
+  float TriggerEff(TString trigname,  std::vector<snu::KMuon> muons, std::vector<snu::KElectron> electrons);
 
   float GetEff(snu::KMuon mu, TString trigname);
   float GetEff(snu::KElectron el, TString trigname);
@@ -308,6 +325,7 @@ class AnalyzerCore : public LQCycleBase {
 
   std::map<TString,BTagSFUtil*> MapBTagSF;
   //  BTagSFUtil *lBTagSF, *hBTagSF;
+  rochcor2015 *rmcor;
 
   //==== Trilepton stuffs
   void PutNuPz(TLorentzVector *nu, double Pz);

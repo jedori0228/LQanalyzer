@@ -1,7 +1,7 @@
 import os,sys
 
+path_emailconfig = os.getenv("LQANALYZER_MOD") +"emailconfig.txt"                                                                                                               
 
-path_emailconfig = "/data1/LQAnalyzer_rootfiles_for_analysis/CATMOD/emailconfig.txt"
 path_catconfig= os.getenv("LQANALYZER_DIR") + "/bin/catconfig"
 
 file_catconfig= open(path_catconfig,"r")
@@ -32,6 +32,8 @@ if not email_in_list:
     print "Adding email address: " + email_address + " to CATAnalyzer emaillist"
     file_emailconfig = open(path_emailconfig,"w")
     for xline in copy_email_list:
-        file_emailconfig.write(xline)
+        xline = xline.split()
+        file_emailconfig.write(xline[0])
+        file_emailconfig.write("\n")
     file_emailconfig.write(email_address)
     file_emailconfig.close()
