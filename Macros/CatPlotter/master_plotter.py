@@ -73,6 +73,7 @@ skim=""
 periodtag=""
 analyzer=""
 stream=""
+outputlist=[]
 
 input_configfile = open(configinputfile,"r")
 for line in input_configfile:
@@ -88,6 +89,7 @@ for line in input_configfile:
     elif "skim" in line and "# " in line:
         sline = line.split()
         skim  = sline[2]
+        print "skim = " + skim
     elif "periodtag" in line:
         sline = line.split()
         periodtag  =sline[2]
@@ -112,9 +114,16 @@ for line in input_configfile:
 
         if not os.path.exists("~/CATAnalyzerPlots/"):
             os.system("mkdir ~/CATAnalyzerPlots/")
+        outputlist.append("https://jalmond.web.cern.ch/jalmond/SNU/CATAnalyzerPlots/HN13TeV_" + analyzer+"_"+os.getenv("CATVERSION")+"_"+periodtag+"_"+cut+"/histograms/CAT2016_"+os.getenv("CATVERSION")+"/indexCMS.html")
+
+    
         os.system('python  ' + os.getenv("LQANALYZER_DIR") + '/Macros/CatPlotter/setupplotter.py -i ' + inputfile + ' -d ' + inputdir + ' -x ' + jobdir + ' -s ' + stream + ' -a ' + analyzer + ' -S ' + skim + ' -p ' + periodtag + ' -C ' + cutlist[0] + ' -M ' + configinputfile)
         histlist=[]
         binlist=[]
         xminlist=[]
         xmaxlist=[]
         cutlist=[]
+
+print "Plots are found in:"
+for x in outputlist:
+    print x

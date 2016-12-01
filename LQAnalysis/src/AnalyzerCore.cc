@@ -68,6 +68,7 @@ AnalyzerCore::AnalyzerCore() : LQCycleBase(), n_cutflowcuts(0), MCweight(-999.),
   //  vtaggers.push_back("cMVAv2");
 
   if (TString(getenv("CATVERSION")).Contains("v7-6-6")){
+    cout << "Setting up 2015 selection " << endl;
     SetupSelectionMuon(lqdir + "/CATConfig/SelectionConfig/muons_2015.sel");
     SetupSelectionMuon(lqdir + "/CATConfig/SelectionConfig/user_muons_2015.sel");
     
@@ -78,6 +79,7 @@ AnalyzerCore::AnalyzerCore() : LQCycleBase(), n_cutflowcuts(0), MCweight(-999.),
     SetupSelectionJet(lqdir + "/CATConfig/SelectionConfig/user_jets_2015.sel");
   }
   else{
+    cout << "Setting up 2016 selection " << endl;
     SetupSelectionMuon(lqdir + "/CATConfig/SelectionConfig/muons.sel");
     SetupSelectionMuon(lqdir + "/CATConfig/SelectionConfig/user_muons.sel");
 
@@ -86,7 +88,6 @@ AnalyzerCore::AnalyzerCore() : LQCycleBase(), n_cutflowcuts(0), MCweight(-999.),
 
     SetupSelectionJet(lqdir + "/CATConfig/SelectionConfig/jets.sel");
     SetupSelectionJet(lqdir + "/CATConfig/SelectionConfig/user_jets.sel");
-
   }
   
   if(debug){
@@ -617,7 +618,7 @@ void AnalyzerCore::FillCorrectionHist(string label, string dirname, string filen
 
 
 
-std::vector<snu::KJet> AnalyzerCore::GetJets(TString jetid,float ptcut, float etacut){
+std::vector<snu::KJet> AnalyzerCore::GetJets(TString jetid,  bool smearjets,float ptcut, float etacut){
   
   std::vector<snu::KJet> jetColl;
   
@@ -632,10 +633,18 @@ std::vector<snu::KJet> AnalyzerCore::GetJets(TString jetid,float ptcut, float et
       if ( it->second.at(i).first == "remove_near_muonID") muontag =  it->second.at(i).second;
       if ( it->second.at(i).first == "remove_near_electronID") eltag =  it->second.at(i).second;
     }
-    if (muontag.Contains("NONE") && eltag.Contains("NONE"))  eventbase->GetJetSel()->SelectJets(isData,jetColl,jetid, ptcut,etacut);
-    else if (muontag.Contains("NONE") || eltag.Contains("NONE")) {    cerr << "cannot choose to remove jets near only one lepton" << endl; exit(EXIT_FAILURE);}
-    else eventbase->GetJetSel()->SelectJets(isData,jetColl, GetMuons(muontag), GetElectrons(eltag) ,jetid, ptcut,etacut);
+    if(smearjets){
+      if (muontag.Contains("NONE") && eltag.Contains("NONE"))  eventbase->GetJetSel()->SelectJets(isData,jetColl,jetid, ptcut,etacut);
+      else if (muontag.Contains("NONE") || eltag.Contains("NONE")) {    cerr << "cannot choose to remove jets near only one lepton" << endl; exit(EXIT_FAILURE);}
+      else eventbase->GetJetSel()->SelectJets(isData,jetColl, GetMuons(muontag), GetElectrons(eltag) ,jetid, ptcut,etacut);
     
+    }
+    else{
+      if (muontag.Contains("NONE") && eltag.Contains("NONE"))  eventbase->GetJetSel()->SelectJets(isData,jetColl,jetid, ptcut,etacut,false);
+      else if (muontag.Contains("NONE") || eltag.Contains("NONE")) {    cerr << "cannot choose to remove jets near only one lepton" << endl; exit(EXIT_FAILURE);}
+      else eventbase->GetJetSel()->SelectJets(isData,jetColl, GetMuons(muontag), GetElectrons(eltag) ,jetid, ptcut,etacut,false);
+
+    }
   }
 
 
@@ -1147,7 +1156,7 @@ float AnalyzerCore::WeightByTrigger(vector<TString> triggernames, float tlumi){
   }
 
   //if(trigps  > 1.) {m_logger << ERROR << "Error in getting weight for trigger prescale. It cannot be > 1, this means trigger lumi >> total lumi"  << LQLogger::endmsg; exit(0);}
-  if(trigps  < 0.) {m_logger << ERROR << "Error in getting weight for trigger prescale. It cannot be < 0, this means trigger lumi >> total lumi"  << LQLogger::endmsg; exit(0);}
+  if(trigps  < 0.) {m_logger << ERROR << "Error in getting weight for trigger " << triggernames.at(0) << " prescale. It cannot be < 0, this means trigger lumi >> total lumi"  << LQLogger::endmsg; exit(0);}
   
   return trigps;
  
@@ -1172,7 +1181,7 @@ float AnalyzerCore::WeightByTrigger(TString triggername, float tlumi){
   for(map<TString, float>::iterator mit = trigger_lumi_map_cat2016.begin(); mit != trigger_lumi_map_cat2016.end(); mit++){
     if(triggername.Contains(mit->first)) return (mit->second / tlumi);
   }
-  m_logger << ERROR << "Error in getting weight for trigger prescale. Trigname is not correct or not in map"  << LQLogger::endmsg; exit(0);
+  m_logger << ERROR << "Error in getting weight for trigger  " << triggername << "  prescale. Trigname is not correct or not in map"  << LQLogger::endmsg; exit(0);
 
   return 1.;
 }
@@ -1477,8 +1486,8 @@ float AnalyzerCore::TriggerEff(TString trigname,  std::vector<snu::KMuon> muons,
   Message("In TriggerEff", DEBUG);
 
   if(isData){
-    if(PassTrigger(trigname)) return 1.;
-    else return 0.;
+    //if(PassTrigger(trigname)) return 1.;
+    //    else return 0.;
   }
   if(electrons.size() >= 1 && muons.size() >= 1){
     float trig_eff(1.);
@@ -1500,8 +1509,8 @@ float AnalyzerCore::TriggerEff(TString trigname,  std::vector<snu::KMuon> muons,
 float AnalyzerCore::TriggerEff(TString trigname, std::vector<snu::KElectron> electrons){
   
   if(isData){
-    if(PassTrigger(trigname)) return 1.;
-    else return 0.;
+    //if(PassTrigger(trigname)) return 1.;
+    //else return 0.;
   }
   
   if(electrons.size() >=2){
@@ -1647,8 +1656,8 @@ float AnalyzerCore::GetEff(snu::KElectron el, TString trigname){
 float AnalyzerCore::TriggerEff(TString trigname, std::vector<snu::KMuon> muons){
   
   if(isData){
-    if(PassTrigger(trigname)) return 1.;
-    else return 0.;
+    ///    if(PassTrigger(trigname)) return 1.;
+    //else return 0.;
   }
   
   if(muons.size() >= 2){
@@ -1965,18 +1974,41 @@ bool AnalyzerCore::PassMETFilter(){
   
   ///https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFilters
     
-  
-  if (!eventbase->GetEvent().PassCSCHaloFilterTight()) {
-    pass = false;
-    m_logger << DEBUG << "Event Fails PassCSCHaloFilterTight " << LQLogger::endmsg;
+  if(Is2015Analysis()){
+    if (!eventbase->GetEvent().PassCSCHaloFilterTight()) {
+      pass = false;
+      m_logger << DEBUG << "Event Fails PassCSCHaloFilterTight " << LQLogger::endmsg;
+    }
+
+    if (!eventbase->GetEvent().PassHBHENoiseFilter()) {
+      pass = false; 
+      m_logger << DEBUG << "Event Fails PassHBHENoiseFilter " << LQLogger::endmsg;
+    }
+
+    if(!eventbase->GetEvent().PassEcalDeadCellTriggerPrimitiveFilter()) {
+      pass = false;
+      m_logger << DEBUG << "Event Fails PassEcalDeadCellTriggerPrimitiveFilter" << LQLogger::endmsg;
+    }
+
+    //Bad EE Supercrystal filter (post-ICHEP: extend to include an additional problematic SC --only for 2012)
+    if (!eventbase->GetEvent().PassBadEESupercrystalFilter()) {
+      pass = false;
+      m_logger << DEBUG << "Event Fails PassBadEESupercrystalFilter" << LQLogger::endmsg;
+    }
   }
-  
-  if (!eventbase->GetEvent().PassTightHalo2016Filter()) {
-    pass = false;
-    m_logger << DEBUG << "Event Fails PassTightHalo2016Filter " << LQLogger::endmsg;
-  }
-  
-  //if(isData){
+  else{
+    
+    if (!eventbase->GetEvent().PassCSCHaloFilterTight()) {
+      pass = false;
+      m_logger << DEBUG << "Event Fails PassCSCHaloFilterTight " << LQLogger::endmsg;
+    }
+    
+    if (!eventbase->GetEvent().PassTightHalo2016Filter()) {
+      pass = false;
+      m_logger << DEBUG << "Event Fails PassTightHalo2016Filter " << LQLogger::endmsg;
+    }
+    
+    //if(isData){
     if (!eventbase->GetEvent().PassHBHENoiseFilter()) {
       pass = false; 
       m_logger << DEBUG << "Event Fails PassHBHENoiseFilter " << LQLogger::endmsg;
@@ -1989,7 +2021,7 @@ bool AnalyzerCore::PassMETFilter(){
       pass = false;
       m_logger << DEBUG << "Event Fails PassEcalDeadCellTriggerPrimitiveFilter" << LQLogger::endmsg;
     }
-    
+  }
     //Bad EE Supercrystal filter (post-ICHEP: extend to include an additional problematic SC --only for 2012)
     //    if (!eventbase->GetEvent().PassBadEESupercrystalFilter()) {
     //      pass = false;
@@ -2476,6 +2508,10 @@ int AnalyzerCore::NBJet(std::vector<snu::KJet> jets,  KJet::Tagger tag, KJet::WO
   /// systematics allowed are +-1 and +-3 for HN analysis 
   if ( tag == snu::KJet::JETPROB) return -999;
   for(unsigned int ij=0; ij <jets.size(); ij++){
+
+    if(IsBTagged(jets.at(ij), tag, wp)) nbjet++;
+    continue;
+
     bool isBtag=false;
     if (isData) {
 
@@ -2695,11 +2731,9 @@ void AnalyzerCore::CorrectMuonMomentum(vector<snu::KMuon>& k_muons){
     for(std::vector<snu::KMuon>::iterator it = k_muons.begin(); it != k_muons.end(); it++, imu++){
       float qter =1.; /// uncertainty
 
-      cout << it->Charge() << " " << it->Pt() << " "<< it->Eta() << endl;
       if(k_isdata)rmcor->momcor_data(tlv_muons[imu], float(it->Charge()), eventbase->GetEvent().RunNumber(), qter);
       else rmcor->momcor_mc(tlv_muons[imu], float(it->Charge()), it->ActiveLayer(), qter);
 
-      cout << tlv_muons[imu].Pt() << " " << tlv_muons[imu].Eta() << endl;
       it->SetPtEtaPhiM(tlv_muons[imu].Pt(),tlv_muons[imu].Eta(), tlv_muons[imu].Phi(), tlv_muons[imu].M());
       //it->SetPtEtaPhiM(tlv_muons[imu].Pt(), it->Eta(), it->Phi() , it->M());
       //it->scale(tlv_muons[imu].E()/it->E());

@@ -152,7 +152,7 @@ for i in list_of_legends:
                     tag2=""
                 elif skim == "SKTree_DiLepSkim":
                     tag="_SK"
-                    tag2="_dilepton"
+                    tag2="_dilep"
 
                 prefix= analyzer + tag
                 postfix= tag2+"_cat_"+catversion+".root"
@@ -211,17 +211,17 @@ for line in skeleton_macroC:
             new_macroC.write(line+"")
 
     elif "vector<TString> legorder;" in line:
-        new_macroC.write(line+"")
+        new_macroC.write(line+"\n")
         for i in list_of_legends:
-            new_macroC.write('legorder.push_back("' + i + '");')
+            new_macroC.write('legorder.push_back("' + i + '");\n')
     elif "//// SET TITLES" in line:
-        new_macroC.write(line+"")
+        new_macroC.write(line+"\n")
         for x in range(0,len(xtitlelist)):
             new_macroC.write('if(name.find("' + histlist[x] + '")!=string::npos) xtitle='+xtitlelist[x] +';\n')
 
     elif "vector<pair<TString,float> > list;" in line:
         new_macroC.write("")
-        new_macroC.write(line+"")
+        new_macroC.write(line+"\n")
         for i in range(0,len(list_of_legends)):
             new_macroC.write('if(sample.Contains("'+list_of_legends_alias[i]+'")){')
             for j in range(0,len(all_list_of_legends[i])):
@@ -254,11 +254,11 @@ if  skim == "SKTree_LeptonSkim":
     tag2=""
 elif skim == "SKTree_DiLepSkim":
     tag="_SK"
-    tag2="_dilepton"
+    tag2="_dilep"
 
 MakeConfFile(inputdir,jobdir,stream,analyzer,tag,tag2,catversion,period,cutlist,list_of_legends_alias)
 
 os.system("source  " + str(os.getenv("LQANALYZER_DIR")) + "/Macros/CatPlotter/Code/runjob.sh " + jobdir)
 
 
-os.system("rm -r " + str(os.getenv("LQANALYZER_DIR")) + "/Macros/CatPlotter/" + jobdir)
+#os.system("rm -r " + str(os.getenv("LQANALYZER_DIR")) + "/Macros/CatPlotter/" + jobdir)
