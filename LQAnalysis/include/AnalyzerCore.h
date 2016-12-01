@@ -332,6 +332,7 @@ class AnalyzerCore : public LQCycleBase {
   double solveqdeq(double W_mass, TLorentzVector l1l2l3, double MET, double METphi, TString pm);
   int find_mlmet_closest_to_W(snu::KParticle  lep[], snu::KParticle  MET);
   double MT(TLorentzVector a, TLorentzVector b);
+  bool GenMatching(snu::KParticle a, snu::KParticle b, double maxDeltaR, double maxPtDiff);
 
 };
 #endif

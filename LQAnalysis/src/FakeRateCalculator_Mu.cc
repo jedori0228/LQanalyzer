@@ -78,14 +78,6 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
 
   /// #### CAT::: triggers stored are all HLT_Ele/HLT_DoubleEle/HLT_Mu/HLT_TkMu/HLT_Photon/HLT_DoublePhoton
 
-  //==== DoubleMuon DataSet, SingleMuon trigger  
-  std::vector<TString> triggerlist_Mu8, triggerlist_Mu17;
-  triggerlist_Mu8.push_back("HLT_Mu8_v");
-  triggerlist_Mu17.push_back("HLT_Mu17_v");
-  //==== DoubleMuon DataSet, DoubleMuon trigger
-  std::vector<TString> triggerlist_Mu17TkMu8;
-  triggerlist_Mu17TkMu8.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
- 
   // Trigger matching is done using KMuon::TriggerMatched(TString) which returns a bool
 
   /* // #### CAT::: trigger matching information is stored for muons and electrons for:
@@ -202,13 +194,13 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   //=========================
 
   bool highpt_trigger(false), lowpt_trigger(false);
-  highpt_trigger = PassTrigger(triggerlist_Mu17,prescale);
-  lowpt_trigger = PassTrigger(triggerlist_Mu8,prescale);
+  highpt_trigger = PassTrigger("HLT_Mu17_v");
+  lowpt_trigger = PassTrigger("HLT_Mu8_v");
 
   if( highpt_trigger || lowpt_trigger ){
 
-    Double_t this_weight_Loose = weight*GetPrescale(muontriLooseColl, PassTrigger(triggerlist_Mu8,prescale), PassTrigger(triggerlist_Mu17,prescale));
-    Double_t this_weight_HighdXYLoose = weight*GetPrescale(muontriHighdXYLooseColl, PassTrigger(triggerlist_Mu8,prescale), PassTrigger(triggerlist_Mu17,prescale));
+    Double_t this_weight_Loose = weight*GetPrescale(muontriLooseColl, PassTrigger("HLT_Mu8_v"), PassTrigger("HLT_Mu17_v"));
+    Double_t this_weight_HighdXYLoose = weight*GetPrescale(muontriHighdXYLooseColl, PassTrigger("HLT_Mu8_v"), PassTrigger("HLT_Mu17_v"));
 
     //==== 1) LooseMuon study
 
@@ -314,6 +306,11 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
       FillHist("SingleMuonTrigger_HighdXY_eta_F0", HighdXYmuon.Eta(), this_weight_HighdXYLoose, -3., 3., 30);
       FillHist("SingleMuonTrigger_HighdXY_pt_F0", HighdXYmuon.Pt(), this_weight_HighdXYLoose, 0., 200., 200);
       FillHist("SingleMuonTrigger_HighdXY_RelIso_F0", LeptonRelIso, this_weight_HighdXYLoose, 0., 1., 100);
+      if(LeptonRelIso>=0.6){
+        cout << "WTF" << endl;
+        cout << "LeptonRelIso = " << LeptonRelIso << endl;
+        cout << "muontriHighdXYLooseColl.at(0).RelIso04() = " << muontriHighdXYLooseColl.at(0).RelIso04() << endl;
+      }
       FillHist("SingleMuonTrigger_HighdXY_Chi2_F0", HighdXYmuon.GlobalChi2(), this_weight_HighdXYLoose, 0., 50., 50);
       FillHist("SingleMuonTrigger_HighdXY_dXYSig_F0", fabs(HighdXYmuon.dXYSig()), this_weight_Loose, 0., 8., 80);
       FillHist("SingleMuonTrigger_HighdXY_dXY_F0", fabs(HighdXYmuon.dXY()), this_weight_Loose, 0., 0.2, 40);
@@ -407,7 +404,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   //==== DiMuon Trigger
   //=====================
 
-  if( PassTrigger(triggerlist_Mu17TkMu8,prescale) ){
+  if( PassTrigger("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v") ){
 
     float trigger_ps_weight = WeightByTrigger("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v", TargetLumi);
     Double_t this_weight = weight*trigger_ps_weight;

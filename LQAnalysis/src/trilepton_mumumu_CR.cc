@@ -33,12 +33,6 @@ trilepton_mumumu_CR::trilepton_mumumu_CR() :  AnalyzerCore(), out_muons(0) {
   //
   // This function sets up Root files and histograms Needed in ExecuteEvents
   InitialiseAnalysis();
-  MakeCleverHistograms(trilephist,"cut0");
-  MakeCleverHistograms(trilephist,"cut0");
-  MakeCleverHistograms(trilephist,"cutdR");
-  MakeCleverHistograms(trilephist,"cutdR");
-  MakeCleverHistograms(trilephist,"cutdR_cutW");
-  MakeCleverHistograms(trilephist,"cutdR_cutW");
 
 }
 
@@ -84,12 +78,9 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   FillCutFlow("EventCut", 1.);
   /// #### CAT::: triggers stored are all HLT_Ele/HLT_DoubleEle/HLT_Mu/HLT_TkMu/HLT_Photon/HLT_DoublePhoton
 
-  std::vector<TString> triggerslist;
-  triggerslist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
-
   float trigger_ps_weight= WeightByTrigger("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v", TargetLumi);
 
-  if(!PassTrigger(triggerslist, prescale)) return;
+  if(!PassTrigger("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v")) return;
   FillCutFlow("TriggerCut", weight);
   // Trigger matching is done using KMuon::TriggerMatched(TString) which returns a bool
 

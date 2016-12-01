@@ -1931,7 +1931,7 @@ void AnalyzerCore::MakeHistograms(){
   //// Additional plots to make                                                                                
   maphist.clear();
   maphist2D.clear();
-
+  mapntp.clear();
     
 }
 
@@ -2225,6 +2225,7 @@ void AnalyzerCore::WriteHistograms() throw (LQError){
   // This function is called after the cycle is ran. It wrues all histograms to the output file. This function is not used by user. But by the contrioller code.
   WriteHists();
   WriteCLHists();
+  WriteNtp();
 }
 
   
@@ -2956,5 +2957,13 @@ double AnalyzerCore::MT(TLorentzVector a, TLorentzVector b){
 
 }
 
+bool AnalyzerCore::GenMatching(snu::KParticle a, snu::KParticle b, double maxDeltaR, double maxPtDiff){
 
+  bool matched = true;
 
+  if( a.DeltaR(b) >= maxDeltaR ) matched = false;
+  if( fabs(a.Pt() - b.Pt()) / TMath::Min( a.Pt(), b.Pt() ) >= maxPtDiff ) matched = false;
+
+  return matched;
+
+}

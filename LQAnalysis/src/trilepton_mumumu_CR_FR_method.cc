@@ -33,12 +33,6 @@ trilepton_mumumu_CR_FR_method::trilepton_mumumu_CR_FR_method() :  AnalyzerCore()
   //
   // This function sets up Root files and histograms Needed in ExecuteEvents
   InitialiseAnalysis();
-  MakeCleverHistograms(trilephist,"cut0");
-  MakeCleverHistograms(trilephist,"cut0");
-  MakeCleverHistograms(trilephist,"cutdR");
-  MakeCleverHistograms(trilephist,"cutdR");
-  MakeCleverHistograms(trilephist,"cutdR_cutW");
-  MakeCleverHistograms(trilephist,"cutdR_cutW");
 
 }
 
@@ -60,22 +54,21 @@ void trilepton_mumumu_CR_FR_method::InitialiseAnalysis() throw( LQError ) {
   /// To set uncomment the line below:
   //ResetLumiMask(snu::KEvent::gold);
 
-  string lqdir = getenv("LQANALYZER_DIR");
   TFile* file[5];
 
   //==== dijet topology
-  //file[0] = new TFile( (lqdir+"/data/rootfiles/13TeV_trimuon_FR_SingleMuonTrigger_Dijet.root").c_str() );
+  //file[0] = new TFile("/home/jskim/LQAnalyzer_rootfiles_for_analysis/13TeV_trimuon_FR_SingleMuonTrigger_Dijet.root");
   //hist_trimuon_FR[0] = (TH2F*)file[0]->Get("SingleMuonTrigger_Dijet_events_F")->Clone();
   //==== HighdXY muons
-  file[1] = new TFile( (lqdir+"/data/rootfiles/13TeV_trimuon_FR_SingleMuonTrigger_HighdXY.root").c_str() );
+  file[1] = new TFile("/home/jskim/LQAnalyzer_rootfiles_for_analysis/13TeV_trimuon_FR_SingleMuonTrigger_HighdXY.root");
   hist_trimuon_FR[1] = (TH2F*)file[1]->Get("SingleMuonTrigger_HighdXY_events_F")->Clone();
   //==== DiMuonHighdXY muons
-  //file[2] = new TFile( (lqdir+"/data/rootfiles/13TeV_trimuon_FR_DiMuonTrigger_HighdXY.root").c_str() );
+  //file[2] = new TFile("/home/jskim/LQAnalyzer_rootfiles_for_analysis/13TeV_trimuon_FR_DiMuonTrigger_HighdXY.root");
   //hist_trimuon_FR[2] = (TH2F*)file[2]->Get("DiMuonTrigger_HighdXY_events_F")->Clone();
   //==== DiMuonHighdXY muons + n_jet bins
-  //file[3] = new TFile( (lqdir+"/data/rootfiles/13TeV_trimuon_FR_DiMuonTrigger_HighdXY_0jet.root").c_str() );
+  //file[3] = new TFile("/home/jskim/LQAnalyzer_rootfiles_for_analysis/13TeV_trimuon_FR_DiMuonTrigger_HighdXY_0jet.root");
   //hist_trimuon_FR[3] = (TH2F*)file[3]->Get("DiMuonTrigger_HighdXY_0jet_events_F")->Clone();
-  //file[4] = new TFile( (lqdir+"/data/rootfiles/13TeV_trimuon_FR_DiMuonTrigger_HighdXY_withjet.root").c_str() );
+  //file[4] = new TFile("/home/jskim/LQAnalyzer_rootfiles_for_analysis/13TeV_trimuon_FR_DiMuonTrigger_HighdXY_withjet.root");
   //hist_trimuon_FR[4] = (TH2F*)file[4]->Get("DiMuonTrigger_HighdXY_withjet_events_F")->Clone();
 
   for(int i=1; i<2; i++){
@@ -87,7 +80,7 @@ void trilepton_mumumu_CR_FR_method::InitialiseAnalysis() throw( LQError ) {
     delete file[i];
   }
 
-  TFile* file_FR_SF = new TFile( (lqdir+"/data/rootfiles/13TeV_trimuon_FR_SF_SingleMuonTrigger_QCD_mu.root").c_str() );
+  TFile* file_FR_SF = new TFile("/home/jskim/LQAnalyzer_rootfiles_for_analysis/13TeV_trimuon_FR_SF_SingleMuonTrigger_QCD_mu.root");
   hist_trimuon_FR_SF = (TH2F*)file_FR_SF->Get("SingleMuonTrigger_MCTruth_events_F");
   hist_trimuon_FR_SF_pt = (TH1F*)file_FR_SF->Get("SingleMuonTrigger_MCTruth_pt_F");
 
@@ -117,11 +110,7 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   FillCutFlow("EventCut", 1.);
   /// #### CAT::: triggers stored are all HLT_Ele/HLT_DoubleEle/HLT_Mu/HLT_TkMu/HLT_Photon/HLT_DoublePhoton
 
-  std::vector<TString> triggerslist;
-  triggerslist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
-
-
-  if(!PassTrigger(triggerslist, prescale)) return;
+  if(!PassTrigger("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v")) return;
   FillCutFlow("TriggerCut", weight);
   // Trigger matching is done using KMuon::TriggerMatched(TString) which returns a bool
 
