@@ -209,8 +209,8 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
       double LeptonRelIso = muon.RelIso04();
       FillHist("SingleMuonTrigger_LooseMuon_RelIso", LeptonRelIso, this_weight_Loose, 0., 1., 100);
       FillHist("SingleMuonTrigger_LooseMuon_Chi2", muon.GlobalChi2(), this_weight_Loose, 0., 50., 50);
-      FillHist("SingleMuonTrigger_LooseMuon_dXY", fabs(muon.dXY()), this_weight_Loose, 0., 0.2, 20);
-      FillHist("SingleMuonTrigger_LooseMuon_dXYSig", fabs(muon.dXYSig()), this_weight_Loose, 0., 8., 80);
+      FillHist("SingleMuonTrigger_LooseMuon_dXY", fabs(muon.dXY()), this_weight_Loose, 0., 0.1, 100);
+      FillHist("SingleMuonTrigger_LooseMuon_dXYSig", fabs(muon.dXYSig()), this_weight_Loose, 0., 4., 40);
       FillHist("SingleMuonTrigger_LooseMuon_dZ", fabs(muon.dZ()), this_weight_Loose, 0., 0.5, 50);
     }
 
@@ -258,8 +258,8 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
                 FillHist("SingleMuonTrigger_Dijet_pt_F0", muon.Pt(), this_weight_Loose, 0., 200., 200);
                 FillHist("SingleMuonTrigger_Dijet_RelIso_F0", LeptonRelIso, this_weight_Loose, 0., 1., 100);
                 FillHist("SingleMuonTrigger_Dijet_Chi2_F0", muon.GlobalChi2(), this_weight_Loose, 0., 50., 50);
-                FillHist("SingleMuonTrigger_Dijet_dXY_F0", fabs(muon.dXY()), this_weight_Loose, 0., 0.2, 40);
-                FillHist("SingleMuonTrigger_Dijet_dXYSig_F0", fabs(muon.dXYSig()), this_weight_Loose, 0., 8., 80);
+                FillHist("SingleMuonTrigger_Dijet_dXY_F0", fabs(muon.dXY()), this_weight_Loose, 0., 0.1, 100);
+                FillHist("SingleMuonTrigger_Dijet_dXYSig_F0", fabs(muon.dXYSig()), this_weight_Loose, 0., 4., 40);
                 FillHist("SingleMuonTrigger_Dijet_dZ_F0", fabs(muon.dZ()), this_weight_Loose, 0., 0.5, 50);
                 FillHist("SingleMuonTrigger_Dijet_events_F0", muon.Pt(), fabs(muon.Eta()), this_weight_Loose, ptarray, 9, etaarray, 4);
                 FillHist("SingleMuonTrigger_Dijet_HT_loose_F0", HT_loose, this_weight_Loose, 0., 300., 300);
@@ -269,8 +269,8 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
                   FillHist("SingleMuonTrigger_Dijet_pt_F", muon.Pt(), this_weight_Loose, 0., 200., 200);
                   FillHist("SingleMuonTrigger_Dijet_RelIso_F", LeptonRelIso, this_weight_Loose, 0., 1., 100);
                   FillHist("SingleMuonTrigger_Dijet_Chi2_F", muon.GlobalChi2(), this_weight_Loose, 0., 50., 50);
-                  FillHist("SingleMuonTrigger_Dijet_dXY_F", fabs(muon.dXY()), this_weight_Loose, 0., 0.2, 40);
-                  FillHist("SingleMuonTrigger_Dijet_dXYSig_F", fabs(muon.dXYSig()), this_weight_Loose, 0., 8., 80);
+                  FillHist("SingleMuonTrigger_Dijet_dXY_F", fabs(muon.dXY()), this_weight_Loose, 0., 0.1, 100);
+                  FillHist("SingleMuonTrigger_Dijet_dXYSig_F", fabs(muon.dXYSig()), this_weight_Loose, 0., 4., 40);
                   FillHist("SingleMuonTrigger_Dijet_dZ_F", fabs(muon.dZ()), this_weight_Loose, 0., 0.5, 50);
                   FillHist("SingleMuonTrigger_Dijet_events_F", muon.Pt(), fabs(muon.Eta()), this_weight_Loose, ptarray, 9, etaarray, 4);
                   FillHist("SingleMuonTrigger_Dijet_HT_loose_F", HT_loose, this_weight_Loose, 0., 300., 300);
@@ -288,13 +288,19 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
 
     //==== 3) SingleMuon HighdXY LooseMuon study
 
+    int n_jets = jetColl_hn.size();
+    int n_bjets=0;
+    for(int j=0; j<n_jets; j++){
+      if(jetColl_hn.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Tight)) n_bjets++;
+    }
+
     for(unsigned int i=0; i<muontriHighdXYLooseColl.size(); i++){
       snu::KMuon muon = muontriHighdXYLooseColl.at(i);
       double LeptonRelIso = muon.RelIso04();
       FillHist("SingleMuonTrigger_HighdXY_LooseMuon_RelIso", LeptonRelIso, this_weight_HighdXYLoose, 0., 1., 100);
       FillHist("SingleMuonTrigger_HighdXY_LooseMuon_Chi2", muon.GlobalChi2(), this_weight_HighdXYLoose, 0, 50., 50);
-      FillHist("SingleMuonTrigger_HighdXY_LooseMuon_dXY", fabs(muon.dXY()), this_weight_Loose, 0., 0.2, 20);
-      FillHist("SingleMuonTrigger_HighdXY_LooseMuon_dXYSig", fabs(muon.dXYSig()), this_weight_Loose, 0., 8., 80);
+      FillHist("SingleMuonTrigger_HighdXY_LooseMuon_dXY", fabs(muon.dXY()), this_weight_Loose, 0., 1., 1000);
+      FillHist("SingleMuonTrigger_HighdXY_LooseMuon_dXYSig", fabs(muon.dXYSig()), this_weight_Loose, 3., 15., 120);
       FillHist("SingleMuonTrigger_HighdXY_LooseMuon_dZ", fabs(muon.dZ()), this_weight_Loose, 0., 0.5, 50);
     }
 
@@ -312,8 +318,8 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
         cout << "muontriHighdXYLooseColl.at(0).RelIso04() = " << muontriHighdXYLooseColl.at(0).RelIso04() << endl;
       }
       FillHist("SingleMuonTrigger_HighdXY_Chi2_F0", HighdXYmuon.GlobalChi2(), this_weight_HighdXYLoose, 0., 50., 50);
-      FillHist("SingleMuonTrigger_HighdXY_dXYSig_F0", fabs(HighdXYmuon.dXYSig()), this_weight_Loose, 0., 8., 80);
-      FillHist("SingleMuonTrigger_HighdXY_dXY_F0", fabs(HighdXYmuon.dXY()), this_weight_Loose, 0., 0.2, 40);
+      FillHist("SingleMuonTrigger_HighdXY_dXY_F0", fabs(HighdXYmuon.dXY()), this_weight_Loose, 0., 1., 1000);
+      FillHist("SingleMuonTrigger_HighdXY_dXYSig_F0", fabs(HighdXYmuon.dXYSig()), this_weight_Loose, 3., 15., 120);
       FillHist("SingleMuonTrigger_HighdXY_dZ_F0", fabs(HighdXYmuon.dZ()), this_weight_Loose, 0., 0.5, 50);
       FillHist("SingleMuonTrigger_HighdXY_events_F0", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 9, etaarray, 4);
       if( LeptonRelIso < 0.1 ){
@@ -321,12 +327,110 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
         FillHist("SingleMuonTrigger_HighdXY_pt_F", HighdXYmuon.Pt(), this_weight_HighdXYLoose, 0., 200., 200);
         FillHist("SingleMuonTrigger_HighdXY_RelIso_F", LeptonRelIso, this_weight_HighdXYLoose, 0., 1., 100);
         FillHist("SingleMuonTrigger_HighdXY_Chi2_F", HighdXYmuon.GlobalChi2(), this_weight_HighdXYLoose, 0., 50., 50);
-        FillHist("SingleMuonTrigger_HighdXY_dXY_F", fabs(HighdXYmuon.dXY()), this_weight_Loose, 0., 0.2, 40);
-        FillHist("SingleMuonTrigger_HighdXY_dXYSig_F", fabs(HighdXYmuon.dXYSig()), this_weight_Loose, 0., 8., 80);
+        FillHist("SingleMuonTrigger_HighdXY_dXY_F", fabs(HighdXYmuon.dXY()), this_weight_Loose, 0., 1., 1000);
+        FillHist("SingleMuonTrigger_HighdXY_dXYSig_F", fabs(HighdXYmuon.dXYSig()), this_weight_Loose, 3., 15., 120);
         FillHist("SingleMuonTrigger_HighdXY_dZ_F", fabs(HighdXYmuon.dZ()), this_weight_Loose, 0., 0.5, 50);
         FillHist("SingleMuonTrigger_HighdXY_events_F", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 9, etaarray, 4);
       }
-    }
+
+      //==== check # of jet dependecy
+      //==== no jet
+      if( n_jets == 0){
+        FillHist("SingleMuonTrigger_HighdXY_0jet_eta_F0", HighdXYmuon.Eta(), this_weight_HighdXYLoose, -3., 3., 30);
+        FillHist("SingleMuonTrigger_HighdXY_0jet_pt_F0", HighdXYmuon.Pt(), this_weight_HighdXYLoose, 0., 200., 200);
+        FillHist("SingleMuonTrigger_HighdXY_0jet_RelIso_F0", LeptonRelIso, this_weight_HighdXYLoose, 0., 1., 100);
+        FillHist("SingleMuonTrigger_HighdXY_0jet_Chi2_F0", HighdXYmuon.GlobalChi2(), this_weight_HighdXYLoose, 0., 50., 50);
+        FillHist("SingleMuonTrigger_HighdXY_0jet_dXY_F0", fabs(HighdXYmuon.dXY()), this_weight_HighdXYLoose, 0., 1., 1000);
+        FillHist("SingleMuonTrigger_HighdXY_0jet_dXYSig_F0", fabs(HighdXYmuon.dXYSig()), this_weight_HighdXYLoose, 3., 15., 120);
+        FillHist("SingleMuonTrigger_HighdXY_0jet_dZ_F0", fabs(HighdXYmuon.dZ()), this_weight_HighdXYLoose, 0., 0.5, 50);
+        FillHist("SingleMuonTrigger_HighdXY_0jet_n_jets_F0", n_jets, this_weight_HighdXYLoose, 0., 10., 10);
+        FillHist("SingleMuonTrigger_HighdXY_0jet_events_F0", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 9, etaarray, 4);
+        if( LeptonRelIso < 0.1 ){
+          FillHist("SingleMuonTrigger_HighdXY_0jet_eta_F", HighdXYmuon.Eta(), this_weight_HighdXYLoose, -3., 3., 30);
+          FillHist("SingleMuonTrigger_HighdXY_0jet_pt_F", HighdXYmuon.Pt(), this_weight_HighdXYLoose, 0., 200., 200);
+          FillHist("SingleMuonTrigger_HighdXY_0jet_RelIso_F", LeptonRelIso, this_weight_HighdXYLoose, 0., 1., 100);
+          FillHist("SingleMuonTrigger_HighdXY_0jet_Chi2_F", HighdXYmuon.GlobalChi2(), this_weight_HighdXYLoose, 0., 50., 50);
+          FillHist("SingleMuonTrigger_HighdXY_0jet_dXY_F", fabs(HighdXYmuon.dXY()), this_weight_HighdXYLoose, 0., 1., 1000);
+          FillHist("SingleMuonTrigger_HighdXY_0jet_dXYSig_F", fabs(HighdXYmuon.dXYSig()), this_weight_HighdXYLoose, 3., 15., 120);
+          FillHist("SingleMuonTrigger_HighdXY_0jet_dZ_F", fabs(HighdXYmuon.dZ()), this_weight_HighdXYLoose, 0., 0.5, 50);
+          FillHist("SingleMuonTrigger_HighdXY_0jet_n_jets_F", n_jets, this_weight_HighdXYLoose, 0., 10., 10);
+          FillHist("SingleMuonTrigger_HighdXY_0jet_events_F", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 9, etaarray, 4);
+        }
+      }
+      //==== with jet
+      if( n_jets != 0){
+        FillHist("SingleMuonTrigger_HighdXY_withjet_eta_F0", HighdXYmuon.Eta(), this_weight_HighdXYLoose, -3., 3., 30);
+        FillHist("SingleMuonTrigger_HighdXY_withjet_pt_F0", HighdXYmuon.Pt(), this_weight_HighdXYLoose, 0., 200., 200);
+        FillHist("SingleMuonTrigger_HighdXY_withjet_RelIso_F0", LeptonRelIso, this_weight_HighdXYLoose, 0., 1., 100);
+        FillHist("SingleMuonTrigger_HighdXY_withjet_Chi2_F0", HighdXYmuon.GlobalChi2(), this_weight_HighdXYLoose, 0., 50., 50);
+        FillHist("SingleMuonTrigger_HighdXY_withjet_dXY_F0", fabs(HighdXYmuon.dXY()), this_weight_HighdXYLoose, 0., 1., 1000);
+        FillHist("SingleMuonTrigger_HighdXY_withjet_dXYSig_F0", fabs(HighdXYmuon.dXYSig()), this_weight_HighdXYLoose, 3., 15., 120);
+        FillHist("SingleMuonTrigger_HighdXY_withjet_dZ_F0", fabs(HighdXYmuon.dZ()), this_weight_HighdXYLoose, 0., 0.5, 50);
+        FillHist("SingleMuonTrigger_HighdXY_withjet_n_jets_F0", n_jets, this_weight_HighdXYLoose, 0., 10., 10);
+        FillHist("SingleMuonTrigger_HighdXY_withjet_events_F0", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 9, etaarray, 4);
+        if( LeptonRelIso < 0.1 ){
+          FillHist("SingleMuonTrigger_HighdXY_withjet_eta_F", HighdXYmuon.Eta(), this_weight_HighdXYLoose, -3., 3., 30);
+          FillHist("SingleMuonTrigger_HighdXY_withjet_pt_F", HighdXYmuon.Pt(), this_weight_HighdXYLoose, 0., 200., 200);
+          FillHist("SingleMuonTrigger_HighdXY_withjet_RelIso_F", LeptonRelIso, this_weight_HighdXYLoose, 0., 1., 100);
+          FillHist("SingleMuonTrigger_HighdXY_withjet_Chi2_F", HighdXYmuon.GlobalChi2(), this_weight_HighdXYLoose, 0., 50., 50);
+          FillHist("SingleMuonTrigger_HighdXY_withjet_dXY_F", fabs(HighdXYmuon.dXY()), this_weight_HighdXYLoose, 0., 1., 1000);
+          FillHist("SingleMuonTrigger_HighdXY_withjet_dXYSig_F", fabs(HighdXYmuon.dXYSig()), this_weight_HighdXYLoose, 3., 15., 120);
+          FillHist("SingleMuonTrigger_HighdXY_withjet_dZ_F", fabs(HighdXYmuon.dZ()), this_weight_HighdXYLoose, 0., 0.5, 50);
+          FillHist("SingleMuonTrigger_HighdXY_withjet_n_jets_F", n_jets, this_weight_HighdXYLoose, 0., 10., 10);
+          FillHist("SingleMuonTrigger_HighdXY_withjet_events_F", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 9, etaarray, 4);
+        }
+        //==== with b-jet
+        if( n_bjets == 0){
+          FillHist("SingleMuonTrigger_HighdXY_withjet_0bjet_eta_F0", HighdXYmuon.Eta(), this_weight_HighdXYLoose, -3., 3., 30);
+          FillHist("SingleMuonTrigger_HighdXY_withjet_0bjet_pt_F0", HighdXYmuon.Pt(), this_weight_HighdXYLoose, 0., 200., 200);
+          FillHist("SingleMuonTrigger_HighdXY_withjet_0bjet_RelIso_F0", LeptonRelIso, this_weight_HighdXYLoose, 0., 1., 100);
+          FillHist("SingleMuonTrigger_HighdXY_withjet_0bjet_Chi2_F0", HighdXYmuon.GlobalChi2(), this_weight_HighdXYLoose, 0., 50., 50);
+          FillHist("SingleMuonTrigger_HighdXY_withjet_0bjet_dXY_F0", fabs(HighdXYmuon.dXY()), this_weight_HighdXYLoose, 0., 1., 1000);
+          FillHist("SingleMuonTrigger_HighdXY_withjet_0bjet_dXYSig_F0", fabs(HighdXYmuon.dXYSig()), this_weight_HighdXYLoose, 3., 15., 120);
+          FillHist("SingleMuonTrigger_HighdXY_withjet_0bjet_dZ_F0", fabs(HighdXYmuon.dZ()), this_weight_HighdXYLoose, 0., 0.5, 50);
+          FillHist("SingleMuonTrigger_HighdXY_withjet_0bjet_n_jets_F0", n_jets, this_weight_HighdXYLoose, 0., 10., 10);
+          FillHist("SingleMuonTrigger_HighdXY_withjet_0bjet_events_F0", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 9, etaarray, 4);
+          if( LeptonRelIso < 0.1 ){
+            FillHist("SingleMuonTrigger_HighdXY_withjet_0bjet_eta_F", HighdXYmuon.Eta(), this_weight_HighdXYLoose, -3., 3., 30);
+            FillHist("SingleMuonTrigger_HighdXY_withjet_0bjet_pt_F", HighdXYmuon.Pt(), this_weight_HighdXYLoose, 0., 200., 200);
+            FillHist("SingleMuonTrigger_HighdXY_withjet_0bjet_RelIso_F", LeptonRelIso, this_weight_HighdXYLoose, 0., 1., 100);
+            FillHist("SingleMuonTrigger_HighdXY_withjet_0bjet_Chi2_F", HighdXYmuon.GlobalChi2(), this_weight_HighdXYLoose, 0., 50., 50);
+            FillHist("SingleMuonTrigger_HighdXY_withjet_0bjet_dXY_F", fabs(HighdXYmuon.dXY()), this_weight_HighdXYLoose, 0., 1., 1000);
+            FillHist("SingleMuonTrigger_HighdXY_withjet_0bjet_dXYSig_F", fabs(HighdXYmuon.dXYSig()), this_weight_HighdXYLoose, 3., 15., 120);
+            FillHist("SingleMuonTrigger_HighdXY_withjet_0bjet_dZ_F", fabs(HighdXYmuon.dZ()), this_weight_HighdXYLoose, 0., 0.5, 50);
+            FillHist("SingleMuonTrigger_HighdXY_withjet_0bjet_n_jets_F", n_jets, this_weight_HighdXYLoose, 0., 10., 10);
+            FillHist("SingleMuonTrigger_HighdXY_withjet_0bjet_events_F", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 9, etaarray, 4);
+          }
+        }
+        //==== no b-jet
+        if( n_bjets != 0){
+          FillHist("SingleMuonTrigger_HighdXY_withjet_withbjet_eta_F0", HighdXYmuon.Eta(), this_weight_HighdXYLoose, -3., 3., 30);
+          FillHist("SingleMuonTrigger_HighdXY_withjet_withbjet_pt_F0", HighdXYmuon.Pt(), this_weight_HighdXYLoose, 0., 200., 200);
+          FillHist("SingleMuonTrigger_HighdXY_withjet_withbjet_RelIso_F0", LeptonRelIso, this_weight_HighdXYLoose, 0., 1., 100);
+          FillHist("SingleMuonTrigger_HighdXY_withjet_withbjet_Chi2_F0", HighdXYmuon.GlobalChi2(), this_weight_HighdXYLoose, 0., 50., 50);
+          FillHist("SingleMuonTrigger_HighdXY_withjet_withbjet_dXY_F0", fabs(HighdXYmuon.dXY()), this_weight_HighdXYLoose, 0., 1., 1000);
+          FillHist("SingleMuonTrigger_HighdXY_withjet_withbjet_dXYSig_F0", fabs(HighdXYmuon.dXYSig()), this_weight_HighdXYLoose, 3., 15., 120);
+          FillHist("SingleMuonTrigger_HighdXY_withjet_withbjet_dZ_F0", fabs(HighdXYmuon.dZ()), this_weight_HighdXYLoose, 0., 0.5, 50);
+          FillHist("SingleMuonTrigger_HighdXY_withjet_withbjet_n_jets_F0", n_jets, this_weight_HighdXYLoose, 0., 10., 10);
+          FillHist("SingleMuonTrigger_HighdXY_withjet_withbjet_events_F0", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 9, etaarray, 4);
+          if( LeptonRelIso < 0.1 ){
+            FillHist("SingleMuonTrigger_HighdXY_withjet_withbjet_eta_F", HighdXYmuon.Eta(), this_weight_HighdXYLoose, -3., 3., 30);
+            FillHist("SingleMuonTrigger_HighdXY_withjet_withbjet_pt_F", HighdXYmuon.Pt(), this_weight_HighdXYLoose, 0., 200., 200);
+            FillHist("SingleMuonTrigger_HighdXY_withjet_withbjet_RelIso_F", LeptonRelIso, this_weight_HighdXYLoose, 0., 1., 100);
+            FillHist("SingleMuonTrigger_HighdXY_withjet_withbjet_Chi2_F", HighdXYmuon.GlobalChi2(), this_weight_HighdXYLoose, 0., 50., 50);
+            FillHist("SingleMuonTrigger_HighdXY_withjet_withbjet_dXY_F", fabs(HighdXYmuon.dXY()), this_weight_HighdXYLoose, 0., 1., 1000);
+            FillHist("SingleMuonTrigger_HighdXY_withjet_withbjet_dXYSig_F", fabs(HighdXYmuon.dXYSig()), this_weight_HighdXYLoose, 3., 15., 120);
+            FillHist("SingleMuonTrigger_HighdXY_withjet_withbjet_dZ_F", fabs(HighdXYmuon.dZ()), this_weight_HighdXYLoose, 0., 0.5, 50);
+            FillHist("SingleMuonTrigger_HighdXY_withjet_withbjet_n_jets_F", n_jets, this_weight_HighdXYLoose, 0., 10., 10);
+            FillHist("SingleMuonTrigger_HighdXY_withjet_withbjet_events_F", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 9, etaarray, 4);
+          }
+        }
+
+      } // END with jet
+
+
+
+    } // One muon if statement
 
     //==== 5) MC Truth
     //==== here, we pick FAKE muons using GEN info.
@@ -348,8 +452,8 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
           FillHist("SingleMuonTrigger_MCTruth_HighdXY_pt_F0", muon.Pt(), 1., 0., 200., 200);
           FillHist("SingleMuonTrigger_MCTruth_HighdXY_RelIso_F0", LeptonRelIso, 1., 0., 1., 100);
           FillHist("SingleMuonTrigger_MCTruth_HighdXY_Chi2_F0", muon.GlobalChi2(), 1., 0, 50., 50);
-          FillHist("SingleMuonTrigger_MCTruth_HighdXY_dXY_F0", fabs(muon.dXY()),1., 0., 0.2, 40);
-          FillHist("SingleMuonTrigger_MCTruth_HighdXY_dXYSig_F0", fabs(muon.dXYSig()),1., 0., 8., 80);
+          FillHist("SingleMuonTrigger_MCTruth_HighdXY_dXY_F0", fabs(muon.dXY()),1., 0., 1., 1000);
+          FillHist("SingleMuonTrigger_MCTruth_HighdXY_dXYSig_F0", fabs(muon.dXYSig()),1., 3., 15., 120);
           FillHist("SingleMuonTrigger_MCTruth_HighdXY_dZ_F0", fabs(muon.dZ()), 1., 0., 0.5, 50);
           FillHist("SingleMuonTrigger_MCTruth_HighdXY_events_F0", muon.Pt(), fabs(muon.Eta()), 1., ptarray, 9, etaarray, 4);
           if( LeptonRelIso < 0.1 ){
@@ -357,8 +461,8 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
             FillHist("SingleMuonTrigger_MCTruth_HighdXY_pt_F", muon.Pt(), 1., 0., 200., 200);
             FillHist("SingleMuonTrigger_MCTruth_HighdXY_RelIso_F", LeptonRelIso, 1., 0., 1., 100);
             FillHist("SingleMuonTrigger_MCTruth_HighdXY_Chi2_F", muon.GlobalChi2(), 1., 0, 50., 50);
-            FillHist("SingleMuonTrigger_MCTruth_HighdXY_dXY_F", fabs(muon.dXY()), 1., 0., 0.2, 40);
-            FillHist("SingleMuonTrigger_MCTruth_HighdXY_dXYSig_F", fabs(muon.dXYSig()), 1., 0., 8., 80);
+            FillHist("SingleMuonTrigger_MCTruth_HighdXY_dXY_F", fabs(muon.dXY()), 1., 0., 1., 1000);
+            FillHist("SingleMuonTrigger_MCTruth_HighdXY_dXYSig_F", fabs(muon.dXYSig()), 1., 3., 15., 120);
             FillHist("SingleMuonTrigger_MCTruth_HighdXY_dZ_F", fabs(muon.dZ()), 1., 0., 0.5, 50);
             FillHist("SingleMuonTrigger_MCTruth_HighdXY_events_F", muon.Pt(), fabs(muon.Eta()), 1., ptarray, 9, etaarray, 4);
           }
@@ -373,8 +477,8 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
           FillHist("SingleMuonTrigger_MCTruth_pt_F0", muon.Pt(), 1., 0., 200., 200);
           FillHist("SingleMuonTrigger_MCTruth_RelIso_F0", LeptonRelIso, 1., 0., 1., 100);
           FillHist("SingleMuonTrigger_MCTruth_Chi2_F0", muon.GlobalChi2(), 1., 0, 50., 50);
-          FillHist("SingleMuonTrigger_MCTruth_dXY_F0", fabs(muon.dXY()), 1., 0, 0.2, 40);
-          FillHist("SingleMuonTrigger_MCTruth_dXYSig_F0", fabs(muon.dXYSig()), 1., 0, 8., 80);
+          FillHist("SingleMuonTrigger_MCTruth_dXY_F0", fabs(muon.dXY()), 1., 0., 0.1, 100);
+          FillHist("SingleMuonTrigger_MCTruth_dXYSig_F0", fabs(muon.dXYSig()), 1., 0., 4., 40);
           FillHist("SingleMuonTrigger_MCTruth_dZ_F0", fabs(muon.dZ()), 1., 0, 0.5, 50);
           FillHist("SingleMuonTrigger_MCTruth_events_F0", muon.Pt(), fabs(muon.Eta()), 1., ptarray, 9, etaarray, 4);
           if( LeptonRelIso < 0.1 ){
@@ -382,8 +486,8 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
             FillHist("SingleMuonTrigger_MCTruth_pt_F", muon.Pt(), 1., 0., 200., 200);
             FillHist("SingleMuonTrigger_MCTruth_RelIso_F", LeptonRelIso, 1., 0., 1., 100);
             FillHist("SingleMuonTrigger_MCTruth_Chi2_F", muon.GlobalChi2(), 1., 0, 50., 50);
-            FillHist("SingleMuonTrigger_MCTruth_dXY_F", fabs(muon.dXY()), 1., 0, 0.2, 40);
-            FillHist("SingleMuonTrigger_MCTruth_dXYSig_F", fabs(muon.dXYSig()), 1., 0, 8., 80);
+            FillHist("SingleMuonTrigger_MCTruth_dXY_F", fabs(muon.dXY()), 1., 0., 0.1, 100);
+            FillHist("SingleMuonTrigger_MCTruth_dXYSig_F", fabs(muon.dXYSig()), 1., 0., 4., 40);
             FillHist("SingleMuonTrigger_MCTruth_dZ_F", fabs(muon.dZ()), 1., 0, 0.5, 50);
             FillHist("SingleMuonTrigger_MCTruth_events_F", muon.Pt(), fabs(muon.Eta()), 1., ptarray, 9, etaarray, 4);
           }
@@ -419,9 +523,9 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
       snu::KMuon thismuon = muontriNodXYCutTightColl_raw.at(i);
       if( thismuon.MCMatched() ) continue;
       FillHist("DiMuonTrigger_TightIsoMuon_fake_dXY", fabs( thismuon.dXY() ), this_weight, 0., 0.2, 20);
-      FillHist("DiMuonTrigger_TightIsoMuon_fake_dXY_over_dXYErrPat", fabs( thismuon.dXYSig() ), this_weight, 0., 10., 50);
+      FillHist("DiMuonTrigger_TightIsoMuon_fake_dXYSig", fabs( thismuon.dXYSig() ), this_weight, 0., 15., 150);
       if( fabs( thismuon.dXY() ) < 1. ){
-        FillHist("DiMuonTrigger_TightIsoMuon_fake_dXY_over_dXYErrPat_dXYcut_10mm", fabs( thismuon.dXYSig() ), this_weight, 0., 10., 50);
+        FillHist("DiMuonTrigger_TightIsoMuon_fake_dXYSig_dXYcut_10mm", fabs( thismuon.dXYSig() ), this_weight, 0., 15., 150);
       }
     }
     for(unsigned int i=0; i<muontriNodXYCutLooseColl_raw.size(); i++){
@@ -431,11 +535,12 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
       snu::KMuon thismuon = muontriNodXYCutLooseColl_raw.at(i);
       if( thismuon.MCMatched() ) continue;
       FillHist("DiMuonTrigger_LooseIsoMuon_fake_dXY", fabs( thismuon.dXY() ), this_weight, 0., 0.2, 20);
-      FillHist("DiMuonTrigger_LooseIsoMuon_fake_dXY_over_dXYErrPat", fabs( thismuon.dXYSig() ), this_weight, 0., 10., 50);
+      FillHist("DiMuonTrigger_LooseIsoMuon_fake_dXYSig", fabs( thismuon.dXYSig() ), this_weight, 0., 15., 150);
       if( fabs( thismuon.dXY() ) < 1. ){
-        FillHist("DiMuonTrigger_LooseIsoMuon_fake_dXY_over_dXYErrPat_dXYcut_10mm", fabs( thismuon.dXYSig() ), this_weight, 0., 10., 50);
+        FillHist("DiMuonTrigger_LooseIsoMuon_fake_dXYSig_dXYcut_10mm", fabs( thismuon.dXYSig() ), this_weight, 0., 15., 150);
       }
     }
+
     //==== for DY (prompt matched)
     for(unsigned int i=0; i<muontriNodXYCutTightColl_raw.size(); i++){
       //==== lead pT > 20 GeV
@@ -444,9 +549,9 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
       snu::KMuon thismuon = muontriNodXYCutTightColl_raw.at(i);
       if( ! thismuon.MCMatched() ) continue;
       FillHist("DiMuonTrigger_TightIsoMuon_prompt_dXY", fabs( thismuon.dXY() ), this_weight, 0., 0.2, 20);
-      FillHist("DiMuonTrigger_TightIsoMuon_prompt_dXY_over_dXYErrPat", fabs( thismuon.dXYSig() ), this_weight, 0., 10., 50);
+      FillHist("DiMuonTrigger_TightIsoMuon_prompt_dXYSig", fabs( thismuon.dXYSig() ), this_weight, 0., 15., 150);
       if( fabs( thismuon.dXY() ) < 1. ){
-        FillHist("DiMuonTrigger_TightIsoMuon_prompt_dXY_over_dXYErrPat_dXYcut_10mm", fabs( thismuon.dXYSig() ), this_weight, 0., 10., 50);
+        FillHist("DiMuonTrigger_TightIsoMuon_prompt_dXYSig_dXYcut_10mm", fabs( thismuon.dXYSig() ), this_weight, 0., 15., 150);
       }
     }
     for(unsigned int i=0; i<muontriNodXYCutLooseColl_raw.size(); i++){
@@ -456,9 +561,9 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
       snu::KMuon thismuon = muontriNodXYCutLooseColl_raw.at(i);
       if( ! thismuon.MCMatched() ) continue;
       FillHist("DiMuonTrigger_LooseIsoMuon_prompt_dXY", fabs( thismuon.dXY() ), this_weight, 0., 0.2, 20);
-      FillHist("DiMuonTrigger_LooseIsoMuon_prompt_dXY_over_dXYErrPat", fabs( thismuon.dXYSig() ), this_weight, 0., 10., 50);
+      FillHist("DiMuonTrigger_LooseIsoMuon_prompt_dXYSig", fabs( thismuon.dXYSig() ), this_weight, 0., 15., 150);
       if( fabs( thismuon.dXY() ) < 1. ){
-        FillHist("DiMuonTrigger_LooseIsoMuon_prompt_dXY_over_dXYErrPat_dXYcut_10mm", fabs( thismuon.dXYSig() ), this_weight, 0., 10., 50);
+        FillHist("DiMuonTrigger_LooseIsoMuon_prompt_dXYSig_dXYcut_10mm", fabs( thismuon.dXYSig() ), this_weight, 0., 15., 150);
       }
     }
 
@@ -470,8 +575,8 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
       double LeptonRelIso = muon.RelIso04();
       FillHist("DiMuonTrigger_HighdXY_LooseMuon_RelIso", LeptonRelIso, this_weight, 0., 1., 100);
       FillHist("DiMuonTrigger_HighdXY_LooseMuon_Chi2", muon.GlobalChi2(), this_weight, 0, 50., 50);
-      FillHist("DiMuonTrigger_HighdXY_LooseMuon_dXY", fabs(muon.dXY()), this_weight, 0., 0.2, 20);
-      FillHist("DiMuonTrigger_HighdXY_LooseMuon_dXYSig", fabs(muon.dXYSig()), this_weight, 0., 8., 80);
+      FillHist("DiMuonTrigger_HighdXY_LooseMuon_dXY", fabs(muon.dXY()), this_weight, 0., 1., 1000);
+      FillHist("DiMuonTrigger_HighdXY_LooseMuon_dXYSig", fabs(muon.dXYSig()), this_weight, 3., 15., 120);
       FillHist("DiMuonTrigger_HighdXY_LooseMuon_dZ", fabs(muon.dZ()), this_weight, 0., 0.5, 50);
     }
 
@@ -524,8 +629,8 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
             FillHist("DiMuonTrigger_HighdXY_pt_F0", muon.Pt(), this_weight, 0., 200., 200);
             FillHist("DiMuonTrigger_HighdXY_RelIso_F0", LeptonRelIso, this_weight, 0., 1., 100);
             FillHist("DiMuonTrigger_HighdXY_Chi2_F0", muon.GlobalChi2(), this_weight, 0., 50., 50);
-            FillHist("DiMuonTrigger_HighdXY_dXY_F0", fabs(muon.dXY()), this_weight, 0., 0.2, 40);
-            FillHist("DiMuonTrigger_HighdXY_dXYSig_F0", fabs(muon.dXYSig()), this_weight, 0., 8., 80);
+            FillHist("DiMuonTrigger_HighdXY_dXY_F0", fabs(muon.dXY()), this_weight, 0., 1., 1000);
+            FillHist("DiMuonTrigger_HighdXY_dXYSig_F0", fabs(muon.dXYSig()), this_weight, 3., 15., 120);
             FillHist("DiMuonTrigger_HighdXY_dZ_F0", fabs(muon.dZ()), this_weight, 0., 0.5, 50);
             FillHist("DiMuonTrigger_HighdXY_n_jets_F0", n_jets, this_weight, 0., 10., 10);
             FillHist("DiMuonTrigger_HighdXY_events_F0", muon.Pt(), fabs(muon.Eta()), this_weight, ptarray_2, 9, etaarray_2, 4);
@@ -535,8 +640,8 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
               FillHist("DiMuonTrigger_HighdXY_pt_F", muon.Pt(), this_weight, 0., 200., 200);
               FillHist("DiMuonTrigger_HighdXY_RelIso_F", LeptonRelIso, this_weight, 0., 1., 100);
               FillHist("DiMuonTrigger_HighdXY_Chi2_F", muon.GlobalChi2(), this_weight, 0., 50., 50);
-              FillHist("DiMuonTrigger_HighdXY_dXY_F", fabs(muon.dXY()), this_weight, 0., 0.2, 40);
-              FillHist("DiMuonTrigger_HighdXY_dXYSig_F", fabs(muon.dXYSig()), this_weight, 0., 8., 80);
+              FillHist("DiMuonTrigger_HighdXY_dXY_F", fabs(muon.dXY()), this_weight, 0., 1., 1000);
+              FillHist("DiMuonTrigger_HighdXY_dXYSig_F", fabs(muon.dXYSig()), this_weight, 3., 15., 120);
               FillHist("DiMuonTrigger_HighdXY_dZ_F", fabs(muon.dZ()), this_weight, 0., 0.5, 50);
               FillHist("DiMuonTrigger_HighdXY_n_jets_F", n_jets, this_weight, 0., 10., 10);
               FillHist("DiMuonTrigger_HighdXY_events_F", muon.Pt(), fabs(muon.Eta()), this_weight, ptarray_2, 9, etaarray_2, 4);
@@ -546,8 +651,8 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
               FillHist("DiMuonTrigger_HighdXY_0jet_pt_F0", muon.Pt(), this_weight, 0., 200., 200);
               FillHist("DiMuonTrigger_HighdXY_0jet_RelIso_F0", LeptonRelIso, this_weight, 0., 1., 100);
               FillHist("DiMuonTrigger_HighdXY_0jet_Chi2_F0", muon.GlobalChi2(), this_weight, 0., 50., 50);
-              FillHist("DiMuonTrigger_HighdXY_0jet_dXY_F0", fabs(muon.dXY()), this_weight, 0., 0.2, 40);
-              FillHist("DiMuonTrigger_HighdXY_0jet_dXYSig_F0", fabs(muon.dXYSig()), this_weight, 0., 8., 80);
+              FillHist("DiMuonTrigger_HighdXY_0jet_dXY_F0", fabs(muon.dXY()), this_weight, 0., 1., 1000);
+              FillHist("DiMuonTrigger_HighdXY_0jet_dXYSig_F0", fabs(muon.dXYSig()), this_weight, 3., 15., 120);
               FillHist("DiMuonTrigger_HighdXY_0jet_dZ_F0", fabs(muon.dZ()), this_weight, 0., 0.5, 50);
               FillHist("DiMuonTrigger_HighdXY_0jet_n_jets_F0", n_jets, this_weight, 0., 10., 10);
               FillHist("DiMuonTrigger_HighdXY_0jet_events_F0", muon.Pt(), fabs(muon.Eta()), this_weight, ptarray_2, 9, etaarray_2, 4);
@@ -556,8 +661,8 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
                 FillHist("DiMuonTrigger_HighdXY_0jet_pt_F", muon.Pt(), this_weight, 0., 200., 200);
                 FillHist("DiMuonTrigger_HighdXY_0jet_RelIso_F", LeptonRelIso, this_weight, 0., 1., 100);
                 FillHist("DiMuonTrigger_HighdXY_0jet_Chi2_F", muon.GlobalChi2(), this_weight, 0., 50., 50);
-                FillHist("DiMuonTrigger_HighdXY_0jet_dXY_F", fabs(muon.dXY()), this_weight, 0., 0.2, 40);
-                FillHist("DiMuonTrigger_HighdXY_0jet_dXYSig_F", fabs(muon.dXYSig()), this_weight, 0., 8., 80);
+                FillHist("DiMuonTrigger_HighdXY_0jet_dXY_F", fabs(muon.dXY()), this_weight, 0., 1., 1000);
+                FillHist("DiMuonTrigger_HighdXY_0jet_dXYSig_F", fabs(muon.dXYSig()), this_weight, 3., 15., 120);
                 FillHist("DiMuonTrigger_HighdXY_0jet_dZ_F", fabs(muon.dZ()), this_weight, 0., 0.5, 50);
                 FillHist("DiMuonTrigger_HighdXY_0jet_n_jets_F", n_jets, this_weight, 0., 10., 10);
                 FillHist("DiMuonTrigger_HighdXY_0jet_events_F", muon.Pt(), fabs(muon.Eta()), this_weight, ptarray_2, 9, etaarray_2, 4);
@@ -568,8 +673,8 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
               FillHist("DiMuonTrigger_HighdXY_withjet_pt_F0", muon.Pt(), this_weight, 0., 200., 200);
               FillHist("DiMuonTrigger_HighdXY_withjet_RelIso_F0", LeptonRelIso, this_weight, 0., 1., 100);
               FillHist("DiMuonTrigger_HighdXY_withjet_Chi2_F0", muon.GlobalChi2(), this_weight, 0., 50., 50);
-              FillHist("DiMuonTrigger_HighdXY_withjet_dXY_F0", fabs(muon.dXY()), this_weight, 0., 0.2, 40);
-              FillHist("DiMuonTrigger_HighdXY_withjet_dXYSig_F0", fabs(muon.dXYSig()), this_weight, 0., 8., 80);
+              FillHist("DiMuonTrigger_HighdXY_withjet_dXY_F0", fabs(muon.dXY()), this_weight, 0., 1., 1000);
+              FillHist("DiMuonTrigger_HighdXY_withjet_dXYSig_F0", fabs(muon.dXYSig()), this_weight, 3., 15., 120);
               FillHist("DiMuonTrigger_HighdXY_withjet_dZ_F0", fabs(muon.dZ()), this_weight, 0., 0.5, 50);
               FillHist("DiMuonTrigger_HighdXY_withjet_n_jets_F0", n_jets, this_weight, 0., 10., 10);
               FillHist("DiMuonTrigger_HighdXY_withjet_events_F0", muon.Pt(), fabs(muon.Eta()), this_weight, ptarray_2, 9, etaarray_2, 4);
@@ -578,8 +683,8 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
                 FillHist("DiMuonTrigger_HighdXY_withjet_pt_F", muon.Pt(), this_weight, 0., 200., 200);
                 FillHist("DiMuonTrigger_HighdXY_withjet_RelIso_F", LeptonRelIso, this_weight, 0., 1., 100);
                 FillHist("DiMuonTrigger_HighdXY_withjet_Chi2_F", muon.GlobalChi2(), this_weight, 0., 50., 50);
-                FillHist("DiMuonTrigger_HighdXY_withjet_dXY_F", fabs(muon.dXY()), this_weight, 0., 0.2, 40);
-                FillHist("DiMuonTrigger_HighdXY_withjet_dXYSig_F", fabs(muon.dXYSig()), this_weight, 0., 8., 80);
+                FillHist("DiMuonTrigger_HighdXY_withjet_dXY_F", fabs(muon.dXY()), this_weight, 0., 1., 1000);
+                FillHist("DiMuonTrigger_HighdXY_withjet_dXYSig_F", fabs(muon.dXYSig()), this_weight, 3., 15., 120);
                 FillHist("DiMuonTrigger_HighdXY_withjet_dZ_F", fabs(muon.dZ()), this_weight, 0., 0.5, 50);
                 FillHist("DiMuonTrigger_HighdXY_withjet_n_jets_F", n_jets, this_weight, 0., 10., 10);
                 FillHist("DiMuonTrigger_HighdXY_withjet_events_F", muon.Pt(), fabs(muon.Eta()), this_weight, ptarray_2, 9, etaarray_2, 4);
@@ -620,8 +725,8 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
           FillHist("DiMuonTrigger_MCTruth_HighdXY_pt_F0", muon.Pt(), 1., 0., 200., 200);
           FillHist("DiMuonTrigger_MCTruth_HighdXY_RelIso_F0", LeptonRelIso, 1., 0., 1., 100);
           FillHist("DiMuonTrigger_MCTruth_HighdXY_Chi2_F0", muon.GlobalChi2(), 1., 0., 50., 50);
-          FillHist("DiMuonTrigger_MCTruth_HighdXY_dXY_F0", fabs(muon.dXY()), 1., 0., 0.2, 40);
-          FillHist("DiMuonTrigger_MCTruth_HighdXY_dXYSig_F0", fabs(muon.dXYSig()), 1., 0., 8., 80);
+          FillHist("DiMuonTrigger_MCTruth_HighdXY_dXY_F0", fabs(muon.dXY()), 1., 0., 1., 1000);
+          FillHist("DiMuonTrigger_MCTruth_HighdXY_dXYSig_F0", fabs(muon.dXYSig()), 1., 3., 15., 120);
           FillHist("DiMuonTrigger_MCTruth_HighdXY_dZ_F0", fabs(muon.dZ()), 1., 0., 0.5, 50);
           FillHist("DiMuonTrigger_MCTruth_HighdXY_events_F0", muon.Pt(), fabs(muon.Eta()), 1., ptarray_2, 9, etaarray_2, 4);
           if( LeptonRelIso < 0.1 ){
@@ -629,8 +734,8 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
             FillHist("DiMuonTrigger_MCTruth_HighdXY_pt_F", muon.Pt(), 1., 0., 200., 200);
             FillHist("DiMuonTrigger_MCTruth_HighdXY_RelIso_F", LeptonRelIso, 1., 0., 1., 100);
             FillHist("DiMuonTrigger_MCTruth_HighdXY_Chi2_F", muon.GlobalChi2(), 1., 0., 50., 50);
-            FillHist("DiMuonTrigger_MCTruth_HighdXY_dXY_F", fabs(muon.dXY()), 1., 0., 0.2, 40);
-            FillHist("DiMuonTrigger_MCTruth_HighdXY_dXYSig_F", fabs(muon.dXYSig()), 1., 0., 8., 80);
+            FillHist("DiMuonTrigger_MCTruth_HighdXY_dXY_F", fabs(muon.dXY()), 1., 0., 1., 1000);
+            FillHist("DiMuonTrigger_MCTruth_HighdXY_dXYSig_F", fabs(muon.dXYSig()), 1., 3., 15., 120);
             FillHist("DiMuonTrigger_MCTruth_HighdXY_dZ_F", fabs(muon.dZ()), 1., 0., 0.5, 50);
             FillHist("DiMuonTrigger_MCTruth_HighdXY_events_F", muon.Pt(), fabs(muon.Eta()), 1., ptarray_2, 9, etaarray_2, 4);
           }
@@ -644,8 +749,8 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
           FillHist("DiMuonTrigger_MCTruth_pt_F0", muon.Pt(), 1., 0., 200., 200);
           FillHist("DiMuonTrigger_MCTruth_RelIso_F0", LeptonRelIso, 1., 0., 1., 100);
           FillHist("DiMuonTrigger_MCTruth_Chi2_F0", muon.GlobalChi2(), 1., 0, 50., 50);
-          FillHist("DiMuonTrigger_MCTruth_dXY_F0", fabs(muon.dXY()), 1., 0., 0.2, 40);
-          FillHist("DiMuonTrigger_MCTruth_dXYSig_F0", fabs(muon.dXYSig()), 1., 0., 8., 80);
+          FillHist("DiMuonTrigger_MCTruth_dXY_F0", fabs(muon.dXY()), 1., 0., 0.1, 100);
+          FillHist("DiMuonTrigger_MCTruth_dXYSig_F0", fabs(muon.dXYSig()), 1., 0., 4., 40);
           FillHist("DiMuonTrigger_MCTruth_dZ_F0", fabs(muon.dZ()), 1., 0., 0.5, 50);
           FillHist("DiMuonTrigger_MCTruth_events_F0", muon.Pt(), fabs(muon.Eta()), 1., ptarray_2, 9, etaarray_2, 4);
           if( LeptonRelIso < 0.1 ){
@@ -653,8 +758,8 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
             FillHist("DiMuonTrigger_MCTruth_pt_F", muon.Pt(), 1., 0., 200., 200);
             FillHist("DiMuonTrigger_MCTruth_RelIso_F", LeptonRelIso, 1., 0., 1., 100);
             FillHist("DiMuonTrigger_MCTruth_Chi2_F", muon.GlobalChi2(), 1., 0., 50., 50);
-            FillHist("DiMuonTrigger_MCTruth_dXY_F", fabs(muon.dXY()), 1., 0., 0.2, 40);
-            FillHist("DiMuonTrigger_MCTruth_dXYSig_F", fabs(muon.dXYSig()), 1., 0., 8., 80);
+            FillHist("DiMuonTrigger_MCTruth_dXY_F", fabs(muon.dXY()), 1., 0., 0.1, 100);
+            FillHist("DiMuonTrigger_MCTruth_dXYSig_F", fabs(muon.dXYSig()), 1., 0., 4., 40);
             FillHist("DiMuonTrigger_MCTruth_dZ_F", fabs(muon.dZ()), 1., 0., 0.5, 50);
             FillHist("DiMuonTrigger_MCTruth_events_F", muon.Pt(), fabs(muon.Eta()), 1., ptarray_2, 9, etaarray_2, 4);
           }
@@ -740,7 +845,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
             FillHist("DiMuonTrigger_TagZ_width_"+str_this_width+"_pt_F0", muon.Pt(), this_weight, 0., 200., 200);
             FillHist("DiMuonTrigger_TagZ_width_"+str_this_width+"_RelIso_F0", LeptonRelIso, this_weight, 0., 1., 100);
             FillHist("DiMuonTrigger_TagZ_width_"+str_this_width+"_Chi2_F0", muon.GlobalChi2(), this_weight, 0., 50., 50);
-            FillHist("DiMuonTrigger_TagZ_width_"+str_this_width+"_dXY_F0", fabs(muon.dXY()), this_weight, 0., 0.2, 40);
+            FillHist("DiMuonTrigger_TagZ_width_"+str_this_width+"_dXY_F0", fabs(muon.dXY()), this_weight, 0., 0.2, 20);
             FillHist("DiMuonTrigger_TagZ_width_"+str_this_width+"_dXYSig_F0", fabs(muon.dXYSig()), this_weight, 0., 8., 80);
             FillHist("DiMuonTrigger_TagZ_width_"+str_this_width+"_dZ_F0", fabs(muon.dZ()), this_weight, 0., 0.5, 50);
             FillHist("DiMuonTrigger_TagZ_width_"+str_this_width+"_n_jets_F0", n_jets, this_weight, 0., 10., 10);
@@ -750,7 +855,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
               FillHist("DiMuonTrigger_TagZ_width_"+str_this_width+"_pt_F", muon.Pt(), this_weight, 0., 200., 200);
               FillHist("DiMuonTrigger_TagZ_width_"+str_this_width+"_RelIso_F", LeptonRelIso, this_weight, 0., 1., 100);
               FillHist("DiMuonTrigger_TagZ_width_"+str_this_width+"_Chi2_F", muon.GlobalChi2(), this_weight, 0., 50., 50);
-              FillHist("DiMuonTrigger_TagZ_width_"+str_this_width+"_dXY_F", fabs(muon.dXY()), this_weight, 0., 0.2, 40);
+              FillHist("DiMuonTrigger_TagZ_width_"+str_this_width+"_dXY_F", fabs(muon.dXY()), this_weight, 0., 0.2, 20);
               FillHist("DiMuonTrigger_TagZ_width_"+str_this_width+"_dXYSig_F", fabs(muon.dXYSig()), this_weight, 0., 8., 80);
               FillHist("DiMuonTrigger_TagZ_width_"+str_this_width+"_dZ_F", fabs(muon.dZ()), this_weight, 0., 0.5, 50);
               FillHist("DiMuonTrigger_TagZ_width_"+str_this_width+"_n_jets_F", n_jets, this_weight, 0., 10., 10);
