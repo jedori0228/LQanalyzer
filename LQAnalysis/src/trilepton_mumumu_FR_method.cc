@@ -82,9 +82,9 @@ void trilepton_mumumu_FR_method::InitialiseAnalysis() throw( LQError ) {
     delete file[i];
   }
 
-  TFile* file_FR_SF = new TFile("/home/jskim/LQAnalyzer_rootfiles_for_analysis/13TeV_trimuon_FR_SF_SingleMuonTrigger_QCD_mu.root");
-  hist_trimuon_FR_SF = (TH2F*)file_FR_SF->Get("SingleMuonTrigger_MCTruth_events_F");
-  hist_trimuon_FR_SF_pt = (TH1F*)file_FR_SF->Get("SingleMuonTrigger_MCTruth_pt_F");
+  TFile* file_FRSF = new TFile("/home/jskim/LQAnalyzer_rootfiles_for_analysis/13TeV_trimuon_FRSF_SingleMuonTrigger_QCD_mu.root");
+  hist_trimuon_FRSF = (TH2F*)file_FRSF->Get("SingleMuonTrigger_MCTruth_events_F");
+  hist_trimuon_FRSF_pt = (TH1F*)file_FRSF->Get("SingleMuonTrigger_MCTruth_pt_F");
 
   return;
 
@@ -112,32 +112,25 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   FillCutFlow("EventCut", 1.);
   /// #### CAT::: triggers stored are all HLT_Ele/HLT_DoubleEle/HLT_Mu/HLT_TkMu/HLT_Photon/HLT_DoublePhoton
 
-  if(!PassTrigger("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v")) return;
-  FillCutFlow("TriggerCut", weight);
-  // Trigger matching is done using KMuon::TriggerMatched(TString) which returns a bool
+  bool DoCutOp = std::find(k_flags.begin(), k_flags.end(), "cutop") != k_flags.end();
 
-  /* // #### CAT::: trigger matching information is stored for muons and electrons for:
-  ///HLT_IsoMu24_eta2p1_v
-  ///HLT_Mu17_Mu8_DZ_v
-  ///HLT_Mu17_TkMu8_DZ_v
-  ///HLT_IsoMu20
-  ///HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v
-  ///HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v
-  ///HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v
-  ///HLT_Ele12_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v
-  ///HLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v
-  ///HLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL_v
-  ///HLT_Ele16_Ele12_Ele8_CaloIdL_TrackIdL_v
-  ///HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v
-  ///HLT_Ele12_CaloIdL_TrackIdL_IsoVL_v
-  ///HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v
-  ///HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v
-  ///HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_
-  ///HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v
-  ///HLT_Ele27_eta2p1_WPLoose_Gsf_TriCentralPFJet30_v
-  */
+  std::vector<TString> triggerlist;
+  triggerlist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
+  //triggerlist.push_back("HLT_TripleMu_12_10_5_v");
+  float trigger_ps_weight= WeightByTrigger(triggerlist, TargetLumi);
+  bool trigger_pass = false;
+  for(unsigned int i=0; i<triggerlist.size(); i++){
+    if( !PassTrigger(triggerlist.at(i)) ){
+      trigger_pass = true;
+      break;
+    }
+  }
 
-  m_logger << DEBUG << "passedTrigger "<< LQLogger::endmsg;
+  if(!DoCutOp){
+    if(!trigger_pass) return;
+    FillCutFlow("TriggerCut", 1.);
+    m_logger << DEBUG << "passedTrigger "<< LQLogger::endmsg;
+  }
 
 
   if (!eventbase->GetEvent().HasGoodPrimaryVertex()) return; //// Make cut on event wrt vertex
@@ -397,11 +390,11 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   bool is_W_pri_lowmass_150 = W_pri_lowmass.M() < 150.;
   bool is_W_pri_highmass_200 = W_pri_highmass.M() > 200.;
 
-  FillUpDownHist("HN_mass_class1_cut0", HN[0].M(), weight, weight_err, 0., 500., 500);
-  FillUpDownHist("HN_mass_class2_cut0", HN[1].M(), weight, weight_err, 0., 500., 500);
-  FillUpDownHist("HN_mass_class3_cut0", HN[2].M(), weight, weight_err, 0, 1000, 1000);
+  FillUpDownHist("HN_mass_class1_cut0", HN[0].M(), weight, weight_err, 0., 2000., 2000);
+  FillUpDownHist("HN_mass_class2_cut0", HN[1].M(), weight, weight_err, 0., 2000., 2000);
+  FillUpDownHist("HN_mass_class3_cut0", HN[2].M(), weight, weight_err, 0, 2000, 2000);
   FillUpDownHist("HN_mass_class4_cut0", HN[3].M(), weight, weight_err, 0, 2000, 2000);
-  FillUpDownHist("W_pri_lowmass_mass_cut0", W_pri_lowmass.M(), weight, weight_err, 0., 1000., 1000);
+  FillUpDownHist("W_pri_lowmass_mass_cut0", W_pri_lowmass.M(), weight, weight_err, 0., 2000., 2000);
   FillUpDownHist("W_pri_highmass_mass_cut0", W_pri_highmass.M(), weight, weight_err, 0, 2000, 2000);
   FillUpDownHist("deltaR_OS_min_cut0", deltaR_OS_min, weight, weight_err, 0, 5, 50);
   FillUpDownHist("gamma_star_mass_cut0", gamma_star.M(), weight, weight_err, 0., 200., 200);
@@ -413,11 +406,11 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   FillCLHist(trilephist, "cut0", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_hn, weight);
 
   if( is_W_pri_lowmass_150 ){
-    FillUpDownHist("HN_mass_class1_cutWlow", HN[0].M(), weight, weight_err, 0., 500., 500);
-    FillUpDownHist("HN_mass_class2_cutWlow", HN[1].M(), weight, weight_err, 0., 500., 500);
-    FillUpDownHist("HN_mass_class3_cutWlow", HN[2].M(), weight, weight_err, 0, 1000, 1000);
+    FillUpDownHist("HN_mass_class1_cutWlow", HN[0].M(), weight, weight_err, 0., 2000., 2000);
+    FillUpDownHist("HN_mass_class2_cutWlow", HN[1].M(), weight, weight_err, 0., 2000., 2000);
+    FillUpDownHist("HN_mass_class3_cutWlow", HN[2].M(), weight, weight_err, 0, 2000, 2000);
     FillUpDownHist("HN_mass_class4_cutWlow", HN[3].M(), weight, weight_err, 0, 2000, 2000);
-    FillUpDownHist("W_pri_lowmass_mass_cutWlow", W_pri_lowmass.M(), weight, weight_err, 0., 1000., 1000);
+    FillUpDownHist("W_pri_lowmass_mass_cutWlow", W_pri_lowmass.M(), weight, weight_err, 0., 2000., 2000);
     FillUpDownHist("W_pri_highmass_mass_cutWlow", W_pri_highmass.M(), weight, weight_err, 0, 2000, 2000);
     FillUpDownHist("deltaR_OS_min_cutWlow", deltaR_OS_min, weight, weight_err, 0, 5, 50);
     FillUpDownHist("gamma_star_mass_cutWlow", gamma_star.M(), weight, weight_err, 0., 200., 200);
@@ -430,11 +423,11 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   }
 
   if( is_W_pri_highmass_200 ){
-    FillUpDownHist("HN_mass_class1_cutWhigh", HN[0].M(), weight, weight_err, 0., 500., 500);
-    FillUpDownHist("HN_mass_class2_cutWhigh", HN[1].M(), weight, weight_err, 0., 500., 500);
-    FillUpDownHist("HN_mass_class3_cutWhigh", HN[2].M(), weight, weight_err, 0, 1000, 1000);
+    FillUpDownHist("HN_mass_class1_cutWhigh", HN[0].M(), weight, weight_err, 0., 2000., 2000);
+    FillUpDownHist("HN_mass_class2_cutWhigh", HN[1].M(), weight, weight_err, 0., 2000., 2000);
+    FillUpDownHist("HN_mass_class3_cutWhigh", HN[2].M(), weight, weight_err, 0, 2000, 2000);
     FillUpDownHist("HN_mass_class4_cutWhigh", HN[3].M(), weight, weight_err, 0, 2000, 2000);
-    FillUpDownHist("W_pri_lowmass_mass_cutWhigh", W_pri_lowmass.M(), weight, weight_err, 0., 1000., 1000);
+    FillUpDownHist("W_pri_lowmass_mass_cutWhigh", W_pri_lowmass.M(), weight, weight_err, 0., 2000., 2000);
     FillUpDownHist("W_pri_highmass_mass_cutWhigh", W_pri_highmass.M(), weight, weight_err, 0, 2000, 2000);
     FillUpDownHist("deltaR_OS_min_cutWhigh", deltaR_OS_min, weight, weight_err, 0, 5, 50);
     FillUpDownHist("gamma_star_mass_cutWhigh", gamma_star.M(), weight, weight_err, 0., 200., 200);
@@ -610,19 +603,19 @@ double trilepton_mumumu_FR_method::get_FR(snu::KParticle muon, TString whichFR, 
 
   double this_FR = hist_trimuon_FR[FR_index]->GetBinContent(this_pt_bin, this_eta_bin);
   //cout << "this_FR = " << this_FR << endl;
-  double FR_SF = hist_trimuon_FR_SF->GetBinContent(this_pt_bin, this_eta_bin);
-  double FR_SF_pt = hist_trimuon_FR_SF_pt->GetBinContent(this_pt_bin+1); // +1 : SF starts from [0,10] bin..
-  //cout << "this_SF = " << FR_SF << endl;
+  double FRSF = hist_trimuon_FRSF->GetBinContent(this_pt_bin, this_eta_bin);
+  double FRSF_pt = hist_trimuon_FRSF_pt->GetBinContent(this_pt_bin+1); // +1 : SF starts from [0,10] bin..
+  //cout << "this_SF = " << FRSF << endl;
   double this_FR_error = hist_trimuon_FR[FR_index]->GetBinError(this_pt_bin, this_eta_bin);
 
   if(geterror){
-    if(k_flags.at(1) == "SF") return this_FR_error*FR_SF;
-    else if(k_flags.at(1) == "SF_pt") return this_FR_error*FR_SF_pt;
+    if(k_flags.at(1) == "SF") return this_FR_error*FRSF;
+    else if(k_flags.at(1) == "SF_pt") return this_FR_error*FRSF_pt;
     else return this_FR_error;
   }
   else{
-    if(k_flags.at(1) == "SF") return this_FR*FR_SF;
-    else if(k_flags.at(1) == "SF_pt") return this_FR*FR_SF_pt;
+    if(k_flags.at(1) == "SF") return this_FR*FRSF;
+    else if(k_flags.at(1) == "SF_pt") return this_FR*FRSF_pt;
     else return this_FR;
   }
 

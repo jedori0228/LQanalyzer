@@ -81,13 +81,27 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   FillCutFlow("EventCut", 1.);
   /// #### CAT::: triggers stored are all HLT_Ele/HLT_DoubleEle/HLT_Mu/HLT_TkMu/HLT_Photon/HLT_DoublePhoton
 
-  float trigger_ps_weight= WeightByTrigger("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v", TargetLumi);
+  bool DoCutOp = std::find(k_flags.begin(), k_flags.end(), "cutop") != k_flags.end();
 
-  if(!PassTrigger("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v")) return;
-  FillCutFlow("TriggerCut", 1.);
-  // Trigger matching is done using KMuon::TriggerMatched(TString) which returns a bool
+  std::vector<TString> triggerlist;
+  triggerlist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
+  //triggerlist.push_back("HLT_TripleMu_12_10_5_v");
+  float trigger_ps_weight= WeightByTrigger(triggerlist, TargetLumi);
+  bool trigger_pass = false;
+  for(unsigned int i=0; i<triggerlist.size(); i++){
+    if( !PassTrigger(triggerlist.at(i)) ){
+      trigger_pass = true;
+      break;
+    }
+  }
 
-  m_logger << DEBUG << "passedTrigger "<< LQLogger::endmsg;
+  if(!DoCutOp){
+    if(!trigger_pass) return;
+    FillCutFlow("TriggerCut", 1.);
+    // Trigger matching is done using KMuon::TriggerMatched(TString) which returns a bool
+    m_logger << DEBUG << "passedTrigger "<< LQLogger::endmsg;
+  }
+
 
 
   if (!eventbase->GetEvent().HasGoodPrimaryVertex()) return; //// Make cut on event wrt vertex
@@ -343,8 +357,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
       HN[3] = W_sec + lep[OppSign]; // [class4]
   }
 
-  if( std::find(k_flags.begin(), k_flags.end(), "cutop") != k_flags.end() ){
-
+  if(DoCutOp){
     double cutop[100];
     cutop[0] = muontriLooseColl.at(0).Pt();
     cutop[1] = muontriLooseColl.at(1).Pt();
@@ -365,11 +378,11 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   bool is_W_pri_lowmass_150 = W_pri_lowmass.M() < 150.;
   bool is_W_pri_highmass_200 = W_pri_highmass.M() > 200.;
 
-  FillHist("HN_mass_class1_cut0", HN[0].M(), weight, 0., 500., 500);
-  FillHist("HN_mass_class2_cut0", HN[1].M(), weight, 0., 500., 500);
-  FillHist("HN_mass_class3_cut0", HN[2].M(), weight, 0., 1000., 1000);
+  FillHist("HN_mass_class1_cut0", HN[0].M(), weight, 0., 2000., 2000);
+  FillHist("HN_mass_class2_cut0", HN[1].M(), weight, 0., 2000., 2000);
+  FillHist("HN_mass_class3_cut0", HN[2].M(), weight, 0., 2000., 2000);
   FillHist("HN_mass_class4_cut0", HN[3].M(), weight, 0., 2000., 2000);
-  FillHist("W_pri_lowmass_mass_cut0", W_pri_lowmass.M(), weight, 0., 1000., 1000);
+  FillHist("W_pri_lowmass_mass_cut0", W_pri_lowmass.M(), weight, 0., 2000., 2000);
   FillHist("W_pri_highmass_mass_cut0", W_pri_highmass.M(), weight, 0., 2000., 2000);
   FillHist("deltaR_OS_min_cut0", deltaR_OS_min, weight, 0., 5., 50);
   FillHist("gamma_star_mass_cut0", gamma_star.M(), weight, 0., 200., 200);
@@ -379,11 +392,11 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   FillHist("n_events_cut0", 0, weight, 0., 1., 1);
 
   if( is_W_pri_lowmass_150){
-    FillHist("HN_mass_class1_cutWlow", HN[0].M(), weight, 0., 500., 500);
-    FillHist("HN_mass_class2_cutWlow", HN[1].M(), weight, 0., 500., 500);
-    FillHist("HN_mass_class3_cutWlow", HN[2].M(), weight, 0., 1000., 1000);
+    FillHist("HN_mass_class1_cutWlow", HN[0].M(), weight, 0., 2000., 2000);
+    FillHist("HN_mass_class2_cutWlow", HN[1].M(), weight, 0., 2000., 2000);
+    FillHist("HN_mass_class3_cutWlow", HN[2].M(), weight, 0., 2000., 2000);
     FillHist("HN_mass_class4_cutWlow", HN[3].M(), weight, 0., 2000., 2000);
-    FillHist("W_pri_lowmass_mass_cutWlow", W_pri_lowmass.M(), weight, 0., 1000., 1000);
+    FillHist("W_pri_lowmass_mass_cutWlow", W_pri_lowmass.M(), weight, 0., 2000., 2000);
     FillHist("W_pri_highmass_mass_cutWlow", W_pri_highmass.M(), weight, 0., 2000., 2000);
     FillHist("deltaR_OS_min_cutWlow", deltaR_OS_min, weight, 0., 5., 50);
     FillHist("gamma_star_mass_cutWlow", gamma_star.M(), weight, 0., 200., 200);
@@ -394,11 +407,11 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   }
 
   if( is_W_pri_highmass_200 ){
-    FillHist("HN_mass_class1_cutWhigh", HN[0].M(), weight, 0., 500., 500);
-    FillHist("HN_mass_class2_cutWhigh", HN[1].M(), weight, 0., 500., 500);
-    FillHist("HN_mass_class3_cutWhigh", HN[2].M(), weight, 0., 1000., 1000);
+    FillHist("HN_mass_class1_cutWhigh", HN[0].M(), weight, 0., 2000., 2000);
+    FillHist("HN_mass_class2_cutWhigh", HN[1].M(), weight, 0., 2000., 2000);
+    FillHist("HN_mass_class3_cutWhigh", HN[2].M(), weight, 0., 2000., 2000);
     FillHist("HN_mass_class4_cutWhigh", HN[3].M(), weight, 0., 2000., 2000);
-    FillHist("W_pri_lowmass_mass_cutWhigh", W_pri_lowmass.M(), weight, 0., 1000., 1000);
+    FillHist("W_pri_lowmass_mass_cutWhigh", W_pri_lowmass.M(), weight, 0., 2000., 2000);
     FillHist("W_pri_highmass_mass_cutWhigh", W_pri_highmass.M(), weight, 0., 2000., 2000);
     FillHist("deltaR_OS_min_cutWhigh", deltaR_OS_min, weight, 0., 5., 50);
     FillHist("gamma_star_mass_cutWhigh", gamma_star.M(), weight, 0., 200., 200);

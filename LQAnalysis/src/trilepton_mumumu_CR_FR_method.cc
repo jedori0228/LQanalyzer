@@ -80,9 +80,9 @@ void trilepton_mumumu_CR_FR_method::InitialiseAnalysis() throw( LQError ) {
     delete file[i];
   }
 
-  TFile* file_FR_SF = new TFile("/home/jskim/LQAnalyzer_rootfiles_for_analysis/13TeV_trimuon_FR_SF_SingleMuonTrigger_QCD_mu.root");
-  hist_trimuon_FR_SF = (TH2F*)file_FR_SF->Get("SingleMuonTrigger_MCTruth_events_F");
-  hist_trimuon_FR_SF_pt = (TH1F*)file_FR_SF->Get("SingleMuonTrigger_MCTruth_pt_F");
+  TFile* file_FRSF = new TFile("/home/jskim/LQAnalyzer_rootfiles_for_analysis/13TeV_trimuon_FRSF_SingleMuonTrigger_QCD_mu.root");
+  hist_trimuon_FRSF = (TH2F*)file_FRSF->Get("SingleMuonTrigger_MCTruth_events_F");
+  hist_trimuon_FRSF_pt = (TH1F*)file_FRSF->Get("SingleMuonTrigger_MCTruth_pt_F");
 
   return;
 
@@ -152,25 +152,9 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   //std::vector<snu::KMuon> muonVetoColl = GetMuons(BaseSelection::MUON_HN_VETO);  // veto selection
   //std::vector<snu::KMuon> muonLooseColl = GetMuons(BaseSelection::MUON_HN_FAKELOOSE);  // loose selection
   //std::vector<snu::KMuon> muonTightColl = GetMuons(BaseSelection::MUON_HN_TIGHT,false); // tight selection : NonPrompt MC lep removed
-  std::vector<snu::KMuon> muontriTightColl_raw = GetMuons("MUON_HN_TRI_TIGHT"); 
-  std::vector<snu::KMuon> muontriLooseColl_raw = GetMuons("MUON_HN_TRI_LOOSE");
+  std::vector<snu::KMuon> muontriTightColl = GetMuons("MUON_HN_TRI_TIGHT"); 
+  std::vector<snu::KMuon> muontriLooseColl = GetMuons("MUON_HN_TRI_LOOSE");
 
-  std::vector<snu::KMuon> muontriTightColl, muontriLooseColl;
-  for(unsigned int i=0; i<muontriTightColl_raw.size(); i++){
-    snu::KMuon thismuon = muontriTightColl_raw.at(i);
-    if(isData) muontriTightColl.push_back(thismuon);
-    else{
-      if( thismuon.GetParticleType() == snu::KMuon::PROMPT ) muontriTightColl.push_back(thismuon);
-    }
-  }
-  for(unsigned int i=0; i<muontriLooseColl_raw.size(); i++){
-    snu::KMuon thismuon = muontriLooseColl_raw.at(i);
-    if(isData) muontriLooseColl.push_back(thismuon);
-    else{
-      if( thismuon.GetParticleType() == snu::KMuon::PROMPT ) muontriLooseColl.push_back(thismuon);
-    }
-  }
-   
   //CorrectMuonMomentum(muonTightColl);
   //float muon_id_iso_sf= MuonScaleFactor(BaseSelection::MUON_POG_TIGHT, muonTightColl,0); ///MUON_POG_TIGHT == MUON_HN_TIGHT
 
@@ -723,19 +707,19 @@ double trilepton_mumumu_CR_FR_method::get_FR(snu::KParticle muon, TString whichF
 
   double this_FR = hist_trimuon_FR[FR_index]->GetBinContent(this_pt_bin, this_eta_bin);
   //cout << "this_FR = " << this_FR << endl;
-  double FR_SF = hist_trimuon_FR_SF->GetBinContent(this_pt_bin, this_eta_bin);
-  double FR_SF_pt = hist_trimuon_FR_SF_pt->GetBinContent(this_pt_bin+1); // +1 : SF starts from [0,10] bin..
-  //cout << "this_SF = " << FR_SF << endl;
+  double FRSF = hist_trimuon_FRSF->GetBinContent(this_pt_bin, this_eta_bin);
+  double FRSF_pt = hist_trimuon_FRSF_pt->GetBinContent(this_pt_bin+1); // +1 : SF starts from [0,10] bin..
+  //cout << "this_SF = " << FRSF << endl;
   double this_FR_error = hist_trimuon_FR[FR_index]->GetBinError(this_pt_bin, this_eta_bin);
 
   if(geterror){
-    if(k_flags.at(1) == "SF") return this_FR_error*FR_SF;
-    else if(k_flags.at(1) == "SF_pt") return this_FR_error*FR_SF_pt;
+    if(k_flags.at(1) == "SF") return this_FR_error*FRSF;
+    else if(k_flags.at(1) == "SF_pt") return this_FR_error*FRSF_pt;
     else return this_FR_error;
   }
   else{
-    if(k_flags.at(1) == "SF") return this_FR*FR_SF;
-    else if(k_flags.at(1) == "SF_pt") return this_FR*FR_SF_pt;
+    if(k_flags.at(1) == "SF") return this_FR*FRSF;
+    else if(k_flags.at(1) == "SF_pt") return this_FR*FRSF_pt;
     else return this_FR;
   }
 
