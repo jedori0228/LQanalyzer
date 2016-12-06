@@ -61,7 +61,6 @@ void trilepton_mumumu_CR::InitialiseAnalysis() throw( LQError ) {
 
 void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
 
-  
   /// Apply the gen weight 
   if(!isData) weight*=MCweight;
   
@@ -123,10 +122,21 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   //std::vector<snu::KMuon> muonLooseColl = GetMuons(BaseSelection::MUON_HN_FAKELOOSE);  // loose selection
   //std::vector<snu::KMuon> muonTightColl = GetMuons(BaseSelection::MUON_HN_TIGHT,false); // tight selection : NonPrompt MC lep removed
   std::vector<snu::KMuon> muontriTightColl, muontriLooseColl;
+  //==== Gen Matching is not done correctly for my private samples..
   if( k_sample_name.Contains("HN") ){
-    muontriTightColl = GetMuons("MUON_HN_TRI_TIGHT");
-    muontriLooseColl = GetMuons("MUON_HN_TRI_LOOSE");
+    muontriTightColl = GetMuons("MUON_HN_TRI_TIGHT", true);
+    muontriLooseColl = GetMuons("MUON_HN_TRI_LOOSE", true);
   }
+  //==== For MC Closure test, we want to reject P(rompt)P event
+  else if( std::find(k_flags.begin(), k_flags.end(), "MCClosure") != k_flags.end() ){
+    std::vector<snu::KMuon> muontriLooseColl_prompt = GetMuons("MUON_HN_TRI_LOOSE", false);
+    if(muontriLooseColl_prompt.size()==2) return;
+
+    muontriTightColl = GetMuons("MUON_HN_TRI_TIGHT", true);
+    muontriLooseColl = GetMuons("MUON_HN_TRI_LOOSE", true);
+  }
+  //==== For Prompt MC, collect prompt muons
+  //==== For data, it automarically collect all muons :)
   else{
     muontriTightColl = GetMuons("MUON_HN_TRI_TIGHT", false); 
     muontriLooseColl = GetMuons("MUON_HN_TRI_LOOSE", false);
@@ -160,7 +170,6 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   }
 
   FillHist("PileupWeight" ,  pileup_reweight,weight,  0. , 50., 10);
-
 
   if(!isData && !k_running_nonprompt){
     //weight*=muon_id_iso_sf;
@@ -197,6 +206,9 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
 
   bool isTwoMuon   = n_triLoose_muons == 2 && n_triTight_muons == 2;
   bool isThreeMuon = n_triLoose_muons == 3 && n_triTight_muons == 3;
+  if(n_triLoose_muons == 2 && n_triTight_muons ==0) FillHist("LL_TL_TT", 0., 1., 0., 3., 3);
+  if(n_triLoose_muons == 2 && n_triTight_muons ==1) FillHist("LL_TL_TT", 1., 1., 0., 3., 3);
+  if(n_triLoose_muons == 2 && n_triTight_muons ==2) FillHist("LL_TL_TT", 2., 1., 0., 3., 3);
 
   snu::KEvent Evt = eventbase->GetEvent();
   double MET = Evt.MET(), METphi = Evt.METPhi();
@@ -211,13 +223,13 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
     bool isSS = muontriLooseColl.at(0).Charge() == muontriLooseColl.at(1).Charge();
     double m_dimuon = ( muontriLooseColl.at(0) + muontriLooseColl.at(1) ).M();
 
-    map_whichCR_to_isCR["SS_0jet_vetoLowRes"] = leadPt20 && isSS && (n_jets == 0) && (m_dimuon > 15.);
-    map_whichCR_to_isCR["SS_AL1bjet_vetoLowRes"] = leadPt20 && isSS && (n_bjets > 0) && (m_dimuon > 15.);
-    map_whichCR_to_isCR["SS_AL2bjet_vetoLowRes"] = leadPt20 && isSS && (n_bjets > 1) && (m_dimuon > 15.);
+    map_whichCR_to_isCR["DiMuon"] = isTwoMuon && leadPt20;
+    map_whichCR_to_isCR["SSDiMuon"] = isTwoMuon && leadPt20 && isSS;
 
     for(std::map< TString, bool >::iterator it = map_whichCR_to_isCR.begin(); it != map_whichCR_to_isCR.end(); it++){
       TString this_suffix = it->first;
       if(it->second){
+        FillHist("weight_"+this_suffix, weight, 1., -1., 1., 1000);
         FillHist("n_events_"+this_suffix, 0, weight, 0., 1., 1);
         FillHist("n_jets_"+this_suffix, n_jets, weight, 0., 10., 10);
         FillHist("n_bjets_"+this_suffix, n_bjets, weight, 0., 10., 10);
@@ -227,10 +239,14 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
         FillHist("leadingLepton_Eta_"+this_suffix, lep[0].Eta() , weight, -3., 3., 60);
         FillHist("leadingLepton_RelIso_"+this_suffix, lep[0].RelIso04() , weight, 0., 1.0, 100);
         FillHist("leadingLepton_Chi2_"+this_suffix, lep[0].GlobalChi2() , weight, 0., 10., 100);
+        FillHist("leadingLepton_dXY_"+this_suffix+"", fabs(lep[0].dXY()) , weight, 0., 0.1, 100);
+        FillHist("leadingLepton_dXYSig_"+this_suffix+"", fabs(lep[0].dXYSig()) , weight, 0., 4., 40);
         FillHist("secondLepton_Pt_"+this_suffix, lep[1].Pt() , weight, 0., 200., 200);
         FillHist("secondLepton_Eta_"+this_suffix, lep[1].Eta() , weight, -3., 3., 60);
         FillHist("secondLepton_RelIso_"+this_suffix, lep[1].RelIso04() , weight, 0., 1.0, 100);
         FillHist("secondLepton_Chi2_"+this_suffix, lep[1].GlobalChi2() , weight, 0., 10., 100);
+        FillHist("secondLepton_dXY_"+this_suffix+"", fabs(lep[1].dXY()) , weight, 0., 0.1, 100);
+        FillHist("secondLepton_dXYSig_"+this_suffix+"", fabs(lep[1].dXYSig()) , weight, 0., 4., 40);
       }
     } 
 

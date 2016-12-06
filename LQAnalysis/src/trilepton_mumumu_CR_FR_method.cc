@@ -57,21 +57,21 @@ void trilepton_mumumu_CR_FR_method::InitialiseAnalysis() throw( LQError ) {
   TFile* file[5];
 
   //==== dijet topology
-  //file[0] = new TFile("/home/jskim/LQAnalyzer_rootfiles_for_analysis/13TeV_trimuon_FR_SingleMuonTrigger_Dijet.root");
-  //hist_trimuon_FR[0] = (TH2F*)file[0]->Get("SingleMuonTrigger_Dijet_events_F")->Clone();
+  file[0] = new TFile("/home/jskim/LQAnalyzer_rootfiles_for_analysis/13TeV_trimuon_FR_SingleMuonTrigger_Dijet.root");
+  hist_trimuon_FR[0] = (TH2F*)file[0]->Get("SingleMuonTrigger_Dijet_events_F")->Clone();
   //==== HighdXY muons
   file[1] = new TFile("/home/jskim/LQAnalyzer_rootfiles_for_analysis/13TeV_trimuon_FR_SingleMuonTrigger_HighdXY.root");
   hist_trimuon_FR[1] = (TH2F*)file[1]->Get("SingleMuonTrigger_HighdXY_events_F")->Clone();
   //==== DiMuonHighdXY muons
-  //file[2] = new TFile("/home/jskim/LQAnalyzer_rootfiles_for_analysis/13TeV_trimuon_FR_DiMuonTrigger_HighdXY.root");
-  //hist_trimuon_FR[2] = (TH2F*)file[2]->Get("DiMuonTrigger_HighdXY_events_F")->Clone();
-  //==== DiMuonHighdXY muons + n_jet bins
-  //file[3] = new TFile("/home/jskim/LQAnalyzer_rootfiles_for_analysis/13TeV_trimuon_FR_DiMuonTrigger_HighdXY_0jet.root");
-  //hist_trimuon_FR[3] = (TH2F*)file[3]->Get("DiMuonTrigger_HighdXY_0jet_events_F")->Clone();
-  //file[4] = new TFile("/home/jskim/LQAnalyzer_rootfiles_for_analysis/13TeV_trimuon_FR_DiMuonTrigger_HighdXY_withjet.root");
-  //hist_trimuon_FR[4] = (TH2F*)file[4]->Get("DiMuonTrigger_HighdXY_withjet_events_F")->Clone();
+  file[2] = new TFile("/home/jskim/LQAnalyzer_rootfiles_for_analysis/13TeV_trimuon_FR_DiMuonTrigger_HighdXY.root");
+  hist_trimuon_FR[2] = (TH2F*)file[2]->Get("DiMuonTrigger_HighdXY_events_F")->Clone();
+  //==== QCD_mu
+  file[3] = new TFile("/home/jskim/LQAnalyzer_rootfiles_for_analysis/13TeV_trimuon_FR_SingleMuonTrigger_QCD_mu.root");
+  hist_trimuon_FR[3] = (TH2F*)file[3]->Get("SingleMuonTrigger_MCTruth_events_F")->Clone();
 
-  for(int i=1; i<2; i++){
+
+
+  for(int i=0; i<4; i++){
     TH1I* hist_bins = (TH1I*)file[i]->Get("hist_bins");
     FR_n_pt_bin[i] = hist_bins->GetBinContent(1);
     FR_n_eta_bin[i] = hist_bins->GetBinContent(2);
@@ -92,8 +92,6 @@ void trilepton_mumumu_CR_FR_method::InitialiseAnalysis() throw( LQError ) {
 
 void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
 
-  weight = 1.0; //initializing
-
   /// Apply the gen weight 
   if(!isData) weight*=MCweight;
   
@@ -109,6 +107,8 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   if(!PassMETFilter()) return;     /// Initial event cuts : 
   FillCutFlow("EventCut", 1.);
   /// #### CAT::: triggers stored are all HLT_Ele/HLT_DoubleEle/HLT_Mu/HLT_TkMu/HLT_Photon/HLT_DoublePhoton
+
+  float trigger_ps_weight= WeightByTrigger("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v", TargetLumi);
 
   if(!PassTrigger("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v")) return;
   FillCutFlow("TriggerCut", weight);
@@ -152,8 +152,8 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   //std::vector<snu::KMuon> muonVetoColl = GetMuons(BaseSelection::MUON_HN_VETO);  // veto selection
   //std::vector<snu::KMuon> muonLooseColl = GetMuons(BaseSelection::MUON_HN_FAKELOOSE);  // loose selection
   //std::vector<snu::KMuon> muonTightColl = GetMuons(BaseSelection::MUON_HN_TIGHT,false); // tight selection : NonPrompt MC lep removed
-  std::vector<snu::KMuon> muontriTightColl = GetMuons("MUON_HN_TRI_TIGHT"); 
-  std::vector<snu::KMuon> muontriLooseColl = GetMuons("MUON_HN_TRI_LOOSE");
+  std::vector<snu::KMuon> muontriTightColl = GetMuons("MUON_HN_TRI_TIGHT", true); 
+  std::vector<snu::KMuon> muontriLooseColl = GetMuons("MUON_HN_TRI_LOOSE", true);
 
   //CorrectMuonMomentum(muonTightColl);
   //float muon_id_iso_sf= MuonScaleFactor(BaseSelection::MUON_POG_TIGHT, muonTightColl,0); ///MUON_POG_TIGHT == MUON_HN_TIGHT
@@ -178,15 +178,17 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   if (!k_isdata) {
     // check if catversion is empty. i.ie, v-7-4-X in which case use reweight class to get weight. In v-7-6-X+ pileupweight is stored in KEvent class, for silver/gold json
     //pileup_reweight = eventbase->GetEvent().PileUpWeight();
-
+    pileup_reweight = TempPileupWeight();
   }
 
   FillHist("PileupWeight" ,  pileup_reweight,weight,  0. , 50., 10);
 
-
+  //==== MC Closure
   if(!isData && !k_running_nonprompt){
     //weight*=muon_id_iso_sf;
     //weight*=weight_trigger_sf;
+    weight*=pileup_reweight;
+    weight*=trigger_ps_weight;
   }
 
   int n_triTight_muons = muontriTightColl.size();
@@ -217,6 +219,9 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
 
   bool isTwoMuon   = n_triLoose_muons == 2 && n_triTight_muons != 2; // no TT case
   bool isThreeMuon = n_triLoose_muons == 3 && n_triTight_muons != 3; // no TTT case
+  if(n_triLoose_muons == 2 && n_triTight_muons ==0) FillHist("LL_TL_TT", 0., 1., 0., 3., 3);
+  if(n_triLoose_muons == 2 && n_triTight_muons ==1) FillHist("LL_TL_TT", 1., 1., 0., 3., 3);
+  if(n_triLoose_muons == 2 && n_triTight_muons ==2) FillHist("LL_TL_TT", 2., 1., 0., 3., 3);
 
   snu::KEvent Evt = eventbase->GetEvent();
   double MET = Evt.MET(), METphi = Evt.METPhi();
@@ -233,9 +238,8 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
 
     std::map< TString, bool > map_whichCR_to_isCR;
     map_whichCR_to_isCR.clear();
-    map_whichCR_to_isCR["SS_0jet_vetoLowRes"] = isTwoMuon && leadPt20 && isSS && (n_jets == 0) && (m_dimuon > 15.);
-    map_whichCR_to_isCR["SS_AL1bjet_vetoLowRes"] = isTwoMuon && leadPt20 && isSS && (n_bjets > 0) && (m_dimuon > 15.);
-    map_whichCR_to_isCR["SS_AL2bjet_vetoLowRes"] = isTwoMuon && leadPt20 && isSS && (n_bjets > 1) && (m_dimuon > 15.);
+    map_whichCR_to_isCR["DiMuon"] = isTwoMuon && leadPt20;
+    map_whichCR_to_isCR["SSDiMuon"] = isTwoMuon && leadPt20 && isSS;
 
     vector<double> FR_muon, FR_error_muon;
     FR_muon.clear();
@@ -244,8 +248,8 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
       snu::KMuon this_muon = muontriLooseColl.at(i);
       //==== find loose but not tight muon ( 0.1 < RelIso (< 0.6) )
       if( this_muon.RelIso04() > 0.1 ){
-        FR_muon.push_back( get_FR(this_muon, k_flags.at(0), n_jets, false) );
-        FR_error_muon.push_back( get_FR(this_muon, k_flags.at(0), n_jets, true) );
+        FR_muon.push_back( get_FR(this_muon, k_flags.at(0), false) );
+        FR_error_muon.push_back( get_FR(this_muon, k_flags.at(0), true) );
       }
     }
     double FR_reweight = 1.;
@@ -275,6 +279,7 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
     for(std::map< TString, bool >::iterator it = map_whichCR_to_isCR.begin(); it != map_whichCR_to_isCR.end(); it++){
       TString this_suffix = it->first;
       if(it->second){
+        FillHist("weight_"+this_suffix, weight*FR_reweight, 1., -1., 1., 1000);
         FillUpDownHist("n_events_"+this_suffix+"", 0, weight*FR_reweight, weight_err, 0., 1., 1);
         FillUpDownHist("n_jets_"+this_suffix+"", n_jets, weight*FR_reweight, weight_err, 0., 10., 10);
         FillUpDownHist("n_bjets_"+this_suffix+"", n_bjets, weight*FR_reweight, weight_err, 0., 10., 10);
@@ -284,10 +289,15 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
         FillUpDownHist("leadingLepton_Eta_"+this_suffix+"", lep[0].Eta() , weight*FR_reweight, weight_err, -3., 3., 60);
         FillUpDownHist("leadingLepton_RelIso_"+this_suffix+"", lep[0].RelIso04() , weight*FR_reweight, weight_err, 0., 1.0, 100);
         FillUpDownHist("leadingLepton_Chi2_"+this_suffix+"", lep[0].GlobalChi2() , weight*FR_reweight, weight_err, 0., 10, 100);
+        FillUpDownHist("leadingLepton_dXY_"+this_suffix+"", fabs(lep[0].dXY()) , weight*FR_reweight, weight_err, 0., 0.1, 100);
+        FillUpDownHist("leadingLepton_dXYSig_"+this_suffix+"", fabs(lep[0].dXYSig()) , weight*FR_reweight, weight_err, 0., 4., 40);
         FillUpDownHist("secondLepton_Pt_"+this_suffix+"", lep[1].Pt() , weight*FR_reweight, weight_err, 0., 200., 200);
         FillUpDownHist("secondLepton_Eta_"+this_suffix+"", lep[1].Eta() , weight*FR_reweight, weight_err, -3., 3., 60);
         FillUpDownHist("secondLepton_RelIso_"+this_suffix+"", lep[1].RelIso04() , weight*FR_reweight, weight_err, 0., 1.0, 100);
         FillUpDownHist("secondLepton_Chi2_"+this_suffix+"", lep[1].GlobalChi2() , weight*FR_reweight, weight_err, 0., 10, 100);
+        FillUpDownHist("secondLepton_dXY_"+this_suffix+"", fabs(lep[1].dXY()) , weight*FR_reweight, weight_err, 0., 0.1, 100);
+        FillUpDownHist("secondLepton_dXYSig_"+this_suffix+"", fabs(lep[1].dXYSig()) , weight*FR_reweight, weight_err, 0., 4., 40);
+
       }
     } 
 
@@ -306,8 +316,8 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
       snu::KMuon this_muon = muontriLooseColl.at(i);
       //==== find loose but not tight muon ( 0.1 < RelIso (< 0.6) )
       if( this_muon.RelIso04() > 0.1 ){
-        FR_muon.push_back( get_FR(this_muon, k_flags.at(0), n_jets, false) );
-        FR_error_muon.push_back( get_FR(this_muon, k_flags.at(0), n_jets, true) );
+        FR_muon.push_back( get_FR(this_muon, k_flags.at(0), false) );
+        FR_error_muon.push_back( get_FR(this_muon, k_flags.at(0), true) );
       }
     }
     double FR_reweight = 1.;
@@ -644,17 +654,15 @@ void trilepton_mumumu_CR_FR_method::ClearOutputVectors() throw(LQError) {
   out_electrons.clear();
 }
 
-double trilepton_mumumu_CR_FR_method::get_FR(snu::KParticle muon, TString whichFR, int n_jets, bool geterror){
+double trilepton_mumumu_CR_FR_method::get_FR(snu::KParticle muon, TString whichFR, bool geterror){
 
   int FR_index = 0;
 
   if(whichFR=="dijet_topology") FR_index = 0;
   if(whichFR=="HighdXY")        FR_index = 1;
   if(whichFR=="DiMuon_HighdXY") FR_index = 2;
-  if(whichFR=="DiMuon_HighdXY_n_jets"){
-    FR_index = 3;
-    if(n_jets>0) FR_index = 4;
-  }
+  //==== MC Closure
+  if( std::find(k_flags.begin(), k_flags.end(), "MCClosure") != k_flags.end() ) FR_index = 3;
 
   double this_pt = muon.Pt();
   double this_eta = fabs( muon.Eta() );
@@ -712,14 +720,17 @@ double trilepton_mumumu_CR_FR_method::get_FR(snu::KParticle muon, TString whichF
   //cout << "this_SF = " << FRSF << endl;
   double this_FR_error = hist_trimuon_FR[FR_index]->GetBinError(this_pt_bin, this_eta_bin);
 
+  bool DoSF = std::find(k_flags.begin(), k_flags.end(), "SF") != k_flags.end();
+  bool DoSF_pt = std::find(k_flags.begin(), k_flags.end(), "SF_pt") != k_flags.end();
+
   if(geterror){
-    if(k_flags.at(1) == "SF") return this_FR_error*FRSF;
-    else if(k_flags.at(1) == "SF_pt") return this_FR_error*FRSF_pt;
+    if(DoSF) return this_FR_error*FRSF;
+    else if(DoSF_pt) return this_FR_error*FRSF_pt;
     else return this_FR_error;
   }
   else{
-    if(k_flags.at(1) == "SF") return this_FR*FRSF;
-    else if(k_flags.at(1) == "SF_pt") return this_FR*FRSF_pt;
+    if(DoSF) return this_FR*FRSF;
+    else if(DoSF_pt) return this_FR*FRSF_pt;
     else return this_FR;
   }
 

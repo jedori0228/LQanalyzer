@@ -25,7 +25,7 @@ class trilepton_mumumu_CR_FR_method : public AnalyzerCore {
   TH2F* hist_trimuon_FRSF;
   TH1F* hist_trimuon_FRSF_pt;
   int FR_n_pt_bin[10], FR_n_eta_bin[10];
-  double get_FR(snu::KParticle muon, TString whichFR, int n_jets, bool geterror);
+  double get_FR(snu::KParticle muon, TString whichFR, bool geterror);
 
  private:
   

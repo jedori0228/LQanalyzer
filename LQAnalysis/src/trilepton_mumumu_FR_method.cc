@@ -59,21 +59,16 @@ void trilepton_mumumu_FR_method::InitialiseAnalysis() throw( LQError ) {
   TFile* file[5];
 
   //==== dijet topology
-  //file[0] = new TFile("/home/jskim/LQAnalyzer_rootfiles_for_analysis/13TeV_trimuon_FR_SingleMuonTrigger_Dijet.root");
-  //hist_trimuon_FR[0] = (TH2F*)file[0]->Get("SingleMuonTrigger_Dijet_events_F")->Clone();
+  file[0] = new TFile("/home/jskim/LQAnalyzer_rootfiles_for_analysis/13TeV_trimuon_FR_SingleMuonTrigger_Dijet.root");
+  hist_trimuon_FR[0] = (TH2F*)file[0]->Get("SingleMuonTrigger_Dijet_events_F")->Clone();
   //==== HighdXY muons
   file[1] = new TFile("/home/jskim/LQAnalyzer_rootfiles_for_analysis/13TeV_trimuon_FR_SingleMuonTrigger_HighdXY.root");
   hist_trimuon_FR[1] = (TH2F*)file[1]->Get("SingleMuonTrigger_HighdXY_events_F")->Clone();
   //==== DiMuonHighdXY muons
-  //file[2] = new TFile("/home/jskim/LQAnalyzer_rootfiles_for_analysis/13TeV_trimuon_FR_DiMuonTrigger_HighdXY.root");
-  //hist_trimuon_FR[2] = (TH2F*)file[2]->Get("DiMuonTrigger_HighdXY_events_F")->Clone();
-  //==== DiMuonHighdXY muons + n_jet bins
-  //file[3] = new TFile("/home/jskim/LQAnalyzer_rootfiles_for_analysis/13TeV_trimuon_FR_DiMuonTrigger_HighdXY_0jet.root");
-  //hist_trimuon_FR[3] = (TH2F*)file[3]->Get("DiMuonTrigger_HighdXY_0jet_events_F")->Clone();
-  //file[4] = new TFile("/home/jskim/LQAnalyzer_rootfiles_for_analysis/13TeV_trimuon_FR_DiMuonTrigger_HighdXY_withjet.root");
-  //hist_trimuon_FR[4] = (TH2F*)file[4]->Get("DiMuonTrigger_HighdXY_withjet_events_F")->Clone();
+  file[2] = new TFile("/home/jskim/LQAnalyzer_rootfiles_for_analysis/13TeV_trimuon_FR_DiMuonTrigger_HighdXY.root");
+  hist_trimuon_FR[2] = (TH2F*)file[2]->Get("DiMuonTrigger_HighdXY_events_F")->Clone();
 
-  for(int i=1; i<2; i++){
+  for(int i=0; i<3; i++){
     TH1I* hist_bins = (TH1I*)file[i]->Get("hist_bins");
     FR_n_pt_bin[i] = hist_bins->GetBinContent(1);
     FR_n_eta_bin[i] = hist_bins->GetBinContent(2);
@@ -94,8 +89,6 @@ void trilepton_mumumu_FR_method::InitialiseAnalysis() throw( LQError ) {
 
 void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
 
-  weight = 1.0; //initializing 
- 
   /// Apply the gen weight 
   if(!isData) weight*=MCweight;
   
@@ -203,8 +196,8 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
     lep[i] = muontriLooseColl.at(i);
     //==== find loose but not tight muon ( 0.1 < RelIso (< 0.6) )
     if( muontriLooseColl.at(i).RelIso04() > 0.1 ){
-      FR_muon.push_back( get_FR(lep[i], k_flags.at(0), n_jets, false) );
-      FR_error_muon.push_back( get_FR(lep[i], k_flags.at(0), n_jets, true) );
+      FR_muon.push_back( get_FR(lep[i], k_flags.at(0), false) );
+      FR_error_muon.push_back( get_FR(lep[i], k_flags.at(0), true) );
     }
   }
 
@@ -536,17 +529,13 @@ void trilepton_mumumu_FR_method::ClearOutputVectors() throw(LQError) {
   out_electrons.clear();
 }
 
-double trilepton_mumumu_FR_method::get_FR(snu::KParticle muon, TString whichFR, int n_jets, bool geterror){
+double trilepton_mumumu_FR_method::get_FR(snu::KParticle muon, TString whichFR, bool geterror){
 
   int FR_index = 0;
 
   if(whichFR=="dijet_topology") FR_index = 0;
   if(whichFR=="HighdXY")        FR_index = 1;
   if(whichFR=="DiMuon_HighdXY") FR_index = 2;
-  if(whichFR=="DiMuon_HighdXY_n_jets"){
-    FR_index = 3;
-    if(n_jets>0) FR_index = 4; 
-  }
 
   //cout << "FR_index = " << FR_index << endl;
 
@@ -608,14 +597,17 @@ double trilepton_mumumu_FR_method::get_FR(snu::KParticle muon, TString whichFR, 
   //cout << "this_SF = " << FRSF << endl;
   double this_FR_error = hist_trimuon_FR[FR_index]->GetBinError(this_pt_bin, this_eta_bin);
 
+  bool DoSF = std::find(k_flags.begin(), k_flags.end(), "SF") != k_flags.end();
+  bool DoSF_pt = std::find(k_flags.begin(), k_flags.end(), "SF_pt") != k_flags.end();
+
   if(geterror){
-    if(k_flags.at(1) == "SF") return this_FR_error*FRSF;
-    else if(k_flags.at(1) == "SF_pt") return this_FR_error*FRSF_pt;
+    if(DoSF) return this_FR_error*FRSF;
+    else if(DoSF_pt) return this_FR_error*FRSF_pt;
     else return this_FR_error;
   }
   else{
-    if(k_flags.at(1) == "SF") return this_FR*FRSF;
-    else if(k_flags.at(1) == "SF_pt") return this_FR*FRSF_pt;
+    if(DoSF) return this_FR*FRSF;
+    else if(DoSF_pt) return this_FR*FRSF_pt;
     else return this_FR;
   }
 
