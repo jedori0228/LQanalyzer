@@ -77,33 +77,19 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   FillCutFlow("EventCut", 1.);
   /// #### CAT::: triggers stored are all HLT_Ele/HLT_DoubleEle/HLT_Mu/HLT_TkMu/HLT_Photon/HLT_DoublePhoton
 
-  float trigger_ps_weight= WeightByTrigger("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v", TargetLumi);
-
-  if(!PassTrigger("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v")) return;
-  FillCutFlow("TriggerCut", weight);
-  // Trigger matching is done using KMuon::TriggerMatched(TString) which returns a bool
-
-  /* // #### CAT::: trigger matching information is stored for muons and electrons for:
-  ///HLT_IsoMu24_eta2p1_v
-  ///HLT_Mu17_Mu8_DZ_v
-  ///HLT_Mu17_TkMu8_DZ_v
-  ///HLT_IsoMu20
-  ///HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v
-  ///HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v
-  ///HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v
-  ///HLT_Ele12_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v
-  ///HLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v
-  ///HLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL_v
-  ///HLT_Ele16_Ele12_Ele8_CaloIdL_TrackIdL_v
-  ///HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v
-  ///HLT_Ele12_CaloIdL_TrackIdL_IsoVL_v
-  ///HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v
-  ///HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v
-  ///HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_
-  ///HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v
-  ///HLT_Ele27_eta2p1_WPLoose_Gsf_TriCentralPFJet30_v
-  */
-
+  std::vector<TString> triggerlist;
+  triggerlist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
+  //triggerlist.push_back("HLT_TripleMu_12_10_5_v");
+  float trigger_ps_weight= WeightByTrigger(triggerlist, TargetLumi);
+  bool trigger_pass = false;
+  for(unsigned int i=0; i<triggerlist.size(); i++){
+    if( PassTrigger(triggerlist.at(i)) ){
+      trigger_pass = true;
+      break;
+    }
+  }
+  if(!trigger_pass) return;
+  FillCutFlow("TriggerCut", 1.);
   m_logger << DEBUG << "passedTrigger "<< LQLogger::endmsg;
 
 
@@ -121,25 +107,26 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   //std::vector<snu::KMuon> muonVetoColl = GetMuons(BaseSelection::MUON_HN_VETO);  // veto selection
   //std::vector<snu::KMuon> muonLooseColl = GetMuons(BaseSelection::MUON_HN_FAKELOOSE);  // loose selection
   //std::vector<snu::KMuon> muonTightColl = GetMuons(BaseSelection::MUON_HN_TIGHT,false); // tight selection : NonPrompt MC lep removed
-  std::vector<snu::KMuon> muontriTightColl, muontriLooseColl;
+  std::vector<snu::KMuon> muontriLooseColl;
+  double this_RelIso = 0.4;
+
+  bool DoMCClosure = std::find(k_flags.begin(), k_flags.end(), "MCClosure") != k_flags.end();
+
   //==== Gen Matching is not done correctly for my private samples..
   if( k_sample_name.Contains("HN") ){
-    muontriTightColl = GetMuons("MUON_HN_TRI_TIGHT", true);
-    muontriLooseColl = GetMuons("MUON_HN_TRI_LOOSE", true);
+    muontriLooseColl = GetHNTriMuonsByLooseRelIso(this_RelIso, true);
   }
   //==== For MC Closure test, we want to reject P(rompt)P event
-  else if( std::find(k_flags.begin(), k_flags.end(), "MCClosure") != k_flags.end() ){
-    std::vector<snu::KMuon> muontriLooseColl_prompt = GetMuons("MUON_HN_TRI_LOOSE", false);
+  else if( DoMCClosure ){
+    std::vector<snu::KMuon> muontriLooseColl_prompt = GetHNTriMuonsByLooseRelIso(this_RelIso, false);
     if(muontriLooseColl_prompt.size()==2) return;
 
-    muontriTightColl = GetMuons("MUON_HN_TRI_TIGHT", true);
-    muontriLooseColl = GetMuons("MUON_HN_TRI_LOOSE", true);
+    muontriLooseColl = GetHNTriMuonsByLooseRelIso(this_RelIso, true);
   }
   //==== For Prompt MC, collect prompt muons
   //==== For data, it automarically collect all muons :)
   else{
-    muontriTightColl = GetMuons("MUON_HN_TRI_TIGHT", false); 
-    muontriLooseColl = GetMuons("MUON_HN_TRI_LOOSE", false);
+    muontriLooseColl = GetHNTriMuonsByLooseRelIso(this_RelIso, false);
   }
   //CorrectMuonMomentum(muonTightColl);
   //float muon_id_iso_sf= MuonScaleFactor(BaseSelection::MUON_POG_TIGHT, muontriTightColl, 0); ///MUON_POG_TIGHT == MUON_HN_TIGHT
@@ -176,9 +163,15 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
     //weight*=weight_trigger_sf;
     weight*=trigger_ps_weight;
     weight*=pileup_reweight;
+    if(DoMCClosure){
+      weight = 1.*MCweight;
+    }
   }
 
-  int n_triTight_muons = muontriTightColl.size();
+  int n_triTight_muons(0);
+  for(unsigned int i=0; i<muontriLooseColl.size(); i++){
+    if(muontriLooseColl.at(i).RelIso04() < 0.1) n_triTight_muons++;
+  }
   int n_triLoose_muons = muontriLooseColl.size();
   int n_jets = jetColl_hn.size();
 

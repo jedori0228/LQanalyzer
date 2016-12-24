@@ -332,10 +332,13 @@ class AnalyzerCore : public LQCycleBase {
 
   //==== Trilepton stuffs
   void PutNuPz(TLorentzVector *nu, double Pz);
+  void PutNuPz(snu::KParticle *nu, double Pz);
   double solveqdeq(double W_mass, TLorentzVector l1l2l3, double MET, double METphi, TString pm);
   int find_mlmet_closest_to_W(snu::KParticle  lep[], snu::KParticle  MET);
   double MT(TLorentzVector a, TLorentzVector b);
   bool GenMatching(snu::KParticle a, snu::KParticle b, double maxDeltaR, double maxPtDiff);
+  std::vector<snu::KMuon> GetHNTriMuonsByLooseRelIso(double LooseRelIsoMax, bool keepfake);
+  void PrintTruth();
 
 };
 #endif

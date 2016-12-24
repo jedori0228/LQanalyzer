@@ -70,6 +70,7 @@ fi
 
 # speficy the LQANALYZER_DIR base directory, i.e., the directory in which this file lives
 export LQANALYZER_DIR=${PWD}
+export JSKIMROOTFILES="/home/jskim/LQAnalyzer_rootfiles_for_analysis/"
 
 
 if [[ $1 == *"v7"* ]]; then

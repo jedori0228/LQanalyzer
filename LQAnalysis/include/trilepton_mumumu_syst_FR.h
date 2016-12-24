@@ -1,14 +1,14 @@
-#ifndef trilepton_mumumu_CR_FR_method_h
-#define trilepton_mumumu_CR_FR_method_h
+#ifndef trilepton_mumumu_syst_FR_h
+#define trilepton_mumumu_syst_FR_h
 
 #include "AnalyzerCore.h"
 
-class trilepton_mumumu_CR_FR_method : public AnalyzerCore {
+class trilepton_mumumu_syst_FR : public AnalyzerCore {
 
  public:
   //// constructors                                                                                                                                                             
-  trilepton_mumumu_CR_FR_method();
-  ~trilepton_mumumu_CR_FR_method();
+  trilepton_mumumu_syst_FR();
+  ~trilepton_mumumu_syst_FR();
 
   /// Functions from core
   virtual void BeginCycle() throw( LQError );
@@ -20,14 +20,13 @@ class trilepton_mumumu_CR_FR_method : public AnalyzerCore {
   void InitialiseAnalysis() throw( LQError );
   void MakeHistograms();
   void FillCutFlow(TString cut, float w);
-
-  TH2D* hist_trimuon_FR;
-  TH2D* hist_trimuon_FR_QCD;
-  TH2D* hist_trimuon_FRSF_QCD;
-  TH2D* hist_trimuon_FR_QCDSFed;
-  double this_dXYSig, this_RelIso;
+  vector<double> dXYMins, RelIsoMaxs;
+  std::map<TString, TH2D*> hist_trimuon_FR;
+  std::map<TString, TH2D*> hist_trimuon_FR_QCD;
+  std::map<TString, TH2D*> hist_trimuon_FRSF_QCD;
+  std::map<TString, TH2D*> hist_trimuon_FR_QCDSFed;
   int FR_n_pt_bin, FR_n_eta_bin;
-  double get_FR(snu::KParticle muon, bool geterror);
+  double get_FR(snu::KParticle muon, TString whichFR, bool geterror);
 
  private:
   
@@ -39,6 +38,6 @@ class trilepton_mumumu_CR_FR_method : public AnalyzerCore {
   std::vector<snu::KElectron> out_electrons;
 
 
-  ClassDef ( trilepton_mumumu_CR_FR_method, 1);
+  ClassDef ( trilepton_mumumu_syst_FR, 1);
 };
 #endif

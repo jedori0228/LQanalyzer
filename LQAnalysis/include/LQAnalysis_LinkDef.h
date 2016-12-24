@@ -21,5 +21,8 @@
 #pragma link C++ class trilepton_mumumu_CR+;
 #pragma link C++ class trilepton_mumumu_CR_FR_method+;
 #pragma link C++ class FakeRateCalculator_Mu+;
+#pragma link C++ class trilepton_mumumu_syst_FR+;
+#pragma link C++ class trilepton_mumumu_ntp+;
+#pragma link C++ class trilepton_mumumu_ntp_FR_method+;
 
 #endif // __CINT__

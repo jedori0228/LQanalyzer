@@ -2964,6 +2964,13 @@ void AnalyzerCore::PutNuPz(TLorentzVector *nu, double Pz){
   nu->SetPxPyPzE(Px, Py, Pz, TMath::Sqrt(Px*Px+Py*Py+Pz*Pz));
 }
 
+void AnalyzerCore::PutNuPz(snu::KParticle *nu, double Pz){
+  double Px, Py;
+  Px = nu->Px();
+  Py = nu->Py();
+  nu->SetPxPyPzE(Px, Py, Pz, TMath::Sqrt(Px*Px+Py*Py+Pz*Pz));
+}
+
 double AnalyzerCore::solveqdeq(double W_mass, TLorentzVector l1l2l3, double MET, double METphi, TString pm){
   TLorentzVector met;
   met.SetPxPyPzE(MET*cos(METphi),
@@ -3014,3 +3021,42 @@ bool AnalyzerCore::GenMatching(snu::KParticle a, snu::KParticle b, double maxDel
   return matched;
 
 }
+
+std::vector<snu::KMuon> AnalyzerCore::GetHNTriMuonsByLooseRelIso(double LooseRelIsoMax, bool keepfake){
+
+  std::vector<snu::KMuon> muontriLooseColl_raw = GetMuons("MUON_HN_TRI_VLOOSE", keepfake);
+  std::vector<snu::KMuon> muontriLooseColl;
+  muontriLooseColl.clear();
+  for(unsigned int j=0; j<muontriLooseColl_raw.size(); j++){
+    snu::KMuon this_muon = muontriLooseColl_raw.at(j);
+    if( this_muon.RelIso04() < LooseRelIsoMax ) muontriLooseColl.push_back( this_muon );
+  }
+  return muontriLooseColl;
+
+}
+
+void AnalyzerCore::PrintTruth(){
+  std::vector<snu::KTruth> truthColl;
+  eventbase->GetTruthSel()->Selection(truthColl);
+
+  cout << "=========================================================" << endl;
+  cout << "truth size = " << truthColl.size() << endl;
+  cout << "index" << '\t' << "pdgid" << '\t' << "mother" << '\t' << "mother pid" << endl;
+  for(int i=2; i<truthColl.size(); i++){
+    cout << i << '\t' << truthColl.at(i).PdgId() << '\t' << truthColl.at(i).IndexMother() << '\t' << truthColl.at( truthColl.at(i).IndexMother() ).PdgId() << endl;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

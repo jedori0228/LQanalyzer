@@ -1,13 +1,13 @@
-#ifndef trilepton_mumumu_h
-#define trilepton_mumumu_h
+#ifndef trilepton_mumumu_ntp_h
+#define trilepton_mumumu_ntp_h
 
 #include "AnalyzerCore.h"
-class trilepton_mumumu : public AnalyzerCore {
+class trilepton_mumumu_ntp : public AnalyzerCore {
 
  public:
   //// constructors                                                                                                                                                             
-  trilepton_mumumu();
-  ~trilepton_mumumu();
+  trilepton_mumumu_ntp();
+  ~trilepton_mumumu_ntp();
 
   /// Functions from core
   virtual void BeginCycle() throw( LQError );
@@ -24,7 +24,6 @@ class trilepton_mumumu : public AnalyzerCore {
   void solution_selection_stduy(std::vector<snu::KMuon> recomuons);
   void find_decay(std::vector<snu::KTruth> truthcoll, int target_index, std::vector<int>& indices);
   void print_all_indices(TString particle, std::vector<int> vec);
-  int GetSignalMass();
   int n_gen_pass;
   double sol_sel_chi2_best, sol_sel_chi2_plus, sol_sel_chi2_minus, sol_sel_chi2_smaller, sol_sel_chi2_larger;
   bool allgenfound;
@@ -41,6 +40,6 @@ class trilepton_mumumu : public AnalyzerCore {
   std::vector<snu::KElectron> out_electrons;
 
 
-  ClassDef ( trilepton_mumumu, 1);
+  ClassDef ( trilepton_mumumu_ntp, 1);
 };
 #endif
