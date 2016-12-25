@@ -345,9 +345,9 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   W_pri_highmass = lep[0] + lep[1] + lep[2] + nu_highmass;
 
   // [class3]
-  // m(HN) : 90 ~ 500 GeV - primary lepton has larger pT
+  // m(HN) : 90 ~ 700 GeV - primary lepton has larger pT
   // [class4]
-  // m(HN) : 700 ~ 1000 GeV - primary lepton has smaller pT
+  // m(HN) : 1000 GeV - primary lepton has smaller pT
 
   W_sec = lep[l_3_index] + nu_highmass;
 
@@ -381,8 +381,8 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   }
 
   bool is_deltaR_OS_min_0p5 = deltaR_OS_min > 0.5;
-  bool is_W_pri_lowmass_150 = W_pri_lowmass.M() < 150.;
-  bool is_W_pri_highmass_200 = W_pri_highmass.M() > 200.;
+  bool is_W_pri_lowmass_150 = W_pri_lowmass.M() < 300.;
+  bool is_W_pri_highmass_200 = W_pri_highmass.M() > 100.;
 
   FillUpDownHist("HN_mass_class1_cut0", HN[0].M(), weight, weight_err, 0., 2000., 2000);
   FillUpDownHist("HN_mass_class2_cut0", HN[1].M(), weight, weight_err, 0., 2000., 2000);

@@ -20,6 +20,7 @@ class trilepton_mumumu : public AnalyzerCore {
   void MakeHistograms();
   void FillCutFlow(TString cut, float w);
   void find_genparticles();
+  double GENMatchingdR, GENMatchingdPt;
   int find_genmatching(snu::KParticle gen, std::vector<snu::KMuon> recos, std::vector<int>& used_index);
   void solution_selection_stduy(std::vector<snu::KMuon> recomuons);
   void find_decay(std::vector<snu::KTruth> truthcoll, int target_index, std::vector<int>& indices);

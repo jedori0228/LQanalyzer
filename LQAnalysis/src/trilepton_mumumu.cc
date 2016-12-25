@@ -72,7 +72,6 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     }
     else{
       FillHist("GenFound", 0., 1., 0., 2., 2);
-      cout << "WTF" << endl;
     }
   }
 
@@ -166,7 +165,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     muontriLooseColl = GetHNTriMuonsByLooseRelIso(this_RelIso, false);
   }
 
-  //CorrectMuonMomentum(muonTightColl);
+  //CorrectMuonMomentum(muontriLooseColl);
   //float muon_id_iso_sf= MuonScaleFactor(BaseSelection::MUON_POG_TIGHT, muontriTightColl, 0); ///MUON_POG_TIGHT == MUON_HN_TIGHT
   //muon_id_iso_sf *= MuonISOScaleFactor(BaseSelection::MUON_POG_TIGHT, muontriTightColl, 0);
 
@@ -351,9 +350,9 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   W_pri_highmass = lep[0] + lep[1] + lep[2] + nu_highmass;
 
   // [class3]
-  // m(HN) : 90 ~ 500 GeV - primary lepton has larger pT
+  // m(HN) : 90 ~ 700 GeV - primary lepton has larger pT
   // [class4]
-  // m(HN) : 700 ~ 1000 GeV - primary lepton has smaller pT
+  // m(HN) : 1000 GeV - primary lepton has smaller pT
 
   W_sec = lep[l_3_index] + nu_highmass;
 
@@ -386,8 +385,8 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   }
 
   bool is_deltaR_OS_min_0p5 = deltaR_OS_min > 0.5;
-  bool is_W_pri_lowmass_150 = W_pri_lowmass.M() < 150.;
-  bool is_W_pri_highmass_200 = W_pri_highmass.M() > 200.;
+  bool is_W_pri_lowmass_150 = W_pri_lowmass.M() < 300.;
+  bool is_W_pri_highmass_200 = W_pri_highmass.M() > 100.;
 
   FillHist("HN_mass_class1_cut0", HN[0].M(), weight, 0., 2000., 2000);
   FillHist("HN_mass_class2_cut0", HN[1].M(), weight, 0., 2000., 2000);
@@ -576,10 +575,17 @@ void trilepton_mumumu::find_genparticles(){
 
   int truthmax = truthColl.size();
   vector<int> gen_HN_indices, gen_W_sec_indices, gen_l_1_indices, gen_nu_indices, gen_l_3_indices, gen_l_2_indices;
-  bool W_sec_in_truth=false, isLowMass = false;
+  gen_HN_indices.clear();
+  gen_W_sec_indices.clear();
+  gen_l_1_indices.clear();
+  gen_nu_indices.clear();
+  gen_l_3_indices.clear();
+  gen_l_2_indices.clear();
+  bool isLowMass(true);
 
   //==== check if this is low/high mass region
   if(GetSignalMass() < 80) isLowMass = true;
+  else isLowMass = false;
  
   //==== find HN index
   for(int i=2;i<truthmax;i++){
@@ -590,7 +596,10 @@ void trilepton_mumumu::find_genparticles(){
     }
   }
   //print_all_indices("gen_HN", gen_HN_indices);
-  if(gen_HN_indices.size() == 0) return;
+  if(gen_HN_indices.size() == 0){
+    Message("[GEN] HN not found", INFO);
+    return;
+  }
   int HN_motherindex = truthColl.at( gen_HN_indices.at(0) ).IndexMother();
   FillHist("GEN_HN_mother_pdgid", abs(truthColl.at(HN_motherindex).PdgId()), 1., 0., 30., 30);
 
@@ -612,27 +621,48 @@ void trilepton_mumumu::find_genparticles(){
       if(gen_l_1_indices.size() != 0) break;
     }
     //print_all_indices("gen_l_1", gen_l_1_indices);
-    if(gen_l_1_indices.size() == 0) return;
+    if(gen_l_1_indices.size() == 0){
+      Message("[GEN][LowMass] l_1 not found", INFO);
+      return;
+    }
 
     //==== As m(HN) goes closer to W mass, W_sec starting to appear in truth coll
     //==== if W_sec is virtual, it may not appear in the gen particle collections
     //==== check W_sec exists
+    bool LowMass_Wsec(false), LowMass_Z(false);
+    vector<int> gen_Z_indices;
+    gen_Z_indices.clear();
+
     for(int i=2;i<truthmax;i++){
       //==== 1) |PID| = 24
       //==== 2) Mother's PID = PID_HN
       if( fabs(truthColl.at(i).PdgId()) == 24 && (abs(truthColl.at(truthColl.at(i).IndexMother()).PdgId())) == PID_HN ){
         gen_W_sec_indices.push_back(i);
         find_decay(truthColl, i, gen_W_sec_indices);
-        W_sec_in_truth = true;
+        LowMass_Wsec = true;
         break;
       }
     }
     //print_all_indices("gen_W_sec", gen_W_sec_indices);
 
-    //==== no W_sec in truthColl index case
-    if(!W_sec_in_truth){
-      //cout << "[No W_sec!]" << endl;
+    //==== For low mass, HN can also decays via virtual Z
+    for(int i=2;i<truthmax;i++){
+      //==== 1) |PID| = 23
+      //==== 2) Mother's PID = PID_HN
+      if( fabs(truthColl.at(i).PdgId()) == 23 && (abs(truthColl.at(truthColl.at(i).IndexMother()).PdgId())) == PID_HN ){
+        gen_Z_indices.push_back(i);
+        find_decay(truthColl, i, gen_Z_indices);
+        LowMass_Z = true;
+        break;
+      }
+    }
+    //print_all_indices("gen_Z", gen_Z_indices);
 
+    //============================
+    //==== 1) HN to three particles
+    //============================
+
+    if( (!LowMass_Wsec) && (!LowMass_Z) ){
       //==== find nu at gen. level
       for(int i=2;i<truthmax;i++){
         for(unsigned int j=0;j<gen_HN_indices.size();j++){
@@ -647,42 +677,121 @@ void trilepton_mumumu::find_genparticles(){
         if(gen_nu_indices.size() != 0) break;
       }
       //print_all_indices("gen_nu", gen_nu_indices);
-      if(gen_nu_indices.size() == 0) return;
+      if(gen_nu_indices.size() == 0){
+        Message("[GEN][LowMass][1] nu not found", INFO);
+        return;
+      }
 
-      //==== find l_3 at gen. level
+      //==== Let l_1 and l_2 are SS (considering dilep channel :D)
+      //==== find l_2 at gen. level
       for(int i=2;i<truthmax;i++){
         for(unsigned int j=0;j<gen_HN_indices.size();j++){
           //==== 1) PID = PID of l_1 (SS)
           //==== 2) Mother = {HN}
           if(truthColl.at(i).PdgId() == truthColl.at(gen_l_1_indices.at(0)).PdgId() && truthColl.at(i).IndexMother() == gen_HN_indices.at(j) ){
-            gen_l_3_indices.push_back(i);
-            find_decay(truthColl, i, gen_l_3_indices);
-            break;
-          }
-        }
-      }
-      //print_all_indices("gen_l_3", gen_l_3_indices);
-      if(gen_l_3_indices.size() == 0) return;
-
-      //==== find l_2 at gen. level
-      for(int i=2;i<truthmax;i++){
-        for(unsigned int j=0;j<gen_HN_indices.size();j++){
-          //==== 1) PID = - (PID of l_1) (OS)
-          //==== 2) Mother = {HN}
-          if(truthColl.at(i).PdgId() == -truthColl.at(gen_l_1_indices.at(0)).PdgId() && truthColl.at(i).IndexMother() == gen_HN_indices.at(j) ){
             gen_l_2_indices.push_back(i);
             find_decay(truthColl, i, gen_l_2_indices);
             break;
           }
         }
-        if(gen_l_2_indices.size() != 0) break;
       }
       //print_all_indices("gen_l_2", gen_l_2_indices);
-      if(gen_l_2_indices.size() == 0) return;
+      if(gen_l_2_indices.size() == 0){
+        Message("[GEN][LowMass][1] l_2 not found", INFO);
+        return;
+      }
+
+      //==== Let l_1 and l_3 are OS
+      //==== find l_3 at gen. level
+      for(int i=2;i<truthmax;i++){
+        for(unsigned int j=0;j<gen_HN_indices.size();j++){
+          //==== 1) PID = - (PID of l_1) (OS)
+          //==== 2) Mother = {HN}
+          if(truthColl.at(i).PdgId() == -truthColl.at(gen_l_1_indices.at(0)).PdgId() && truthColl.at(i).IndexMother() == gen_HN_indices.at(j) ){
+            gen_l_3_indices.push_back(i);
+            find_decay(truthColl, i, gen_l_3_indices);
+            break;
+          }
+        }
+        if(gen_l_3_indices.size() != 0) break;
+      }
+      //print_all_indices("gen_l_3", gen_l_3_indices);
+      if(gen_l_3_indices.size() == 0){
+        Message("[GEN][LowMass][1] l_3 not found", INFO);
+        return;
+      }
     }
-    //==== W_sec in truthColl index case
-    else{
-      //cout << "[W_sec!]" << endl;
+
+    //=========================
+    //==== 2) HN decays via Z
+    //=========================
+
+    if( LowMass_Z ){
+      //==== find nu at gen. level
+      for(int i=2;i<truthmax;i++){
+        for(unsigned int j=0;j<gen_HN_indices.size();j++){
+          //==== 1) |PID| = 14
+          //==== 2) Mother = {HN}
+          if(abs(truthColl.at(i).PdgId()) == 14 && truthColl.at(i).IndexMother() == gen_HN_indices.at(j) ){
+            gen_nu_indices.push_back(i);
+            find_decay(truthColl, i, gen_nu_indices);
+            break;
+          }
+        }
+        if(gen_nu_indices.size() != 0) break;
+      }
+      //print_all_indices("gen_nu", gen_nu_indices);
+      if(gen_nu_indices.size() == 0){
+        Message("[GEN][LowMass][2] nu not found", INFO);
+        return;
+      }
+
+      //==== Let l_1 and l_2 are SS (condiering dilep channel :D)
+      //==== find l_2 at gen. level
+      for(int i=2;i<truthmax;i++){
+        for(unsigned int j=0;j<gen_Z_indices.size();j++){
+          //==== 1) PID = PID of l_1 (SS)
+          //==== 2) Mother = {Z}
+          if(truthColl.at(i).PdgId() == truthColl.at(gen_l_1_indices.at(0)).PdgId() && truthColl.at(i).IndexMother() == gen_Z_indices.at(j) ){
+            gen_l_2_indices.push_back(i);
+            find_decay(truthColl, i, gen_l_2_indices);
+            break;
+          }
+        }
+      }
+      //print_all_indices("gen_l_2", gen_l_2_indices);
+      if(gen_l_2_indices.size() == 0){
+        Message("[GEN][LowMass][2] l_2 not found", INFO);
+        return;
+      }
+
+      //==== Let l_1 and l_3 are OS
+      //==== find l_3 at gen. level
+      for(int i=2;i<truthmax;i++){
+        for(unsigned int j=0;j<gen_Z_indices.size();j++){
+          //==== 1) PID = - (PID of l_1) (OS)
+          //==== 2) Mother = {Z}
+          if(truthColl.at(i).PdgId() == -truthColl.at(gen_l_1_indices.at(0)).PdgId() && truthColl.at(i).IndexMother() == gen_Z_indices.at(j) ){
+            gen_l_3_indices.push_back(i);
+            find_decay(truthColl, i, gen_l_3_indices);
+            break;
+          }
+        }
+        if(gen_l_3_indices.size() != 0) break;
+      }
+      //print_all_indices("gen_l_3", gen_l_3_indices);
+      if(gen_l_3_indices.size() == 0){
+        Message("[GEN][LowMass][2] l_3 not found", INFO);
+        return;
+      }
+
+    }
+
+    //====================================
+    //==== 3) HN decays in to on-shell W
+    //====================================
+
+    if(LowMass_Wsec){
       //==== find nu at gen. level
       for(int i=2;i<truthmax;i++){
         for(unsigned int j=0;j<gen_W_sec_indices.size();j++){
@@ -697,7 +806,10 @@ void trilepton_mumumu::find_genparticles(){
         if(gen_nu_indices.size() != 0) break;
       }
       //print_all_indices("gen_nu", gen_nu_indices);
-      if(gen_nu_indices.size() == 0) return;
+      if(gen_nu_indices.size() == 0){
+        Message("[GEN][LowMass][3] nu not found", INFO);
+        return;
+      }
 
       //==== find l_3 at gen. level
       for(int i=2;i<truthmax;i++){
@@ -713,7 +825,10 @@ void trilepton_mumumu::find_genparticles(){
         if(gen_l_3_indices.size() != 0) break;
       }
       //print_all_indices("gen_l_3", gen_l_3_indices);
-      if(gen_l_3_indices.size() == 0) return;
+      if(gen_l_3_indices.size() == 0){
+        Message("[GEN][LowMass][3] l_3 not found", INFO);
+        return;
+      }
 
       //==== find l_2 at gen. level
       for(int i=2;i<truthmax;i++){
@@ -729,7 +844,10 @@ void trilepton_mumumu::find_genparticles(){
         if(gen_l_2_indices.size() != 0) break;
       }
       //print_all_indices("gen_l_2", gen_l_2_indices);
-      if(gen_l_2_indices.size() == 0) return;
+      if(gen_l_2_indices.size() == 0){
+        Message("[GEN][LowMass][3] l_3 not found", INFO);
+        return;
+      }
       
     }
 
@@ -836,6 +954,9 @@ void trilepton_mumumu::find_genparticles(){
 }
 
 void trilepton_mumumu::solution_selection_stduy(std::vector<snu::KMuon> recomuons){
+
+  GENMatchingdR = 0.1;
+  GENMatchingdPt = 0.05;
 
   snu::KParticle reco_lep[3];
   for(int i=0;i<3;i++){
@@ -950,21 +1071,25 @@ void trilepton_mumumu::solution_selection_stduy(std::vector<snu::KMuon> recomuon
 
     FillHist("GEN_highmass_l_3_cand", l_3_cand, 1., 0., 3., 3);
 
-    //==== 1) pt ordering firstly done = m1
+    //==== 1) l_1 first by pt ordering
+    //==== signal_class = 3 : gen_l_1 is leading SS
+    //==== signal_class = 4 : gen_l_1 is subleading SS (m < 1000 GeV)
     
-    int l_1_cand_m1 = SameSign[0], l_SS_rem = SameSign[1], signal_class = 3;
-    //==== pt ordering reversed for m(HN) >= 700 GeV
-    if( GetSignalMass() >= 700 ){ //FIXME study signal class
+    int l_1_cand = SameSign[0], l_SS_rem = SameSign[1];
+    int signal_class = 3;
+    //==== pt ordering reversed for m(HN) >= 1000 GeV
+    if( GetSignalMass() == 1000 ){ //FIXME study signal class
       signal_class = 4;
-      l_1_cand_m1 = SameSign[1];
+      l_1_cand = SameSign[1];
       l_SS_rem = SameSign[0];
     }
-    //if( reco_lep[l_1_cand_m1].DeltaR(gen_l_1) < 0.1 ){
-    if( GenMatching(reco_lep[l_1_cand_m1], gen_l_1, 0.1, 0.05) ){
-      FillHist("GEN_highmass_pt_order_first", 1, 1., 0., 2., 2);
+    //if( reco_lep[l_1_cand].DeltaR(gen_l_1) < 0.1 ){
+    if( GenMatching(reco_lep[l_1_cand], gen_l_1, GENMatchingdR, GENMatchingdPt) ){
+      FillHist("GEN_highmass_gen_l_1_first", 1, 1., 0., 2., 2);
 
       int l_2_cand_m1, l_3_cand_m1;
-      if( fabs( (reco_lep[OppSign]+reco_MET).M() - 80.4 ) < fabs( (reco_lep[l_SS_rem]+reco_MET).M() - 80.4 ) ){
+      //if( fabs( (reco_lep[OppSign]+reco_MET).M() - 80.4 ) < fabs( (reco_lep[l_SS_rem]+reco_MET).M() - 80.4 ) ){
+      if( fabs( MT(reco_lep[OppSign], reco_MET) - 80.4 ) < fabs( MT(reco_lep[l_SS_rem], reco_MET) - 80.4 ) ){ 
         l_3_cand_m1 = OppSign;
         l_2_cand_m1 = l_SS_rem;
       }
@@ -973,22 +1098,43 @@ void trilepton_mumumu::solution_selection_stduy(std::vector<snu::KMuon> recomuon
         l_2_cand_m1 = OppSign;
       }
       //if( gen_l_2.DeltaR( reco_lep[l_2_cand_m1] ) < 0.1 && gen_l_3.DeltaR( reco_lep[l_3_cand_m1] ) < 0.1 ) FillHist("GEN_pt_order_first_mlmet_next", 1, 1., 0., 2., 2);
-      if( GenMatching(gen_l_2, reco_lep[l_2_cand_m1], 0.1, 0.05) && GenMatching(gen_l_3, reco_lep[l_3_cand_m1], 0.1, 0.05) ) FillHist("GEN_highmass_pt_order_first_mlmet_next", 1, 1., 0., 2., 2);
-      else FillHist("GEN_highmass_pt_order_first_mlmet_next", 0, 1., 0., 2., 2);
+      if( GenMatching(gen_l_2, reco_lep[l_2_cand_m1], GENMatchingdR, GENMatchingdPt) && GenMatching(gen_l_3, reco_lep[l_3_cand_m1], GENMatchingdR, GENMatchingdPt) ) FillHist("GEN_highmass_gen_l_1_first_mlmet_next", 1, 1., 0., 2., 2);
+      else FillHist("GEN_highmass_gen_l_1_first_mlmet_next", 0, 1., 0., 2., 2);
 
     }
     else{
-      FillHist("GEN_highmass_pt_order_first", 0, 1., 0., 2., 2);
+      FillHist("GEN_highmass_gen_l_1_first", 0, 1., 0., 2., 2);
     }
 
-    //==== 2) mlmet first = m2
+    //==== 2) gen_l_3 first by mlmet
     
     //if( gen_l_3.DeltaR(reco_lep[l_3_cand]) < 0.1 ){
-    if( GenMatching(gen_l_3, reco_lep[l_3_cand], 0.1, 0.05) ){
-      FillHist("GEN_highmass_mlmet_first", 1, 1., 0., 2., 2);
+    if( GenMatching(gen_l_3, reco_lep[l_3_cand], GENMatchingdR, GENMatchingdPt) ){
+      FillHist("GEN_highmass_gen_l_3_first", 1, 1., 0., 2., 2);
 
-      //==== pt order now
+      vector<snu::KParticle> lep_rem;
+      for(unsigned int i=0; i<3; i++){
+        if(i!=l_3_cand) lep_rem.push_back( reco_lep[i] );
+      }
+
+      //==== 2-1) Leading goes to l_1
+      if( GenMatching(gen_l_1, lep_rem[0], GENMatchingdR, GENMatchingdPt) ){
+        FillHist("GEN_highmass_gen_l_3_first_gen_l_1_leading_next", 1, 1., 0., 2., 2);
+      }
+      else{
+        FillHist("GEN_highmass_gen_l_3_first_gen_l_1_leading_next", 0, 1., 0., 2., 2);
+      }
+      //==== 2-2) Leading goes to l_2
+      if( GenMatching(gen_l_2, lep_rem[0], GENMatchingdR, GENMatchingdPt) ){
+        FillHist("GEN_highmass_gen_l_3_first_gen_l_2_leading_next", 1, 1., 0., 2., 2);
+      }
+      else{
+        FillHist("GEN_highmass_gen_l_3_first_gen_l_2_leading_next", 0, 1., 0., 2., 2);
+      }
+
+      //==== Combination
       int l_1_cand_m2, l_2_cand_m2;
+      //==== if l_3 is OS : then, use pt ordering
       if( l_3_cand == OppSign ){
         if( signal_class == 3){
           l_1_cand_m2 = SameSign[0];
@@ -999,6 +1145,7 @@ void trilepton_mumumu::solution_selection_stduy(std::vector<snu::KMuon> recomuon
           l_2_cand_m2 = SameSign[0];
         }
       }
+      //==== if l_3 is SS : then, remaing SS should be l_1
       else{
         l_2_cand_m2 = OppSign;
         if( l_3_cand == SameSign[0] ) l_1_cand_m2 = SameSign[1];
@@ -1006,12 +1153,12 @@ void trilepton_mumumu::solution_selection_stduy(std::vector<snu::KMuon> recomuon
       }
 
       //if( gen_l_1.DeltaR( reco_lep[l_1_cand_m2] ) < 0.1 && gen_l_2.DeltaR( reco_lep[l_2_cand_m2] ) < 0.1 ) FillHist("GEN_mlmet_first_pt_order_next", 1, 1., 0., 2., 2);
-      if( GenMatching(gen_l_1, reco_lep[l_1_cand_m2], 0.1, 0.05) && GenMatching(gen_l_2, reco_lep[l_2_cand_m2], 0.1, 0.05) ) FillHist("GEN_highmass_mlmet_first_pt_order_next", 1, 1., 0., 2., 2);
-      else FillHist("GEN_highmass_mlmet_first_pt_order_next", 0, 1., 0., 2., 2);
+      if( GenMatching(gen_l_1, reco_lep[l_1_cand_m2], GENMatchingdR, GENMatchingdPt) && GenMatching(gen_l_2, reco_lep[l_2_cand_m2], GENMatchingdR, GENMatchingdPt) ) FillHist("GEN_highmass_gen_l_3_first_pt_order_next", 1, 1., 0., 2., 2);
+      else FillHist("GEN_highmass_gen_l_3_first_pt_order_next", 0, 1., 0., 2., 2);
 
     }
     else{
-      FillHist("GEN_highmass_mlmet_first", 0, 1., 0., 2., 2);
+      FillHist("GEN_highmass_gen_l_3_first", 0, 1., 0., 2., 2);
     }
 
 
@@ -1032,18 +1179,30 @@ void trilepton_mumumu::solution_selection_stduy(std::vector<snu::KMuon> recomuon
   if( gen_l_1.Charge() == gen_l_2.Charge() ) gen_l_SS = gen_l_2;
   else gen_l_SS = gen_l_3;
 
-  FillHist("GEN_gen_l_SS_Pt", gen_l_SS.Pt(), 1., 0., 1500., 1500);
-  
-  //==== check in gen level
-  if( gen_l_1.Pt() > gen_l_SS.Pt() ) FillHist("GEN_gen_pri_lep_pt_greater", 1, 1., 0., 2., 2);
-  else FillHist("GEN_gen_pri_lep_pt_greater", 0, 1., 0., 2., 2);
-
-  FillHist("GEN_leadingSS_pt", reco_lep[SameSign[0]].Pt(), 1., 0., 1500., 1500);
-  FillHist("GEN_DeltaR_gen_l_1_AND_leadingSS", reco_lep[SameSign[0]].DeltaR(gen_l_1), 1., 0., 6., 60);
-  FillHist("GEN_DeltaR_gen_l_1_AND_subleadingSS", reco_lep[SameSign[1]].DeltaR(gen_l_1), 1., 0., 6., 60);
+  //==== gen_l_1 : leadingSS
+  if( gen_l_1.Pt() > gen_l_SS.Pt() ){
+    FillHist("GEN_gen_l_1_leadingSS", 1, 1., 0., 2., 2);
+  }
+  else{
+    FillHist("GEN_gen_l_1_leadingSS", 0, 1., 0., 2., 2);
+  }
+  //==== gen_l_1 : leading
+  if( gen_l_1.Pt() > gen_l_2.Pt() && gen_l_1.Pt() > gen_l_3.Pt() ){
+    FillHist("GEN_gen_l_1_leading", 1., 1., 0., 2., 2);
+  }
+  else{
+    FillHist("GEN_gen_l_1_leading", 0., 1., 0., 2., 2);
+  }
+  //==== gen_l_2 : leading
+  if( gen_l_2.Pt() > gen_l_1.Pt() && gen_l_2.Pt() > gen_l_3.Pt() ){
+    FillHist("GEN_gen_l_2_leading", 1., 1., 0., 2., 2);
+  }
+  else{
+    FillHist("GEN_gen_l_2_leading", 0., 1., 0., 2., 2);
+  }
 
   //if( reco_lep[SameSign[0]].DeltaR(gen_l_1) < 0.1 ){
-  if( GenMatching(reco_lep[SameSign[0]], gen_l_1, 0.1, 0.05) ){
+  if( GenMatching(reco_lep[SameSign[0]], gen_l_1, GENMatchingdR, GENMatchingdPt) ){
     FillHist("GEN_reco_leading_SS_match_gen_l_1", 1, 1., 0., 2., 2);
   }
   else{
@@ -1051,7 +1210,7 @@ void trilepton_mumumu::solution_selection_stduy(std::vector<snu::KMuon> recomuon
   }
 
   //if( reco_lep[SameSign[1]].DeltaR(gen_l_1) < 0.1 ){
-  if( GenMatching(reco_lep[SameSign[1]], gen_l_1, 0.1, 0.05) ){
+  if( GenMatching(reco_lep[SameSign[1]], gen_l_1, GENMatchingdR, GENMatchingdPt) ){
     FillHist("GEN_reco_subleading_SS_match_gen_l_1", 1, 1., 0., 2., 2);
   }
   else{
@@ -1059,27 +1218,21 @@ void trilepton_mumumu::solution_selection_stduy(std::vector<snu::KMuon> recomuon
   }
 
   //if( reco_lep[0].DeltaR(gen_l_1) < 0.1 ){
-  if( GenMatching(reco_lep[0], gen_l_1, 0.1, 0.05) ){
+  if( GenMatching(reco_lep[0], gen_l_1, GENMatchingdR, GENMatchingdPt) ){
     FillHist("GEN_reco_leading_match_gen_l_1", 1, 1., 0., 2., 2);
   }
   else{
     FillHist("GEN_reco_leading_match_gen_l_1", 0, 1., 0., 2., 2);
   }
 
-  if( gen_l_1.Charge() == gen_l_2.Charge() ){
-
-    //if( reco_lep[SameSign[0]].DeltaR(gen_l_1) < 0.1 ){
-    if( GenMatching(reco_lep[SameSign[0]], gen_l_1, 0.1, 0.05) ){
-      FillHist("l1l2SS_GEN_reco_leading_SS_match_gen_l_1", 1, 1., 0., 2., 2);
-    }
-    else{
-      FillHist("l1l2SS_GEN_reco_leading_SS_match_gen_l_1", 0, 1., 0., 2., 2);
-    }
-
-    if( gen_l_1.Pt() > gen_l_2.Pt() ) FillHist("l1l2SS_gen_l_1_leading", 1, 1., 0., 2., 2);
-    else FillHist("l1l2SS_gen_l_1_leading", 0, 1., 0., 2., 2);
-
+  //if( reco_lep[0].DeltaR(gen_l_2) < 0.1 ){
+  if( GenMatching(reco_lep[0], gen_l_2, GENMatchingdR, GENMatchingdPt) ){
+    FillHist("GEN_reco_leading_match_gen_l_2", 1, 1., 0., 2., 2);
   }
+  else{
+    FillHist("GEN_reco_leading_match_gen_l_2", 0, 1., 0., 2., 2);
+  }
+
 
 }
 
