@@ -149,9 +149,30 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     int loose_l_3_index = find_genmatching(gen_l_3, muontriLooseColl_raw, loose_used);
 
     std::vector<snu::KMuon> muontriLooseColl_genorder;
-    if(loose_l_1_index!=-1) muontriLooseColl_genorder.push_back( muontriLooseColl_raw.at(loose_l_1_index) );
-    if(loose_l_2_index!=-1) muontriLooseColl_genorder.push_back( muontriLooseColl_raw.at(loose_l_2_index) );
-    if(loose_l_3_index!=-1) muontriLooseColl_genorder.push_back( muontriLooseColl_raw.at(loose_l_3_index) );
+    if(loose_l_1_index!=-1){
+      muontriLooseColl_genorder.push_back( muontriLooseColl_raw.at(loose_l_1_index) );
+      FillHist("CH_F0", 1./muontriLooseColl_raw.at(loose_l_1_index).Pt(), 1., 0., 0.1, 100);
+      if( muontriLooseColl_raw.at(loose_l_1_index).Charge() * gen_l_1.PdgId() > 0 ){
+        FillHist("CH_F", 1./muontriLooseColl_raw.at(loose_l_1_index).Pt(), 1., 0., 0.1, 100);
+      }
+      FillHist("resPt", (gen_l_1.Pt()-muontriLooseColl_raw.at(loose_l_1_index).Pt())/muontriLooseColl_raw.at(loose_l_1_index).Pt(), 1., -1.0, 1.0, 200);
+    }
+    if(loose_l_2_index!=-1){
+      muontriLooseColl_genorder.push_back( muontriLooseColl_raw.at(loose_l_2_index) );
+      FillHist("CH_F0", 1./muontriLooseColl_raw.at(loose_l_2_index).Pt(), 1., 0., 0.1, 100);
+      if( muontriLooseColl_raw.at(loose_l_2_index).Charge() * gen_l_2.PdgId() > 0 ){
+        FillHist("CH_F", 1./muontriLooseColl_raw.at(loose_l_2_index).Pt(), 1., 0., 0.1, 100);
+      }
+      FillHist("resPt", (gen_l_2.Pt()-muontriLooseColl_raw.at(loose_l_2_index).Pt())/muontriLooseColl_raw.at(loose_l_2_index).Pt(), 1., -1.0, 1.0, 200);
+    }
+    if(loose_l_3_index!=-1){
+      muontriLooseColl_genorder.push_back( muontriLooseColl_raw.at(loose_l_3_index) );
+      FillHist("CH_F0", 1./muontriLooseColl_raw.at(loose_l_3_index).Pt(), 1., 0., 0.1, 100);
+      if( muontriLooseColl_raw.at(loose_l_3_index).Charge() * gen_l_3.PdgId() > 0 ){
+        FillHist("CH_F", 1./muontriLooseColl_raw.at(loose_l_3_index).Pt(), 1., 0., 0.1, 100);
+      }
+      FillHist("resPt", (gen_l_3.Pt()-muontriLooseColl_raw.at(loose_l_3_index).Pt())/muontriLooseColl_raw.at(loose_l_3_index).Pt(), 1., -1.0, 1.0, 200);
+    }
 
     muontriLooseColl = sort_muons_ptorder( muontriLooseColl_genorder );
 
@@ -298,12 +319,12 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   
   // reconstruct HN and W_real 4-vec with selected Pz solution
   PutNuPz(&nu_lowmass, pz_sol_lowmass[solution_selection_lowmass] );
-  // SameSign[0] : leading among SS
-  // SameSign[1] : subleading among SS
-  // [class1]
-  // HN40, HN50 - SS_leading is primary
-  // [class2]
-  // HN60       - SS_subleading is primary
+  //==== SameSign[0] : leading among SS
+  //==== SameSign[1] : subleading among SS
+  //==== [class1]
+  //==== m(HN) : 5 ~ 50 GeV - SS_leading is primary
+  //==== [class2]
+  //==== m(HN) : 60, 70 GeV - SS_subleading is primary
 
   HN[0] = lep[OppSign] + lep[SameSign[1]] + nu_lowmass; // [class1]
   HN[1] = lep[OppSign] + lep[SameSign[0]] + nu_lowmass; // [class2]
@@ -350,9 +371,9 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   W_pri_highmass = lep[0] + lep[1] + lep[2] + nu_highmass;
 
   // [class3]
-  // m(HN) : 90 ~ 700 GeV - primary lepton has larger pT
+  // m(HN) : 90 ~ 200 GeV - primary lepton has larger pT
   // [class4]
-  // m(HN) : 1000 GeV - primary lepton has smaller pT
+  // m(HN) : 300 ~ 1000 GeV - primary lepton has smaller pT
 
   W_sec = lep[l_3_index] + nu_highmass;
 
@@ -380,6 +401,15 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     cutop[8] = W_pri_lowmass.M();
     cutop[9] = W_pri_highmass.M();
     cutop[10] = weight;
+    cutop[11] = muontriLooseColl.at(0).dXY();
+    cutop[12] = muontriLooseColl.at(1).dXY();
+    cutop[13] = muontriLooseColl.at(2).dXY();
+    cutop[14] = muontriLooseColl.at(0).dZ();
+    cutop[15] = muontriLooseColl.at(1).dZ();
+    cutop[16] = muontriLooseColl.at(2).dZ();
+    cutop[17] = muontriLooseColl.at(0).RelIso04();
+    cutop[18] = muontriLooseColl.at(1).RelIso04();
+    cutop[19] = muontriLooseColl.at(2).RelIso04();
     FillNtp("cutop",cutop);
     return;
   }
@@ -533,7 +563,7 @@ void trilepton_mumumu::MakeHistograms(){
    *  Remove//Overide this trilepton_mumumuCore::MakeHistograms() to make new hists for your analysis
    **/
 
-  MakeNtp("cutop", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight");
+  MakeNtp("cutop", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:first_dXY:second_dXY:third_dXY:first_dZ:second_dZ:third_dZ:first_RelIso:second_RelIso:third_RelIso");
 
 }
 
@@ -945,6 +975,7 @@ void trilepton_mumumu::find_genparticles(){
 
     gen_l_1 = truthColl.at( gen_l_1_indices.back() );
     gen_l_2 = truthColl.at( gen_l_2_indices.back() );
+    gen_W_sec = truthColl.at( gen_W_sec_indices.back() );
     gen_l_3 = truthColl.at( gen_l_3_indices.back() );
     gen_nu = truthColl.at( gen_nu_indices.back() );
     allgenfound = true;
@@ -1065,26 +1096,29 @@ void trilepton_mumumu::solution_selection_stduy(std::vector<snu::KMuon> recomuon
     int l_3_cand = find_mlmet_closest_to_W(reco_lep_tlv, reco_MET);
 
     FillHist("GEN_highmass_reco_MET", reco_MET.Pt(), 1., 0., 120., 120);
-    FillHist("GEN_highmass_reco_Mass_lep_1_MET", (reco_lep[0] + reco_MET).M() - 80.4, 1., -60., 60., 120);
-    FillHist("GEN_highmass_reco_Mass_lep_2_MET", (reco_lep[1] + reco_MET).M() - 80.4, 1., -60., 60., 120);
-    FillHist("GEN_highmass_reco_Mass_lep_3_MET", (reco_lep[2] + reco_MET).M() - 80.4, 1., -60., 60., 120);
-
+    FillHist("GEN_highmass_MT_gen_l_1_MET", (gen_l_1 + reco_MET).M() - 80.4, 1., -60., 60., 120);
+    FillHist("GEN_highmass_MT_gen_l_2_MET", (gen_l_2 + reco_MET).M() - 80.4, 1., -60., 60., 120);
+    FillHist("GEN_highmass_MT_gen_l_3_MET", (gen_l_3 + reco_MET).M() - 80.4, 1., -60., 60., 120);
     FillHist("GEN_highmass_l_3_cand", l_3_cand, 1., 0., 3., 3);
+    FillHist("GEN_highmass_gen_W_sec_pt", gen_W_sec.Pt(), 1., 0., 1000., 1000);
+    FillHist("GEN_highmass_dR_gen_l_1_gen_nu", gen_l_1.DeltaR(gen_nu), 1., 0., 5., 50);
+    FillHist("GEN_highmass_dR_gen_l_2_gen_nu", gen_l_2.DeltaR(gen_nu), 1., 0., 5., 50);
+    FillHist("GEN_highmass_dR_gen_l_3_gen_nu", gen_l_3.DeltaR(gen_nu), 1., 0., 5., 50);
 
     //==== 1) l_1 first by pt ordering
     //==== signal_class = 3 : gen_l_1 is leading SS
-    //==== signal_class = 4 : gen_l_1 is subleading SS (m < 1000 GeV)
+    //==== signal_class = 4 : gen_l_1 is subleading SS (m >= 300 GeV)
     
     int l_1_cand = SameSign[0], l_SS_rem = SameSign[1];
     int signal_class = 3;
-    //==== pt ordering reversed for m(HN) >= 1000 GeV
-    if( GetSignalMass() == 1000 ){ //FIXME study signal class
+    //==== pt ordering reversed for m(HN) >= 300 GeV
+    if( GetSignalMass() >= 300 ){ //FIXME study signal class
       signal_class = 4;
       l_1_cand = SameSign[1];
       l_SS_rem = SameSign[0];
     }
     //if( reco_lep[l_1_cand].DeltaR(gen_l_1) < 0.1 ){
-    if( GenMatching(reco_lep[l_1_cand], gen_l_1, GENMatchingdR, GENMatchingdPt) ){
+    if( GenMatching(gen_l_1, reco_lep[l_1_cand], GENMatchingdR, GENMatchingdPt) ){
       FillHist("GEN_highmass_gen_l_1_first", 1, 1., 0., 2., 2);
 
       int l_2_cand_m1, l_3_cand_m1;
@@ -1136,10 +1170,12 @@ void trilepton_mumumu::solution_selection_stduy(std::vector<snu::KMuon> recomuon
       int l_1_cand_m2, l_2_cand_m2;
       //==== if l_3 is OS : then, use pt ordering
       if( l_3_cand == OppSign ){
+        //==== m(HN) : 90 ~ 200 GeV
         if( signal_class == 3){
           l_1_cand_m2 = SameSign[0];
           l_2_cand_m2 = SameSign[1];
         }
+        //==== m(HN) : 300 ~ 1000 GeV
         else{
           l_1_cand_m2 = SameSign[1];
           l_2_cand_m2 = SameSign[0];
@@ -1202,7 +1238,7 @@ void trilepton_mumumu::solution_selection_stduy(std::vector<snu::KMuon> recomuon
   }
 
   //if( reco_lep[SameSign[0]].DeltaR(gen_l_1) < 0.1 ){
-  if( GenMatching(reco_lep[SameSign[0]], gen_l_1, GENMatchingdR, GENMatchingdPt) ){
+  if( GenMatching(gen_l_1, reco_lep[SameSign[0]], GENMatchingdR, GENMatchingdPt) ){
     FillHist("GEN_reco_leading_SS_match_gen_l_1", 1, 1., 0., 2., 2);
   }
   else{
@@ -1210,7 +1246,7 @@ void trilepton_mumumu::solution_selection_stduy(std::vector<snu::KMuon> recomuon
   }
 
   //if( reco_lep[SameSign[1]].DeltaR(gen_l_1) < 0.1 ){
-  if( GenMatching(reco_lep[SameSign[1]], gen_l_1, GENMatchingdR, GENMatchingdPt) ){
+  if( GenMatching(gen_l_1, reco_lep[SameSign[1]], GENMatchingdR, GENMatchingdPt) ){
     FillHist("GEN_reco_subleading_SS_match_gen_l_1", 1, 1., 0., 2., 2);
   }
   else{
@@ -1218,7 +1254,7 @@ void trilepton_mumumu::solution_selection_stduy(std::vector<snu::KMuon> recomuon
   }
 
   //if( reco_lep[0].DeltaR(gen_l_1) < 0.1 ){
-  if( GenMatching(reco_lep[0], gen_l_1, GENMatchingdR, GENMatchingdPt) ){
+  if( GenMatching(gen_l_1, reco_lep[0], GENMatchingdR, GENMatchingdPt) ){
     FillHist("GEN_reco_leading_match_gen_l_1", 1, 1., 0., 2., 2);
   }
   else{
@@ -1226,7 +1262,7 @@ void trilepton_mumumu::solution_selection_stduy(std::vector<snu::KMuon> recomuon
   }
 
   //if( reco_lep[0].DeltaR(gen_l_2) < 0.1 ){
-  if( GenMatching(reco_lep[0], gen_l_2, GENMatchingdR, GENMatchingdPt) ){
+  if( GenMatching(gen_l_2, reco_lep[0], GENMatchingdR, GENMatchingdPt) ){
     FillHist("GEN_reco_leading_match_gen_l_2", 1, 1., 0., 2., 2);
   }
   else{

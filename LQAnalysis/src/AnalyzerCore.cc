@@ -2992,15 +2992,20 @@ double AnalyzerCore::solveqdeq(double W_mass, TLorentzVector l1l2l3, double MET,
   }
 }
 
-int AnalyzerCore::find_mlmet_closest_to_W(snu::KParticle lep[], snu::KParticle MET){
-  double m_diff[3];
-  for(int i=0; i<3; i++){
+int AnalyzerCore::find_mlmet_closest_to_W(snu::KParticle lep[], snu::KParticle MET, int n_lep){
+  double m_diff[n_lep];
+  double m_diff_min = 999999999.;
+  int outindex = 0;
+  for(int i=0; i<n_lep; i++){
     double dphi = lep[i].DeltaPhi(MET);
     double mt2 = 2.*lep[i].Pt()*MET.Pt()*(1.-TMath::Cos(dphi));
     m_diff[i] = fabs( sqrt(mt2) - 80.4 );
+    if( m_diff[i] < m_diff_min ){
+      m_diff_min = m_diff[i];
+      outindex = i;
+    }
   }
-  double m_diff_min = TMath::Min( m_diff[0] , TMath::Min( m_diff[1], m_diff[2] ) );
-  for(int i=0; i<3; i++) if( m_diff_min == m_diff[i] ) return i;
+  return outindex;
 
 }
 
@@ -3011,12 +3016,13 @@ double AnalyzerCore::MT(TLorentzVector a, TLorentzVector b){
 
 }
 
-bool AnalyzerCore::GenMatching(snu::KParticle a, snu::KParticle b, double maxDeltaR, double maxPtDiff){
+bool AnalyzerCore::GenMatching(snu::KParticle gen, snu::KParticle reco, double maxDeltaR, double maxPtDiff){
 
   bool matched = true;
+  if(reco.Pt() > 200) maxPtDiff = 0.10;
 
-  if( a.DeltaR(b) >= maxDeltaR ) matched = false;
-  if( fabs(a.Pt() - b.Pt()) / TMath::Min( a.Pt(), b.Pt() ) >= maxPtDiff ) matched = false;
+  if( gen.DeltaR(reco) >= maxDeltaR ) matched = false;
+  if( fabs(gen.Pt() - reco.Pt()) / reco.Pt() >= maxPtDiff ) matched = false;
 
   return matched;
 

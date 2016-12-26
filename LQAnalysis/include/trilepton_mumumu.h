@@ -29,7 +29,7 @@ class trilepton_mumumu : public AnalyzerCore {
   int n_gen_pass;
   double sol_sel_chi2_best, sol_sel_chi2_plus, sol_sel_chi2_minus, sol_sel_chi2_smaller, sol_sel_chi2_larger;
   bool allgenfound;
-  snu::KParticle gen_nu, gen_W_pri, gen_HN, gen_W_sec, gen_l_1, gen_l_2, gen_l_3;
+  snu::KTruth gen_nu, gen_W_pri, gen_HN, gen_W_sec, gen_l_1, gen_l_2, gen_l_3;
   std::vector<snu::KMuon> sort_muons_ptorder(std::vector<snu::KMuon> muons);
 
  private:
