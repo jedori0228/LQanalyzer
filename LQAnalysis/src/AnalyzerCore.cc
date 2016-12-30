@@ -3019,7 +3019,7 @@ double AnalyzerCore::MT(TLorentzVector a, TLorentzVector b){
 bool AnalyzerCore::GenMatching(snu::KParticle gen, snu::KParticle reco, double maxDeltaR, double maxPtDiff){
 
   bool matched = true;
-  if(reco.Pt() > 200) maxPtDiff = 0.10;
+  if(reco.Pt() > 200.) maxPtDiff = 0.1;
 
   if( gen.DeltaR(reco) >= maxDeltaR ) matched = false;
   if( fabs(gen.Pt() - reco.Pt()) / reco.Pt() >= maxPtDiff ) matched = false;

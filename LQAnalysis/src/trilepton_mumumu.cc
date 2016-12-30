@@ -371,9 +371,9 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   W_pri_highmass = lep[0] + lep[1] + lep[2] + nu_highmass;
 
   // [class3]
-  // m(HN) : 90 ~ 200 GeV - primary lepton has larger pT
+  // m(HN) : 90 ~ 1000 GeV - primary lepton has larger pT
   // [class4]
-  // m(HN) : 300 ~ 1000 GeV - primary lepton has smaller pT
+  // m(HN) > 1000 GeV - primary lepton has smaller pT
 
   W_sec = lep[l_3_index] + nu_highmass;
 
@@ -1107,12 +1107,12 @@ void trilepton_mumumu::solution_selection_stduy(std::vector<snu::KMuon> recomuon
 
     //==== 1) l_1 first by pt ordering
     //==== signal_class = 3 : gen_l_1 is leading SS
-    //==== signal_class = 4 : gen_l_1 is subleading SS (m >= 300 GeV)
+    //==== signal_class = 4 : gen_l_1 is subleading SS (m > 1000 GeV)
     
     int l_1_cand = SameSign[0], l_SS_rem = SameSign[1];
     int signal_class = 3;
-    //==== pt ordering reversed for m(HN) >= 300 GeV
-    if( GetSignalMass() >= 300 ){ //FIXME study signal class
+    //==== pt ordering reversed for m(HN) > 1000 GeV
+    if( GetSignalMass() > 1000 ){ //FIXME study signal class
       signal_class = 4;
       l_1_cand = SameSign[1];
       l_SS_rem = SameSign[0];
@@ -1212,8 +1212,9 @@ void trilepton_mumumu::solution_selection_stduy(std::vector<snu::KMuon> recomuon
   FillHist("GEN_gen_nu_Pt", gen_nu.Pt(), 1., 0., 1500., 1500);
  
   snu::KParticle gen_l_SS;
-  if( gen_l_1.Charge() == gen_l_2.Charge() ) gen_l_SS = gen_l_2;
+  if( gen_l_1.PdgId() == gen_l_2.PdgId() ) gen_l_SS = gen_l_2;
   else gen_l_SS = gen_l_3;
+  FillHist("GEN_gen_SS_Pt", gen_l_SS.Pt(), 1., 0., 1500., 1500);
 
   //==== gen_l_1 : leadingSS
   if( gen_l_1.Pt() > gen_l_SS.Pt() ){
@@ -1240,6 +1241,13 @@ void trilepton_mumumu::solution_selection_stduy(std::vector<snu::KMuon> recomuon
   //if( reco_lep[SameSign[0]].DeltaR(gen_l_1) < 0.1 ){
   if( GenMatching(gen_l_1, reco_lep[SameSign[0]], GENMatchingdR, GENMatchingdPt) ){
     FillHist("GEN_reco_leading_SS_match_gen_l_1", 1, 1., 0., 2., 2);
+    //cout << "=======================================" << endl;
+    //cout << "== gen_l_1 is matched to leading SS  ==" << endl;
+    //cout << gen_l_1.Pt() << '\t' << gen_l_1.PdgId()/-13 << endl;
+    //cout << gen_l_2.Pt() << '\t' << gen_l_2.PdgId()/-13 << endl;
+    //cout << gen_l_3.Pt() << '\t' << gen_l_3.PdgId()/-13 << endl;
+    //cout << reco_lep[SameSign[0]].Pt() << '\t' << reco_lep[SameSign[0]].Charge() << endl;
+    //cout << reco_lep[SameSign[1]].Pt() << '\t' << reco_lep[SameSign[0]].Charge() << endl;
   }
   else{
     FillHist("GEN_reco_leading_SS_match_gen_l_1", 0, 1., 0., 2., 2); 
