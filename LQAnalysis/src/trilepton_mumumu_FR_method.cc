@@ -262,9 +262,16 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   } // Find l2 and assign l1&l3 in ptorder 
   FillCutFlow("2SS1OS", 1.);
 
-  // MC samples has m(OS)_saveflavour > 4 GeV cut at gen level
-  // MADGRAPH : https://github.com/cms-sw/genproductions/blob/master/bin/MadGraph5_aMCatNLO/cards/production/13TeV/WZTo3LNu01j_5f_NLO_FXFX/WZTo3LNu01j_5f_NLO_FXFX_run_card.dat#L130
-  // POWHEG   : https://github.com/cms-sw/genproductions/blob/master/bin/Powheg/production/WZTo3lNu_NNPDF30_13TeV/WZ_lllnu_NNPDF30_13TeV.input#L2
+  FillHist("lowosllmass", ( lep[OppSign]+lep[SameSign[0]] ).M(), 1., 0., 20., 200);
+  FillHist("lowosllmass", ( lep[OppSign]+lep[SameSign[1]] ).M(), 1., 0., 20., 200);
+  FillHist("lowssllmass", ( lep[SameSign[0]]+lep[SameSign[1]] ).M(), 1., 0., 20., 200);
+  FillHist("lowllmass", ( lep[OppSign]+lep[SameSign[0]] ).M(), 1., 0., 20., 200);
+  FillHist("lowllmass", ( lep[OppSign]+lep[SameSign[1]] ).M(), 1., 0., 20., 200);
+  FillHist("lowllmass", ( lep[SameSign[0]]+lep[SameSign[1]] ).M(), 1., 0., 20., 200);
+
+  //==== MC samples has m(OS)_saveflavour > 4 GeV cut at gen level
+  //==== MADGRAPH : https://github.com/cms-sw/genproductions/blob/master/bin/MadGraph5_aMCatNLO/cards/production/13TeV/WZTo3LNu01j_5f_NLO_FXFX/WZTo3LNu01j_5f_NLO_FXFX_run_card.dat#L130
+  //==== POWHEG   : https://github.com/cms-sw/genproductions/blob/master/bin/Powheg/production/WZTo3lNu_NNPDF30_13TeV/WZ_lllnu_NNPDF30_13TeV.input#L2
   if( (lep[SameSign[0]]+lep[OppSign]).M() <= 4. ||
       (lep[SameSign[1]]+lep[OppSign]).M() <= 4.     ) return;
   FillCutFlow("mllsf4", 1.);
@@ -376,13 +383,24 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
     cutop[8] = W_pri_lowmass.M();
     cutop[9] = W_pri_highmass.M();
     cutop[10] = weight;
+    cutop[11] = muontriLooseColl.at(0).dXY();
+    cutop[12] = muontriLooseColl.at(1).dXY();
+    cutop[13] = muontriLooseColl.at(2).dXY();
+    cutop[14] = muontriLooseColl.at(0).dZ();
+    cutop[15] = muontriLooseColl.at(1).dZ();
+    cutop[16] = muontriLooseColl.at(2).dZ();
+    cutop[17] = muontriLooseColl.at(0).RelIso04();
+    cutop[18] = muontriLooseColl.at(1).RelIso04();
+    cutop[19] = muontriLooseColl.at(2).RelIso04();
+    cutop[20] = W_sec.M();
+
     FillNtp("cutop",cutop);
     return;
   }
 
   bool is_deltaR_OS_min_0p5 = deltaR_OS_min > 0.5;
-  bool is_W_pri_lowmass_150 = W_pri_lowmass.M() < 300.;
-  bool is_W_pri_highmass_200 = W_pri_highmass.M() > 100.;
+  bool isLowMass = W_pri_lowmass.M() < 150.;
+  bool isHighMass = W_sec.M() < 200.;
 
   FillUpDownHist("HN_mass_class1_cut0", HN[0].M(), weight, weight_err, 0., 2000., 2000);
   FillUpDownHist("HN_mass_class2_cut0", HN[1].M(), weight, weight_err, 0., 2000., 2000);
@@ -390,6 +408,7 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   FillUpDownHist("HN_mass_class4_cut0", HN[3].M(), weight, weight_err, 0, 2000, 2000);
   FillUpDownHist("W_pri_lowmass_mass_cut0", W_pri_lowmass.M(), weight, weight_err, 0., 2000., 2000);
   FillUpDownHist("W_pri_highmass_mass_cut0", W_pri_highmass.M(), weight, weight_err, 0, 2000, 2000);
+  FillUpDownHist("W_sec_highmass_mass_cut0", W_sec.M(), weight, weight_err, 0., 2000., 2000);
   FillUpDownHist("deltaR_OS_min_cut0", deltaR_OS_min, weight, weight_err, 0, 5, 50);
   FillUpDownHist("gamma_star_mass_cut0", gamma_star.M(), weight, weight_err, 0., 200., 200);
   FillUpDownHist("z_candidate_mass_cut0", z_candidate.M(), weight, weight_err, 0., 200., 200);
@@ -399,13 +418,14 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   FillCLHist(trilephist, "cut0_down", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_hn, weight-weight_err);
   FillCLHist(trilephist, "cut0", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_hn, weight);
 
-  if( is_W_pri_lowmass_150 ){
+  if( isLowMass ){
     FillUpDownHist("HN_mass_class1_cutWlow", HN[0].M(), weight, weight_err, 0., 2000., 2000);
     FillUpDownHist("HN_mass_class2_cutWlow", HN[1].M(), weight, weight_err, 0., 2000., 2000);
     FillUpDownHist("HN_mass_class3_cutWlow", HN[2].M(), weight, weight_err, 0, 2000, 2000);
     FillUpDownHist("HN_mass_class4_cutWlow", HN[3].M(), weight, weight_err, 0, 2000, 2000);
     FillUpDownHist("W_pri_lowmass_mass_cutWlow", W_pri_lowmass.M(), weight, weight_err, 0., 2000., 2000);
     FillUpDownHist("W_pri_highmass_mass_cutWlow", W_pri_highmass.M(), weight, weight_err, 0, 2000, 2000);
+    FillUpDownHist("W_sec_highmass_mass_cutWlow", W_sec.M(), weight, weight_err, 0., 2000., 2000);
     FillUpDownHist("deltaR_OS_min_cutWlow", deltaR_OS_min, weight, weight_err, 0, 5, 50);
     FillUpDownHist("gamma_star_mass_cutWlow", gamma_star.M(), weight, weight_err, 0., 200., 200);
     FillUpDownHist("z_candidate_mass_cutWlow", z_candidate.M(), weight, weight_err, 0., 200., 200);
@@ -416,13 +436,14 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
     FillCLHist(trilephist, "cutWlow", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_hn, weight);
   }
 
-  if( is_W_pri_highmass_200 ){
+  if( isHighMass ){
     FillUpDownHist("HN_mass_class1_cutWhigh", HN[0].M(), weight, weight_err, 0., 2000., 2000);
     FillUpDownHist("HN_mass_class2_cutWhigh", HN[1].M(), weight, weight_err, 0., 2000., 2000);
     FillUpDownHist("HN_mass_class3_cutWhigh", HN[2].M(), weight, weight_err, 0, 2000, 2000);
     FillUpDownHist("HN_mass_class4_cutWhigh", HN[3].M(), weight, weight_err, 0, 2000, 2000);
     FillUpDownHist("W_pri_lowmass_mass_cutWhigh", W_pri_lowmass.M(), weight, weight_err, 0., 2000., 2000);
     FillUpDownHist("W_pri_highmass_mass_cutWhigh", W_pri_highmass.M(), weight, weight_err, 0, 2000, 2000);
+    FillUpDownHist("W_sec_highmass_mass_cutWhigh", W_sec.M(), weight, weight_err, 0., 2000., 2000);
     FillUpDownHist("deltaR_OS_min_cutWhigh", deltaR_OS_min, weight, weight_err, 0, 5, 50);
     FillUpDownHist("gamma_star_mass_cutWhigh", gamma_star.M(), weight, weight_err, 0., 200., 200);
     FillUpDownHist("z_candidate_mass_cutWhigh", z_candidate.M(), weight, weight_err, 0., 200., 200);
@@ -512,7 +533,7 @@ void trilepton_mumumu_FR_method::MakeHistograms(){
    *  Remove//Overide this trilepton_mumumu_FR_methodCore::MakeHistograms() to make new hists for your analysis
    **/
 
-  MakeNtp("cutop", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight");
+  MakeNtp("cutop", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:first_dXY:second_dXY:third_dXY:first_dZ:second_dZ:third_dZ:first_RelIso:second_RelIso:third_RelIso:W_sec_highmass_mass");
 
 }
 
