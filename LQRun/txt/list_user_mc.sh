@@ -42,6 +42,12 @@ declare -a trilep_bkg=(
 'ttH_nonbb'
 'WGtoLNuG' 'WGtoLNuMM' 'ZGto2LG'
 )
+declare -a trilep_nonprompt_bkg=(
+'DYJets_10to50' 'DYJets' 'WJets' 'TTJets_aMC'
+)
+declare -a trilep_diboson_had=(
+'WZ' 'ZZ' 'WW'
+)
 #declare -a trilep_signal=('HN40_mumumu_VmuN_0p1' 'HN60_mumumu_VmuN_0p1' 'HN150_mumumu_VmuN_0p1' 'HN700_mumumu_VmuN_0p1')
 declare -a trilep_signal=(
 'HN_MuMuMu_5'
