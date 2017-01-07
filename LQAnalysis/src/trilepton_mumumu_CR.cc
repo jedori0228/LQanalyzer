@@ -111,6 +111,7 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   double this_RelIso = 0.4;
 
   bool DoMCClosure = std::find(k_flags.begin(), k_flags.end(), "MCClosure") != k_flags.end();
+  bool DoKeepFake = std::find(k_flags.begin(), k_flags.end(), "DoKeepFake") != k_flags.end();
 
   //==== Gen Matching is not done correctly for my private samples..
   if( k_sample_name.Contains("HN") ){
@@ -121,6 +122,10 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
     std::vector<snu::KMuon> muontriLooseColl_prompt = GetHNTriMuonsByLooseRelIso(this_RelIso, false);
     if(muontriLooseColl_prompt.size()==2) return;
 
+    muontriLooseColl = GetHNTriMuonsByLooseRelIso(this_RelIso, true);
+  }
+  //==== non-prompt : keep fake
+  else if( DoKeepFake ){
     muontriLooseColl = GetHNTriMuonsByLooseRelIso(this_RelIso, true);
   }
   //==== For Prompt MC, collect prompt muons
