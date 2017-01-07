@@ -68,7 +68,9 @@ void trilepton_mumumu_ntp_FR_method::InitialiseAnalysis() throw( LQError ) {
 
   str_dXYCut = str_dXYCut+"_"+str_iso;
 
-  TFile *file_FR = new TFile("/home/jskim/LQAnalyzer_rootfiles_for_analysis/FRs.root");
+  TString rootfilepath = getenv("JSKIMROOTFILES");
+  TFile *file_FR = new TFile(rootfilepath+"/FRs.root");
+
   hist_trimuon_FR = (TH2D*)file_FR->Get(str_dXYCut+"_FR");
   hist_trimuon_FRSF_QCD = (TH2D*)file_FR->Get(str_dXYCut+"_FRSF_QCD");
   //==== multiply SF
