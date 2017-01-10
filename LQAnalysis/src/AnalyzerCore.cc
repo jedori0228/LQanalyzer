@@ -2999,7 +2999,7 @@ int AnalyzerCore::find_mlmet_closest_to_W(snu::KParticle lep[], snu::KParticle M
   for(int i=0; i<n_lep; i++){
     double dphi = lep[i].DeltaPhi(MET);
     double mt2 = 2.*lep[i].Pt()*MET.Pt()*(1.-TMath::Cos(dphi));
-    m_diff[i] = fabs( sqrt(mt2) - 80.4 );
+    m_diff[i] = fabs( sqrt(mt2) - 80.385 );
     if( m_diff[i] < m_diff_min ){
       m_diff_min = m_diff[i];
       outindex = i;

@@ -15,6 +15,8 @@ sktree_bkg -a trilepton_mumumu_CR -S DoubleMuon -s SKTree_DiLepSkim -n 100
 sktree_bkg -a trilepton_mumumu_CR -list trilep_CR_bkg -s SKTree_DiLepSkim -n 100
 sktree_bkg -a trilepton_mumumu_CR -list trilep_signal -s SKTree_LeptonSkim -n 100
 sktree_bkg -a trilepton_mumumu_CR_FR_method -S DoubleMuon -s SKTree_DiLepSkim -n 100
+sktree_bkg -a trilepton_mumumu_CR -i WZ -s SKTree_DiLepSkim -n 100
+sktree_bkg -a trilepton_mumumu_CR -i ZZ -s SKTree_DiLepSkim -n 100
 
 ##### FR MC Closure #####
 sktree_bkg -a trilepton_mumumu_CR -list FR_MC_Closure -s SKTree_DiLepSkim -n 100 -userflag MCClosure -o /data2/CAT_SKTreeOutput/JobOutPut/jskim/LQanalyzer/data/output/CAT/FR_MC_Closure/periodBtoG/

@@ -24,6 +24,7 @@ class trilepton_mumumu_ntp : public AnalyzerCore {
   void solution_selection_stduy(std::vector<snu::KMuon> recomuons);
   void find_decay(std::vector<snu::KTruth> truthcoll, int target_index, std::vector<int>& indices);
   void print_all_indices(TString particle, std::vector<int> vec);
+  int GetSignalMass();
   int n_gen_pass;
   double sol_sel_chi2_best, sol_sel_chi2_plus, sol_sel_chi2_minus, sol_sel_chi2_smaller, sol_sel_chi2_larger;
   bool allgenfound;

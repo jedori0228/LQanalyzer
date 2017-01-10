@@ -144,19 +144,13 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
  // CorrectMuonMomentum(muonTightColl);
   //float muon_id_iso_sf= MuonScaleFactor(BaseSelection::MUON_POG_TIGHT, muonTightColl,0); ///MUON_POG_TIGHT == MUON_HN_TIGHT
 
-  /// List of preset jet collections : NoLeptonVeto/Loose/Medium/Tight/TightLepVeto/HNJets
-  std::vector<snu::KJet> jetColl_hn = GetJets("JET_HN");// pt > 20 ; eta < 2.5; PFlep veto; pileup ID
+  std::vector<snu::KJet> jetColl_hn_lowestPtCut = GetJets("JET_HN", true, 20., 2.4);
   
-  FillHist("Njets", jetColl_hn.size() ,weight, 0. , 5., 5);
-
   /// can call POGVeto/POGLoose/POGMedium/POGTight/ HNVeto/HNLoose/HNTight/NoCut/NoCutPtEta 
   std::vector<snu::KElectron> electronColl             = GetElectrons(BaseSelection::ELECTRON_POG_TIGHT);
   std::vector<snu::KElectron> electronLooseColl        = GetElectrons(BaseSelection::ELECTRON_POG_LOOSE);
 
   //float weight_trigger_sf = TriggerScaleFactor(electronColl, muonTightColl, "HLT_IsoMu20");
-
-  int njet = jetColl_hn.size();
-  FillHist("GenWeight_NJet" , njet*MCweight + MCweight*0.1, 1., -6. , 6., 12);
 
   numberVertices = eventbase->GetEvent().nVertices();
 
@@ -220,6 +214,39 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     else{
       Message("it_sys out of range!" , INFO);
       return;
+    }
+
+    //==== Jet
+    std::vector<snu::KJet> jetColl_hn;
+    if(this_syst == "JetEn_up"){
+      for(unsigned int i=0; i<jetColl_hn_lowestPtCut.size(); i++){
+        snu::KJet this_jet = jetColl_hn_lowestPtCut.at(i);
+        double this_E = this_jet.E()*this_jet.ScaledUpEnergy();
+        double this_3p = sqrt(this_E*this_E-this_jet.M()*this_jet.M());
+        double this_3p_sf = this_3p/this_jet.P();
+        this_jet.SetPxPyPzE( this_3p_sf*this_jet.Px(), this_3p_sf*this_jet.Py(), this_3p_sf*this_jet.Pz(), this_E);
+        if(this_jet.Pt() >= 30.) jetColl_hn.push_back(this_jet);
+      }
+    }
+    else if(this_syst == "JetEn_down"){
+      for(unsigned int i=0; i<jetColl_hn_lowestPtCut.size(); i++){
+        snu::KJet this_jet = jetColl_hn_lowestPtCut.at(i);
+        double this_E = this_jet.E()*this_jet.ScaledDownEnergy();
+        double this_3p = sqrt(this_E*this_E-this_jet.M()*this_jet.M());
+        double this_3p_sf = this_3p/this_jet.P();
+        this_jet.SetPxPyPzE( this_3p_sf*this_jet.Px(), this_3p_sf*this_jet.Py(), this_3p_sf*this_jet.Pz(), this_E);
+        if(this_jet.Pt() >= 30.) jetColl_hn.push_back(this_jet);
+      }
+    }
+    else{
+      for(unsigned int i=0; i<jetColl_hn_lowestPtCut.size(); i++){
+        snu::KJet this_jet = jetColl_hn_lowestPtCut.at(i);
+        if(this_jet.Pt() >= 30.) jetColl_hn.push_back(this_jet);
+      }
+    }
+    int n_bjets=0;
+    for(int j=0; j<jetColl_hn.size(); j++){
+      if(jetColl_hn.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Tight)) n_bjets++;
     }
 
     //==== Muon
@@ -435,6 +462,48 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
         HN[3] = W_sec + lep[OppSign]; // [class4]
     }
 
+    if(n_bjets>0) continue;
+
+    bool VetoZResonance = fabs(z_candidate.M()-91.1876) > 15.;
+    bool UseZResonance = fabs(z_candidate.M()-91.1876) < 10.;
+
+    double m_dimuon[2], m_Z = 91.1876;
+    m_dimuon[0] = ( lep[SameSign[0]] + lep[OppSign] ).M();
+    m_dimuon[1] = ( lep[SameSign[1]] + lep[OppSign] ).M();
+
+    snu::KParticle Z_candidate;
+    snu::KParticle ZMuon, WMuon;
+    if( fabs(m_dimuon[0]-m_Z) < fabs(m_dimuon[1]-m_Z) ){
+      Z_candidate = lep[SameSign[0]] + lep[OppSign];
+      ZMuon = lep[SameSign[0]];
+      WMuon = lep[SameSign[1]];
+    }
+    else{
+      Z_candidate = lep[SameSign[1]] + lep[OppSign];
+      ZMuon = lep[SameSign[1]];
+      WMuon = lep[SameSign[0]];
+    }
+
+    snu::KParticle ZMuon_leading, ZMuon_subleading;
+    if( ZMuon.Pt() > lep[OppSign].Pt() ){
+      ZMuon_leading = ZMuon;
+      ZMuon_subleading = lep[OppSign];
+    }
+    else{
+      ZMuon_leading = lep[OppSign];
+      ZMuon_subleading = ZMuon;
+    }
+
+    bool ZMuonPtCut = (ZMuon.Pt() > 20.) || (lep[OppSign].Pt() > 20.);
+    bool PtCutOnWMuon = (WMuon.Pt() > 20.);
+    bool METCut = (MET > 30.);
+    bool mlllCut = ((lep[SameSign[0]]+lep[SameSign[1]]+lep[OppSign]).M() > 100.);
+    bool electronveto = (electronLooseColl.size() == 0);
+    
+    bool isPreselection = VetoZResonance;
+    bool isWZ = ZMuonPtCut && UseZResonance && PtCutOnWMuon && METCut && mlllCut && electronveto;
+    bool isZJets = ZMuonPtCut && UseZResonance && (MET < 20.) && mlllCut && electronveto;
+
     double cutop[100];
     cutop[0] = muontriLooseColl.at(0).Pt();
     cutop[1] = muontriLooseColl.at(1).Pt();
@@ -447,6 +516,13 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     cutop[8] = W_pri_lowmass.M();
     cutop[9] = W_pri_highmass.M();
     cutop[10] = this_weight;
+    cutop[11] = W_sec.M();
+    cutop[12] = MET;
+    cutop[13] = this_weight_err;
+    cutop[14] = isPreselection;
+    cutop[15] = isWZ;
+    cutop[16] = isZJets;
+
     FillNtp("Ntp_"+this_syst,cutop);
 
   }
@@ -529,15 +605,15 @@ void trilepton_mumumu_ntp_FR_method::MakeHistograms(){
    *  Remove//Overide this trilepton_mumumu_ntp_FR_methodCore::MakeHistograms() to make new hists for your analysis
    **/
 
-  MakeNtp("Ntp_MuonEn_up", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight");
-  MakeNtp("Ntp_MuonEn_down", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight");
-  MakeNtp("Ntp_JetEn_up", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight");
-  MakeNtp("Ntp_JetEn_down", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight");
-  MakeNtp("Ntp_JetRes_up", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight");
-  MakeNtp("Ntp_JetRes_down", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight");
-  MakeNtp("Ntp_Unclustered_up", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight");
-  MakeNtp("Ntp_Unclustered_down", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight");
-  MakeNtp("Ntp_Central", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight");
+  MakeNtp("Ntp_MuonEn_up", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets");
+  MakeNtp("Ntp_MuonEn_down", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets");
+  MakeNtp("Ntp_JetEn_up", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets");
+  MakeNtp("Ntp_JetEn_down", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets");
+  MakeNtp("Ntp_JetRes_up", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets");
+  MakeNtp("Ntp_JetRes_down", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets");
+  MakeNtp("Ntp_Unclustered_up", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets");
+  MakeNtp("Ntp_Unclustered_down", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets");
+  MakeNtp("Ntp_Central", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets");
 
 }
 

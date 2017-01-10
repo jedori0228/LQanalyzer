@@ -198,7 +198,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   //muon_id_iso_sf *= MuonISOScaleFactor(BaseSelection::MUON_POG_TIGHT, muontriTightColl, 0);
 
   /// List of preset jet collections : NoLeptonVeto/Loose/Medium/Tight/TightLepVeto/HNJets
-  std::vector<snu::KJet> jetColl_hn = GetJets("JET_HN");// pt > 20 ; eta < 2.5; PFlep veto; pileup ID
+  std::vector<snu::KJet> jetColl_hn = GetJets("JET_HN", true, 30., 2.4);
 
   FillHist("Njets", jetColl_hn.size() ,weight, 0. , 5., 5);
 
@@ -210,6 +210,14 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
 
   int njet = jetColl_hn.size();
   FillHist("GenWeight_NJet" , njet*MCweight + MCweight*0.1, 1., -6. , 6., 12);
+
+  int n_bjets=0;
+  for(int j=0; j<njet; j++){
+    if(jetColl_hn.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Tight)){
+      n_bjets++;
+      FillHist("TEST_bjet_pt", jetColl_hn.at(j).Pt(), 1., 0., 200., 200);
+    }
+  }
 
   numberVertices = eventbase->GetEvent().nVertices();
 
@@ -236,7 +244,6 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     if(muontriLooseColl.at(i).RelIso04() < 0.1) n_triTight_muons++;
   }
   int n_triLoose_muons = muontriLooseColl.size();
-  int n_jets = jetColl_hn.size();
 
   //==== ppp to TTL/TLL/LLL ?
   if(!k_isdata){
@@ -244,8 +251,6 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
       FillHist("PPP_nTight", n_triTight_muons, weight, 0., 4., 4);
     }
   }
-
-  FillHist("GenWeight_NJet" , n_jets*MCweight + MCweight*0.1, 1., -6. , 6., 12);
 
   FillHist("n_loose_muon", n_triLoose_muons, 1., 0., 10., 10);
   FillHist("n_tight_muon", n_triTight_muons, 1., 0., 10., 10);
@@ -309,10 +314,10 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   snu::KParticle W_pri_lowmass, nu_lowmass, gamma_star, z_candidate;
   nu_lowmass.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET);
   double pz_sol_lowmass[2];
-  pz_sol_lowmass[0] = solveqdeq(80.4, lep[0]+lep[1]+lep[2], MET, METphi, "m"); // 0 = minus
-  pz_sol_lowmass[1] = solveqdeq(80.4, lep[0]+lep[1]+lep[2], MET, METphi, "p"); // 1 = plus
-  //PutNuPz(&selection_nu[0], solveqdeq(80.4, lep[0]+lep[1]+lep[2], MET, METphi, "m"));
-  //PutNuPz(&selection_nu[1], solveqdeq(80.4, lep[0]+lep[1]+lep[2], MET, METphi, "p")); // 0 = minus, 1 = plus
+  pz_sol_lowmass[0] = solveqdeq(80.385, lep[0]+lep[1]+lep[2], MET, METphi, "m"); // 0 = minus
+  pz_sol_lowmass[1] = solveqdeq(80.385, lep[0]+lep[1]+lep[2], MET, METphi, "p"); // 1 = plus
+  //PutNuPz(&selection_nu[0], solveqdeq(80.385, lep[0]+lep[1]+lep[2], MET, METphi, "m"));
+  //PutNuPz(&selection_nu[1], solveqdeq(80.385, lep[0]+lep[1]+lep[2], MET, METphi, "p")); // 0 = minus, 1 = plus
 
   int solution_selection_lowmass = 0;
   if( pz_sol_lowmass[0] != pz_sol_lowmass[1] ){
@@ -362,8 +367,8 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   nu_highmass.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET);
   int l_3_index = find_mlmet_closest_to_W(lep, nu_highmass);
   double pz_sol_highmass[2]; 
-  pz_sol_highmass[0] = solveqdeq(80.4, lep[l_3_index], MET, METphi, "m"); // 0 = minus
-  pz_sol_highmass[1] = solveqdeq(80.4, lep[l_3_index], MET, METphi, "p"); // 1 = plus
+  pz_sol_highmass[0] = solveqdeq(80.385, lep[l_3_index], MET, METphi, "m"); // 0 = minus
+  pz_sol_highmass[1] = solveqdeq(80.385, lep[l_3_index], MET, METphi, "p"); // 1 = plus
   int solution_selection_highmass = 0;
   if( pz_sol_highmass[0] != pz_sol_highmass[1] ){ 
     // take the one with smaller magnitude
@@ -393,6 +398,15 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
       HN[3] = W_sec + lep[OppSign]; // [class4]
   }
 
+  bool VetoZResonance = fabs(z_candidate.M()-91.1876) > 15.;
+  if(!VetoZResonance) return;
+  FillCutFlow("ZVeto", 1.);
+
+  if(n_bjets>0) return;
+  FillCutFlow("bjetVeto", 1.);
+
+  //==== preselection is done
+
   if(DoCutOp){
     double cutop[100];
     cutop[0] = muontriLooseColl.at(0).Pt();
@@ -416,13 +430,15 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     cutop[18] = muontriLooseColl.at(1).RelIso04();
     cutop[19] = muontriLooseColl.at(2).RelIso04();
     cutop[20] = W_sec.M();
+    cutop[21] = MET;
+    cutop[22] = 0.; // weight_err
+
     FillNtp("cutop",cutop);
     return;
   }
 
-  bool is_deltaR_OS_min_0p5 = deltaR_OS_min > 0.5;
-  bool isLowMass = W_pri_lowmass.M() < 150.;
-  bool isHighMass = W_sec.M() < 200.;
+  bool isLowMass = (W_pri_lowmass.M() < 150.);
+  bool isHighMass = (MET > 20.);
 
   FillHist("HN_mass_class1_cut0", HN[0].M(), weight, 0., 2000., 2000);
   FillHist("HN_mass_class2_cut0", HN[1].M(), weight, 0., 2000., 2000);
@@ -434,7 +450,6 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   FillHist("deltaR_OS_min_cut0", deltaR_OS_min, weight, 0., 5., 50);
   FillHist("gamma_star_mass_cut0", gamma_star.M(), weight, 0., 200., 200);
   FillHist("z_candidate_mass_cut0", z_candidate.M(), weight, 0., 200., 200);
-  FillHist("n_jets_cut0", n_jets, weight, 0., 10., 10);
   FillCLHist(trilephist, "cut0", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_hn, weight);
   FillHist("n_events_cut0", 0, weight, 0., 1., 1);
 
@@ -449,7 +464,6 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     FillHist("deltaR_OS_min_cutWlow", deltaR_OS_min, weight, 0., 5., 50);
     FillHist("gamma_star_mass_cutWlow", gamma_star.M(), weight, 0., 200., 200);
     FillHist("z_candidate_mass_cutWlow", z_candidate.M(), weight, 0., 200., 200);
-    FillHist("n_jets_cutWlow", n_jets, weight, 0., 10., 10);
     FillCLHist(trilephist, "cutWlow", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_hn, weight);
     FillHist("n_events_cutWlow", 0, weight, 0., 1., 1);
   }
@@ -465,7 +479,6 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     FillHist("deltaR_OS_min_cutWhigh", deltaR_OS_min, weight, 0., 5., 50);
     FillHist("gamma_star_mass_cutWhigh", gamma_star.M(), weight, 0., 200., 200);
     FillHist("z_candidate_mass_cutWhigh", z_candidate.M(), weight, 0., 200., 200);
-    FillHist("n_jets_cutWhigh", n_jets, weight, 0., 10., 10);
     FillCLHist(trilephist, "cutWhigh", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_hn, weight);
     FillHist("n_events_cutWhigh", 0, weight, 0., 1., 1);
   }
@@ -539,7 +552,7 @@ void trilepton_mumumu::FillCutFlow(TString cut, float weight){
    
   }
   else{
-    AnalyzerCore::MakeHistograms("cutflow", 7,0.,7.);
+    AnalyzerCore::MakeHistograms("cutflow", 9,0.,9.);
 
     GetHist("cutflow")->GetXaxis()->SetBinLabel(1,"NoCut");
     GetHist("cutflow")->GetXaxis()->SetBinLabel(2,"EventCut");
@@ -548,6 +561,8 @@ void trilepton_mumumu::FillCutFlow(TString cut, float weight){
     GetHist("cutflow")->GetXaxis()->SetBinLabel(5,"3muon");
     GetHist("cutflow")->GetXaxis()->SetBinLabel(6,"2SS1OS"); 
     GetHist("cutflow")->GetXaxis()->SetBinLabel(7,"mllsf4");
+    GetHist("cutflow")->GetXaxis()->SetBinLabel(8,"ZVeto");
+    GetHist("cutflow")->GetXaxis()->SetBinLabel(9,"bjetVeto");
     
   }
 }
@@ -572,7 +587,7 @@ void trilepton_mumumu::MakeHistograms(){
    *  Remove//Overide this trilepton_mumumuCore::MakeHistograms() to make new hists for your analysis
    **/
 
-  MakeNtp("cutop", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:first_dXY:second_dXY:third_dXY:first_dZ:second_dZ:third_dZ:first_RelIso:second_RelIso:third_RelIso:W_sec_highmass_mass");
+  MakeNtp("cutop", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:first_dXY:second_dXY:third_dXY:first_dZ:second_dZ:third_dZ:first_RelIso:second_RelIso:third_RelIso:W_sec_highmass_mass:PFMET:weight_err");
 
 }
 
@@ -1046,8 +1061,8 @@ void trilepton_mumumu::solution_selection_stduy(std::vector<snu::KMuon> recomuon
 
     //==== solution selection
     double pz_sol_lowmass[2];
-    pz_sol_lowmass[0] = solveqdeq(80.4, reco_lep[0]+reco_lep[1]+reco_lep[2], MET, METphi, "m"); // 0 = minus
-    pz_sol_lowmass[1] = solveqdeq(80.4, reco_lep[0]+reco_lep[1]+reco_lep[2], MET, METphi, "p"); // 1 = plus
+    pz_sol_lowmass[0] = solveqdeq(80.385, reco_lep[0]+reco_lep[1]+reco_lep[2], MET, METphi, "m"); // 0 = minus
+    pz_sol_lowmass[1] = solveqdeq(80.385, reco_lep[0]+reco_lep[1]+reco_lep[2], MET, METphi, "p"); // 1 = plus
     if( pz_sol_lowmass[0] != pz_sol_lowmass[1] ){
       n_gen_pass++;
       int best_sel = fabs(pz_sol_lowmass[0]-gen_nu.Pz()) < fabs(pz_sol_lowmass[1]-gen_nu.Pz()) ? 0 : 1;
@@ -1105,9 +1120,9 @@ void trilepton_mumumu::solution_selection_stduy(std::vector<snu::KMuon> recomuon
     int l_3_cand = find_mlmet_closest_to_W(reco_lep_tlv, reco_MET);
 
     FillHist("GEN_highmass_reco_MET", reco_MET.Pt(), 1., 0., 120., 120);
-    FillHist("GEN_highmass_MT_gen_l_1_MET", (gen_l_1 + reco_MET).M() - 80.4, 1., -60., 60., 120);
-    FillHist("GEN_highmass_MT_gen_l_2_MET", (gen_l_2 + reco_MET).M() - 80.4, 1., -60., 60., 120);
-    FillHist("GEN_highmass_MT_gen_l_3_MET", (gen_l_3 + reco_MET).M() - 80.4, 1., -60., 60., 120);
+    FillHist("GEN_highmass_MT_gen_l_1_MET", (gen_l_1 + reco_MET).M() - 80.385, 1., -60., 60., 120);
+    FillHist("GEN_highmass_MT_gen_l_2_MET", (gen_l_2 + reco_MET).M() - 80.385, 1., -60., 60., 120);
+    FillHist("GEN_highmass_MT_gen_l_3_MET", (gen_l_3 + reco_MET).M() - 80.385, 1., -60., 60., 120);
     FillHist("GEN_highmass_l_3_cand", l_3_cand, 1., 0., 3., 3);
     FillHist("GEN_highmass_gen_W_sec_pt", gen_W_sec.Pt(), 1., 0., 1000., 1000);
     FillHist("GEN_highmass_dR_gen_l_1_gen_nu", gen_l_1.DeltaR(gen_nu), 1., 0., 5., 50);
@@ -1131,8 +1146,8 @@ void trilepton_mumumu::solution_selection_stduy(std::vector<snu::KMuon> recomuon
       FillHist("GEN_highmass_gen_l_1_first", 1, 1., 0., 2., 2);
 
       int l_2_cand_m1, l_3_cand_m1;
-      //if( fabs( (reco_lep[OppSign]+reco_MET).M() - 80.4 ) < fabs( (reco_lep[l_SS_rem]+reco_MET).M() - 80.4 ) ){
-      if( fabs( MT(reco_lep[OppSign], reco_MET) - 80.4 ) < fabs( MT(reco_lep[l_SS_rem], reco_MET) - 80.4 ) ){ 
+      //if( fabs( (reco_lep[OppSign]+reco_MET).M() - 80.385 ) < fabs( (reco_lep[l_SS_rem]+reco_MET).M() - 80.385 ) ){
+      if( fabs( MT(reco_lep[OppSign], reco_MET) - 80.385 ) < fabs( MT(reco_lep[l_SS_rem], reco_MET) - 80.385 ) ){ 
         l_3_cand_m1 = OppSign;
         l_2_cand_m1 = l_SS_rem;
       }

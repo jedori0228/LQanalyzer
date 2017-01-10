@@ -138,7 +138,7 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   //muon_id_iso_sf *= MuonISOScaleFactor(BaseSelection::MUON_POG_TIGHT, muontriTightColl, 0);
 
   /// List of preset jet collections : NoLeptonVeto/Loose/Medium/Tight/TightLepVeto/HNJets
-  std::vector<snu::KJet> jetColl_hn = GetJets("JET_HN");// pt > 20 ; eta < 2.5; PFlep veto; pileup ID
+  std::vector<snu::KJet> jetColl_hn = GetJets("JET_HN", true, 30., 2.4);
    
   FillHist("Njets", jetColl_hn.size() ,weight, 0. , 5., 5);
 
@@ -308,7 +308,7 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
       }
 
       bool ZMuonPtCut = (ZMuon.Pt() > 20.) || (OS.Pt() > 20.);
-      bool isZresonance = (fabs(Z_candidate.M()-m_Z) < 15.);
+      bool isZresonance = (fabs(Z_candidate.M()-m_Z) < 10.);
       bool PtCutOnWMuon = (WMuon.Pt() > 20.);
       bool METCut = (MET > 30.);
       bool mlllCut = ((SS[0]+SS[1]+OS).M() > 100.);
