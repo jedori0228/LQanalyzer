@@ -20,6 +20,7 @@
 ### ID_MUON_POG_LOOSE IDFILEDIR MuonID_Z_RunBCD_prompt80X_7p65.root MC_NUM_LooseID_DEN_genTracks_PAR_pt_spliteta_bin1/abseta_pt_ratio TH2F
 ### ID_MUON_POG_MEDIUM IDFILEDIR MuonID_Z_RunBCD_prompt80X_7p65.root MC_NUM_MediumID_DEN_genTracks_PAR_pt_spliteta_bin1/abseta_pt_ratio TH2F
 ### ID_MUON_POG_TIGHT IDFILEDIR MuonID_Z_RunBCD_prompt80X_7p65.root MC_NUM_TightIDandIPCut_DEN_genTracks_PAR_pt_spliteta_bin1/abseta_pt_ratio TH2F
+### ID_MUON_HN_TRI_TIGHT IDFILEDIR MuonID_TRILEP_prompt80x.root abseta_pt_PLOT TH2F
 ### ISO_MUON_POG_LOOSE IDFILEDIR MuonIso_Z_RunBCD_prompt80X_7p65.root MC_NUM_LooseRelIso_DEN_TightID_PAR_pt_spliteta_bin1/abseta_pt_ratio TH2F
 ### ISO_MUON_POG_TIGHT IDFILEDIR MuonIso_Z_RunBCD_prompt80X_7p65.root MC_NUM_TightRelIso_DEN_TightID_PAR_pt_spliteta_bin1/abseta_pt_ratio TH2F
 ### TRACKING_EFF IDFILEDIR ratios.root  ratio_eta  TGraphAsymmErrors
