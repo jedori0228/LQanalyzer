@@ -806,10 +806,17 @@ double AnalyzerCore::MuonScaleFactor(TString muid, vector<snu::KMuon> mu,int sys
   float sferr=1.;
   if(isData) return 1.;
   if(mu.size() == 0) return 1.;
+
+  double min_pt = 20., max_pt = 120.;
+  if(muid=="MUON_HN_TRI_TIGHT"){
+    min_pt = 5.;
+    max_pt = 200.;
+  }
+
   for(vector<KMuon>::iterator itmu=mu.begin(); itmu!=mu.end(); ++itmu) {
     float mupt=itmu->Pt();
-    if(itmu->Pt() <20.) mupt= 21.;
-    if(itmu->Pt() >120.) mupt= 119.;
+    if(itmu->Pt() < min_pt) mupt = min_pt+1.;
+    if(itmu->Pt() > max_pt) mupt = max_pt-1.;
     if(CheckCorrectionHist("ID_" + muid)){
       sferr = double(sys)*GetCorrectionHist("ID_" + muid)->GetBinError( GetCorrectionHist("ID_" + muid)->FindBin( fabs(itmu->Eta()), mupt) );
       

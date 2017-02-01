@@ -109,7 +109,8 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   /// #### CAT::: triggers stored are all HLT_Ele/HLT_DoubleEle/HLT_Mu/HLT_TkMu/HLT_Photon/HLT_DoublePhoton
 
   std::vector<TString> triggerlist;
-  triggerlist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
+  //triggerlist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
+  triggerlist.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
   //triggerlist.push_back("HLT_TripleMu_12_10_5_v");
   float trigger_ps_weight= WeightByTrigger(triggerlist, TargetLumi);
   bool trigger_pass = false;
@@ -139,8 +140,7 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   //std::vector<snu::KMuon> muonTightColl = GetMuons(BaseSelection::MUON_HN_TIGHT,false); // tight selection : NonPrompt MC lep removed
   std::vector<snu::KMuon> muontriLooseColl = GetHNTriMuonsByLooseRelIso(this_RelIso, true);
 
-  //CorrectMuonMomentum(muonTightColl);
-  //float muon_id_iso_sf= MuonScaleFactor(BaseSelection::MUON_POG_TIGHT, muonTightColl,0); ///MUON_POG_TIGHT == MUON_HN_TIGHT
+  //CorrectMuonMomentum(muontriLooseColl); //FIXME do this for v8-0-4
 
   /// List of preset jet collections : NoLeptonVeto/Loose/Medium/Tight/TightLepVeto/HNJets
   std::vector<snu::KJet> jetColl_hn = GetJets("JET_HN", true, 30., 2.4);
@@ -161,23 +161,17 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   float pileup_reweight=(1.0);
   if (!k_isdata) {
     // check if catversion is empty. i.ie, v-7-4-X in which case use reweight class to get weight. In v-7-6-X+ pileupweight is stored in KEvent class, for silver/gold json
-    //pileup_reweight = eventbase->GetEvent().PileUpWeight();
-    pileup_reweight = TempPileupWeight();
+    pileup_reweight = eventbase->GetEvent().PileUpWeight();
+    //pileup_reweight = TempPileupWeight();
   }
 
   FillHist("PileupWeight" ,  pileup_reweight,weight,  0. , 50., 10);
 
   bool DoMCClosure = std::find(k_flags.begin(), k_flags.end(), "MCClosure") != k_flags.end();
 
-  //==== MC Closure
-  if(!isData && !k_running_nonprompt){
-    //weight*=muon_id_iso_sf;
-    //weight*=weight_trigger_sf;
-    weight*=pileup_reweight;
-    weight*=trigger_ps_weight;
-    if(DoMCClosure){
-      weight = 1.*MCweight;
-    }
+  //==== No normalization for MC Closure
+  if(DoMCClosure){
+    weight = 1.*MCweight;
   }
 
   int n_triTight_muons(0);
@@ -226,12 +220,17 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
 
     bool leadPt20 = muontriLooseColl.at(0).Pt() > 20.;
     bool isSS = muontriLooseColl.at(0).Charge() == muontriLooseColl.at(1).Charge();
+
+    double m_Z = 91.1876;
     double m_dimuon = ( muontriLooseColl.at(0) + muontriLooseColl.at(1) ).M();
+    bool ZResonance = fabs(m_dimuon-m_Z) < 10.;
 
     std::map< TString, bool > map_whichCR_to_isCR;
     map_whichCR_to_isCR.clear();
     map_whichCR_to_isCR["DiMuon"] = isTwoMuon && leadPt20;
     map_whichCR_to_isCR["SSDiMuon"] = isTwoMuon && leadPt20 && isSS;
+    map_whichCR_to_isCR["OSDiMuon"] = isTwoMuon && leadPt20 && !isSS;
+    map_whichCR_to_isCR["OSDiMuon_Z_10GeV"] = isTwoMuon && leadPt20 && !isSS && ZResonance;
 
     vector<double> FR_muon, FR_error_muon;
     FR_muon.clear();
@@ -276,7 +275,9 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
         FillUpDownHist("n_jets_"+this_suffix+"", n_jets, weight*FR_reweight, weight_err, 0., 10., 10);
         FillUpDownHist("n_bjets_"+this_suffix+"", n_bjets, weight*FR_reweight, weight_err, 0., 10., 10);
         FillUpDownHist("PFMET_"+this_suffix+"", MET, weight*FR_reweight, weight_err, 0., 500., 500);
+        FillUpDownHist("PFMET_phi_"+this_suffix+"", METphi, weight*FR_reweight, weight_err, -3.2, 3.2, 64);
         FillUpDownHist("mll_"+this_suffix+"", m_dimuon , weight*FR_reweight, weight_err, 0., 500., 500);
+        FillUpDownHist("n_vertices_"+this_suffix, numberVertices, weight, weight_err, 0., 50., 50);
         FillUpDownHist("leadingLepton_Pt_"+this_suffix+"", lep[0].Pt() , weight*FR_reweight, weight_err, 0., 200., 200);
         FillUpDownHist("leadingLepton_Eta_"+this_suffix+"", lep[0].Eta() , weight*FR_reweight, weight_err, -3., 3., 60);
         FillUpDownHist("leadingLepton_RelIso_"+this_suffix+"", lep[0].RelIso04() , weight*FR_reweight, weight_err, 0., 1.0, 100);
@@ -448,6 +449,7 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
         FillUpDownHist("n_jets_"+this_suffix+"", n_jets, weight*FR_reweight, weight_err, 0., 10., 10);
         FillUpDownHist("n_bjets_"+this_suffix+"", n_bjets, weight*FR_reweight, weight_err, 0., 10., 10);
         FillUpDownHist("PFMET_"+this_suffix+"", MET, weight*FR_reweight, weight_err, 0., 500., 500);
+        FillUpDownHist("PFMET_phi_"+this_suffix+"", METphi, weight*FR_reweight, weight_err, -3.2, 3.2, 64);
         FillUpDownHist("osllmass_"+this_suffix+"", m_dimuon[0], weight*FR_reweight, weight_err, 0., 500., 500);
         FillUpDownHist("osllmass_"+this_suffix+"", m_dimuon[1], weight*FR_reweight, weight_err, 0., 500., 500);
         FillUpDownHist("m_Z_candidate_"+this_suffix+"", Z_candidate.M(), weight*FR_reweight, weight_err, 0., 150., 150);
@@ -503,6 +505,7 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
         FillUpDownHist("n_jets_"+this_suffix+"", n_jets, weight*FR_reweight, weight_err, 0., 10., 10);
         FillUpDownHist("n_bjets_"+this_suffix+"", n_bjets, weight*FR_reweight, weight_err, 0., 10., 10);
         FillUpDownHist("PFMET_"+this_suffix+"", MET, weight*FR_reweight, weight_err, 0., 500., 500);
+        FillUpDownHist("PFMET_phi_"+this_suffix+"", METphi, weight*FR_reweight, weight_err, -3.2, 3.2, 64);
         FillUpDownHist("osllmass_"+this_suffix+"", m_dimuon[0], weight*FR_reweight, weight_err, 0., 500., 500);
         FillUpDownHist("osllmass_"+this_suffix+"", m_dimuon[1], weight*FR_reweight, weight_err, 0., 500., 500);
         FillUpDownHist("m_Z_candidate_"+this_suffix+"", Z_candidate.M(), weight*FR_reweight, weight_err, 0., 150., 150);

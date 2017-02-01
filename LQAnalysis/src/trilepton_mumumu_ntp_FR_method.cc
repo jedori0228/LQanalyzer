@@ -109,8 +109,8 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
   /// #### CAT::: triggers stored are all HLT_Ele/HLT_DoubleEle/HLT_Mu/HLT_TkMu/HLT_Photon/HLT_DoublePhoton
 
   std::vector<TString> triggerlist;
-  triggerlist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
-  //triggerlist.push_back("HLT_TripleMu_12_10_5_v");
+  //triggerlist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
+  triggerlist.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
   double MinLeadingMuonPt = 20;
   float trigger_ps_weight= WeightByTrigger(triggerlist, TargetLumi);
   bool trigger_pass = false;
@@ -141,8 +141,8 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
   //std::vector<snu::KMuon> muonTightColl = GetMuons(BaseSelection::MUON_HN_TIGHT,false); // tight selection : NonPrompt MC lep removed
   std::vector<snu::KMuon>  muontriVLooseColl_lowestPtCut = GetMuons("MUON_HN_TRI_VLOOSE_lowestPtCut", true);
 
- // CorrectMuonMomentum(muonTightColl);
-  //float muon_id_iso_sf= MuonScaleFactor(BaseSelection::MUON_POG_TIGHT, muonTightColl,0); ///MUON_POG_TIGHT == MUON_HN_TIGHT
+  //CorrectMuonMomentum(muontriVLooseColl_lowestPtCut); //FIXME do this for v8-0-4
+  //float muon_id_iso_sf= MuonScaleFactor(BaseSelection::MUON_POG_TIGHT, muontriTightColl, 0); //FIXME should add sf uncertainty
 
   std::vector<snu::KJet> jetColl_hn_lowestPtCut = GetJets("JET_HN", true, 20., 2.4);
   
@@ -168,7 +168,7 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     //weight*=weight_trigger_sf;
   }
 
-  int N_sys = 2*4+1;
+  int N_sys = 2*6+1;
   for(int it_sys=0; it_sys<=N_sys; it_sys++){
 
     //==== MET
@@ -209,6 +209,14 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     }
     else if(it_sys==8){
       this_syst = "Central";
+      MET = Evt.MET();
+    }
+    else if(it_sys==9){
+      this_syst = "MuonIDSF_up";
+      MET = Evt.MET();
+    }
+    else if(it_sys==10){
+      this_syst = "MuonIDSF_down";
       MET = Evt.MET();
     }
     else{
@@ -278,6 +286,24 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
       }
     }
 
+    //==== Muon ID SF
+    double muon_id_iso_sf;
+    if(this_syst=="MuonIDSF_up"){
+      muon_id_iso_sf = MuonScaleFactor("MUON_HN_TRI_TIGHT", muontriLooseColl, 1.);
+    }
+    else if(this_syst=="MuonIDSF_down"){
+      muon_id_iso_sf = MuonScaleFactor("MUON_HN_TRI_TIGHT", muontriLooseColl, -1.);
+    }
+    else{
+      muon_id_iso_sf = MuonScaleFactor("MUON_HN_TRI_TIGHT", muontriLooseColl, 0);
+    }
+
+    //==== Muon TrackEff SF
+    double MuTrkEffSF =  MuonTrackingEffScaleFactor(muontriLooseColl); //FIXME should add syst for this
+
+    //==== this weight
+    double this_weight = weight*muon_id_iso_sf*MuTrkEffSF;
+
     double METphi = Evt.METPhi();
 
     int n_triTight_muons = muontriTightColl.size();
@@ -302,8 +328,6 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
         FR_error_muon.push_back( get_FR(lep[i], true) );
       }
     }
-
-    double this_weight = weight;
 
     //==== fake method weighting
     if( n_triTight_muons == 3 ) continue; // return TTT case
@@ -614,6 +638,8 @@ void trilepton_mumumu_ntp_FR_method::MakeHistograms(){
   MakeNtp("Ntp_Unclustered_up", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets");
   MakeNtp("Ntp_Unclustered_down", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets");
   MakeNtp("Ntp_Central", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets");
+  MakeNtp("Ntp_MuonIDSF_up", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets");
+  MakeNtp("Ntp_MuonIDSF_down", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets");
 
 }
 

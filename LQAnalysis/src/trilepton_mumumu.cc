@@ -94,12 +94,8 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   bool DoCutOp = std::find(k_flags.begin(), k_flags.end(), "cutop") != k_flags.end();
 
   std::vector<TString> triggerlist;
-  triggerlist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
-  //triggerlist.push_back("HLT_TripleMu_12_10_5_v");
-  //triggerlist.push_back("HLT_Mu17_Mu8_SameSign_DZ_v");
-  //triggerlist.push_back("HLT_Mu20_Mu10_SameSign_DZ_v");
-  //triggerlist.push_back("HLT_IsoTkMu24_v");
-  //triggerlist.push_back("HLT_IsoMu24_v");
+  //triggerlist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
+  triggerlist.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
   double MinLeadingMuonPt = 20;
   float trigger_ps_weight= WeightByTrigger(triggerlist, TargetLumi);
   bool trigger_pass = false;
@@ -193,9 +189,9 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     muontriLooseColl = GetHNTriMuonsByLooseRelIso(this_RelIso, false);
   }
 
-  //CorrectMuonMomentum(muontriLooseColl);
-  //float muon_id_iso_sf= MuonScaleFactor(BaseSelection::MUON_POG_TIGHT, muontriTightColl, 0); ///MUON_POG_TIGHT == MUON_HN_TIGHT
-  //muon_id_iso_sf *= MuonISOScaleFactor(BaseSelection::MUON_POG_TIGHT, muontriTightColl, 0);
+  //CorrectMuonMomentum(muontriLooseColl); FIXME do this for v8-0-4
+  double muon_id_iso_sf= MuonScaleFactor("MUON_HN_TRI_TIGHT", muontriLooseColl, 0);
+  double MuTrkEffSF =  MuonTrackingEffScaleFactor(muontriLooseColl);
 
   /// List of preset jet collections : NoLeptonVeto/Loose/Medium/Tight/TightLepVeto/HNJets
   std::vector<snu::KJet> jetColl_hn = GetJets("JET_HN", true, 30., 2.4);
@@ -231,10 +227,10 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
 
   FillHist("PileupWeight" ,  pileup_reweight,weight,  0. , 50., 10);
 
-
   if(!isData && !k_running_nonprompt){
-    //weight*=muon_id_iso_sf;
+    weight*=muon_id_iso_sf;
     //weight*=weight_trigger_sf;
+    weight*=MuTrkEffSF;
     weight*=trigger_ps_weight;
     weight*=pileup_reweight;
   }
@@ -466,6 +462,9 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     FillHist("z_candidate_mass_cutWlow", z_candidate.M(), weight, 0., 200., 200);
     FillCLHist(trilephist, "cutWlow", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_hn, weight);
     FillHist("n_events_cutWlow", 0, weight, 0., 1., 1);
+
+    FillCutFlow("LowMass", 1.);
+
   }
 
   if( isHighMass ){
@@ -481,6 +480,9 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     FillHist("z_candidate_mass_cutWhigh", z_candidate.M(), weight, 0., 200., 200);
     FillCLHist(trilephist, "cutWhigh", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_hn, weight);
     FillHist("n_events_cutWhigh", 0, weight, 0., 1., 1);
+
+    FillCutFlow("HighMass", 1.);
+
   }
 
 
@@ -552,7 +554,7 @@ void trilepton_mumumu::FillCutFlow(TString cut, float weight){
    
   }
   else{
-    AnalyzerCore::MakeHistograms("cutflow", 9,0.,9.);
+    AnalyzerCore::MakeHistograms("cutflow", 11,0.,11.);
 
     GetHist("cutflow")->GetXaxis()->SetBinLabel(1,"NoCut");
     GetHist("cutflow")->GetXaxis()->SetBinLabel(2,"EventCut");
@@ -563,6 +565,8 @@ void trilepton_mumumu::FillCutFlow(TString cut, float weight){
     GetHist("cutflow")->GetXaxis()->SetBinLabel(7,"mllsf4");
     GetHist("cutflow")->GetXaxis()->SetBinLabel(8,"ZVeto");
     GetHist("cutflow")->GetXaxis()->SetBinLabel(9,"bjetVeto");
+    GetHist("cutflow")->GetXaxis()->SetBinLabel(10,"LowMass");
+    GetHist("cutflow")->GetXaxis()->SetBinLabel(11,"HighMass");
     
   }
 }

@@ -118,8 +118,8 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
   bool DoCutOp = std::find(k_flags.begin(), k_flags.end(), "cutop") != k_flags.end();
 
   std::vector<TString> triggerlist;
-  triggerlist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
-  //triggerlist.push_back("HLT_TripleMu_12_10_5_v");
+  //triggerlist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
+  triggerlist.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
   float trigger_ps_weight = WeightByTrigger(triggerlist, TargetLumi);
   bool trigger_pass = false;
   for(unsigned int i=0; i<triggerlist.size(); i++){
@@ -145,6 +145,7 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
   FillCutFlow("VertexCut", 1.);
 
   std::vector<snu::KMuon> muontriLooseColl_raw = GetMuons("MUON_HN_TRI_VLOOSE");
+  //CorrectMuonMomentum(muontriLooseColl_raw); //FIXME do this for v8-0-4
 
   std::vector<snu::KJet> jetColl_hn = GetJets("JET_HN", true, 30., 2.4);
   int n_bjets=0;
@@ -158,19 +159,13 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
   if (!k_isdata) {
     // check if catversion is empty. i.ie, v-7-4-X in which case use reweight class to get weight. In v-7-6-X+ pileupweight is stored in KEvent class, for silver/gold json
     //pileup_reweight = eventbase->GetEvent().PileUpWeight();
-    pileup_reweight = TempPileupWeight();
   }
 
   bool DoMCClosure = std::find(k_flags.begin(), k_flags.end(), "MCClosure") != k_flags.end();
 
-  if(!isData && !k_running_nonprompt){
-    //weight*=muon_id_iso_sf;
-    //weight*=weight_trigger_sf;
-    weight*=pileup_reweight;
-    weight*=trigger_ps_weight;
-    if(DoMCClosure){
-      weight = 1.*MCweight;
-    }
+  //==== no normalization for MCClosure
+  if(DoMCClosure){
+    weight = 1.*MCweight;
   }
 
   for(int bbb=0; bbb<RelIsoMaxs.size(); bbb++){

@@ -77,7 +77,9 @@ declare -a trilep_CR_bkg=(
 'ttH_nonbb'
 'WGtoLNuG' 'WGtoLNuMM' 'ZGto2LG'
 )
-
+declare -a dilep_CR_bkg=(
+'DYJets_10to50' 'DYJets'
+)
 
 
 declare -a trilep_bkg_miss=(

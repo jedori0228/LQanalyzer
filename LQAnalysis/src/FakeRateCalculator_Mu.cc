@@ -84,9 +84,9 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   float pileup_reweight=(1.0);
   if (!k_isdata) {
     // check if catversion is empty. i.ie, v-7-4-X in which case use reweight class to get weight. In v-7-6-X+ pileupweight is stored in KEvent class, for silver/gold json
-    //pileup_reweight = eventbase->GetEvent().PileUpWeight();
+    pileup_reweight = eventbase->GetEvent().PileUpWeight();
     //pileup_reweight = eventbase->GetEvent().AltPileUpWeight();
-    pileup_reweight = TempPileupWeight();
+    //pileup_reweight = TempPileupWeight();
   }
 
   if(!isData && !k_running_nonprompt){
@@ -491,8 +491,8 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
 
       } // SingleMuon trigger fired
 
-      if( PassTrigger("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v") ){
-        float trigger_ps_weight = WeightByTrigger("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v", TargetLumi);
+      if( PassTrigger("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v") ){
+        float trigger_ps_weight = WeightByTrigger("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v", TargetLumi);
         double this_weight = weight*trigger_ps_weight;
 
         //==================
@@ -600,8 +600,8 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   } //==== dXYMin loop
 
 
-  if( PassTrigger("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v") ){
-    float trigger_ps_weight = WeightByTrigger("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v", TargetLumi);
+  if( PassTrigger("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v") ){
+    float trigger_ps_weight = WeightByTrigger("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v", TargetLumi);
     double this_weight = weight*trigger_ps_weight;
     std::vector<snu::KMuon> PtEtaMuons = GetMuons("MUON_PTETA", false);
     for(unsigned int i=0; i<PtEtaMuons.size(); i++){
