@@ -104,6 +104,9 @@ void HNCommonLeptonFakes::InitialiseFake(){
   CheckFile(file_trilep_fake);
   CheckFile(file_trilep_prompt);
 
+  TDirectory* tempDir2 = getTemporaryDirectory();
+  tempDir2->cd();
+
   const int N_dXYMin = 3, N_LooseRelIso = 6;
   double dXYMin[N_dXYMin] = {3.0, 4.0, 5.0};
   double LooseRelIso[N_LooseRelIso] = {0.2, 0.3, 0.4, 0.6, 0.8, 1.0};
