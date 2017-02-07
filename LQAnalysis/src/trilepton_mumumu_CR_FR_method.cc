@@ -57,34 +57,6 @@ void trilepton_mumumu_CR_FR_method::InitialiseAnalysis() throw( LQError ) {
   this_dXYSig = 4.0;
   this_RelIso = 0.4;
 
-  int dXY_Digit1 = int(this_dXYSig);
-  int dXY_Digit0p1 = 10*this_dXYSig-10*dXY_Digit1;
-  TString str_dXYCut = "dXYSigMin_"+TString::Itoa(dXY_Digit1,10)+"p"+TString::Itoa(dXY_Digit0p1,10);
-
-  int iso_Digit1 = int(this_RelIso);
-  int iso_Digit0p1 = 10*this_RelIso-10*iso_Digit1;
-  TString str_iso = "LooseRelIsoMax_"+TString::Itoa(iso_Digit1,10)+"p"+TString::Itoa(iso_Digit0p1,10);
-
-  str_dXYCut = str_dXYCut+"_"+str_iso;
-
-  TString rootfilepath = getenv("JSKIMROOTFILES");
-  TFile *file_FR = new TFile(rootfilepath+"/FRs.root");
-
-  hist_trimuon_FR = (TH2D*)file_FR->Get(str_dXYCut+"_FR");
-  hist_trimuon_FR_QCD = (TH2D*)file_FR->Get(str_dXYCut+"_FR_QCD");
-  hist_trimuon_FRSF_QCD = (TH2D*)file_FR->Get(str_dXYCut+"_FRSF_QCD");
-  //==== multiply SF
-  hist_trimuon_FR_QCDSFed = (TH2D*)hist_trimuon_FR->Clone();
-  hist_trimuon_FR_QCDSFed->Multiply( hist_trimuon_FRSF_QCD );
-
-  TH1I* hist_bins = (TH1I*)file_FR->Get("hist_bins");
-  FR_n_pt_bin = hist_bins->GetBinContent(1);
-  FR_n_eta_bin = hist_bins->GetBinContent(2);
-
-  delete hist_bins;
-  file_FR->Close();
-  delete file_FR;
-
   return;
 
 }
@@ -172,6 +144,7 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   //==== No normalization for MC Closure
   if(DoMCClosure){
     weight = 1.*MCweight;
+    m_fakeobj->SetUseQCDFake(true); 
   }
 
   int n_triTight_muons(0);
@@ -232,40 +205,11 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
     map_whichCR_to_isCR["OSDiMuon"] = isTwoMuon && leadPt20 && !isSS;
     map_whichCR_to_isCR["OSDiMuon_Z_10GeV"] = isTwoMuon && leadPt20 && !isSS && ZResonance;
 
-    vector<double> FR_muon, FR_error_muon;
-    FR_muon.clear();
-    FR_error_muon.clear();
-    for(int i=0;i<2;i++){
-      snu::KMuon this_muon = muontriLooseColl.at(i);
-      //==== find loose but not tight muon ( 0.1 < RelIso (< 0.6) )
-      if( this_muon.RelIso04() > 0.1 ){
-        FR_muon.push_back( get_FR(this_muon, false) );
-        FR_error_muon.push_back( get_FR(this_muon, true) );
-      }
-    }
-    double FR_reweight = 1.;
-    for(unsigned int i=0; i<FR_muon.size(); i++){
-      FR_reweight *= FR_muon.at(i)/( 1.-FR_muon.at(i) );
-    }
-    if( FR_muon.size() == 2 ) FR_reweight *= -1.; // minus sign for LL
-    //==== weight error
-    double weight_err(0.);
-    if( FR_muon.size() == 1 ){
-      double fr1 = FR_muon.at(0);
-      double fr1_err = FR_error_muon.at(0);
-      weight_err = fr1_err/pow(fr1-1,2);
-    }
-    else if( FR_muon.size() == 2 ){
-      double fr1 = FR_muon.at(0);
-      double fr1_err = FR_error_muon.at(0);
-      double fr2 = FR_muon.at(1);
-      double fr2_err = FR_error_muon.at(1);
-      weight_err = sqrt( pow( fr1_err*fr2*(1-fr2),2) +
-                         pow( fr2_err*fr1*(1-fr1),2)   ) / pow( (1-fr1)*(1-fr2), 2 );
-    }
-    else{
-      Message("?", INFO);
-    }
+    //==== fake method weighting
+    //if( n_triTight_muons == 2 ) return; // return TT case
+    double FR_reweight = Get_DataDrivenWeight_MM(false, muontriLooseColl);
+    double weight_err = Get_DataDrivenWeight_MM(true, muontriLooseColl);
+    if(weight==0.) return;
 
     for(std::map< TString, bool >::iterator it = map_whichCR_to_isCR.begin(); it != map_whichCR_to_isCR.end(); it++){
       TString this_suffix = it->first;
@@ -302,52 +246,11 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
     lep[1] = muontriLooseColl.at(1);
     lep[2] = muontriLooseColl.at(2);
 
-    vector<double> FR_muon, FR_error_muon;
-    FR_muon.clear();
-    FR_error_muon.clear();
-    for(int i=0;i<3;i++){
-      snu::KMuon this_muon = muontriLooseColl.at(i);
-      //==== find loose but not tight muon ( 0.1 < RelIso (< 0.6) )
-      if( this_muon.RelIso04() > 0.1 ){
-        FR_muon.push_back( get_FR(this_muon, false) );
-        FR_error_muon.push_back( get_FR(this_muon, true) );
-      }
-    }
-    double FR_reweight = 1.;
-    for(unsigned int i=0; i<FR_muon.size(); i++){
-      FR_reweight *= FR_muon.at(i)/( 1.-FR_muon.at(i) );
-    }
-    if( FR_muon.size() == 2 ) FR_reweight *= -1.; // minus sign for TLL
-    //==== weight error
-    double weight_err(0.);
-    if( FR_muon.size() == 1 ){
-      double fr1 = FR_muon.at(0);
-      double fr1_err = FR_error_muon.at(0);
-      weight_err = fr1_err/pow(fr1-1,2);
-    }
-    else if( FR_muon.size() == 2 ){
-      double fr1 = FR_muon.at(0);
-      double fr1_err = FR_error_muon.at(0);
-      double fr2 = FR_muon.at(1);
-      double fr2_err = FR_error_muon.at(1);
-      weight_err = sqrt( pow( fr1_err*fr2*(1-fr2),2) +
-                         pow( fr2_err*fr1*(1-fr1),2)   ) / pow( (1-fr1)*(1-fr2), 2 );
-    }
-    else if( FR_muon.size() == 3 ){
-      double fr1 = FR_muon.at(0);
-      double fr1_err = FR_error_muon.at(0);
-      double fr2 = FR_muon.at(1);
-      double fr2_err = FR_error_muon.at(1);
-      double fr3 = FR_muon.at(2);
-      double fr3_err = FR_error_muon.at(2);
-      weight_err = sqrt( pow( fr1_err*fr2*(1-fr2)*fr3*(1-fr3), 2) +
-                         pow( fr2_err*fr3*(1-fr3)*fr1*(1-fr1), 2) +
-                         pow( fr3_err*fr1*(1-fr1)*fr2*(1-fr2), 2)   ) / pow( (1-fr1)*(1-fr2)*(1-fr3) ,2 );
-    }
-    else{
-      Message("?", INFO);
-    }
-
+    //==== fake method weighting
+    //if( n_triTight_muons == 3 ) return; // return TTT case
+    double FR_reweight = Get_DataDrivenWeight_MMM(false, muontriLooseColl);
+    double weight_err = Get_DataDrivenWeight_MMM(true, muontriLooseColl);
+    if(weight==0.) return;
 
     //bool leadPt20 = muontriLooseColl.at(0).Pt() > 20.; // This will be done for the Z-candidate muons
     bool AllSameCharge = ( muontriLooseColl.at(0).Charge() == muontriLooseColl.at(1).Charge() ) &&
@@ -649,81 +552,5 @@ void trilepton_mumumu_CR_FR_method::ClearOutputVectors() throw(LQError) {
   out_electrons.clear();
 }
 
-double trilepton_mumumu_CR_FR_method::get_FR(snu::KParticle muon, bool geterror){
-
-  double this_pt = muon.Pt();
-  double this_eta = fabs( muon.Eta() );
-
-  // FR_n_pt_bin = 7
-  // array index      0    1    2    3    4    5    6    7
-  // bin numbe          1    2     3    4    5   6     7
-  // ptarray[7+1] = {10., 15., 20., 25., 30., 35., 45., 60.}; 
-
-  double ptarray[FR_n_pt_bin+1], etaarray[FR_n_eta_bin+1];
-  //cout << "FR_n_pt_bin = " << FR_n_pt_bin << endl;
-  for(int i=0; i<FR_n_pt_bin; i++){
-    ptarray[i] = hist_trimuon_FR->GetXaxis()->GetBinLowEdge(i+1);
-    //cout << " " << ptarray[i] << endl;
-    if(i==FR_n_pt_bin-1){
-      ptarray[FR_n_pt_bin] = hist_trimuon_FR->GetXaxis()->GetBinUpEdge(i+1);
-      //cout << " " << ptarray[FR_n_pt_bin] << endl;
-    }
-  }
-  //cout << "FR_n_eta_bin = " << FR_n_eta_bin << endl;
-  for(int i=0; i<FR_n_eta_bin; i++){
-    etaarray[i] = hist_trimuon_FR->GetYaxis()->GetBinLowEdge(i+1);
-    //cout << " " << etaarray[i] << endl;
-    if(i==FR_n_eta_bin-1){
-      etaarray[FR_n_eta_bin] = hist_trimuon_FR->GetYaxis()->GetBinUpEdge(i+1);
-      //cout << " " << etaarray[FR_n_eta_bin] << endl;
-    }
-  }
-
-  int this_pt_bin;
-  if( this_pt >= ptarray[FR_n_pt_bin] ) this_pt_bin = FR_n_pt_bin;
-  else{
-    for(int i=0; i<FR_n_pt_bin; i++){
-      if( ptarray[i] <= this_pt && this_pt < ptarray[i+1] ){
-        this_pt_bin = i+1;
-        break;
-      }
-    }
-  }
-  int this_eta_bin;
-  if( this_eta >= etaarray[FR_n_eta_bin] ) this_eta_bin = FR_n_eta_bin;
-  else{
-    for(int i=0; i<FR_n_eta_bin; i++){
-      if( etaarray[i] <= this_eta && this_eta < etaarray[i+1] ){
-        this_eta_bin = i+1;
-        break;
-      }
-    }
-  }
-
-  //==== FR
-  double this_FR = hist_trimuon_FR->GetBinContent(this_pt_bin, this_eta_bin);
-  double FRSF_QCD = hist_trimuon_FRSF_QCD->GetBinContent(this_pt_bin, this_eta_bin);
-  double this_FR_QCDSFed = hist_trimuon_FR_QCDSFed->GetBinContent(this_pt_bin, this_eta_bin);
-  //==== error
-  double this_FR_error = hist_trimuon_FR->GetBinError(this_pt_bin, this_eta_bin);
-  double this_FR_QCDSFed_error = hist_trimuon_FR_QCDSFed->GetBinError(this_pt_bin, this_eta_bin);
-
-  //==== FR QCD and error
-  double this_FR_QCD = hist_trimuon_FR_QCD->GetBinContent(this_pt_bin, this_eta_bin);
-  double this_FR_QCD_error = hist_trimuon_FR_QCD->GetBinError(this_pt_bin, this_eta_bin);
-
-  //==== bool for MCClosure
-  bool doMCClosure = std::find(k_flags.begin(), k_flags.end(), "MCClosure") != k_flags.end();
-
-  if(geterror){
-    if(doMCClosure) return this_FR_QCD_error;
-    return this_FR_QCDSFed_error;
-  }
-  else{
-    if(doMCClosure) return this_FR_QCD;
-    return this_FR_QCDSFed;
-  }
-
-}
 
 

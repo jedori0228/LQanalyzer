@@ -85,6 +85,7 @@ class HNCommonLeptonFakes {
   /// Maps for storing histograms in the rootfile
   std::map<TString,TH1*> _EfficiencyMap;
   std::map<TString,TH2F*> _2DEfficiencyMap;
+  std::map<TString,TH2D*> _2DEfficiencyMap_Double;
   std::map<TString,TEfficiency*> _TEEfficiencyMap;
   std::map<TString,TH1*> _EfficiencyMapHST;
   std::map<TString,TH2F*> _2DEfficiencyMapHST;
@@ -115,6 +116,21 @@ class HNCommonLeptonFakes {
   /// Adds event by event info to countes
   void AddToTotals(float w,std::pair<float,float> err, bool mu1tight, bool mu2tight);
 
+
+  //=============
+  //==== Trilep
+  //=============
+
+  //==== dXYSigMin and LooseRelIsoMax to string
+  TString DoubleToTString(double this_dXYSig, double this_RelIso);
+  void SetTrilepWP(double this_dXYSig, double this_RelIso);
+  void SetUseQCDFake(bool useit);
+  //==== get PR/FR
+  float getTrilepFakeRate_muon(bool geterr, float pt,  float eta, bool applysf=true);
+  float getTrilepPromptRate_muon(bool geterr, float pt, float eta);
+  //==== get weight
+  float get_dilepton_mm_eventweight(bool geterr, std::vector<TLorentzVector> muons, bool isT1, bool isT2);
+  float get_trilepton_mmm_eventweight(bool geterr, std::vector<TLorentzVector> muons, bool isT1, bool isT2, bool isT3);
 
  private:
   /// vector for storing FakeCR strings
@@ -152,5 +168,10 @@ class HNCommonLeptonFakes {
   /// variables used to fill hists
   float _percentageFsys;
   float _percentageRsys;
+
+  //==== Trilep fake
+  double Current_dXYSig, Current_RelIso;
+  bool UseQCDFake;
+
 };
 #endif

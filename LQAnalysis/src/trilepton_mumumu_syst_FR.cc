@@ -47,51 +47,6 @@ void trilepton_mumumu_syst_FR::InitialiseAnalysis() throw( LQError ) {
   // You can also use m_logger << level << "comment" << int/double  << LQLogger::endmsg;
   //
 
-  TString lqdir = getenv("JSKIMROOTFILES");
-  cout << lqdir+"/FRs.root" << endl;
-
-  TFile *file_FRs = new TFile(lqdir+"/FRs.root");
-
-  cout << "get scan values" << endl;
-  TH1D *hist_dXYMins = (TH1D*)file_FRs->Get("hist_dXYMins");
-  TH1D *hist_RelIsoMaxs = (TH1D*)file_FRs->Get("hist_RelIsoMaxs");
-  for(int i=1; i<=hist_dXYMins->GetXaxis()->GetNbins(); i++) dXYMins.push_back( hist_dXYMins->GetBinContent(i) );
-  for(int i=1; i<=hist_RelIsoMaxs->GetXaxis()->GetNbins(); i++) RelIsoMaxs.push_back( hist_RelIsoMaxs->GetBinContent(i) );
-
-  cout << "get FRs" << endl;
-  for(int aaa=0; aaa<dXYMins.size(); aaa++){
-    for(int bbb=0; bbb<RelIsoMaxs.size(); bbb++){
-
-      int dXY_Digit1 = int(dXYMins.at(aaa));
-      int dXY_Digit0p1 = 10*dXYMins.at(aaa)-10*dXY_Digit1;
-      TString str_dXYCut = "dXYSigMin_"+TString::Itoa(dXY_Digit1,10)+"p"+TString::Itoa(dXY_Digit0p1,10);
-
-      int iso_Digit1 = int(RelIsoMaxs.at(bbb));
-      int iso_Digit0p1 = 10*RelIsoMaxs.at(bbb)-10*iso_Digit1;
-      TString str_iso = "LooseRelIsoMax_"+TString::Itoa(iso_Digit1,10)+"p"+TString::Itoa(iso_Digit0p1,10);
-
-      str_dXYCut = str_dXYCut+"_"+str_iso;
-      cout << "  "<<str_dXYCut<< endl;
-
-      hist_trimuon_FR[str_dXYCut] = (TH2D*)file_FRs->Get(str_dXYCut+"_FR");
-      hist_trimuon_FR_QCD[str_dXYCut] = (TH2D*)file_FRs->Get(str_dXYCut+"_FR_QCD");
-      hist_trimuon_FRSF_QCD[str_dXYCut] = (TH2D*)file_FRs->Get(str_dXYCut+"_FRSF_QCD");
-      //==== multiply SF
-      hist_trimuon_FR_QCDSFed[str_dXYCut] = (TH2D*)hist_trimuon_FR[str_dXYCut]->Clone();
-      hist_trimuon_FR_QCDSFed[str_dXYCut]->Multiply( hist_trimuon_FRSF_QCD[str_dXYCut] );
-    }
-  
-  }
-
-
-  cout << "get hist bins" << endl;
-  TH1I* hist_bins = (TH1I*)file_FRs->Get("hist_bins");
-  FR_n_pt_bin = hist_bins->GetBinContent(1);
-  FR_n_eta_bin = hist_bins->GetBinContent(2);
-  delete hist_bins;
-  file_FRs->Close();
-  delete file_FRs;
-
   return;
 
 }
@@ -166,6 +121,7 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
   //==== no normalization for MCClosure
   if(DoMCClosure){
     weight = 1.*MCweight;
+    m_fakeobj->SetUseQCDFake(true);
   }
 
   for(int bbb=0; bbb<RelIsoMaxs.size(); bbb++){
@@ -219,44 +175,17 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
         map_whichCR_to_isCR["DiMuon"] = isTwoMuon && leadPt20;
         map_whichCR_to_isCR["SSDiMuon"] = isTwoMuon && leadPt20 && isSS;
 
-        vector<double> FR_muon, FR_error_muon;
-        FR_muon.clear();
-        FR_error_muon.clear();
-        for(int i=0;i<2;i++){
-          snu::KMuon this_muon = muontriLooseColl.at(i);
-          //==== find loose but not tight muon ( 0.1 < RelIso (< 0.6) )
-          if( this_muon.RelIso04() > 0.1 ){
-            FR_muon.push_back( get_FR(this_muon, str_dXYCut, false) );
-            FR_error_muon.push_back( get_FR(this_muon, str_dXYCut, true) );
-          }
-        }
-        for(unsigned int i=0; i<FR_muon.size(); i++){
-          this_weight *= FR_muon.at(i)/( 1.-FR_muon.at(i) );
-        }
-        if( FR_muon.size() == 2 ) this_weight *= -1.; // minus sign for LL
-        //==== weight error
-        double this_weight_err(0.);
-        if( FR_muon.size() == 1 ){
-          double fr1 = FR_muon.at(0);
-          double fr1_err = FR_error_muon.at(0);
-          this_weight_err = fr1_err/pow(fr1-1,2);
-        }
-        else if( FR_muon.size() == 2 ){
-          double fr1 = FR_muon.at(0);
-          double fr1_err = FR_error_muon.at(0);
-          double fr2 = FR_muon.at(1);
-          double fr2_err = FR_error_muon.at(1);
-          this_weight_err = sqrt( pow( fr1_err*fr2*(1-fr2),2) +
-                             pow( fr2_err*fr1*(1-fr1),2)   ) / pow( (1-fr1)*(1-fr2), 2 );
-        }
-        else{
-          Message("?", INFO);
-        }
+        //==== fake method weighting
+        //if( n_triTight_muons == 2 ) return; // return TT case
+        m_fakeobj->SetTrilepWP(dXYMins.at(aaa), RelIsoMaxs.at(bbb));
+        this_weight *= Get_DataDrivenWeight_MM(false, muontriLooseColl);
+        double this_weight_err = Get_DataDrivenWeight_MM(true, muontriLooseColl);
+        if(weight==0.) return;
+
         for(std::map< TString, bool >::iterator it = map_whichCR_to_isCR.begin(); it != map_whichCR_to_isCR.end(); it++){
           TString this_suffix = it->first;
           if(it->second){
             FillUpDownHist(str_dXYCut+"_n_events_"+this_suffix, 0., this_weight, this_weight_err, 0., 1., 1);
-            FillHist(str_dXYCut+"_n_OnlyLoose_"+this_suffix, FR_muon.size(), 1., 0., 4., 4);
           }
         }
 
@@ -270,54 +199,14 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
         bool leadPt20 = muontriLooseColl.at(0).Pt() > 20.;
 
         snu::KParticle lep[3], HN[4];;
-        vector<double> FR_muon, FR_error_muon;
-        FR_muon.clear();
-        FR_error_muon.clear();
-        //for(int i=0;i<k_flags.size();i++) cout << "k_flags = " << k_flags.at(i) << endl;
-        for(int i=0;i<3;i++){
-          lep[i] = muontriLooseColl.at(i);
-          //==== find loose but not tight muon ( 0.1 < RelIso (< 0.6) )
-          if( muontriLooseColl.at(i).RelIso04() > 0.1 ){
-            FR_muon.push_back( get_FR(lep[i], str_dXYCut, false) );
-            FR_error_muon.push_back( get_FR(lep[i], str_dXYCut, true) );
-          }
-        }
 
         double this_weight = weight;
 
-        for(unsigned int i=0; i<FR_muon.size(); i++){
-          this_weight *= FR_muon.at(i)/( 1.-FR_muon.at(i) );
-        }
-        if( FR_muon.size() == 2 ) this_weight *= -1.; // minus sign for TLL
-        //==== weight error
-        double this_weight_err(0.);
-        if( FR_muon.size() == 1 ){
-          double fr1 = FR_muon.at(0);
-          double fr1_err = FR_error_muon.at(0);
-          this_weight_err = fr1_err/pow(fr1-1,2);
-        }
-        else if( FR_muon.size() == 2 ){
-          double fr1 = FR_muon.at(0);
-          double fr1_err = FR_error_muon.at(0);
-          double fr2 = FR_muon.at(1);
-          double fr2_err = FR_error_muon.at(1);
-          this_weight_err = sqrt( pow( fr1_err*fr2*(1-fr2),2) +
-                             pow( fr2_err*fr1*(1-fr1),2)   ) / pow( (1-fr1)*(1-fr2), 2 );
-        }
-        else if( FR_muon.size() == 3 ){
-          double fr1 = FR_muon.at(0);
-          double fr1_err = FR_error_muon.at(0);
-          double fr2 = FR_muon.at(1);
-          double fr2_err = FR_error_muon.at(1);
-          double fr3 = FR_muon.at(2);
-          double fr3_err = FR_error_muon.at(2);
-          this_weight_err = sqrt( pow( fr1_err*fr2*(1-fr2)*fr3*(1-fr3), 2) +
-                             pow( fr2_err*fr3*(1-fr3)*fr1*(1-fr1), 2) +
-                             pow( fr3_err*fr1*(1-fr1)*fr2*(1-fr2), 2)   ) / pow( (1-fr1)*(1-fr2)*(1-fr3) ,2 );
-        }
-        else{
-          Message("?", INFO);
-        }
+        //==== fake method weighting
+        //if( n_triTight_muons == 3 ) return; // return TTT case
+        this_weight *= Get_DataDrivenWeight_MMM(false, muontriLooseColl);
+        double this_weight_err = Get_DataDrivenWeight_MMM(true, muontriLooseColl);
+        if(weight==0.) return;
 
         bool isOS = true;
 
@@ -461,7 +350,6 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
           TString this_suffix = it->first;
           if(it->second){
             FillUpDownHist(str_dXYCut+"_n_events_"+this_suffix, 0., this_weight, this_weight_err, 0., 1., 1);
-            FillHist(str_dXYCut+"_n_OnlyLoose_"+this_suffix, FR_muon.size(), 1., 0., 4., 4);
           }
         }
 

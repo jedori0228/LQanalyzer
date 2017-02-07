@@ -21,13 +21,7 @@ class trilepton_mumumu_CR_FR_method : public AnalyzerCore {
   void MakeHistograms();
   void FillCutFlow(TString cut, float w);
 
-  TH2D* hist_trimuon_FR;
-  TH2D* hist_trimuon_FR_QCD;
-  TH2D* hist_trimuon_FRSF_QCD;
-  TH2D* hist_trimuon_FR_QCDSFed;
   double this_dXYSig, this_RelIso;
-  int FR_n_pt_bin, FR_n_eta_bin;
-  double get_FR(snu::KParticle muon, bool geterror);
 
  private:
   

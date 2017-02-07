@@ -29,7 +29,6 @@ AnalyzerCore::AnalyzerCore() : LQCycleBase(), n_cutflowcuts(0), MCweight(-999.),
   bool debug(false);
   
   TH1::SetDefaultSumw2(true);  
-  TH1::AddDirectory(kFALSE);
   /// clear list of triggers stored in KTrigger
   triggerlist.clear();
   CorrectionMap.clear();
@@ -2810,6 +2809,44 @@ float AnalyzerCore::Get_DataDrivenWeight_MM(vector<snu::KMuon> k_muons, TString 
     
   }
   return mm_weight;
+}
+
+float AnalyzerCore::Get_DataDrivenWeight_MM(bool geterr, vector<snu::KMuon> k_muons){
+
+  Message("In Get_DataDrivenWeight_MM", DEBUG);
+  float mm_weight = 0.;
+
+  if(k_muons.size()==2){
+
+    bool is_mu1_tight = (k_muons.at(0).RelIso04() < 0.1);
+    bool is_mu2_tight = (k_muons.at(1).RelIso04() < 0.1);
+
+    vector<TLorentzVector> muons=MakeTLorentz(k_muons);
+
+    mm_weight =m_fakeobj->get_dilepton_mm_eventweight(geterr, muons, is_mu1_tight,is_mu2_tight);
+
+  }
+  return mm_weight;
+
+}
+
+float AnalyzerCore::Get_DataDrivenWeight_MMM(bool geterr, vector<snu::KMuon> k_muons){
+
+  Message("In Get_DataDrivenWeight_MMM", DEBUG);
+  float mmm_weight = 0.;
+
+  if(k_muons.size()==3){
+
+    bool is_mu1_tight = (k_muons.at(0).RelIso04() < 0.1);
+    bool is_mu2_tight = (k_muons.at(1).RelIso04() < 0.1);
+    bool is_mu3_tight = (k_muons.at(2).RelIso04() < 0.1);
+
+    vector<TLorentzVector> muons=MakeTLorentz(k_muons);
+
+    mmm_weight =m_fakeobj->get_trilepton_mmm_eventweight(geterr, muons, is_mu1_tight,is_mu2_tight, is_mu3_tight);
+
+  }
+  return mmm_weight;
 }
 
 
