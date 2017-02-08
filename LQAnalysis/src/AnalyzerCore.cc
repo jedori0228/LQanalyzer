@@ -20,6 +20,7 @@
 #include "SignalPlotsEM.h"
 #include "TriLeptonPlots.h"
 #include "HNTriLeptonPlots.h"
+#include "HNpairPlotsMM.h"
 
 //ROOT includes
 #include <TFile.h>
@@ -216,6 +217,7 @@ AnalyzerCore::AnalyzerCore() : LQCycleBase(), n_cutflowcuts(0), MCweight(-999.),
 
 
 
+
 void AnalyzerCore::SetupSelectionJet(std::string path_sel){
   Message("SetupSelectionJet", DEBUG);
   ifstream jetselconfig(path_sel.c_str());
@@ -273,6 +275,67 @@ void AnalyzerCore::SetupSelectionJet(std::string path_sel){
     }
     selectionIDMapsJet[idlabel] = string_jetsel;
     selectionIDMapfJet[idlabel] = float_jetsel;
+  }
+}
+
+
+void AnalyzerCore::SetupSelectionFatJet(std::string path_sel){
+  Message("SetupSelectionJet", DEBUG);
+  ifstream jetselconfig(path_sel.c_str());
+  if(!jetselconfig) {
+    cerr << "Did not find "+ path_sel+", exiting ..." << endl;
+    exit(EXIT_FAILURE);
+  }
+  string jetline;
+  int ncuts=0;
+  vector<TString> cutnames;
+  while(getline(jetselconfig,jetline) ){
+    vector<pair<TString,TString> > string_jetsel;
+    vector<pair<TString,float> > float_jetsel;
+    TString idlabel;
+    if (TString(jetline).Contains("webpage")) continue;
+    if (TString(jetline).Contains("###")) continue;
+    if (TString(jetline).Contains("ncut")) {
+      std::istringstream is( jetline );
+      string tmp;
+      int itmp;
+      is >> tmp;
+      is >> itmp;
+      ncuts = 2*(itmp +1);
+      continue;
+    }
+    if (TString(jetline).Contains("ptmin")) {
+      std::istringstream is( jetline );
+      string tmp;
+      for (int x =0; x < ncuts; x++){
+        is >> tmp;
+        cutnames.push_back(TString(tmp));
+      }
+    }
+    else{
+      std::istringstream is( jetline );
+      string tmp;
+      float tmpf;
+      for (int x =0; x < ncuts; x++){
+        if ( x%2 ==0) {
+          is >> tmp;
+          continue;
+        }
+
+        if (x > 6 && x < 18){
+          is >> tmp;
+          string_jetsel.push_back(make_pair(cutnames.at(x),tmp) );
+
+        }
+        else if ( x ==1) {is >> idlabel;}
+        else {
+          is >> tmpf;
+          float_jetsel.push_back(make_pair(cutnames.at(x),tmpf));
+        }
+      }
+    }
+    selectionIDMapsFatJet[idlabel] = string_jetsel;
+    selectionIDMapfFatJet[idlabel] = float_jetsel;
   }
 }
 
@@ -490,6 +553,10 @@ bool AnalyzerCore::EtaRegion(TString reg,  std::vector<snu::KMuon> muons){
 
 
 
+std::vector<snu::KFatJet> AnalyzerCore::GetFatJets(BaseSelection::ID jetid, float ptcut, float etacut){
+  return GetFatJets(GetStringID(jetid), ptcut, etacut);
+}
+
 
 std::vector<snu::KJet> AnalyzerCore::GetJets(BaseSelection::ID jetid, float ptcut, float etacut){
   return GetJets(GetStringID(jetid), ptcut, etacut);
@@ -650,6 +717,41 @@ std::vector<snu::KJet> AnalyzerCore::GetJets(TString jetid,  bool smearjets,floa
 
   return jetColl;
   
+}
+
+
+
+std::vector<snu::KFatJet> AnalyzerCore::GetFatJets(TString fatjetid,  bool smearjets,float ptcut, float etacut){
+
+  std::vector<snu::KFatJet> fatjetColl;
+
+  std::map<TString, vector<pair<TString,TString> > >::iterator it = selectionIDMapsFatJet.find(fatjetid);
+  if(it== selectionIDMapsFatJet.end()){
+    cerr << "FatJet ID ["+fatjetid+"] not found" << endl; exit(EXIT_FAILURE);
+  }
+  else {
+    TString muontag="";
+    TString eltag="";
+    for (unsigned int i=0; i  < it->second.size(); i++){
+      if ( it->second.at(i).first == "remove_near_muonID") muontag =  it->second.at(i).second;
+      if ( it->second.at(i).first == "remove_near_electronID") eltag =  it->second.at(i).second;
+    }
+    if(smearjets){
+      if (muontag.Contains("NONE") && eltag.Contains("NONE"))  eventbase->GetFatJetSel()->SelectFatJets(isData,fatjetColl,fatjetid, ptcut,etacut);
+      else if (muontag.Contains("NONE") || eltag.Contains("NONE")) {    cerr << "cannot choose to remove jets near only one lepton" << endl; exit(EXIT_FAILURE);}
+      else eventbase->GetFatJetSel()->SelectFatJets(isData,fatjetColl, GetMuons(muontag), GetElectrons(eltag) ,fatjetid, ptcut,etacut);
+
+    }
+    else{
+      if (muontag.Contains("NONE") && eltag.Contains("NONE"))  eventbase->GetFatJetSel()->SelectFatJets(isData,fatjetColl,fatjetid, ptcut,etacut,false);
+      else if (muontag.Contains("NONE") || eltag.Contains("NONE")) {    cerr << "cannot choose to remove fatjets near only one lepton" << endl; exit(EXIT_FAILURE);}
+      else eventbase->GetFatJetSel()->SelectFatJets(isData,fatjetColl, GetMuons(muontag), GetElectrons(eltag) ,fatjetid, ptcut,etacut,false);
+
+    }
+  }
+
+  return fatjetColl;
+
 }
 
 std::vector<snu::KMuon> AnalyzerCore::GetMuons(TString muid, float ptcut, float etacut){
@@ -1266,6 +1368,11 @@ AnalyzerCore::~AnalyzerCore(){
   }
   mapCLhistHNTriLep.clear();
 
+  
+  for(map<TString, HNpairPlotsMM*>::iterator it = mapCLhistHNpairMM.begin(); it != mapCLhistHNpairMM.end(); it++){
+    delete it->second;
+  }
+  mapCLhistHNpairMM.clear();
 
   for(map<TString,TNtupleD*>::iterator it = mapntp.begin(); it!= mapntp.end(); it++){ 
     delete it->second;
@@ -1328,7 +1435,6 @@ void AnalyzerCore::SetUpEvent(Long64_t entry, float ev_weight) throw( LQError ) 
     MCweight = eventinfo.MCWeight(); //Get MC weight here FIX ME                                                              
     weight= ev_weight; 
   }
-
  //
   // creates object that stores all SKTree classes	
   //                                                                                                        
@@ -1336,13 +1442,14 @@ void AnalyzerCore::SetUpEvent(Long64_t entry, float ev_weight) throw( LQError ) 
   snu::KTrigger triggerinfo = GetTriggerInfo(triggerlist);
     
   std::vector<snu::KJet> skjets= GetAllJets();
+  std::vector<snu::KFatJet> skfatjets= GetAllFatJets();
   std::vector<snu::KGenJet> skgenjets=GetAllGenJets();
   
    
   /// np == numberof particles you want to store at truth info. 30 is default unless running nocut sktree OR signal
   int np =  AssignnNumberOfTruth();
   
-  LQEvent lqevent(GetAllMuons(), GetAllElectrons(), GetAllPhotons(), skjets, skgenjets,GetTruthParticles(np), triggerinfo,eventinfo);
+  LQEvent lqevent(GetAllMuons(), GetAllElectrons(), GetAllPhotons(), skjets,skfatjets, skgenjets,GetTruthParticles(np), triggerinfo,eventinfo);
   
   //  eventbase is master class to use in analysis 
   //
@@ -1355,6 +1462,9 @@ void AnalyzerCore::SetUpEvent(Long64_t entry, float ev_weight) throw( LQError ) 
   eventbase->GetMuonSel()->SetIDFMap(selectionIDMapfMuon);
   eventbase->GetJetSel()->SetIDSMap(selectionIDMapsJet);
   eventbase->GetJetSel()->SetIDFMap(selectionIDMapfJet);
+  eventbase->GetFatJetSel()->SetIDSMap(selectionIDMapsFatJet);
+  eventbase->GetFatJetSel()->SetIDFMap(selectionIDMapfFatJet);
+
 
   if(!k_isdata){
     if(!changed_target_lumi){
@@ -1373,6 +1483,7 @@ int AnalyzerCore::VersionStamp(TString cversion){
   else if((cversion.Contains("v7-6-5") || cversion.Contains("v7-6-6"))) return 4;
   else if((cversion.Contains("v8-0-1"))) return 5;
   else if((cversion.Contains("v8-0-2"))) return 6;
+  else if((cversion.Contains("v8-0-3"))) return 7;
   
   return 5;
  
@@ -1427,6 +1538,17 @@ float AnalyzerCore::SumPt( std::vector<snu::KJet> particles){
   }
   return sumpt;
 }
+
+
+float AnalyzerCore::SumPt( std::vector<snu::KFatJet> particles){
+
+  float sumpt=0.;
+  for(std::vector<snu::KFatJet>::iterator it = particles.begin(); it != particles.end(); it++){
+    sumpt += it->Pt();
+  }
+  return sumpt;
+}
+
   
 
 
@@ -1515,7 +1637,7 @@ float AnalyzerCore::TriggerEff(TString trigname,  std::vector<snu::KMuon> muons,
 
   if(isData){
     //if(PassTrigger(trigname)) return 1.;
-    //    else return 0.;
+    return 1.;
   }
   if(electrons.size() >= 1 && muons.size() >= 1){
     float trig_eff(1.);
@@ -1538,7 +1660,7 @@ float AnalyzerCore::TriggerEff(TString trigname, std::vector<snu::KElectron> ele
   
   if(isData){
     //if(PassTrigger(trigname)) return 1.;
-    //else return 0.;
+    return 1.;
   }
   
   if(electrons.size() >=2){
@@ -1685,7 +1807,7 @@ float AnalyzerCore::TriggerEff(TString trigname, std::vector<snu::KMuon> muons){
   
   if(isData){
     ///    if(PassTrigger(trigname)) return 1.;
-    //else return 0.;
+    return 1.;
   }
   
   if(muons.size() >= 2){
@@ -1961,7 +2083,8 @@ void AnalyzerCore::MakeCleverHistograms(histtype type, TString clhistname ){
 
   if(type==trilephist)  mapCLhistTriLep[clhistname] = new TriLeptonPlots(clhistname);
   if(type==hntrilephist)  mapCLhistHNTriLep[clhistname] = new HNTriLeptonPlots(clhistname);
-      
+  if(type==hnpairmm) mapCLhistHNpairMM[clhistname] = new HNpairPlotsMM(clhistname);
+    
   return;
 }
 
@@ -2233,7 +2356,17 @@ void AnalyzerCore::FillCLHist(histtype type, TString hist, vector<snu::KJet> jet
   else  m_logger << INFO  <<"Type not set to jethist, is this a mistake?" << LQLogger::endmsg;
 
 }
-
+void AnalyzerCore::FillCLHist(histtype type, TString hist, snu::KEvent ev,vector<snu::KMuon> muons, vector<snu::KElectron> electrons, vector<snu::KJet> jets,double w, int nbjet){
+  if(type==hnpairmm){
+    map<TString, HNpairPlotsMM*>::iterator HNpairmmit = mapCLhistHNpairMM.find(hist);
+    if(HNpairmmit !=mapCLhistHNpairMM.end()) HNpairmmit->second->Fill(ev, muons, electrons, jets, w, nbjet);
+    else {
+      mapCLhistHNpairMM[hist] = new HNpairPlotsMM(hist);
+      HNpairmmit = mapCLhistHNpairMM.find(hist);
+      HNpairmmit->second->Fill(ev, muons, electrons, jets, w, nbjet);
+    }
+  }
+}
 void AnalyzerCore::FillCLHist(histtype type, TString hist, snu::KEvent ev,vector<snu::KMuon> muons, vector<snu::KElectron> electrons, vector<snu::KJet> jets,double w){
 
   if(type==trilephist){
@@ -2363,6 +2496,14 @@ void AnalyzerCore::WriteCLHists(){
     //Dir = m_outputFile->mkdir(hntrilepit->first);
     //m_outputFile->cd( Dir->GetName() );
     hntrilepit->second->Write();
+    m_outputFile->cd();
+  }
+
+  for(map<TString, HNpairPlotsMM*>::iterator HNpairmmit = mapCLhistHNpairMM.begin(); HNpairmmit != mapCLhistHNpairMM.end(); HNpairmmit++){
+    
+    Dir = m_outputFile->mkdir(HNpairmmit->first);
+    m_outputFile->cd( Dir->GetName() );
+    HNpairmmit->second->Write();
     m_outputFile->cd();
   }
 
@@ -2701,6 +2842,70 @@ float AnalyzerCore::CFRate(snu::KElectron el){
 
   return 1. ;
 }
+
+//CFrate for ELECTRON_HN_TIGHT 13 TeV
+float AnalyzerCore::CFRate_Run2(snu::KElectron el, TString el_id){
+  if(el.Pt() < 20.) return 0.;
+  
+  Double_t p_B1_1[2] = {0.};
+  Double_t p_B2_1[2] = {0.};
+  Double_t p_E_1[2] = {0.};
+  
+  Double_t p_B1_2[2] = {0.};
+  Double_t p_B2_2[2] = {0.};
+  Double_t p_E_2[2] = {0.};
+  
+  Double_t scale_factor_EE = 1. ;
+  Double_t scale_factor_BB = 1. ;
+  
+  if(el_id == "ELECTRON_HN_TIGHT"){
+    p_B1_1 = {0.0001261, -0.005951};
+    p_B2_1 = {0.00063, -0.01965};
+    p_E_1 = {0.006827, -0.2198};
+    
+    p_B1_2 = {1.584e-05, 5.337e-05};
+    p_B2_2 = {3.946e-05, 0.0008439};
+    p_E_2 = {0.003153, -0.003891};
+  }
+  
+  Double_t frac = 0. ;
+  float pt_inv = 1. / el.Pt();
+  float eta = el.Eta();
+  
+  //--root fitting
+  if( fabs(eta) <= 0.9 ) { // inner BB region
+    //scale_factor_BB = 1.22 ; // BB
+    frac = p_B1_2[0] + p_B1_2[1] * pt_inv;
+    if( pt_inv < 0.02 ){
+      frac = max(p_B1_1[0] + p_B1_1[1] * pt_inv, frac);
+    }
+    frac = max(frac,0.);
+    frac *=scale_factor_BB ;
+    
+  }else if( fabs(eta) > 0.9 && fabs(eta) <= 1.4442 ){ // outer BB region
+    //scale_factor_BB = 1.22 ; // BB
+    frac = p_B2_2[0] + p_B2_2[1] * pt_inv;
+    if( pt_inv < 0.025 ){
+      frac = max(p_B2_1[0] + p_B2_1[1] * pt_inv, frac);
+    }
+    frac = max(frac,0.);
+    frac *=scale_factor_BB ;
+
+  } else {  // fabs(eta) > 1.4
+    //scale_factor_EE = 1.40;
+    frac = p_E_2[0] + p_E_2[1] * pt_inv;
+    if( pt_inv <= 0.02 ){
+      frac = max(p_E_1[0] + p_E_1[1] * pt_inv, frac);
+    }
+    frac *= scale_factor_EE ;
+  }
+  
+  return float(frac) ;
+  return 1. ;
+
+}
+
+
 
 bool AnalyzerCore::IsTight(snu::KMuon muon){
   /// ADD TIGHT BaseSelection::MUON REQUIREMENT
@@ -3138,6 +3343,17 @@ void AnalyzerCore::PrintTruth(){
 
 
 
+
+vector<TLorentzVector> AnalyzerCore::MakeTLorentz(vector<snu::KFatJet> j){
+
+  vector<TLorentzVector> tl_jet;
+  for(vector<KFatJet>::iterator itj=j.begin(); itj!=j.end(); ++itj) {
+    TLorentzVector tmp_j;
+    tmp_j.SetPtEtaPhiM((*itj).Pt(),(*itj).Eta(),(*itj).Phi(),(*itj).M());
+    tl_jet.push_back(tmp_j);
+  }
+  return tl_jet;
+}
 
 
 

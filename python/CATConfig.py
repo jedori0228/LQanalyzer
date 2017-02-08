@@ -1,10 +1,19 @@
 ###################################################################                                                                         
 ###configure Job                                                                                                                                         ####################################################################                                                                                                           
-###timeWait=1#                                                                                                                                           ###################################################                                                                                                      ### Make Input File                                                                                                                                      ###################################################                                                                                                                            
+###timeWait=1#                                                                                                                                           ###################################################                                                                                                      ### Make Input File                         
+
 import os, getpass, sys,ROOT,time
 from functions import *
 
 from optparse import OptionParser
+
+
+path_jobpre="/data1/"
+if "tamsa2.snu.ac.kr" in str(os.getenv("HOSTNAME")):
+    path_jobpre="/data2/"
+
+
+
 
 #Import parser to get options                                                                                                                                                  
 parser = OptionParser()
@@ -168,6 +177,9 @@ if not (os.path.exists(tmpwork)):
     os.system("mkdir " + tmpwork)
 
 mc = len(sample)>1
+if sample == "H_v2" or sample == "H_v3":
+    mc= False
+
 if mc:
     datatype="mc"
     if "D1" in sample:
@@ -398,7 +410,7 @@ isfile = os.path.isfile
 join = os.path.join
 number_of_files = sum(1 for item in os.listdir(InputDir) if isfile(join(InputDir, item)))
 
-path_log="/data1/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/" + getpass.getuser() + "/Cluster_"+original_sample + tagger + ".log"
+path_log=path_jobpre+"/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/" + getpass.getuser() + "/Cluster_"+original_sample + tagger + ".log"
 
 time.sleep(5.)
 os.system("qstat -u '*' > " + path_log)
@@ -419,7 +431,7 @@ if os.path.exists(path_log):
 
 if printToScreen:
     print "number_of_files = " + str(number_of_files) + " njobs running in batch = " + str(njobs)
-if number_of_files < (750- njobs):
+if number_of_files < (1750- njobs):
     if printToScreen:
         print "Job is running in background............"
     os.system("mkdir " + tmpwork + "/" + tagger)

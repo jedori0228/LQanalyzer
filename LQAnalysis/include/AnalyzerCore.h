@@ -12,6 +12,7 @@ class SignalPlotsMM;
 class SignalPlotsEM;
 class TriLeptonPlots;
 class HNTriLeptonPlots;
+class HNpairPlotsMM;
 class EventBase;
 
 #include "BaseSelection.h"
@@ -51,6 +52,7 @@ class AnalyzerCore : public LQCycleBase {
  
   TString GetStringID(BaseSelection::ID id);
   std::vector<snu::KJet>  GetJets(BaseSelection::ID jetid, float ptcut=-999., float etacut = -999.);
+  std::vector<snu::KFatJet>  GetFatJets(BaseSelection::ID jetid, float ptcut=-999., float etacut = -999.);
   std::vector<snu::KMuon> GetMuons(BaseSelection::ID muid, float ptcut=-999., float etacut = -999.);
   std::vector<snu::KElectron> GetElectrons( BaseSelection::ID elid , float ptcut=-999., float etacut = -999.);
 
@@ -61,6 +63,7 @@ class AnalyzerCore : public LQCycleBase {
   std::vector<snu::KElectron> GetElectrons(bool keepcf, bool keepfake, BaseSelection::ID elid , float ptcut=-999., float etacut = -999.);
 
   std::vector<snu::KJet>  GetJets(TString jetid, bool smearjets=true, float ptcut=-999., float etacut = -999.);
+  std::vector<snu::KFatJet>  GetFatJets(TString jetid, bool smearjets=true, float ptcut=-999., float etacut = -999.);
   std::vector<snu::KMuon> GetMuons(TString muid, float ptcut=-999., float etacut = -999.);
   std::vector<snu::KMuon> GetMuons(TString muid, bool keepfakes, float ptcut=-999., float etacut = -999.);
   std::vector<snu::KElectron> GetElectrons(bool keepcf, bool keepfake, TString elid, float ptcut=-999., float etacut = -999.);
@@ -69,6 +72,7 @@ class AnalyzerCore : public LQCycleBase {
   bool Is2015Analysis();
   void SetupSelectionMuon(std::string path_sel);
   void SetupSelectionJet(std::string path_sel);
+  void SetupSelectionFatJet(std::string path_sel);
   void SetupSelectionElectron(std::string path_sel);
 
   void FillCorrectionHist(string label, string dirname, string filename, string histsname, string histtype);
@@ -120,6 +124,7 @@ class AnalyzerCore : public LQCycleBase {
 
   float  JetResCorr(snu::KJet jet, std::vector<snu::KGenJet> genjets);
   float SumPt( std::vector<snu::KJet> particles);
+  float SumPt( std::vector<snu::KFatJet> particles);
   bool isPrompt(long pdgid);
   void TruthPrintOut();
   bool IsTight(snu::KElectron electron);
@@ -133,6 +138,7 @@ class AnalyzerCore : public LQCycleBase {
   bool SameCharge(std::vector<snu::KElectron> electrons, bool runcf=false);
   
   float CFRate(snu::KElectron el);
+  float CFRate_Run2(snu::KElectron el, TString el_id);
   std::vector<snu::KElectron>  ShiftElectronEnergy(std::vector<snu::KElectron> el, bool applyshift);
 
   float Get_DataDrivenWeight_EE(vector<snu::KElectron> k_electrons);
@@ -153,8 +159,9 @@ class AnalyzerCore : public LQCycleBase {
   vector<TLorentzVector> MakeTLorentz( vector<snu::KElectron> el);
   vector<TLorentzVector> MakeTLorentz( vector<snu::KMuon> mu);
   vector<TLorentzVector> MakeTLorentz( vector<snu::KJet> jet);
+  vector<TLorentzVector> MakeTLorentz( vector<snu::KFatJet> jet);
   // enum for plotting functions/classes
-  enum histtype {muhist, elhist, jethist, sighist_ee, sighist_mm, sighist_em, trilephist, hntrilephist};
+  enum histtype {muhist, elhist, jethist, sighist_ee, sighist_mm, sighist_em, trilephist, hnpairmm, hntrilephist};
   
   
   //
@@ -198,7 +205,8 @@ class AnalyzerCore : public LQCycleBase {
   map<TString,vector<pair<TString,float> > > selectionIDMapfElectron;
   map<TString,vector<pair<TString,TString> > > selectionIDMapsJet;
   map<TString,vector<pair<TString,float> > > selectionIDMapfJet;
-
+  map<TString,vector<pair<TString,TString> > > selectionIDMapsFatJet;
+  map<TString,vector<pair<TString,float> > > selectionIDMapfFatJet;
 
   map<int, float> mapLumi2016;
   map<int, float> mapBadLumi2016;
@@ -246,6 +254,7 @@ class AnalyzerCore : public LQCycleBase {
   //// Making cleaver hist maps
   map<TString, TriLeptonPlots*> mapCLhistTriLep;
   map<TString, HNTriLeptonPlots*> mapCLhistHNTriLep;
+  map<TString, HNpairPlotsMM*> mapCLhistHNpairMM;
   map<TString, SignalPlotsEE*> mapCLhistSigEE;
   map<TString, SignalPlotsMM*> mapCLhistSigMM;
   map<TString, SignalPlotsEM*> mapCLhistSigEM;
@@ -295,6 +304,8 @@ class AnalyzerCore : public LQCycleBase {
 
   /// Fills clever hists
   void FillCLHist(histtype type, TString hist, snu::KEvent ev,vector<snu::KMuon> muons, vector<snu::KElectron> electrons, vector<snu::KJet> jets,double weight);
+  void FillCLHist(histtype type, TString hist, snu::KEvent ev,vector<snu::KMuon> muons, vector<snu::KElectron> electrons, vector<snu::KJet> jets,double weight,int nbjet);
+
   void FillCLHist(histtype type, TString hist, vector<snu::KMuon> muons , double weight);
   void FillCLHist(histtype type, TString hist, vector<snu::KElectron> electrons , double weight);
   void FillCLHist(histtype type, TString hist, vector<snu::KJet> jets , double weight);

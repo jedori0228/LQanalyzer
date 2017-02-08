@@ -6,12 +6,52 @@ from datetime import timedelta
 from optparse import OptionParser
 from QuickHistCheck import *
 
+
+path_jobpre="/data1/"
+if "tamsa2.snu.ac.kr" in str(os.getenv("HOSTNAME")):
+    path_jobpre="/data2/"
+
+an_jonpre="/data2/"
+if "tamsa2.snu.ac.kr" in str(os.getenv("HOSTNAME")):
+    an_jonpre="/data4/"
+
+
+
+
 large_memory_check=800
 large_file_size=100
 file_increase_warning=2.
 time_increase_warning=2.
 ######## set 10 process time for which email is sent
 email_time_limit=600.
+
+def   GetMonth(imonth):
+    if imonth == 1:
+        return "Jan"
+    if imonth == 2:
+        return "Feb"
+    if imonth == 3:
+        return "Mar"
+    if imonth == 4:
+        return "Apr"
+    if imonth == 5:
+        return "May"
+    if imonth == 6:
+        return "June"
+    if imonth == 7:
+        return "July"
+    if imonth == 8:
+        return "Aug"
+    if imonth == 9:
+        return "Sep"
+    if imonth == 10:
+        return "Oct"
+    if imonth == 11:
+        return "Nov"
+    if imonth == 12:
+        return "Dec"
+    else:
+        return "Dec"
 
 def   MergeData(defrunnp,defruncf,defdata_lumi, defFinaloutputdir,  defcatversion, defuseskim, defcycle, defchannel):
 
@@ -44,8 +84,9 @@ def   MergeData(defrunnp,defruncf,defdata_lumi, defFinaloutputdir,  defcatversio
             defFinaloutputdirMC=defFinaloutputdirMC.replace("Fake/","")
 
         if defdata_lumi == "ALL" or defdata_lumi==os.getenv("catdatatag"):
-            os.system("source hadd.sh " + defFinaloutputdir + " "+defcycle+"_"+defoutput_file_skim_tag+".root "+defFinaloutputdir+"/"+defcycle+"'*'"+defoutput_file_skim_tag+"'*'")
-            os.system("mv "  + defFinaloutputdir+ "/"+ defcycle+"_"+defoutput_file_skim_tag+".root " + defFinaloutputdirMC+ "/"+defcycle+ "_"+defchannel+"_"+foutname+".root")
+            if not  "SKTreeMaker" in cycle:
+                os.system("source hadd.sh " + defFinaloutputdir + " "+defcycle+"_"+defoutput_file_skim_tag+".root "+defFinaloutputdir+"/"+defcycle+"'*'"+defoutput_file_skim_tag+"'*'")
+                os.system("mv "  + defFinaloutputdir+ "/"+ defcycle+"_"+defoutput_file_skim_tag+".root " + defFinaloutputdirMC+ "/"+defcycle+ "_"+defchannel+"_"+foutname+".root")
 
 
     elif defruncf == "True":
@@ -70,8 +111,10 @@ def   MergeData(defrunnp,defruncf,defdata_lumi, defFinaloutputdir,  defcatversio
         
         output_datafile=defFinaloutputdirMC+"/"+defcycle+"_data_cat_"+ defcatversion+".root"
         if defdata_lumi == "ALL" or defdata_lumi==os.getenv("catdatatag"):
-            os.system("source hadd.sh " + defFinaloutputdir + " "+defcycle+"_data_cat_"+defcatversion+".root "+defFinaloutputdir+"/"+defcycle+"'*'"+defoutput_file_skim_tag+"'*'")
-            os.system("mv "  + defFinaloutputdir+ "/"+defcycle+"_data_cat_"+defcatversion+".root  " + defFinaloutputdirMC+ "/"+defcycle+"_data_" + defchannel+"_cat_"+defcatversion+".root")
+            if not "SKTreeMaker" in cycle:
+
+                os.system("source hadd.sh " + defFinaloutputdir + " "+defcycle+"_data_cat_"+defcatversion+".root "+defFinaloutputdir+"/"+defcycle+"'*'"+defoutput_file_skim_tag+"'*'")
+                os.system("mv "  + defFinaloutputdir+ "/"+defcycle+"_data_cat_"+defcatversion+".root  " + defFinaloutputdirMC+ "/"+defcycle+"_data_" + defchannel+"_cat_"+defcatversion+".root")
 
 def UpdateOutput(outputlist,outputlist_path):
     out_file = open(outputlist_path,"w")
@@ -113,15 +156,116 @@ def NewForat(ct):
             return True
     return False
 
-def DetermineNjobs(ncores_job, deftagger,defsample,defcycle,defskim):
 
-    if not os.path.exists("/data1/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/MasterFile_"+ os.getenv("CATVERSION")+".txt"):
+def GetNFiles( deftagger,defsample,defcycle,defskim):
+
+    if not os.path.exists(path_jobpre+"/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/MasterFile_"+ os.getenv("CATVERSION")+".txt"):
+        return -999
+
+    nit=2
+    avg_time=-999
+    checkdate = datetime.datetime.now()
+    diff = datetime.timedelta(days=30)
+    checkdate=checkdate+diff
+    get_nfiles=0
+    while avg_time < 0:
+        if nit < 0:
+            return 0.
+        nit =nit-1
+        #### get previous month                                                                                                                                                 
+        checkdate=checkdate-diff
+        month=checkdate.strftime("%m")
+        day=checkdate.strftime("%d")
+        year=checkdate.strftime("%y")
+
+        file_jobsummary="/data1//LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/JobSummary"+str(GetMonth(int(month)))+"_20"+year+".txt"
+        read_file_jobsummary = open(file_jobsummary,"r")
+    
+
+        for line in read_file_jobsummary:
+            if os.getenv("USER") in line:
+                if defsample+" " in line and defskim in line:
+                    splitline = line.split()
+                    nthsplit=0
+                    for s in splitline:
+                        if nthsplit== 12:
+                            get_nfiles=int(s)
+                        nthsplit=nthsplit+1
+        read_file_jobsummary.close()
+
+        if get_nfiles < 1:
+            continue
+        else:
+            return get_nfiles
+
+    return get_nfiles
+
+
+def GetAverageTime( deftagger,defsample,defcycle,defskim):
+    if not os.path.exists(path_jobpre+"/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/MasterFile_"+ os.getenv("CATVERSION")+".txt"):
+        return 1.
+    
+
+    nit=2
+    avg_time=-999
+    checkdate = datetime.datetime.now()
+    diff = datetime.timedelta(days=30)
+    checkdate=checkdate+diff
+    gettime_nfiles=0
+    gettime_njobs=0
+    gettime_jobtime=0
+    
+    while avg_time < 0:
+        if nit < 0:
+            return 0.
+        nit =nit-1
+        #### get previous month
+        checkdate=checkdate-diff
+        month=checkdate.strftime("%m")
+        day=checkdate.strftime("%d")
+        year=checkdate.strftime("%y")
+
+        file_jobsummary="/data1//LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/JobSummary"+str(GetMonth(int(month)))+"_20"+year+".txt"
+        read_file_jobsummary = open(file_jobsummary,"r")
+        for line in read_file_jobsummary:
+            if os.getenv("USER") in line:
+                if defsample +" " in line and defskim in line:
+                    splitline = line.split()
+                    nthsplit=0
+                    for s in splitline:
+                        if nthsplit==10:
+                            gettime_njobs=s
+                        if nthsplit==12:
+                            gettime_nfiles=s
+                        if nthsplit==24:
+                            gettime_jobtime=s
+                        nthsplit=nthsplit+1
+        read_file_jobsummary.close()
+        if gettime_jobtime < 1.:
+            continue
+        if gettime_nfiles < 1:
+            continue
+        if gettime_njobs < 1:
+            continue
+        gettime_jobtime = float(gettime_jobtime) * float(gettime_nfiles) 
+        gettime_jobtime = float(gettime_jobtime) / float(gettime_njobs)
+        avg_time=float(gettime_jobtime)
+        return avg_time
+    return avg_time
+    
+
+def DetermineNjobs(longestjobtime, ncores_job, deftagger,defsample,defcycle,defskim):
+
+    if not os.path.exists(path_jobpre+"/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/MasterFile_"+ os.getenv("CATVERSION")+".txt"):
         return 1000
 
     if ncores_job == 1:
         return 1
     
-    path_clust_check_njobs="/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(deftagger)+ "/clustercheck.txt"
+    #expectedjobtime=GetAverageTime(deftagger, defsample, defcycle,defskim)
+    #expectedjobnfiles=GetNFiles(deftagger, defsample, defcycle,defskim)
+
+    path_clust_check_njobs=an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(deftagger)+ "/clustercheck.txt"
     os.system("qstat -u '*'  > " +  path_clust_check_njobs)
     file_clust_check_njobs=open(path_clust_check_njobs ,"r")
     nrunning=0.
@@ -147,15 +291,20 @@ def DetermineNjobs(ncores_job, deftagger,defsample,defcycle,defskim):
         njobs_max=5
     else:
         njobs_max=5
+    return njobs_max
 
-    if nrunning < 50:
-        return njobs_max
-    else:
-        return njobs_max
-        if njobs_max> 40:
-            return njobs_max - 40
-        else:
-            return njobs_max
+    if expectedjobtime > 1.:
+        if not longestjobtime == expectedjobtime:
+            for ix in range(2, 20):
+                i=20-ix
+                if float(expectedjobtime*float(expectedjobnfiles)/float(i)) < longestjobtime:
+                    expectedjobnfiles_i=int(expectedjobnfiles)
+                    itmp=int(i)
+                    #while (expectedjobnfiles_i % int(i)):
+                    #    expectedjobnfiles=expectedjobnfiles-1
+                    return int(expectedjobnfiles/itmp)
+
+    return njobs_max
 
 def CheckJobHistory(info_type, defsample, defcycle, tagger,defskim):
 
@@ -177,8 +326,8 @@ def CheckJobHistory(info_type, defsample, defcycle, tagger,defskim):
         cattag=list_tags[itag]
         newformat=NewForat(cattag)
 
-        #info_file_master = "/data1/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/MasterFile_"+ os.getenv("CATVERSION")+".txt"
-        info_file= "/data1/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/" + os.getenv("USER") + "/PreMasterFile_"+os.getenv("CATVERSION")+ str(tagger)+".txt"
+        #info_file_master = path_jobpre+"/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/MasterFile_"+ os.getenv("CATVERSION")+".txt"
+        info_file= path_jobpre+"/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/" + os.getenv("USER") + "/PreMasterFile_"+os.getenv("CATVERSION")+ str(tagger)+".txt"
 
         #os.system("cp " + info_file_master + " " + info_file)
         read_info_file = open(info_file,"r")
@@ -256,15 +405,15 @@ def SendEmail(jobsummary, deftagger, e_subject, email_user, sendplots, plotlist)
     for x in plotlist:
         plotstring = plotstring+" -a " + x + " "
 
-    path_file_email="/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(deftagger)+"/email.sh"
+    path_file_email=an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(deftagger)+"/email.sh"
     file_email=open(path_file_email,"w")
     if not sendplots:
-        file_email.write('cat /data2/CAT_SKTreeOutput/' + os.getenv("USER")  + '/CLUSTERLOG' + str(deftagger) + '/email.txt | mail -s "Job summary for job ' + str(deftagger) + " " + e_subject + '" '+str(email_user)+'')
+        file_email.write('cat "+an_jonpre+"CAT_SKTreeOutput/' + os.getenv("USER")  + '/CLUSTERLOG' + str(deftagger) + '/email.txt | mail -s "Job summary for job ' + str(deftagger) + " " + e_subject + '" '+str(email_user)+'')
     else:
-        file_email.write('cat /data2/CAT_SKTreeOutput/' + os.getenv("USER")  + '/CLUSTERLOG' + str(deftagger) + '/email.txt | mail  '+ plotstring+' -s "Job summary for job ' + str(deftagger) + " " + e_subject + '" '+str(email_user)+'')
+        file_email.write('cat "+an_jonpre+"CAT_SKTreeOutput/' + os.getenv("USER")  + '/CLUSTERLOG' + str(deftagger) + '/email.txt | mail  '+ plotstring+' -s "Job summary for job ' + str(deftagger) + " " + e_subject + '" '+str(email_user)+'')
     file_email.close()
 
-    filejobsummary = open("/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(deftagger)+"/email.txt","w")
+    filejobsummary = open(an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(deftagger)+"/email.txt","w")
     for eline in jobsummary:
         filejobsummary.write(eline)
     filejobsummary.close()    
@@ -417,11 +566,11 @@ def GetOutFileName(defskim, ismc , defsample, defrunnp, defruncf, defchannel ,de
     if "SKTreeMaker" in defcycle:
         if ismc:
             if defskim == "DiLep":
-                return "/data2/CatNtuples/"+str(os.getenv("CATVERSION"))+"/SKTrees/MCDiLep/"+defsample+"/"
+                return an_jonpre+"/CatNtuples/"+str(os.getenv("CATVERSION"))+"/SKTrees/MCDiLep/"+defsample+"/"
             elif defskim == "TriLep":
-                return "/data2/CatNtuples/"+str(os.getenv("CATVERSION"))+"/SKTrees/MCTriLep/"+defsample+"/"
+                return an_jonpre+"/CatNtuples/"+str(os.getenv("CATVERSION"))+"/SKTrees/MCTriLep/"+defsample+"/"
             else:
-                return "/data2/CatNtuples/"+str(os.getenv("CATVERSION"))+"/SKTrees/MC/"+defsample+"/"
+                return an_jonpre+"/CatNtuples/"+str(os.getenv("CATVERSION"))+"/SKTrees/MC/"+defsample+"/"
                                                     
     return outsamplename    
 
@@ -668,7 +817,7 @@ runinbkg=options.bkg
 quick_draw=options.drawhists
 
 
-queuepath="/data1/LQAnalyzer_rootfiles_for_analysis/CattupleConfig/QUEUE/ForceQueue.txt"
+queuepath=path_jobpre+"/LQAnalyzer_rootfiles_for_analysis/CattupleConfig/QUEUE/ForceQueue.txt"
 file_queuepath = open(queuepath,"r")
 for line in file_queuepath:
     if "#" in line:
@@ -726,6 +875,7 @@ crash_outputjob=[]
 output_bkg=[]
 for out_x in range(1,winx):
     output_bkg.append(" "*170)
+
 
 start_time = time.time()  
 screen = curses.initscr()
@@ -795,26 +945,26 @@ stdscr.addstr(list3b, box_shift,  "Log Files: (will be deleted "+ future_week +"
 stdscr.addstr(list3c, box_shift,  "Output Files:" ,curses.A_UNDERLINE)
 
 #### make working directorr
-if not os.path.exists("/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)):
-    os.system("mkdir " + "/data2/CAT_SKTreeOutput/" + os.getenv("USER")  +"/CLUSTERLOG" +str(tagger))
+if not os.path.exists(an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)):
+    os.system("mkdir " + an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  +"/CLUSTERLOG" +str(tagger))
 else:
-    os.system("rm -r " + "/data2/CAT_SKTreeOutput/" + os.getenv("USER")  +"/CLUSTERLOG" +str(tagger))
-    os.system("mkdir " + "/data2/CAT_SKTreeOutput/" + os.getenv("USER")  +"/CLUSTERLOG" +str(tagger))
+    os.system("rm -r " + an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  +"/CLUSTERLOG" +str(tagger))
+    os.system("mkdir " + an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  +"/CLUSTERLOG" +str(tagger))
 
 ### Make directory for job stats
-statdir="/data1/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/"+ os.getenv("USER")
+statdir=path_jobpre+"/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/"+ os.getenv("USER")
 if not os.path.exists(statdir):
     os.system("mkdir " +statdir)
 
 if channel == "":
     channel = NULL
 
-if not os.path.exists("/data1/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/MasterFile_"+ os.getenv("CATVERSION")+".txt"):
-    os.system("cp  /data1/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/MasterFileSkeleton.txt " + "/data1/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/MasterFile_"+ os.getenv("CATVERSION")+".txt")
+if not os.path.exists(path_jobpre+"/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/MasterFile_"+ os.getenv("CATVERSION")+".txt"):
+    os.system("cp  " + path_jobpre +"/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/MasterFileSkeleton.txt " + path_jobpre+"/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/MasterFile_"+ os.getenv("CATVERSION")+".txt")
 
 
-jobinfo_file_master = "/data1/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/MasterFile_"+ os.getenv("CATVERSION")+".txt"
-jobinfo_file= "/data1/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/" + os.getenv("USER") + "/PreMasterFile_"+os.getenv("CATVERSION")+ str(tagger)+".txt"
+jobinfo_file_master = path_jobpre+"/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/MasterFile_"+ os.getenv("CATVERSION")+".txt"
+jobinfo_file= path_jobpre+"/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/" + os.getenv("USER") + "/PreMasterFile_"+os.getenv("CATVERSION")+ str(tagger)+".txt"
 os.system("cp " + jobinfo_file_master + " " + jobinfo_file)
 
 
@@ -822,7 +972,7 @@ os.system("cp " + jobinfo_file_master + " " + jobinfo_file)
 #http://stackoverflow.com/questions/14300770/how-to-noutrefresh-the-multi-line-output-dynamically
 ### split sample and check cluster queue
 
-#"/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/" + str(tagger)+ "/jobid.txt"
+#an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/" + str(tagger)+ "/jobid.txt"
 samples_inbackground=[]
 samples_complete=[]
 jobidcrash=[]
@@ -862,21 +1012,31 @@ for s in sample:
         sys.exit()
 
 runningData=False
+longestjob=0.
+for s in sample:
+    stime=GetAverageTime(tagger, s, cycle,useskim)
+    if stime > longestjob:
+        longestjob=stime
 
 for s in sample:
     #### Get number of subjobs from DetermineNjobs function. Unless number_of_cores is set to 1 this will check the processing time of the cycle and batch queue to determin the number of jobs to run
-    njobs_for_submittion=DetermineNjobs(number_of_cores, tagger, s, cycle,useskim)
+
+    njobs_for_submittion=DetermineNjobs(longestjob,number_of_cores, tagger, s, cycle,useskim)
+
     isample=isample+1
 
     ## set MC bool from the sample length. This is the letter of the data period for data
     isMC = len(s) > 1
+    if s == "H_v2" or s == "H_v3":
+        isMC= False
+
     runningData= not isMC
     
     if run_in_bkg:
         del output_bkg[:]
         for out_x in range(1,winx):
             output_bkg.append(stdscr.instr(out_x, 0))
-        UpdateOutput(output_bkg,"/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/output_bkg.txt")    
+        UpdateOutput(output_bkg,an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/output_bkg.txt")    
     #### if sample is submitted this for loop will check job process on cluster and update the screen/terminal
     for x in range(0, len(sample)):
         
@@ -884,7 +1044,7 @@ for s in sample:
             del output_bkg[:]
             for out_x in range(1,winx):
                 output_bkg.append(stdscr.instr(out_x, 0))
-            UpdateOutput(output_bkg,"/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/output_bkg.txt")
+            UpdateOutput(output_bkg,an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/output_bkg.txt")
 
         ### check if sample is already complet. Only update terminal for samples not complete
         sample_complete=False
@@ -903,6 +1063,9 @@ for s in sample:
 
         useskimtmp=useskim
         ismctmp=  len(sample[x])>1
+        if sample[x] == "H_v2" or sample[x] == "H_v3":
+            ismctmp= False
+
         sampletmp=sample[x]
         runnptmp=runnp
         runcftmp=runcf
@@ -913,13 +1076,13 @@ for s in sample:
             #### in case the job id file is not yet filled add while condition
             jobid_exists=True
             while jobid_exists:        
-                path_job_check="/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/" + sample[x] + "jobid.txt"  
+                path_job_check=an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/" + sample[x] + "jobid.txt"  
                 if  os.path.exists(path_job_check):
                     jobid_exists=False
                     
 
 
-            #CheckRunningStatus("/data2/CAT_SKTreeOutput/"+os.getenv("USER")+"/CLUSTERLOG" + str(tagger) +"/" + tagger + "/" + sample[x] +".txt")
+            #CheckRunningStatus(an_jonpre+"/CAT_SKTreeOutput/"+os.getenv("USER")+"/CLUSTERLOG" + str(tagger) +"/" + tagger + "/" + sample[x] +".txt")
 
             file_job_check=open(path_job_check ,"r")
             jobid1=0
@@ -929,7 +1092,7 @@ for s in sample:
             nrunning=0.
             nqueue=0.
             njobs_in_total=0.  ### should equal three above
-            path_clust_check="/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/" + sample[x] + "clust.txt"
+            path_clust_check=an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/" + sample[x] + "clust.txt"
             os.system("qstat -u " + os.getenv("USER") + " > " +  path_clust_check)
             ijob=0
 
@@ -962,7 +1125,7 @@ for s in sample:
                 if not job_inqueue:
                     njobs_finished=njobs_finished+1.
                 file_clust_check.close()
-            path_clust_check="/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/" + sample[x] + "clust.txt"
+            path_clust_check=an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/" + sample[x] + "clust.txt"
             os.system("rm " + path_clust_check)
     
             if njobs_in_total == 0:
@@ -1034,7 +1197,7 @@ for s in sample:
                     del output_bkg[:]
                     for out_x in range(1,winx):
                         output_bkg.append(stdscr.instr(out_x, 0))
-                        UpdateOutput(output_bkg,"/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/output_bkg.txt")
+                        UpdateOutput(output_bkg,an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/output_bkg.txt")
             if nfin_per == 1.:
                 stdscr.addstr(int(x)+istatus_message, box_shift,  str(int(x+1)), curses.A_DIM )
                 stdscr.addstr(int(x)+istatus_message, summary_block0,  "| " + cycle, curses.A_DIM )
@@ -1056,7 +1219,7 @@ for s in sample:
                 stdscr.addstr(int(x)+istatus_message, summary_block6,  "| Running   " + nscreen_run + " " + str(100*nrun_per)+ "%  Complete" + nscreen_fin + " " + str(100*nfin_per) + "%",curses.A_DIM) 
                 stdscr.refresh()
 
-                path_job="/data1/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/" + getpass.getuser() + "/" + str(tagger)+ "/statlog_time_"+sample[x] + tagger + ".txt"
+                path_job=path_jobpre+"/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/" + getpass.getuser() + "/" + str(tagger)+ "/statlog_time_"+sample[x] + tagger + ".txt"
                 ismerging=True
                 while not os.path.exists(path_job):
                     if ismerging:
@@ -1066,7 +1229,7 @@ for s in sample:
                         ismerging=False
                     check_crash_stat=False
                     if check_crash_stat:
-                        check_crashfile="/data2/CAT_SKTreeOutput/"+os.getenv("USER")+"/CLUSTERLOG" + str(tagger) +"/" + tagger + "/" + sample[x] +".txt"
+                        check_crashfile=an_jonpre+"/CAT_SKTreeOutput/"+os.getenv("USER")+"/CLUSTERLOG" + str(tagger) +"/" + tagger + "/" + sample[x] +".txt"
                         if not os.path.exists(check_crashfile):
                             continue
                         file_check_crashfile=open(check_crashfile,"r")
@@ -1078,7 +1241,7 @@ for s in sample:
                                 crashlog.append(line)
                         file_check_crashfile.close()
                         if crash_in_job:
-                            crash_log= "/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/" + sample[x] +"_crash/crashlog.txt"
+                            crash_log= an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/" + sample[x] +"_crash/crashlog.txt"
                             if os.path.exists(crash_log):
                                 file_crash=open(crash_log,"a")
                                 for linex in  crashlog:
@@ -1094,7 +1257,7 @@ for s in sample:
                     continue
                 
 
-                crash_log= "/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/" + sample[x] +"_crash/crashlog.txt"
+                crash_log= an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/" + sample[x] +"_crash/crashlog.txt"
 
                 if os.path.exists(crash_log):
                     jobidcrash.append(int(x))
@@ -1204,9 +1367,9 @@ for s in sample:
             stdscr.refresh()
 
     ##### New Code looks at submittnig jobs to batch queue        
-    logfile="/data1/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/" + os.getenv("USER") + "/" + str(tagger)+ "/statlog_"+ s + tagger + ".txt"
-    if not os.path.exists("/data1/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/" + os.getenv("USER") + "/" + str(tagger)):
-        os.system("mkdir " + "/data1/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/" + os.getenv("USER") + "/" + str(tagger))
+    logfile=path_jobpre+"/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/" + os.getenv("USER") + "/" + str(tagger)+ "/statlog_"+ s + tagger + ".txt"
+    if not os.path.exists(path_jobpre+"/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/" + os.getenv("USER") + "/" + str(tagger)):
+        os.system("mkdir " + path_jobpre+"/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/" + os.getenv("USER") + "/" + str(tagger))
 
     filestatlog=open(logfile,"w")
     filestatlog.write("user " +  os.getenv("USER")+ " \n")
@@ -1226,13 +1389,13 @@ for s in sample:
     command1= "python  " +  os.getenv("LQANALYZER_DIR")+  "/python/CATConfig.py -p " + s + "  -s " + str(channel) + "  -j " + str(njobs_for_submittion) + " -c  " + str(cycle)+ " -o " + str(logstep)+ "  -d " + str(data_lumi) + " -O " + str(Finaloutputdir) + "  -w " + str(remove_workspace)+ " -l  " + str(loglevel) + "  -k " + str(skipev) + "  -n " + str(number_of_events_per_job) + "  -e " + str(totalev) + "  -x " + str(xsec) + "  -T " + str(tar_lumi) + " -E " + str(eff_lumi) + "  -S " + str(useskinput) + " -R " + str(runevent)+ "  -N " + str(useCATv742ntuples) + " -L " + str(tmplist_of_extra_lib) + " -D " + str(DEBUG) + " -m " + str(useskim) + " -P  " + str(runnp) + " -Q " + str(runcf) + " -v " + str(catversion) + " -f " + str(skflag) + " -b " + str(usebatch) + "  -X " + str(tagger) +" -q " + str(queue)
     command2=command1
     command2 = command2.replace("CATConfig.py", "localsubmit.py")
-    command2_background=command2 + "&>  /data2/CAT_SKTreeOutput/"+os.getenv("USER")+"/CLUSTERLOG" + str(tagger) +"/" + tagger + "/" + s+".txt&"
+    command2_background=command2 + "&>  "+an_jonpre+"CAT_SKTreeOutput/"+os.getenv("USER")+"/CLUSTERLOG" + str(tagger) +"/" + tagger + "/" + s+".txt&"
     checkqueue=True
     stdscr.addstr(list4+1, box_shift,  "Initialise:: sample " + s +  blankbuffer)
     stdscr.refresh()
     while checkqueue:
         os.system(command1)
-        if not os.path.exists("/data2/CAT_SKTreeOutput/" + os.getenv("USER") +"/"+tagger):
+        if not os.path.exists(an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER") +"/"+tagger):
             stdscr.addstr(list4+1, box_shift,  "Queue busy.. please wait")
             stdscr.refresh()
             
@@ -1249,6 +1412,9 @@ for s in sample:
                     backgroundsamples=True
             useskimtmp=useskim
             ismctmp=  len(sample[x])>1
+            if sample[x] == "H_v2" or sample[x] == "H_v3":
+                ismctmp= False
+
             sampletmp=sample[x]
             runnptmp=runnp
             runcftmp=runcf
@@ -1256,7 +1422,7 @@ for s in sample:
             if backgroundsamples:
                 jobid_exists=True
                 while jobid_exists:
-                    path_job_check="/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/" + sample[x] + "jobid.txt"
+                    path_job_check=an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/" + sample[x] + "jobid.txt"
                     if  os.path.exists(path_job_check):
                         jobid_exists=False
                 file_job_check=open(path_job_check ,"r")
@@ -1266,7 +1432,7 @@ for s in sample:
                 nrunning=0.
                 nqueue=0.
                 njobs_in_total=0.  ### should equal three above                                                                                                                                                                                                       
-                path_clust_check="/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/" + sample[x] + "clust.txt"
+                path_clust_check=an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/" + sample[x] + "clust.txt"
                 os.system("qstat -u " + os.getenv("USER") + " > " +  path_clust_check)
                 ijob=0
                 for sline in file_job_check:
@@ -1296,7 +1462,7 @@ for s in sample:
                     if not job_inqueue:
                         njobs_finished=njobs_finished+1.
                     file_clust_check.close()
-                path_clust_check="/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/" + sample[x] + "clust.txt"
+                path_clust_check=an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/" + sample[x] + "clust.txt"
                 os.system("rm " + path_clust_check)
                 if njobs_in_total == 0:
                     continue
@@ -1374,7 +1540,7 @@ for s in sample:
                         del output_bkg[:]
                         for out_x in range(1,winx):
                             output_bkg.append(stdscr.instr(out_x, 0))
-                            UpdateOutput(output_bkg,"/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/output_bkg.txt")
+                            UpdateOutput(output_bkg,an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/output_bkg.txt")
                     job_time = time.time() - start_time
                     if not jobid1 == 0:
                         nblanks=2*(8-len(str(jobid2)))
@@ -1387,15 +1553,15 @@ for s in sample:
                     stdscr.refresh()
                     
         else:
-            os.system("rm -r /data2/CAT_SKTreeOutput/" + os.getenv("USER") +"/"+tagger)
+            os.system("rm -r "+an_jonpre+"CAT_SKTreeOutput/" + os.getenv("USER") +"/"+tagger)
             stdscr.addstr(list4+1, box_shift,  "Submitting sample to queue  " + s)
             stdscr.refresh()
             
             checkqueue=False
-            if not os.path.exists("/data2/CAT_SKTreeOutput/"+os.getenv("USER")+"/CLUSTERLOG" + str(tagger) +"/" + tagger):
-                os.system("mkdir  /data2/CAT_SKTreeOutput/"+os.getenv("USER")+"/CLUSTERLOG" + str(tagger) +"/" + tagger)
+            if not os.path.exists(an_jonpre+"/CAT_SKTreeOutput/"+os.getenv("USER")+"/CLUSTERLOG" + str(tagger) +"/" + tagger):
+                os.system("mkdir  "+an_jonpre+"CAT_SKTreeOutput/"+os.getenv("USER")+"/CLUSTERLOG" + str(tagger) +"/" + tagger)
 
-            stdscr.addstr(list3 + 1+int(isample), box_shift,  "Running " + s + " in background: terminal output sent to /data2/CAT_SKTreeOutput/"+os.getenv("USER")+"/CLUSTERLOG" +  str(tagger) + "/" + tagger + "/" + s + ".txt")
+            stdscr.addstr(list3 + 1+int(isample), box_shift,  "Running " + s + " in background: terminal output sent to "+an_jonpre+"CAT_SKTreeOutput/"+os.getenv("USER")+"/CLUSTERLOG" +  str(tagger) + "/" + tagger + "/" + s + ".txt")
             stdscr.refresh()
             stdscr.addstr(int(isample)+istatus_message, box_shift,  str(int(isample+1)) )
             stdscr.addstr(int(isample)+istatus_message, summary_block0,  "| " + cycle  )
@@ -1414,7 +1580,7 @@ for s in sample:
                 del output_bkg[:]
                 for out_x in range(1,winx):
                     output_bkg.append(stdscr.instr(out_x, 0))
-                    UpdateOutput(output_bkg,"/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/output_bkg.txt")
+                    UpdateOutput(output_bkg,an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/output_bkg.txt")
 
 stdscr.refresh()
 StillRunning=True
@@ -1425,7 +1591,7 @@ while StillRunning:
         del output_bkg[:]
         for out_x in range(1,winx):
             output_bkg.append(stdscr.instr(out_x, 0))
-        UpdateOutput(output_bkg,"/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/output_bkg.txt")
+        UpdateOutput(output_bkg,an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/output_bkg.txt")
 
     for x in range(0, len(sample)):
         sample_complete=False
@@ -1439,6 +1605,9 @@ while StillRunning:
         
         useskimtmp=useskim
         ismctmp=  len(sample[x])>1
+        if sample[x] == "H_v2" or sample[x] == "H_v3":
+            ismctmp= False
+
         sampletmp=sample[x]
         runnptmp=runnp
         runcftmp=runcf
@@ -1448,7 +1617,7 @@ while StillRunning:
             del output_bkg[:]
             for out_x in range(1,winx):
                 output_bkg.append(stdscr.instr(out_x, 0))
-            UpdateOutput(output_bkg,"/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/output_bkg.txt")
+            UpdateOutput(output_bkg,an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/output_bkg.txt")
 
         backgroundsamples=False
         for bs in samples_inbackground:
@@ -1457,11 +1626,11 @@ while StillRunning:
         if backgroundsamples:
             jobid_exists=True
             while jobid_exists:
-                path_job_check="/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/" + sample[x] + "jobid.txt"
+                path_job_check=an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/" + sample[x] + "jobid.txt"
                 if  os.path.exists(path_job_check):
                     jobid_exists=False
 
-            #CheckRunningStatus("/data2/CAT_SKTreeOutput/"+os.getenv("USER")+"/CLUSTERLOG" + str(tagger) +"/" + tagger + "/" + sample[x] +".txt")
+            #CheckRunningStatus(an_jonpre+"/CAT_SKTreeOutput/"+os.getenv("USER")+"/CLUSTERLOG" + str(tagger) +"/" + tagger + "/" + sample[x] +".txt")
 
 
             file_job_check=open(path_job_check ,"r")
@@ -1469,7 +1638,7 @@ while StillRunning:
             nrunning=0.
             nqueue=0.
             njobs_in_total=0.
-            path_clust_check="/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/" + sample[x] + "clust.txt"
+            path_clust_check=an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/" + sample[x] + "clust.txt"
             os.system("qstat -u " + os.getenv("USER") + " > " +  path_clust_check)
             ijob=0
             jobid1=0
@@ -1502,7 +1671,7 @@ while StillRunning:
                     njobs_finished=njobs_finished+1.
                     
                 file_clust_check.close()
-            path_clust_check="/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/" + sample[x] + "clust.txt"
+            path_clust_check=an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/" + sample[x] + "clust.txt"
             os.system("rm " + path_clust_check)
         
 
@@ -1578,7 +1747,7 @@ while StillRunning:
                     del output_bkg[:]
                     for out_x in range(1,winx):
                         output_bkg.append(stdscr.instr(out_x, 0))
-                        UpdateOutput(output_bkg,"/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/output_bkg.txt")
+                        UpdateOutput(output_bkg,an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/output_bkg.txt")
 
                 stdscr.addstr(int(x)+istatus_message, box_shift,  str(int(x+1)), curses.A_DIM )
                 stdscr.addstr(int(x)+istatus_message, summary_block0,  "| " + cycle, curses.A_DIM )
@@ -1601,7 +1770,7 @@ while StillRunning:
                 stdscr.addstr(int(x)+istatus_message, summary_block6,  "| Running   " + nscreen_run + " " + str(100*nrun_per)+ "%  Complete" + nscreen_fin + " " + str(100*nfin_per) + "%",curses.A_DIM)
                 stdscr.addstr(int(x)+istatus_message, summary_block7 ,"|    ",curses.A_DIM)
                 stdscr.refresh()
-                path_job="/data1/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/" + getpass.getuser()  + "/" + str(tagger)+ "/statlog_time_"+sample[x] + tagger + ".txt"
+                path_job=path_jobpre+"/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/" + getpass.getuser()  + "/" + str(tagger)+ "/statlog_time_"+sample[x] + tagger + ".txt"
                 ismerging=True
                 while not os.path.exists(path_job):
                     if ismerging:
@@ -1612,7 +1781,7 @@ while StillRunning:
                         
                     check_crash_stat=False
                     if check_crash_stat:
-                        check_crashfile="/data2/CAT_SKTreeOutput/"+os.getenv("USER")+"/CLUSTERLOG" + str(tagger) +"/" + tagger + "/" + sample[x] +".txt"    
+                        check_crashfile=an_jonpre+"/CAT_SKTreeOutput/"+os.getenv("USER")+"/CLUSTERLOG" + str(tagger) +"/" + tagger + "/" + sample[x] +".txt"    
                         if not os.path.exists(check_crashfile):
                             continue
                         file_check_crashfile=open(check_crashfile,"r")
@@ -1624,7 +1793,7 @@ while StillRunning:
                                 crashlog.append(line)
                         file_check_crashfile.close()
                         if crash_in_job:
-                            crash_log= "/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/" + sample[x] +"_crash/crashlog.txt"
+                            crash_log= an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/" + sample[x] +"_crash/crashlog.txt"
                             if os.path.exists(crash_log):
                                 file_crash=open(crash_log,"a")
                                 for linex in  crashlog:
@@ -1640,7 +1809,7 @@ while StillRunning:
 
                     continue
 
-                crash_log= "/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/" + sample[x] +"_crash/crashlog.txt"
+                crash_log= an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/" + sample[x] +"_crash/crashlog.txt"
                 if os.path.exists(crash_log):
                     jobidcrash.append(int(x))
                     stdscr.addstr(2+list2+int(x), box_shift , str(int(x+1)),curses.A_DIM)
@@ -1661,7 +1830,7 @@ while StillRunning:
                         del output_bkg[:]
                         for out_x in range(1,winx):
                             output_bkg.append(stdscr.instr(out_x, 0))
-                            UpdateOutput(output_bkg,"/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/output_bkg.txt")
+                            UpdateOutput(output_bkg,an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/output_bkg.txt")
                 else:
                     stdscr.addstr(2+list2+int(x), box_shift , str(int(x+1)),curses.A_DIM)
                     stdscr.addstr(2+list2+int(x), summary2_block0 ,"| " + str(round(job_time,2)) + "[s]",curses.A_DIM)
@@ -1740,13 +1909,13 @@ while StillRunning:
                         del output_bkg[:]
                         for out_x in range(1,winx):
                             output_bkg.append(stdscr.instr(out_x, 0))
-                            UpdateOutput(output_bkg,"/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/output_bkg.txt")
+                            UpdateOutput(output_bkg,an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/output_bkg.txt")
             stdscr.refresh()
             if run_in_bkg:
                 del output_bkg[:]
                 for out_x in range(1,winx):
                     output_bkg.append(stdscr.instr(out_x, 0))
-                    UpdateOutput(output_bkg,"/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/output_bkg.txt")
+                    UpdateOutput(output_bkg,an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/output_bkg.txt")
 
             
     stdscr.refresh()
@@ -1793,10 +1962,10 @@ collist.append(92)
 collist.append(68) 
 
 if quickdraw:
-    plotallhist(fileoutputlist,"/data2/CAT_SKTreeOutput/"+os.getenv("USER")+"/CLUSTERLOG" + str(tagger) +"/"+ str(tagger)  + "_hist.pdf", collist, tagger)
+    plotallhist(fileoutputlist,an_jonpre+"/CAT_SKTreeOutput/"+os.getenv("USER")+"/CLUSTERLOG" + str(tagger) +"/"+ str(tagger)  + "_hist.pdf", collist, tagger)
     if not DoSendEmail:
-        os.system("display " + "/data2/CAT_SKTreeOutput/"+os.getenv("USER")+"/CLUSTERLOG" + str(tagger) +"/"+ str(tagger)  + "_hist.pdf&")
-    listofplots.append("/data2/CAT_SKTreeOutput/"+os.getenv("USER")+"/CLUSTERLOG" + str(tagger) +"/"+ str(tagger) + "_hist.pdf")
+        os.system("display " + an_jonpre+"/CAT_SKTreeOutput/"+os.getenv("USER")+"/CLUSTERLOG" + str(tagger) +"/"+ str(tagger)  + "_hist.pdf&")
+    listofplots.append(an_jonpre+"/CAT_SKTreeOutput/"+os.getenv("USER")+"/CLUSTERLOG" + str(tagger) +"/"+ str(tagger) + "_hist.pdf")
 
 mergedoutfilepath=""
 if not ismctmp:
@@ -1855,7 +2024,7 @@ for i in range(0, winx-remove_from_end):
         job_summary.append("_"*40+"\n")
 
 
-path_stat_dir="/data1/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/" + getpass.getuser()  + "/" + str(tagger)+ "/"
+path_stat_dir=path_jobpre+"/LQAnalyzer_rootfiles_for_analysis/CATAnalyzerStatistics/" + getpass.getuser()  + "/" + str(tagger)+ "/"
 os.system("rm -r " + path_stat_dir)
 
 
@@ -1867,7 +2036,7 @@ if end_job_time > email_time_limit:
     email_subject=email_subject+"Job time>600s "
 
 if run_in_bkg:
-    os.system("mv /data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/output_bkg.txt /data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/output_finished.txt")
+    os.system("mv "+an_jonpre+"CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/output_bkg.txt "+an_jonpre+"CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/output_finished.txt")
 if runningData:
     MergeData(runnp,runcf,data_lumi, Finaloutputdir, catversion, useskim, cycle, channel)
 
@@ -1959,7 +2128,7 @@ remdir=False
 
 if remdir:
     njobs_in_total=0.
-    path_clust_check2="/data2/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/clusterjobs.txt"
+    path_clust_check2=an_jonpre+"/CAT_SKTreeOutput/" + os.getenv("USER")  + "/CLUSTERLOG" + str(tagger)+ "/clusterjobs.txt"
     os.system("qstat -u " + os.getenv("USER") + " > " +  path_clust_check2)
     file_clust_check2=open(path_clust_check2,"r")
     for sline in file_clust_check2:
@@ -1972,6 +2141,6 @@ if remdir:
     file_clust_check2.close()
     
     if njobs_in_total == 0 :    
-        os.system("rm -r /data2/CAT_SKTreeOutput/"+os.getenv("USER")+"/CLUSTERLOG*")
+        os.system("rm -r "+an_jonpre+"/CAT_SKTreeOutput/"+os.getenv("USER")+"/CLUSTERLOG*")
     else:
-        os.system("rm -r /data2/CAT_SKTreeOutput/"+os.getenv("USER")+"/CLUSTERLOG" + str(tagger) )
+        os.system("rm -r "+an_jonpre+"CAT_SKTreeOutput/"+os.getenv("USER")+"/CLUSTERLOG" + str(tagger) )

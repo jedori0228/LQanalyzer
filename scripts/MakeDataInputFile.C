@@ -64,6 +64,8 @@ void MakeDataInputFile(TString version=""){
   periods.push_back("E");
   periods.push_back("F");
   periods.push_back("G");
+  periods.push_back("H_v2");
+  periods.push_back("H_v3");
   
   TString output="/data2/DATA/cattoflat/Data/" + version + "/";
 
@@ -125,8 +127,8 @@ void MakeDataInputFile(TString version=""){
   if(cluster) lfile2 =   lqdir+ "/LQRun/txt/Cluster/datasets_snu_cluster_CAT_data_" + string(version.Data()) + ".txt";
 
   if(user.Contains("jalmond")){
-    if(!cluster)gSystem->Exec(("cp " + lfile + "  " + getenv("LQANALYZER_LUMIFILE_DIR")).c_str());     
-    else gSystem->Exec(("cp " + lfile + "  " + getenv("LQANALYZER_LUMIFILE_DIR")).c_str());
+    if(!cluster)gSystem->Exec(("cp " + lfile + "  " + getenv("LQANALYZER_DATASETFILE_DIR")).c_str());     
+    else gSystem->Exec(("cp " + lfile + "  " + getenv("LQANALYZER_DATASETFILE_DIR")).c_str());
 
   }
   gSystem->Exec(("mv " + lfile +" " + lfile2).c_str());

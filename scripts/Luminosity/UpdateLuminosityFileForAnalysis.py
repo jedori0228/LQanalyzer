@@ -8,8 +8,8 @@ def UpdateLumiFile(modlistpath, catversion,isNewSample):
 
     ### xseclist should contain lines that are updated in xsec
     ### samplelist should contain lines for new samples
-    samplelist=os.getenv("LQANALYZER_LUMIFILE_DIR") +"/datasets_snu_CAT_mc_"+catversion+".txt"
-    newsamplelist=os.getenv("LQANALYZER_LUMIFILE_DIR") +"/datasets_snu_CAT_mc_"+catversion+"new.txt"                                                               
+    samplelist=os.getenv("LQANALYZER_DATASETFILE_DIR") +"/datasets_snu_CAT_mc_"+catversion+".txt"
+    newsamplelist=os.getenv("LQANALYZER_DATASETFILE_DIR") +"/datasets_snu_CAT_mc_"+catversion+"new.txt"                                                               
     #samplelist="/data1/LQAnalyzer_rootfiles_for_analysis/CATAnalysis2016/datasets_snu_CAT_mc_"+catversion+".txt"
     #newsamplelist="/data1/LQAnalyzer_rootfiles_for_analysis/CATAnalysis2016/datasets_snu_CAT_mc_"+catversion+"tmp.txt"
      
@@ -95,7 +95,10 @@ def CheckFileFormat(filepath):
     file_fulllist.close()
 
 ### ExtractListFromDatasetFile Makes a list of samples located in /data1/LQAnalyzer_rootfiles_for_analysis/DataSetLists//dataset-$CATVERSION
+
 import ExtractListFromDatasetFile
+
+
 
 catversion=str(os.getenv("CATVERSION"))
 
@@ -106,6 +109,7 @@ path_full_sample_list_user=os.getenv("LQANALYZER_DATASET_DIR")+"/"+ os.getenv("U
 CheckFileFormat(path_full_sample_list_user)
 
 
+
 change_in_xsec=False
 new_sample=False
 new_catversion=False
@@ -113,7 +117,7 @@ newxsec_list=[]
 newsample_list= []
 
 
-if not os.path.exists(os.getenv("LQANALYZER_LUMIFILE_DIR") +"/datasets_snu_CAT_mc_"+catversion+".txt"):
+if not os.path.exists(os.getenv("LQANALYZER_DATASETFILE_DIR") +"/datasets_snu_CAT_mc_"+catversion+".txt"):
     os.system("rm " + path_full_sample_list)
 
 if os.path.exists(path_full_sample_list):
@@ -136,6 +140,9 @@ if os.path.exists(path_full_sample_list):
         os.system("rm " + path_full_sample_list_user)
         sys.exit()
     else:
+        
+        print "TEST"
+        sys.exit()
         
         #### check all samples that are in previous sample list are in new sample list
         #### the only reason they will not be is if a dataset file was removed or wrongly modified
@@ -265,8 +272,8 @@ if os.path.exists(path_full_sample_list):
             
             UpdateLumiFile(os.getenv("LQANALYZER_DIR")+"/scripts/Luminosity/datasets_snu_CAT_mc_" + catversion + "new.txt", catversion, isnewsample)
             os.system("rm " + os.getenv("LQANALYZER_DIR")+"/scripts/Luminosity/datasets_snu_CAT_mc_" + catversion + "new.txt")
-            samplelist=os.getenv("LQANALYZER_LUMIFILE_DIR") +"/datasets_snu_CAT_mc_"+catversion+".txt"
-            newsamplelist=os.getenv("LQANALYZER_LUMIFILE_DIR") +"/datasets_snu_CAT_mc_"+catversion+"new.txt"
+            samplelist=os.getenv("LQANALYZER_DATASETFILE_DIR") +"/datasets_snu_CAT_mc_"+catversion+".txt"
+            newsamplelist=os.getenv("LQANALYZER_DATASETFILE_DIR") +"/datasets_snu_CAT_mc_"+catversion+"new.txt"
             print "Is the following list of differences correct:"
             print "\n"
             print "diff " + samplelist + " " + newsamplelist
@@ -306,16 +313,19 @@ else:
     if not os.path.exists(lqdir+"/scripts/Luminosity/log"):
         os.system("mkdir "+ lqdir+"/scripts/Luminosity/log")
  
-    os.system("source " + lqdir+"/scripts/Luminosity/runGetEffLumi.sh" + os.getenv("LQANALYZER_DATASET_DIR")+"/cattuplist_"+str(os.getenv('CATVERSION'))+".txt")
+    print "source " + lqdir+"/scripts/Luminosity/runGetEffLumi.sh " + os.getenv("LQANALYZER_DATASET_DIR")+"/cattuplist_"+str(os.getenv('CATVERSION'))+".txt"
+    
+    os.system("source " + lqdir+"/scripts/Luminosity/runGetEffLumi.sh " + os.getenv("LQANALYZER_DATASET_DIR")+"/cattuplist_"+str(os.getenv('CATVERSION'))+".txt")
 
     if os.path.exists(lqdir+"/scripts/Luminosity/log"):
         os.system("rm -r "+lqdir+"/scripts/Luminosity/log")
             
     if os.path.exists(lqdir+"/scripts/Luminosity/inputlist_efflumi.txt"):
         os.system("rm " + lqdir+"/scripts/Luminosity/inputlist_efflumi.txt")
-        
+    
     os.system("source " + os.getenv("LQANALYZER_DIR")+"/scripts/runInputListMaker.sh")
     os.system('bash ' + os.getenv('LQANALYZER_DIR')+'/bin/submitSKTree.sh -a  SKTreeMaker -list all_mc  -c '+catversion+' -m "First set of cuts with '+catversion+'cattuples"')
     os.system('bash  ' + os.getenv('LQANALYZER_DIR')+'/bin/submitSKTree.sh  -a  SKTreeMakerDiLep -list all_mc  -c '+catversion+'  -m "First set of cuts with '+catversion+' cattuples"')
+    os.system('bash  ' + os.getenv('LQANALYZER_DIR')+'/bin/submitSKTree.sh  -a  SKTreeMakerTriLep -list all_mc  -c '+catversion+'  -m "First set of cuts with '+catversion+' cattuples"')
     
     EmailNewList(catversion)    

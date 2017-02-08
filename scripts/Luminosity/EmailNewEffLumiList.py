@@ -100,7 +100,7 @@ def EmailNewList(catversion):
     if not "v8" in catversion:
         catversion=os.getenv("CATVERSION")
 
-    path_newefflumi=os.getenv("LQANALYZER_DATASET_DIR") + "/datasets_snu_CAT_mc_"+catversion +".txt"
+    path_newefflumi=os.getenv("LQANALYZER_DATASET_DIR") + "/AnalysisFiles/datasets_snu_CAT_mc_"+catversion +".txt"
 
     file_newefflumi=open(path_newefflumi,"r")
 
@@ -108,6 +108,6 @@ def EmailNewList(catversion):
     for line in file_newefflumi:
         Copy_File.append(line+"\n")
     
-    emaillist=GetCATAnalyzerMailList()
+    emaillist="jalmond@cern.ch"
     SendEmail(catversion, os.getenv("USER"), message, Copy_File, emaillist)
 
