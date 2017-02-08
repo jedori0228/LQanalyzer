@@ -2334,8 +2334,8 @@ void AnalyzerCore::WriteCLHists(){
   
   for(map<TString, TriLeptonPlots*>::iterator trilepit = mapCLhistTriLep.begin(); trilepit != mapCLhistTriLep.end(); trilepit++){
 
-    //Dir = m_outputFile->mkdir(trilepit->first);
-    //m_outputFile->cd( Dir->GetName() );
+    Dir = m_outputFile->mkdir(trilepit->first);
+    m_outputFile->cd( Dir->GetName() );
     trilepit->second->Write();
     m_outputFile->cd();
   }
