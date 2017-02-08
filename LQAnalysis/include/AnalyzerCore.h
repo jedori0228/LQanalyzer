@@ -22,6 +22,7 @@ class EventBase;
 #include "TNtupleD.h"
 #include "TNtuple.h"
 #include "TGraphAsymmErrors.h"
+#include "HNGenMatching.h"
 
 class AnalyzerCore : public LQCycleBase {
   
@@ -341,6 +342,8 @@ class AnalyzerCore : public LQCycleBase {
   bool GenMatching(snu::KParticle a, snu::KParticle b, double maxDeltaR, double maxPtDiff);
   std::vector<snu::KMuon> GetHNTriMuonsByLooseRelIso(double LooseRelIsoMax, bool keepfake);
   void PrintTruth();
+
+  HNGenMatching *m_HNgenmatch;
 
 };
 #endif

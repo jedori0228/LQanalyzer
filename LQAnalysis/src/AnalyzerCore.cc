@@ -208,6 +208,8 @@ AnalyzerCore::AnalyzerCore() : LQCycleBase(), n_cutflowcuts(0), MCweight(-999.),
     }
   }
 
+  m_HNgenmatch = new HNGenMatching();
+
 
 }
 
@@ -1282,6 +1284,8 @@ AnalyzerCore::~AnalyzerCore(){
     delete it->second;
   }
   MapBTagSF.clear();
+
+  delete m_HNgenmatch;
 
 }
 
@@ -2370,6 +2374,8 @@ void AnalyzerCore::WriteHists(){
   for(map<TString, TH2*>::iterator mapit = maphist2D.begin(); mapit != maphist2D.end(); mapit++){
     mapit->second->Write();
   }
+
+  m_HNgenmatch->WriteHNGenHists();
 
 
   return;
