@@ -456,7 +456,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   FillHist("deltaR_OS_min_cut0", deltaR_OS_min, weight, 0., 5., 50);
   FillHist("gamma_star_mass_cut0", gamma_star.M(), weight, 0., 200., 200);
   FillHist("z_candidate_mass_cut0", z_candidate.M(), weight, 0., 200., 200);
-  FillCLHist(trilephist, "cut0", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_hn, weight);
+  FillCLHist(hntrilephist, "cut0", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_hn, weight);
   FillHist("n_events_cut0", 0, weight, 0., 1., 1);
 
   if( isLowMass ){
@@ -470,7 +470,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     FillHist("deltaR_OS_min_cutWlow", deltaR_OS_min, weight, 0., 5., 50);
     FillHist("gamma_star_mass_cutWlow", gamma_star.M(), weight, 0., 200., 200);
     FillHist("z_candidate_mass_cutWlow", z_candidate.M(), weight, 0., 200., 200);
-    FillCLHist(trilephist, "cutWlow", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_hn, weight);
+    FillCLHist(hntrilephist, "cutWlow", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_hn, weight);
     FillHist("n_events_cutWlow", 0, weight, 0., 1., 1);
 
     FillCutFlow("LowMass", 1.);
@@ -488,7 +488,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     FillHist("deltaR_OS_min_cutWhigh", deltaR_OS_min, weight, 0., 5., 50);
     FillHist("gamma_star_mass_cutWhigh", gamma_star.M(), weight, 0., 200., 200);
     FillHist("z_candidate_mass_cutWhigh", z_candidate.M(), weight, 0., 200., 200);
-    FillCLHist(trilephist, "cutWhigh", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_hn, weight);
+    FillCLHist(hntrilephist, "cutWhigh", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_hn, weight);
     FillHist("n_events_cutWhigh", 0, weight, 0., 1., 1);
 
     FillCutFlow("HighMass", 1.);

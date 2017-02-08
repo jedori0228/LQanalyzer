@@ -19,6 +19,7 @@
 #include "SignalPlotsMM.h"
 #include "SignalPlotsEM.h"
 #include "TriLeptonPlots.h"
+#include "HNTriLeptonPlots.h"
 
 //ROOT includes
 #include <TFile.h>
@@ -1260,6 +1261,11 @@ AnalyzerCore::~AnalyzerCore(){
   }
   mapCLhistTriLep.clear();
 
+  for(map<TString, HNTriLeptonPlots*>::iterator it = mapCLhistHNTriLep.begin(); it != mapCLhistHNTriLep.end(); it++){
+    delete it->second;
+  }
+  mapCLhistHNTriLep.clear();
+
 
   for(map<TString,TNtupleD*>::iterator it = mapntp.begin(); it!= mapntp.end(); it++){ 
     delete it->second;
@@ -1954,6 +1960,7 @@ void AnalyzerCore::MakeCleverHistograms(histtype type, TString clhistname ){
   if(type==sighist_em)  mapCLhistSigEM[clhistname] = new SignalPlotsEM(clhistname);
 
   if(type==trilephist)  mapCLhistTriLep[clhistname] = new TriLeptonPlots(clhistname);
+  if(type==hntrilephist)  mapCLhistHNTriLep[clhistname] = new HNTriLeptonPlots(clhistname);
       
   return;
 }
@@ -2239,6 +2246,16 @@ void AnalyzerCore::FillCLHist(histtype type, TString hist, snu::KEvent ev,vector
       trilepit->second->Fill(ev, muons, electrons, jets,w);
     }
   }
+  else if(type==hntrilephist){
+
+    map<TString, HNTriLeptonPlots*>::iterator hntrilepit = mapCLhistHNTriLep.find(hist);
+    if(hntrilepit !=mapCLhistHNTriLep.end()) hntrilepit->second->Fill(ev, muons, electrons, jets,w);
+    else {
+      mapCLhistHNTriLep[hist] = new HNTriLeptonPlots(hist);
+      hntrilepit = mapCLhistHNTriLep.find(hist);
+      hntrilepit->second->Fill(ev, muons, electrons, jets,w);
+    }
+  }
   else if(type==sighist_ee){
 
     map<TString, SignalPlotsEE*>::iterator sigpit_ee = mapCLhistSigEE.find(hist);
@@ -2337,6 +2354,15 @@ void AnalyzerCore::WriteCLHists(){
     Dir = m_outputFile->mkdir(trilepit->first);
     m_outputFile->cd( Dir->GetName() );
     trilepit->second->Write();
+    m_outputFile->cd();
+  }
+
+  for(map<TString, HNTriLeptonPlots*>::iterator hntrilepit = mapCLhistHNTriLep.begin(); hntrilepit != mapCLhistHNTriLep.end(); hntrilepit++){
+
+    //==== I don't need director!
+    //Dir = m_outputFile->mkdir(hntrilepit->first);
+    //m_outputFile->cd( Dir->GetName() );
+    hntrilepit->second->Write();
     m_outputFile->cd();
   }
 
