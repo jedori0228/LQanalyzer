@@ -141,8 +141,8 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     //weight*=weight_trigger_sf;
   }
 
-  int N_sys = 2*6+1;
-  for(int it_sys=0; it_sys<=N_sys; it_sys++){
+  int N_sys = 2*5+1;
+  for(int it_sys=0; it_sys<N_sys; it_sys++){
 
     //==== MET
     snu::KEvent Evt = eventbase->GetEvent();
