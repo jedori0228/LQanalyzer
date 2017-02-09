@@ -70,6 +70,13 @@ void HNCommonLeptonFakes::InitialiseFake(){
   /// ELECRON FILES
   TFile* file_fake  = TFile::Open( (lqdir + "/data/Fake/"+getenv("yeartag")+"/FakeRate13TeV.root").c_str());
   CheckFile(file_fake);
+
+  /// LargedXY Sig Fake Rate files
+  TFile* file_trilep_fake = TFile::Open( (lqdir + "/data/Fake/"+getenv("yeartag")+"/Trilep_Muon_FakeRate.root").c_str());
+  TFile* file_trilep_prompt = TFile::Open( (lqdir + "/data/Fake/"+getenv("yeartag")+"/Trilep_Muon_PromptRate.root").c_str());
+  CheckFile(file_trilep_fake);
+  CheckFile(file_trilep_prompt);
+
   
 
   TFile* file_fakeopt  = TFile::Open( (lqdir + "/data/Fake/"+getenv("yeartag")+"/FakeRate13TeV_2016_opt.root").c_str());
@@ -181,14 +188,6 @@ void HNCommonLeptonFakes::InitialiseFake(){
 
   //==== Trilep
   //==== Using Large dXYSig muons
-
-  TFile* file_trilep_fake = TFile::Open( (lqdir + "/data/Fake/"+getenv("yeartag")+"/Trilep_Muon_FakeRate.root").c_str());
-  TFile* file_trilep_prompt = TFile::Open( (lqdir + "/data/Fake/"+getenv("yeartag")+"/Trilep_Muon_PromptRate.root").c_str());
-  CheckFile(file_trilep_fake);
-  CheckFile(file_trilep_prompt);
-
-  TDirectory* tempDir2 = getTemporaryDirectory();
-  tempDir2->cd();
 
   const int N_dXYMin = 3, N_LooseRelIso = 6;
   double dXYMin[N_dXYMin] = {3.0, 4.0, 5.0};
@@ -965,6 +964,8 @@ float HNCommonLeptonFakes::getTrilepFakeRate_muon(bool geterr, float pt,  float 
       return 0.;
     }
     else{
+      TDirectory* tempDir = getTemporaryDirectory();
+      tempDir->cd();
       TH2D *hist_FR = (TH2D*)mapit_FR->second->Clone();
 
       int binx = hist_FR->FindBin(pt, abs(eta));
@@ -979,6 +980,8 @@ float HNCommonLeptonFakes::getTrilepFakeRate_muon(bool geterr, float pt,  float 
       return 0.;
     }
     else{
+      TDirectory* tempDir = getTemporaryDirectory();
+      tempDir->cd();
       TH2D *hist_FR = (TH2D*)mapit_FR->second->Clone();
       if(applysf) hist_FR->Multiply(mapit_FRSF->second);
 

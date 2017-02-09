@@ -1,10 +1,40 @@
 // LOCAL includes
 #include "HNGenMatching.h"
 
+// STL
+#include <sstream>
+
+// ROOT
+#include "TDirectory.h"
+#include "TROOT.h"
+
+TDirectory* HNGenMatching::getTemporaryDirectory(void) const
+{
+  // Create a unique directory in memory to hold the histograms:
+  gROOT->cd();
+  TDirectory* tempDir = 0;
+  int counter = 0;
+  while (not tempDir) {
+    // First, let's find a directory name that doesn't exist yet:
+    std::stringstream dirname;
+    dirname << "HNGenMatching_%i" << counter;
+    if (gROOT->GetDirectory((dirname.str()).c_str())) {
+      ++counter;
+      continue;
+    }
+    // Let's try to make this directory:
+    tempDir = gROOT->mkdir((dirname.str()).c_str());
+
+  }
+
+  return tempDir;
+}
+
 HNGenMatching::HNGenMatching() :
 signalmass(-9999),
 n_gen_pass(0), sol_sel_chi2_best(0), sol_sel_chi2_plus(0), sol_sel_chi2_minus(0), sol_sel_chi2_smaller(0), sol_sel_chi2_larger(0),
-allgenfound(false)
+allgenfound(false),
+DrawHist(false)
 {
 
   maphist.clear();
@@ -859,7 +889,13 @@ TH1D* HNGenMatching::GetHist(TString hname){
 
 void HNGenMatching::MakeHistograms(TString hname, int nbins, float xmin, float xmax){
 
+  TDirectory* origDir = gDirectory;
+
+  TDirectory* tempDir1 = getTemporaryDirectory();
+  tempDir1->cd();
   maphist[hname] =  new TH1D(hname.Data(),hname.Data(),nbins,xmin,xmax);
+
+  origDir->cd();
 
 }
 
@@ -879,11 +915,16 @@ void HNGenMatching::FillHist(TString histname, float value, float w, float xmin,
 }
 void HNGenMatching::WriteHNGenHists(){
 
+  if(!DrawHist) return;
   cout << "[HNGenMatching::WriteHNGenHists] Writing HNGenMatching histograms" << endl;
   for(std::map<TString, TH1D*>::iterator mit = maphist.begin(); mit != maphist.end() ; mit++){
     mit->second->Write();
   }
 
+}
+
+void HNGenMatching::SetDrawHist(bool b){
+  DrawHist = b;
 }
 
 

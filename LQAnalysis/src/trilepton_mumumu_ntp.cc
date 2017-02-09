@@ -186,8 +186,8 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
     weight*=pileup_reweight;
   }
 
-  int N_sys = 2*6+1;
-  for(int it_sys=0; it_sys<=N_sys; it_sys++){
+  int N_sys = 2*5+1;
+  for(int it_sys=0; it_sys<N_sys; it_sys++){
 
     //==== MET
     //==== also set string for this systematic type
