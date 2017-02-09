@@ -36,6 +36,8 @@ out_muons(0)
   // This function sets up Root files and histograms Needed in ExecuteEvents
   InitialiseAnalysis();
 
+  m_HNgenmatch->SetDrawHist(true);
+
 }
 
 

@@ -22,6 +22,8 @@ public:
   HNGenMatching();
   ~HNGenMatching();
 
+  TDirectory* getTemporaryDirectory(void) const;
+
   void SetAllGenParticles(std::vector<snu::KTruth> g);
   void SetHNpdgids(int i);
   void FindGenParticles(bool debug=false);
@@ -50,6 +52,7 @@ public:
   void MakeHistograms(TString hname, int nbins, float xmin, float xmax);
   void FillHist(TString histname, float value, float w, float xmin, float xmax, int nbins);
   void WriteHNGenHists();
+  void SetDrawHist(bool b);
 
 private:
 
@@ -57,6 +60,7 @@ private:
   int HN_pdgid;
   int signalmass;
   double MET, METphi;
+  bool DrawHist;
 
   //==== histograms;
   std::map<TString, TH1D*> maphist;
