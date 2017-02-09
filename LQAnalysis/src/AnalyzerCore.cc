@@ -920,7 +920,7 @@ double AnalyzerCore::MuonScaleFactor(TString muid, vector<snu::KMuon> mu,int sys
   for(vector<KMuon>::iterator itmu=mu.begin(); itmu!=mu.end(); ++itmu) {
     float mupt=itmu->Pt();
     if(itmu->Pt() < min_pt) mupt = min_pt+1.;
-    if(itmu->Pt() > max_pt) mupt = max_pt-1.;
+    if(itmu->Pt() >= max_pt) mupt = max_pt-1.;
     if(CheckCorrectionHist("ID_" + muid)){
       sferr = double(sys)*GetCorrectionHist("ID_" + muid)->GetBinError( GetCorrectionHist("ID_" + muid)->FindBin( fabs(itmu->Eta()), mupt) );
       
