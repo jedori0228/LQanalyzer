@@ -14,6 +14,7 @@
 #include "TString.h"
 #include "TH1.h"
 #include "TH2F.h"
+#include "TH2D.h"
 #include "TEfficiency.h"
 #include "TFile.h"
 #include "TLorentzVector.h"
