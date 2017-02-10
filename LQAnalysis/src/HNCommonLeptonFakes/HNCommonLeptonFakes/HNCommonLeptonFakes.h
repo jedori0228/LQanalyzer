@@ -133,6 +133,7 @@ class HNCommonLeptonFakes {
   //==== get weight
   float get_dilepton_mm_eventweight(bool geterr, std::vector<TLorentzVector> muons, bool isT1, bool isT2);
   float get_trilepton_mmm_eventweight(bool geterr, std::vector<TLorentzVector> muons, bool isT1, bool isT2, bool isT3);
+  float get_trilepton_eventweight(bool geterr, std::vector<TLorentzVector> muons, std::vector<TLorentzVector> electrons, std::vector<bool> isT);
 
  private:
   /// vector for storing FakeCR strings
