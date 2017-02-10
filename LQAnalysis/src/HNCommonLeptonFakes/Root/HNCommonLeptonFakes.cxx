@@ -1035,7 +1035,92 @@ float HNCommonLeptonFakes::get_dilepton_mm_eventweight(bool geterr, std::vector<
 
 }
 
+float HNCommonLeptonFakes::get_trilepton_eventweight(bool geterr, std::vector<TLorentzVector> muons, std::vector<TLorentzVector> electrons, std::vector<bool> isT){
 
+  vector<float> lep_pt, lep_eta;
+  vector<bool> ismuon;
+  for(unsigned int i=0; i<muons.size(); i++){
+    lep_pt.push_back(muons.at(i).Pt());
+    lep_eta.push_back(muons.at(i).Eta());
+    ismuon.push_back(true);
+  }
+  for(unsigned int i=0; i<electrons.size(); i++){
+    lep_pt.push_back(electrons.at(i).Pt());
+    lep_eta.push_back(electrons.at(i).Eta());
+    ismuon.push_back(false);
+  }
+
+  vector<float> fr, pr, fr_err, pr_err;
+
+  for(unsigned int i=0; i<3; i++){
+    //==== Muon
+    if(ismuon.at(i)){
+      fr.push_back( getTrilepFakeRate_muon(false, lep_pt.at(i), lep_eta.at(i), true) );
+      pr.push_back( getTrilepPromptRate_muon(false, lep_pt.at(i), lep_eta.at(i))  );
+      fr_err.push_back( getTrilepFakeRate_muon(true, lep_pt.at(i), lep_eta.at(i), true) );
+      pr_err.push_back( getTrilepPromptRate_muon(true, lep_pt.at(i), lep_eta.at(i))  );
+    }
+    //==== If not, it's an electron
+    else{
+      fr.push_back( getFakeRate_electronEta(0, lep_pt.at(i), lep_eta.at(i), "pt_eta_40_looseregion1") );
+      pr.push_back( getEfficiency_electron(0, lep_pt.at(i), lep_eta.at(i), "pt_eta_40_looseregion1") );
+      fr_err.push_back( getFakeRate_electronEta(1, lep_pt.at(i), lep_eta.at(i), "pt_eta_40_looseregion1") );
+      pr_err.push_back( getEfficiency_electron(1, lep_pt.at(i), lep_eta.at(i), "pt_eta_40_looseregion1") );
+    }
+  }
+
+  //==== let a == f/(1-f)
+
+  vector<float> a, fr_onlyLoose;
+
+  for(unsigned int i=0; i<3; i++) a.push_back( fr.at(i)/(1.-fr.at(i)) );
+  for(unsigned int i=0; i<3; i++){
+    if(!isT.at(i)) fr_onlyLoose.push_back( a.at(i) );
+  } 
+
+  //==== Initialise weight
+  float this_weight=-999.;
+
+  //==== 3T
+  if(fr_onlyLoose.size()==0){
+    this_weight = 0.;
+  }
+  //==== 2T1L
+  else if(fr_onlyLoose.size()==1){
+    this_weight = fr_onlyLoose.at(0);
+  }
+  //==== 1T2L
+  else if(fr_onlyLoose.size()==2){
+    this_weight = -1.*fr_onlyLoose.at(0)*fr_onlyLoose.at(1);
+  }
+  //==== 3L
+  else if(fr_onlyLoose.size()==3){
+    this_weight = fr_onlyLoose.at(0)*fr_onlyLoose.at(1)*fr_onlyLoose.at(2);
+  }
+  //==== ?
+  else{
+
+  }
+
+  if(!geterr) return this_weight;
+
+  //==== d(a)/a = d(f)/f(1-f)
+  //==== so, if w = a1*a2,
+  //==== d(w)/w = d(a1)/a1 + d(a2)/a2
+
+  vector<float> da_over_a;
+  for(unsigned int i=0; i<3; i++) da_over_a.push_back( fr_err.at(i) / ( fr.at(i)*(1.-fr.at(i)) ) );
+  float this_weight_err = 0.;
+  for(unsigned int i=0; i<3; i++){
+    if(!isT.at(i)) this_weight_err += da_over_a.at(i)*da_over_a.at(i);
+  }
+
+  this_weight_err = sqrt(this_weight_err);
+  this_weight_err = this_weight_err*fabs(this_weight);
+
+  return this_weight_err;
+
+}
 
 
 
