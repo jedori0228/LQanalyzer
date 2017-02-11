@@ -47,6 +47,11 @@ void trilepton_mumumu_syst_FR::InitialiseAnalysis() throw( LQError ) {
   // You can also use m_logger << level << "comment" << int/double  << LQLogger::endmsg;
   //
 
+  dXYMins.clear();
+  RelIsoMaxs.clear(); 
+  dXYMins = m_fakeobj->GetdXYMins();
+  RelIsoMaxs = m_fakeobj->GetRelIsoMaxs();
+
   return;
 
 }
@@ -70,8 +75,6 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
   FillCutFlow("EventCut", 1.);
   /// #### CAT::: triggers stored are all HLT_Ele/HLT_DoubleEle/HLT_Mu/HLT_TkMu/HLT_Photon/HLT_DoublePhoton
 
-  bool DoCutOp = std::find(k_flags.begin(), k_flags.end(), "cutop") != k_flags.end();
-
   std::vector<TString> triggerlist;
   //triggerlist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
   triggerlist.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
@@ -84,12 +87,9 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
     }
   }
 
-  if(!DoCutOp){
-    if(!trigger_pass) return;
-    FillCutFlow("TriggerCut", 1.);
-    m_logger << DEBUG << "passedTrigger "<< LQLogger::endmsg;
-  }
-
+  if(!trigger_pass) return;
+  FillCutFlow("TriggerCut", 1.);
+  m_logger << DEBUG << "passedTrigger "<< LQLogger::endmsg;
 
   if (!eventbase->GetEvent().HasGoodPrimaryVertex()) return; //// Make cut on event wrt vertex
   /// Has Good Primary vertex:
@@ -158,7 +158,7 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
 
       //==== MCClosure
 
-      if(isTwoMuon){
+      if(isTwoMuon && DoMCClosure){
 
         snu::KMuon lep[2];
         lep[0] = muontriLooseColl.at(0);
@@ -166,26 +166,26 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
 
         double this_weight = weight;
 
-        bool leadPt20 = muontriLooseColl.at(0).Pt() > 20.;
+        if( muontriLooseColl.at(0).Pt() < 20. ) continue;
         bool isSS = muontriLooseColl.at(0).Charge() == muontriLooseColl.at(1).Charge();
-        double m_dimuon = ( muontriLooseColl.at(0) + muontriLooseColl.at(1) ).M();
 
         std::map< TString, bool > map_whichCR_to_isCR;
         map_whichCR_to_isCR.clear();
-        map_whichCR_to_isCR["DiMuon"] = isTwoMuon && leadPt20;
-        map_whichCR_to_isCR["SSDiMuon"] = isTwoMuon && leadPt20 && isSS;
+        map_whichCR_to_isCR["DiMuon"] = true;
+        map_whichCR_to_isCR["SSDiMuon"] = isSS;
 
         //==== fake method weighting
-        //if( n_triTight_muons == 2 ) return; // return TT case
         m_fakeobj->SetTrilepWP(dXYMins.at(aaa), RelIsoMaxs.at(bbb));
-        this_weight *= Get_DataDrivenWeight_MM(false, muontriLooseColl);
-        double this_weight_err = Get_DataDrivenWeight_MM(true, muontriLooseColl);
-        if(weight==0.) return;
+        std::vector<snu::KElectron> empty_electron;
+        empty_electron.clear();
+        this_weight *= Get_DataDrivenWeight(false, muontriLooseColl, empty_electron, 2, 0);
+        double this_weight_err = Get_DataDrivenWeight(true, muontriLooseColl, empty_electron, 2, 0);
 
         for(std::map< TString, bool >::iterator it = map_whichCR_to_isCR.begin(); it != map_whichCR_to_isCR.end(); it++){
           TString this_suffix = it->first;
           if(it->second){
             FillUpDownHist(str_dXYCut+"_n_events_"+this_suffix, 0., this_weight, this_weight_err, 0., 1., 1);
+            FillHist(str_dXYCut+"_n_OnlyLoose_"+this_suffix, m_fakeobj->GetNLooseNotTight(), 1., 0., 4., 4);
           }
         }
 
@@ -196,19 +196,21 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
 
       if(isThreeMuon){
      
-        bool leadPt20 = muontriLooseColl.at(0).Pt() > 20.;
+        if( muontriLooseColl.at(0).Pt() < 20. ) continue;
 
         snu::KParticle lep[3], HN[4];;
+        lep[0] = muontriLooseColl.at(0);
+        lep[1] = muontriLooseColl.at(1);
+        lep[2] = muontriLooseColl.at(2);
 
         double this_weight = weight;
 
         //==== fake method weighting
-        //if( n_triTight_muons == 3 ) return; // return TTT case
-        this_weight *= Get_DataDrivenWeight_MMM(false, muontriLooseColl);
-        double this_weight_err = Get_DataDrivenWeight_MMM(true, muontriLooseColl);
-        if(weight==0.) return;
-
-        bool isOS = true;
+        m_fakeobj->SetTrilepWP(dXYMins.at(aaa), RelIsoMaxs.at(bbb));
+        std::vector<snu::KElectron> empty_electron;
+        empty_electron.clear();
+        this_weight *= Get_DataDrivenWeight(false, muontriLooseColl, empty_electron, 3, 0);
+        double this_weight_err = Get_DataDrivenWeight(true, muontriLooseColl, empty_electron, 3, 0);
 
         int OppSign, SameSign[2]; // SameSign[0].Pt() > SameSign[1].Pt()
         if(lep[0].Charge() * lep[1].Charge() > 0){ // Q(0) = Q(1)
@@ -217,7 +219,7 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
             SameSign[0] = 0;
             SameSign[1] = 1;
           }
-          else isOS = false; // veto Q(0) = Q(1) = Q(2)
+          else continue; // veto Q(0) = Q(1) = Q(2)
         }
         else{ // Q(0) != Q(1)
           if(lep[0].Charge() * lep[2].Charge() > 0){ // Q(0) = Q(2)
@@ -232,117 +234,115 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
           }
         } // Find l2 and assign l1&l3 in ptorder 
 
-        bool Vetomll4 = true;
         bool VetoZResonance;
         bool isLowMass;
         bool isHighMass;
-        if(isOS){
-          //==== mll4
-          if( (lep[SameSign[0]]+lep[OppSign]).M() <= 4. ||
-              (lep[SameSign[1]]+lep[OppSign]).M() <= 4.     ) Vetomll4 = false;
 
-          ///////////////////////////////////////////
-          ////////// m(HN) < 80 GeV region //////////
-          ///////////////////////////////////////////
+        //==== mll4
+        if( (lep[SameSign[0]]+lep[OppSign]).M() <= 4. ||
+            (lep[SameSign[1]]+lep[OppSign]).M() <= 4.     ) continue;
 
-          snu::KEvent Evt = eventbase->GetEvent();
-          double MET = Evt.MET(), METphi = Evt.METPhi();
-          snu::KParticle W_pri_lowmass, nu_lowmass, gamma_star, z_candidate;
-          nu_lowmass.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET);
-          double pz_sol_lowmass[2];
-          pz_sol_lowmass[0] = solveqdeq(80.385, lep[0]+lep[1]+lep[2], MET, METphi, "m"); // 0 = minus
-          pz_sol_lowmass[1] = solveqdeq(80.385, lep[0]+lep[1]+lep[2], MET, METphi, "p"); // 1 = plus
-          //PutNuPz(&selection_nu[0], solveqdeq(80.385, lep[0]+lep[1]+lep[2], MET, METphi, "m"));
-          //PutNuPz(&selection_nu[1], solveqdeq(80.385, lep[0]+lep[1]+lep[2], MET, METphi, "p")); // 0 = minus, 1 = plus
+        ///////////////////////////////////////////
+        ////////// m(HN) < 80 GeV region //////////
+        ///////////////////////////////////////////
 
-          int solution_selection_lowmass = 0;
-          if( pz_sol_lowmass[0] != pz_sol_lowmass[1] ){
-            // take the one with smaller magnitude
-            if( fabs( pz_sol_lowmass[0] ) > fabs( pz_sol_lowmass[1] ) ){
-              solution_selection_lowmass = 1;
-            }
+        snu::KEvent Evt = eventbase->GetEvent();
+        double MET = Evt.MET(), METphi = Evt.METPhi();
+        snu::KParticle W_pri_lowmass, nu_lowmass, gamma_star, z_candidate;
+        nu_lowmass.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET);
+        double pz_sol_lowmass[2];
+        pz_sol_lowmass[0] = solveqdeq(80.385, lep[0]+lep[1]+lep[2], MET, METphi, "m"); // 0 = minus
+        pz_sol_lowmass[1] = solveqdeq(80.385, lep[0]+lep[1]+lep[2], MET, METphi, "p"); // 1 = plus
+        //PutNuPz(&selection_nu[0], solveqdeq(80.385, lep[0]+lep[1]+lep[2], MET, METphi, "m"));
+        //PutNuPz(&selection_nu[1], solveqdeq(80.385, lep[0]+lep[1]+lep[2], MET, METphi, "p")); // 0 = minus, 1 = plus
+
+        int solution_selection_lowmass = 0;
+        if( pz_sol_lowmass[0] != pz_sol_lowmass[1] ){
+          // take the one with smaller magnitude
+          if( fabs( pz_sol_lowmass[0] ) > fabs( pz_sol_lowmass[1] ) ){
+            solution_selection_lowmass = 1;
           }
-
-          // reconstruct HN and W_real 4-vec with selected Pz solution
-          PutNuPz(&nu_lowmass, pz_sol_lowmass[solution_selection_lowmass] );
-          //==== SameSign[0] : leading among SS
-          //==== SameSign[1] : subleading among SS
-          //==== [class1]
-          //==== m(HN) : 5 ~ 50 GeV - SS_leading is primary
-          //==== [class2]
-          //==== m(HN) : 60, 70 GeV - SS_subleading is primary
-
-          HN[0] = lep[OppSign] + lep[SameSign[1]] + nu_lowmass; // [class1]
-          HN[1] = lep[OppSign] + lep[SameSign[0]] + nu_lowmass; // [class2]
-          W_pri_lowmass = lep[0] + lep[1] + lep[2] + nu_lowmass;
-
-
-          double deltaR_OS_min;
-          if( lep[OppSign].DeltaR(lep[SameSign[0]]) < lep[OppSign].DeltaR(lep[SameSign[1]]) ){
-            deltaR_OS_min = lep[OppSign].DeltaR(lep[SameSign[0]]);
-            gamma_star = lep[OppSign] + lep[SameSign[0]];
-          }
-          else{
-            deltaR_OS_min = lep[OppSign].DeltaR(lep[SameSign[1]]);
-            gamma_star = lep[OppSign] + lep[SameSign[1]];
-          }
-
-          if( fabs( (lep[OppSign] + lep[SameSign[0]]).M() - 91.1876 ) <
-              fabs( (lep[OppSign] + lep[SameSign[1]]).M() - 91.1876 )   ){
-            z_candidate = lep[OppSign] + lep[SameSign[0]];
-          }
-          else{
-            z_candidate = lep[OppSign] + lep[SameSign[1]];
-          }
-
-
-          ///////////////////////////////////////////
-          ////////// m(HN) > 80 GeV region //////////
-          ///////////////////////////////////////////
-
-          snu::KParticle W_pri_highmass, nu_highmass, W_sec;
-          nu_highmass.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET);
-          int l_3_index = find_mlmet_closest_to_W(lep, nu_highmass);
-          double pz_sol_highmass[2];
-          pz_sol_highmass[0] = solveqdeq(80.385, lep[l_3_index], MET, METphi, "m"); // 0 = minus
-          pz_sol_highmass[1] = solveqdeq(80.385, lep[l_3_index], MET, METphi, "p"); // 1 = plus
-          int solution_selection_highmass = 0;
-          if( pz_sol_highmass[0] != pz_sol_highmass[1] ){
-            // take the one with smaller magnitude
-            if( fabs( pz_sol_highmass[0] ) > fabs( pz_sol_highmass[1] ) ){
-              solution_selection_highmass = 1;
-            }
-          }
-          PutNuPz( &nu_highmass, pz_sol_highmass[solution_selection_highmass] );
-
-          W_pri_highmass = lep[0] + lep[1] + lep[2] + nu_highmass;
-
-          // [class3]
-          // m(HN) : 90 ~ 1000 GeV - primary lepton has larger pT
-          // [class4]
-          // m(HN) > 1000 GeV - primary lepton has smaller pT
-
-          W_sec = lep[l_3_index] + nu_highmass;
-
-          if(l_3_index == OppSign){
-
-            HN[2] = W_sec + lep[SameSign[1]]; // [class3]
-            HN[3] = W_sec + lep[SameSign[0]]; // [class4]
-
-          }
-          else{
-              HN[2] = W_sec + lep[OppSign]; // [class3]
-              HN[3] = W_sec + lep[OppSign]; // [class4]
-          }
-
-          VetoZResonance = fabs(z_candidate.M()-91.1876) > 15.;
-          isLowMass = (W_pri_lowmass.M() < 150.);
-          isHighMass = (MET > 20.);
         }
+
+        // reconstruct HN and W_real 4-vec with selected Pz solution
+        PutNuPz(&nu_lowmass, pz_sol_lowmass[solution_selection_lowmass] );
+        //==== SameSign[0] : leading among SS
+        //==== SameSign[1] : subleading among SS
+        //==== [class1]
+        //==== m(HN) : 5 ~ 50 GeV - SS_leading is primary
+        //==== [class2]
+        //==== m(HN) : 60, 70 GeV - SS_subleading is primary
+
+        HN[0] = lep[OppSign] + lep[SameSign[1]] + nu_lowmass; // [class1]
+        HN[1] = lep[OppSign] + lep[SameSign[0]] + nu_lowmass; // [class2]
+        W_pri_lowmass = lep[0] + lep[1] + lep[2] + nu_lowmass;
+
+
+        double deltaR_OS_min;
+        if( lep[OppSign].DeltaR(lep[SameSign[0]]) < lep[OppSign].DeltaR(lep[SameSign[1]]) ){
+          deltaR_OS_min = lep[OppSign].DeltaR(lep[SameSign[0]]);
+          gamma_star = lep[OppSign] + lep[SameSign[0]];
+        }
+        else{
+          deltaR_OS_min = lep[OppSign].DeltaR(lep[SameSign[1]]);
+          gamma_star = lep[OppSign] + lep[SameSign[1]];
+        }
+
+        if( fabs( (lep[OppSign] + lep[SameSign[0]]).M() - 91.1876 ) <
+            fabs( (lep[OppSign] + lep[SameSign[1]]).M() - 91.1876 )   ){
+          z_candidate = lep[OppSign] + lep[SameSign[0]];
+        }
+        else{
+          z_candidate = lep[OppSign] + lep[SameSign[1]];
+        }
+
+
+        ///////////////////////////////////////////
+        ////////// m(HN) > 80 GeV region //////////
+        ///////////////////////////////////////////
+
+        snu::KParticle W_pri_highmass, nu_highmass, W_sec;
+        nu_highmass.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET);
+        int l_3_index = find_mlmet_closest_to_W(lep, nu_highmass);
+        double pz_sol_highmass[2];
+        pz_sol_highmass[0] = solveqdeq(80.385, lep[l_3_index], MET, METphi, "m"); // 0 = minus
+        pz_sol_highmass[1] = solveqdeq(80.385, lep[l_3_index], MET, METphi, "p"); // 1 = plus
+        int solution_selection_highmass = 0;
+        if( pz_sol_highmass[0] != pz_sol_highmass[1] ){
+          // take the one with smaller magnitude
+          if( fabs( pz_sol_highmass[0] ) > fabs( pz_sol_highmass[1] ) ){
+            solution_selection_highmass = 1;
+          }
+        }
+        PutNuPz( &nu_highmass, pz_sol_highmass[solution_selection_highmass] );
+
+        W_pri_highmass = lep[0] + lep[1] + lep[2] + nu_highmass;
+
+        // [class3]
+        // m(HN) : 90 ~ 1000 GeV - primary lepton has larger pT
+        // [class4]
+        // m(HN) > 1000 GeV - primary lepton has smaller pT
+
+        W_sec = lep[l_3_index] + nu_highmass;
+
+        if(l_3_index == OppSign){
+
+          HN[2] = W_sec + lep[SameSign[1]]; // [class3]
+          HN[3] = W_sec + lep[SameSign[0]]; // [class4]
+
+        }
+        else{
+            HN[2] = W_sec + lep[OppSign]; // [class3]
+            HN[3] = W_sec + lep[OppSign]; // [class4]
+        }
+
+        VetoZResonance = fabs(z_candidate.M()-91.1876) > 15.;
+        isLowMass = (W_pri_lowmass.M() < 150.);
+        isHighMass = (MET > 20.);
 
         std::map< TString, bool > map_whichCR_to_isCR;
         map_whichCR_to_isCR.clear();
-        map_whichCR_to_isCR["Preselection"] = leadPt20 && isOS && Vetomll4 && VetoZResonance && n_bjets==0;
+        map_whichCR_to_isCR["Preselection"] = VetoZResonance && n_bjets==0;
         map_whichCR_to_isCR["LowMass"] = map_whichCR_to_isCR["Preselection"] && isLowMass;
         map_whichCR_to_isCR["HighMass"] = map_whichCR_to_isCR["Preselection"] && isHighMass;
 
@@ -350,6 +350,7 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
           TString this_suffix = it->first;
           if(it->second){
             FillUpDownHist(str_dXYCut+"_n_events_"+this_suffix, 0., this_weight, this_weight_err, 0., 1., 1);
+            FillHist(str_dXYCut+"_n_OnlyLoose_"+this_suffix, m_fakeobj->GetNLooseNotTight(), 1., 0., 4., 4);
           }
         }
 
@@ -458,94 +459,6 @@ void trilepton_mumumu_syst_FR::ClearOutputVectors() throw(LQError) {
   out_electrons.clear();
 }
 
-double trilepton_mumumu_syst_FR::get_FR(snu::KParticle muon, TString whichFR, bool geterror){
-
-  double this_pt = muon.Pt();
-  double this_eta = fabs( muon.Eta() );
-
-  // FR_n_pt_bin = 7
-  // array index      0    1    2    3    4    5    6    7
-  // bin numbe          1    2     3    4    5   6     7
-  // ptarray[7+1] = {10., 15., 20., 25., 30., 35., 45., 60.}; 
-
-  double ptarray[FR_n_pt_bin+1], etaarray[FR_n_eta_bin+1];
-  //cout << "FR_n_pt_bin = " << FR_n_pt_bin << endl;
-  for(int i=0; i<FR_n_pt_bin; i++){
-    ptarray[i] = hist_trimuon_FR[whichFR]->GetXaxis()->GetBinLowEdge(i+1);
-    //cout << " " << ptarray[i] << endl;
-    if(i==FR_n_pt_bin-1){
-      ptarray[FR_n_pt_bin] = hist_trimuon_FR[whichFR]->GetXaxis()->GetBinUpEdge(i+1);
-      //cout << " " << ptarray[FR_n_pt_bin] << endl;
-    }
-  }
-  //cout << "FR_n_eta_bin = " << FR_n_eta_bin << endl;
-  for(int i=0; i<FR_n_eta_bin; i++){
-    etaarray[i] = hist_trimuon_FR[whichFR]->GetYaxis()->GetBinLowEdge(i+1);
-    //cout << " " << etaarray[i] << endl;
-    if(i==FR_n_eta_bin-1){
-      etaarray[FR_n_eta_bin] = hist_trimuon_FR[whichFR]->GetYaxis()->GetBinUpEdge(i+1);
-      //cout << " " << etaarray[FR_n_eta_bin] << endl;
-    }
-  }
-
-  int this_pt_bin;
-  if( this_pt >= ptarray[FR_n_pt_bin] ) this_pt_bin = FR_n_pt_bin;
-  else{
-    for(int i=0; i<FR_n_pt_bin; i++){
-      if( ptarray[i] <= this_pt && this_pt < ptarray[i+1] ){
-        this_pt_bin = i+1;
-        break;
-      }
-    }
-  }
-  //cout << "this pt bin = " << this_pt_bin << endl;
-  int this_eta_bin;
-  if( this_eta >= etaarray[FR_n_eta_bin] ) this_eta_bin = FR_n_eta_bin;
-  else{
-    for(int i=0; i<FR_n_eta_bin; i++){
-      if( etaarray[i] <= this_eta && this_eta < etaarray[i+1] ){
-        this_eta_bin = i+1;
-        break;
-      }
-    }
-  }
-  //cout << "this eta bin = " << this_eta_bin << endl;
-
-  //==== FR
-  double this_FR = hist_trimuon_FR[whichFR]->GetBinContent(this_pt_bin, this_eta_bin);
-  double FRSF_QCD = hist_trimuon_FRSF_QCD[whichFR]->GetBinContent(this_pt_bin, this_eta_bin);
-  double this_FR_QCDSFed = hist_trimuon_FR_QCDSFed[whichFR]->GetBinContent(this_pt_bin, this_eta_bin);
-  //==== error
-  double this_FR_error = hist_trimuon_FR[whichFR]->GetBinError(this_pt_bin, this_eta_bin);
-  double this_FR_QCDSFed_error = hist_trimuon_FR_QCDSFed[whichFR]->GetBinError(this_pt_bin, this_eta_bin);
-
-  //==== FR QCD and error
-  double this_FR_QCD = hist_trimuon_FR_QCD[whichFR]->GetBinContent(this_pt_bin, this_eta_bin);
-  double this_FR_QCD_error = hist_trimuon_FR_QCD[whichFR]->GetBinError(this_pt_bin, this_eta_bin);
-
-  //==== bool for MCClosure
-  bool doMCClosure = std::find(k_flags.begin(), k_flags.end(), "MCClosure") != k_flags.end();
-
-  //cout << "==== FR ====" << endl;
-  //cout << "this_FR = " << this_FR << endl;
-  //cout << "FRSF_QCD = " << FRSF_QCD << endl;
-  //cout << "==> multiply by hand gives = " << this_FR*FRSF_QCD << endl;
-  //cout << "==> this_FR_QCDSFed = " << this_FR_QCDSFed << endl;
-  //cout << "==== FR Error ====" << endl;
-  //cout << "this_FR_error = " << this_FR_error << endl;
-  //cout << "==> multiply by hand gives = " << this_FR_error*FRSF_QCD << endl;
-  //cout << "==> this_FR_QCDSFed_error = " << this_FR_QCDSFed_error << endl << endl;
-
-  if(geterror){
-    if(doMCClosure) return this_FR_QCD_error;
-    return this_FR_QCDSFed_error;
-  }
-  else{
-    if(doMCClosure) return this_FR_QCD;
-    return this_FR_QCDSFed;
-  }
-
-}
 
 
 

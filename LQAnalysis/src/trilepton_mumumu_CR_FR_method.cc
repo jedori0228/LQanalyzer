@@ -186,7 +186,7 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   double MET = Evt.MET(), METphi = Evt.METPhi();
 
   //==== CR with Two Muons
-  if(isTwoMuon){
+  if(DoMCClosure && isTwoMuon){
     snu::KMuon lep[2];
     lep[0] = muontriLooseColl.at(0);
     lep[1] = muontriLooseColl.at(1);
@@ -206,10 +206,10 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
     map_whichCR_to_isCR["OSDiMuon_Z_10GeV"] = isTwoMuon && leadPt20 && !isSS && ZResonance;
 
     //==== fake method weighting
-    //if( n_triTight_muons == 2 ) return; // return TT case
-    double FR_reweight = Get_DataDrivenWeight_MM(false, muontriLooseColl);
-    double weight_err = Get_DataDrivenWeight_MM(true, muontriLooseColl);
-    if(weight==0.) return;
+    std::vector<snu::KElectron> empty_electron;
+    empty_electron.clear();
+    double FR_reweight = Get_DataDrivenWeight(false, muontriLooseColl, empty_electron, 2, 0);
+    double weight_err = Get_DataDrivenWeight(true, muontriLooseColl, empty_electron, 2, 0);
 
     for(std::map< TString, bool >::iterator it = map_whichCR_to_isCR.begin(); it != map_whichCR_to_isCR.end(); it++){
       TString this_suffix = it->first;
@@ -247,10 +247,10 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
     lep[2] = muontriLooseColl.at(2);
 
     //==== fake method weighting
-    //if( n_triTight_muons == 3 ) return; // return TTT case
-    double FR_reweight = Get_DataDrivenWeight_MMM(false, muontriLooseColl);
-    double weight_err = Get_DataDrivenWeight_MMM(true, muontriLooseColl);
-    if(weight==0.) return;
+    std::vector<snu::KElectron> empty_electron;
+    empty_electron.clear();
+    double FR_reweight =  Get_DataDrivenWeight(false, muontriLooseColl, empty_electron, 3, 0);
+    double weight_err = Get_DataDrivenWeight(true, muontriLooseColl, empty_electron, 3, 0);
 
     //bool leadPt20 = muontriLooseColl.at(0).Pt() > 20.; // This will be done for the Z-candidate muons
     bool AllSameCharge = ( muontriLooseColl.at(0).Charge() == muontriLooseColl.at(1).Charge() ) &&

@@ -131,6 +131,12 @@ class HNCommonLeptonFakes {
   //==== get weight
   float get_dilepton_mm_eventweight(bool geterr, std::vector<TLorentzVector> muons, bool isT1, bool isT2);
   float get_trilepton_mmm_eventweight(bool geterr, std::vector<TLorentzVector> muons, bool isT1, bool isT2, bool isT3);
+  float get_eventweight(bool geterr, std::vector<TLorentzVector> muons, std::vector<TLorentzVector> electrons, std::vector<bool> isT);
+  //==== Large dXYSig working poins
+  std::vector<double> GetdXYMins();
+  std::vector<double> GetRelIsoMaxs();
+  //==== After runing get_eventweight, we have # of Loose but not Tight
+  int GetNLooseNotTight();
 
  private:
   /// vector for storing FakeCR strings
@@ -172,6 +178,8 @@ class HNCommonLeptonFakes {
   //==== Trilep fake
   double Current_dXYSig, Current_RelIso;
   bool UseQCDFake;
+  std::vector<double> dXYMins, RelIsoMaxs;
+  int n_Loose_not_Tight;
 
 };
 #endif

@@ -2881,6 +2881,62 @@ float AnalyzerCore::Get_DataDrivenWeight_MMM(bool geterr, vector<snu::KMuon> k_m
   return mmm_weight;
 }
 
+float AnalyzerCore::Get_DataDrivenWeight(bool geterr, vector<snu::KMuon> k_muons, vector<snu::KElectron> k_electrons, int n_muons, int n_electrons){
+
+  Message("In Get_DataDrivenWeight", DEBUG);
+  float this_weight = 0.;
+
+  if( k_muons.size() != n_muons || k_electrons.size() != n_electrons ){
+    Message("[Get_DataDrivenWeight] number of lepton is wrong..", ERROR);
+    return 0.;
+  }
+
+  vector<bool> isT;
+  bool AllTight = true;
+
+  for(unsigned int i=0; i<k_muons.size(); i++){
+    if(k_muons.at(i).RelIso04() < 0.1){
+      isT.push_back(true);
+    }
+    else{
+      isT.push_back(false);
+      AllTight = false;
+    }
+  }
+  for(unsigned int i=0; i<k_electrons.size(); i++){
+    if( fabs(k_electrons.at(i).Eta()) < 1.479 ){
+      if( k_electrons.at(i).PFRelIso(0.3) < 0.0354 ){
+        isT.push_back(true);
+      }
+      else{
+        isT.push_back(false);
+        AllTight = false;
+      }
+    }
+    else{
+      if( k_electrons.at(i).PFRelIso(0.3) < 0.0646 ){
+        isT.push_back(true);
+      }
+      else{
+        isT.push_back(false);
+        AllTight = false;
+      }
+    }
+  }
+
+  if(AllTight){
+    Message("[Get_DataDrivenWeight] All leptons pass Tight. Return 0. weight..", DEBUG);
+    return 0.;
+  }
+
+  vector<TLorentzVector> muons=MakeTLorentz(k_muons);
+  vector<TLorentzVector> electrons=MakeTLorentz(k_electrons);
+
+  this_weight =m_fakeobj->get_eventweight(geterr, muons, electrons, isT);
+
+  return this_weight;
+}
+
 
 float AnalyzerCore::Get_DataDrivenWeight_M(vector<snu::KMuon> k_muons, TString cutID){
 

@@ -21,12 +21,6 @@ class trilepton_mumumu_syst_FR : public AnalyzerCore {
   void MakeHistograms();
   void FillCutFlow(TString cut, float w);
   vector<double> dXYMins, RelIsoMaxs;
-  std::map<TString, TH2D*> hist_trimuon_FR;
-  std::map<TString, TH2D*> hist_trimuon_FR_QCD;
-  std::map<TString, TH2D*> hist_trimuon_FRSF_QCD;
-  std::map<TString, TH2D*> hist_trimuon_FR_QCDSFed;
-  int FR_n_pt_bin, FR_n_eta_bin;
-  double get_FR(snu::KParticle muon, TString whichFR, bool geterror);
 
  private:
   

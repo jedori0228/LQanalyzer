@@ -289,12 +289,16 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     FillCutFlow("3muon", 1.);
 
     snu::KParticle lep[3], HN[4];
+    for(int i=0;i<3;i++){
+      lep[i] = muontriLooseColl.at(i);
+    }
 
     //==== fake method weighting
-    //if( n_triTight_muons == 3 ) return; // return TTT case
-    this_weight *= Get_DataDrivenWeight_MMM(false, muontriLooseColl);
-    double this_weight_err = Get_DataDrivenWeight_MMM(true, muontriLooseColl);
-    if(weight==0.) return;
+    if( n_triTight_muons == 3 ) continue; // return TTT case
+    std::vector<snu::KElectron> empty_electron;
+    empty_electron.clear();
+    this_weight *= Get_DataDrivenWeight(false, muontriLooseColl, empty_electron, 3, 0);;
+    double this_weight_err = Get_DataDrivenWeight(true, muontriLooseColl, empty_electron, 3, 0);;
 
     int OppSign, SameSign[2]; // SameSign[0].Pt() > SameSign[1].Pt()
     if(lep[0].Charge() * lep[1].Charge() > 0){ // Q(0) = Q(1)

@@ -119,7 +119,12 @@ void HNCommonLeptonFakes::InitialiseFake(){
     }
   }
   _2DEfficiencyMap["PR_trilep"] = dynamic_cast<TH2F*>((file_trilep_prompt->Get("PR_pt_abseta"))->Clone());
-  
+
+  TH1D *hist_dXYMins = (TH1D*)file_trilep_fake->Get("hist_dXYMins");
+  TH1D *hist_RelIsoMaxs = (TH1D*)file_trilep_fake->Get("hist_RelIsoMaxs");
+  for(int i=1; i<=hist_dXYMins->GetXaxis()->GetNbins(); i++) dXYMins.push_back( hist_dXYMins->GetBinContent(i) );
+  for(int i=1; i<=hist_RelIsoMaxs->GetXaxis()->GetNbins(); i++) RelIsoMaxs.push_back( hist_RelIsoMaxs->GetBinContent(i) );
+
   if(failedinitialisation){
     cout << "Not all histograms could be initialised, this is a bug so am exiting" << endl;
   }
@@ -156,15 +161,18 @@ void HNCommonLeptonFakes::InitialiseFake(){
 /// Constructor
 HNCommonLeptonFakes::HNCommonLeptonFakes(std::string path,bool usegev){
 
+  Current_dXYSig = 4.0;
+  Current_RelIso = 0.4;
+  UseQCDFake = false;
+  dXYMins.clear();
+  RelIsoMaxs.clear();
+  n_Loose_not_Tight = -1;
+
   path_to_root_files = path;
   useGeV = usegev;
   InitialiseFake();
   m_debug=false;
   NullTotals();
-
-  Current_dXYSig = 4.0;
-  Current_RelIso = 0.4;
-  UseQCDFake = false;
 
 }
 
@@ -821,9 +829,13 @@ float HNCommonLeptonFakes::getTrilepFakeRate_muon(bool geterr, float pt,  float 
       return 0.;
     }
     else{
+      TDirectory* origDir = gDirectory;
+
       TDirectory* tempDir = getTemporaryDirectory();
       tempDir->cd();
       TH2D *hist_FR = (TH2D*)mapit_FR->second->Clone();
+
+      origDir->cd();
 
       int binx = hist_FR->FindBin(pt, abs(eta));
       if(geterr) return hist_FR->GetBinError(binx);
@@ -837,10 +849,14 @@ float HNCommonLeptonFakes::getTrilepFakeRate_muon(bool geterr, float pt,  float 
       return 0.;
     }
     else{
+      TDirectory* origDir = gDirectory;
+
       TDirectory* tempDir = getTemporaryDirectory();
       tempDir->cd();
       TH2D *hist_FR = (TH2D*)mapit_FR->second->Clone();
       if(applysf) hist_FR->Multiply(mapit_FRSF->second);
+
+      origDir->cd();
 
       int binx = hist_FR->FindBin(pt, abs(eta));
       if(geterr) return hist_FR->GetBinError(binx);
@@ -1035,11 +1051,92 @@ float HNCommonLeptonFakes::get_dilepton_mm_eventweight(bool geterr, std::vector<
 
 }
 
+float HNCommonLeptonFakes::get_eventweight(bool geterr, std::vector<TLorentzVector> muons, std::vector<TLorentzVector> electrons, std::vector<bool> isT){
 
+  unsigned int n_leptons = isT.size();
 
+  vector<float> lep_pt, lep_eta;
+  vector<bool> ismuon;
+  for(unsigned int i=0; i<muons.size(); i++){
+    lep_pt.push_back(muons.at(i).Pt());
+    lep_eta.push_back(muons.at(i).Eta());
+    ismuon.push_back(true);
+  }
+  for(unsigned int i=0; i<electrons.size(); i++){
+    lep_pt.push_back(electrons.at(i).Pt());
+    lep_eta.push_back(electrons.at(i).Eta());
+    ismuon.push_back(false);
+  }
 
+  vector<float> fr, pr, fr_err, pr_err;
 
+  for(unsigned int i=0; i<n_leptons; i++){
+    //==== Muon
+    if(ismuon.at(i)){
+      fr.push_back( getTrilepFakeRate_muon(false, lep_pt.at(i), lep_eta.at(i), true) );
+      pr.push_back( getTrilepPromptRate_muon(false, lep_pt.at(i), lep_eta.at(i))  );
+      fr_err.push_back( getTrilepFakeRate_muon(true, lep_pt.at(i), lep_eta.at(i), true) );
+      pr_err.push_back( getTrilepPromptRate_muon(true, lep_pt.at(i), lep_eta.at(i))  );
+    }
+    //==== If not, it's an electron
+    else{
+      fr.push_back( getFakeRate_electronEta(0, lep_pt.at(i), lep_eta.at(i), "pt_eta_40_looseregion1") );
+      pr.push_back( getEfficiency_electron(0, lep_pt.at(i), lep_eta.at(i), "pt_eta_40_looseregion1") );
+      fr_err.push_back( getFakeRate_electronEta(1, lep_pt.at(i), lep_eta.at(i), "pt_eta_40_looseregion1") );
+      pr_err.push_back( getEfficiency_electron(1, lep_pt.at(i), lep_eta.at(i), "pt_eta_40_looseregion1") );
+    }
+  }
 
+  //==== let a == f/(1-f)
+
+  vector<float> a, fr_onlyLoose;
+
+  for(unsigned int i=0; i<n_leptons; i++) a.push_back( fr.at(i)/(1.-fr.at(i)) );
+  for(unsigned int i=0; i<n_leptons; i++){
+    if(!isT.at(i)) fr_onlyLoose.push_back( a.at(i) );
+  }
+  n_Loose_not_Tight = fr_onlyLoose.size();
+
+  //==== Initialise weight
+  float this_weight=-1.;
+
+  for(unsigned int i=0; i<fr_onlyLoose.size(); i++){
+    this_weight *= -fr_onlyLoose.at(i);
+  }
+
+  if(!geterr) return this_weight;
+
+  //==== d(a)/a = d(f)/f(1-f)
+  //==== so, if w = a1*a2,
+  //==== d(w)/w = d(a1)/a1 + d(a2)/a2
+
+  vector<float> da_over_a;
+  for(unsigned int i=0; i<n_leptons; i++) da_over_a.push_back( fr_err.at(i) / ( fr.at(i)*(1.-fr.at(i)) ) );
+  float this_weight_err = 0.;
+  for(unsigned int i=0; i<n_leptons; i++){
+    if(!isT.at(i)) this_weight_err += da_over_a.at(i)*da_over_a.at(i);
+  }
+
+  this_weight_err = sqrt(this_weight_err);
+  this_weight_err = this_weight_err*fabs(this_weight);
+
+  return this_weight_err;
+
+}
+
+std::vector<double> HNCommonLeptonFakes::GetdXYMins(){
+  return dXYMins;
+}
+
+std::vector<double> HNCommonLeptonFakes::GetRelIsoMaxs(){
+  return RelIsoMaxs;
+}
+
+int HNCommonLeptonFakes::GetNLooseNotTight(){
+
+  return n_Loose_not_Tight;
+
+}
 
 
 
