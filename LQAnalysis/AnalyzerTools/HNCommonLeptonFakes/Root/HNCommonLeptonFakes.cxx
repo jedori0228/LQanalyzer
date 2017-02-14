@@ -53,8 +53,8 @@ void HNCommonLeptonFakes::InitialiseFake(){
 
   //==== Trilep
   //==== Using Large dXYSig muons
-  TFile* file_trilep_fake = TFile::Open( (lqdir + "/data/Fake/"+getenv("yeartag")+"/Trilep_Muon_FakeRate.root").c_str());
-  TFile* file_trilep_prompt = TFile::Open( (lqdir + "/data/Fake/"+getenv("yeartag")+"/Trilep_Muon_PromptRate.root").c_str());
+  TFile* file_trilep_fake = TFile::Open( (lqdir + "/data/Fake/"+getenv("yeartag")+"/Trilep_Muon_FakeRate_BCDEFGH.root").c_str());
+  TFile* file_trilep_prompt = TFile::Open( (lqdir + "/data/Fake/"+getenv("yeartag")+"/Trilep_Muon_PromptRate_BCDEFG.root").c_str());
   CheckFile(file_trilep_fake);
   CheckFile(file_trilep_prompt);
 
