@@ -167,10 +167,10 @@ void Validation_trilepton::ExecuteEvents()throw( LQError ){
     //==== Get Muon Corrections
     //===========================
 
-    double muon_id_sf = mcdata_correction->MuonScaleFactor(muonid, MiniAODPTMuons, 0);
+    double muon_id_sf = mcdata_correction->MuonScaleFactor(muonid, muoncoll, 0);
     double muon_iso_sf = 1.;
-    if(muonid=="MUON_POG_TIGHT") mcdata_correction->MuonISOScaleFactor(muonid, MiniAODPTMuons, 0);
-    double MuTrkEffSF =  mcdata_correction->MuonTrackingEffScaleFactor(MiniAODPTMuons);
+    if(muonid=="MUON_POG_TIGHT") mcdata_correction->MuonISOScaleFactor(muonid,muoncoll, 0);
+    double MuTrkEffSF =  mcdata_correction->MuonTrackingEffScaleFactor(muoncoll);
 
     if(!isData && !k_running_nonprompt){
       this_weight*=muon_id_sf;
