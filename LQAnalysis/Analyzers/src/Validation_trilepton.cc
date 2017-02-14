@@ -120,7 +120,7 @@ void Validation_trilepton::ExecuteEvents()throw( LQError ){
   //==== Get Jets
   //===============
 
-  std::vector<snu::KJet> jetColl_hn = GetJets("JET_HN", true, 30., 2.4);
+  std::vector<snu::KJet> jetColl_hn = GetJets("JET_HN", 30., 2.4);
   int n_jets = jetColl_hn.size();
   int n_bjets=0;
   for(int j=0; j<n_jets; j++){
@@ -166,13 +166,15 @@ void Validation_trilepton::ExecuteEvents()throw( LQError ){
     //=========================== 
     //==== Get Muon Corrections
     //===========================
-    mcdata_correction->CorrectMuonMomentum(muoncoll);
-    double muon_id_iso_sf = mcdata_correction->MuonScaleFactor(muonid, muoncoll, 0);
-    double MuTrkEffSF =  mcdata_correction->MuonTrackingEffScaleFactor(muoncoll);
+
+    double muon_id_sf = mcdata_correction->MuonScaleFactor(muonid, MiniAODPTMuons, 0);
+    double muon_iso_sf = 1.;
+    if(muonid=="MUON_POG_TIGHT") mcdata_correction->MuonISOScaleFactor(muonid, MiniAODPTMuons, 0);
+    double MuTrkEffSF =  mcdata_correction->MuonTrackingEffScaleFactor(MiniAODPTMuons);
 
     if(!isData && !k_running_nonprompt){
-      this_weight*=muon_id_iso_sf;
-      //if(muonid=="MUON_POG_TIGHT") this_weight*=weight_trigger_sf;
+      this_weight*=muon_id_sf;
+      this_weight*=muon_iso_sf;
       this_weight*=trigger_ps_weight;
       this_weight*=MuTrkEffSF;
     }

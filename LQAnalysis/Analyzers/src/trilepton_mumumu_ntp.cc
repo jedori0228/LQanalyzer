@@ -165,13 +165,12 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
   //==== Get Muon Corrections (Rochestor only here)
   //=================================================
 
-  CorrectMuonMomentum(muontriVLooseColl_lowestPtCut);
 
   //====================================
   //==== Get Jets (the lowest pt jets)
   //====================================
 
-  std::vector<snu::KJet> jetColl_hn_lowestPtCut = GetJets("JET_HN", true, 20., 2.4);
+  std::vector<snu::KJet> jetColl_hn_lowestPtCut = GetJets("JET_HN", 20., 2.4);
 
 
   //====================

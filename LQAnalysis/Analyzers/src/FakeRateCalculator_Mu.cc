@@ -93,7 +93,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   //==== Get Jets
   //===============
 
-  std::vector<snu::KJet> jetColl_hn = GetJets("JET_HN", true, 30., 2.4);
+  std::vector<snu::KJet> jetColl_hn = GetJets("JET_HN", 30., 2.4);
 
   //======================
   //==== Pileup Reweight

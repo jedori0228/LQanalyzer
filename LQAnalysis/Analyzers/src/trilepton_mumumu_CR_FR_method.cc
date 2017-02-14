@@ -114,13 +114,12 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
 
   double this_RelIso = 0.4;
   std::vector<snu::KMuon> muontriLooseColl = GetHNTriMuonsByLooseRelIso(this_RelIso, true);
-  mcdata_correction->CorrectMuonMomentum(muontriLooseColl);
 
   //===============
   //==== Get Jets
   //===============
 
-  std::vector<snu::KJet> jetColl_hn = GetJets("JET_HN", true, 30., 2.4);
+  std::vector<snu::KJet> jetColl_hn = GetJets("JET_HN", 30., 2.4);
   int n_jets = jetColl_hn.size();
   int n_bjets=0;
   for(int j=0; j<n_jets; j++){
