@@ -1754,6 +1754,14 @@ void AnalyzerCore::FillHist(TString histname, float value, float w , TString lab
   return;
 }
 
+void AnalyzerCore::FillUpDownHist(TString histname, float value, float w, float w_err, float xmin, float xmax, int nbins , TString label){
+
+  FillHist(histname+"_up", value, w+w_err, xmin, xmax, nbins, label);
+  FillHist(histname+"_down", value, w-w_err, xmin, xmax, nbins, label);
+  FillHist(histname, value, w, xmin, xmax, nbins, label);
+
+}
+
 void AnalyzerCore::FillCLHist(histtype type, TString hist, vector<snu::KMuon> muons, double w){
 
   if(type==muhist){
