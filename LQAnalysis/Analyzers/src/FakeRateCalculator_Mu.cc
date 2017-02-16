@@ -128,6 +128,9 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   float etaarray [] = {0.0, 0.8, 1.479, 2.0, 2.5};
   float ptarray [] = {10.,15.,20.,25.,30.,35.,45.,60.,80.,100.};
 
+  float etaarray_2 [] = {0.0, 1.479, 2.5};
+  float ptarray_2 [] = {10.,15.,40.,200.};
+
   //=========================================================
   //==== Large dXYSig Muon definitions for systematic study
   //=========================================================
@@ -588,7 +591,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
               FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Large_dXYSig_F0", fabs(this_muon.dXYSig()), this_weight, 0., 15., 150);
               FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Large_dZ_F0", fabs(this_muon.dZ()), this_weight, 0, 0.5, 50);
               FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Large_onebin_F0", 0., this_weight, 0, 1., 1);
-              FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Large_events_F0", this_muon.Pt(), fabs(this_muon.Eta()), this_weight, ptarray, 9, etaarray, 4);
+              FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Large_events_F0", this_muon.Pt(), fabs(this_muon.Eta()), this_weight, ptarray_2, 3, etaarray_2, 2);
 
 
               if( this_muon.RelIso04() < 0.1 ){
@@ -602,7 +605,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
                 FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Large_dXYSig_F", fabs(this_muon.dXYSig()), this_weight, 0., 15., 150);
                 FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Large_dZ_F", fabs(this_muon.dZ()), this_weight, 0, 0.5, 50);
                 FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Large_onebin_F", 0., this_weight, 0, 1., 1);
-                FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Large_events_F", this_muon.Pt(), fabs(this_muon.Eta()), this_weight, ptarray, 9, etaarray, 4);
+                FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Large_events_F", this_muon.Pt(), fabs(this_muon.Eta()), this_weight, ptarray_2, 3, etaarray_2, 2);
 
               }
             }
@@ -619,7 +622,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
               FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_dXYSig_F0", fabs(this_muon.dXYSig()), this_weight, 0., 15., 150);
               FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_dZ_F0", fabs(this_muon.dZ()), this_weight, 0, 0.5, 50);
               FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_onebin_F0", 0., this_weight, 0, 1., 1);
-              FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_events_F0", this_muon.Pt(), fabs(this_muon.Eta()), this_weight, ptarray, 9, etaarray, 4);
+              FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_events_F0", this_muon.Pt(), fabs(this_muon.Eta()), this_weight, ptarray_2, 3, etaarray_2, 2);
               if( this_muon.RelIso04() < 0.1 ){
                 FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_dXYSig", 1, this_weight, 0., 2., 2);
 
@@ -631,7 +634,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
                 FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_dXYSig_F", fabs(this_muon.dXYSig()), this_weight, 0., 15., 150);
                 FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_dZ_F", fabs(this_muon.dZ()), this_weight, 0, 0.5, 50);
                 FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_onebin_F", 0., this_weight, 0, 1., 1);
-                FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_events_F", this_muon.Pt(), fabs(this_muon.Eta()), this_weight, ptarray, 9, etaarray, 4);
+                FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_events_F", this_muon.Pt(), fabs(this_muon.Eta()), this_weight, ptarray_2, 3, etaarray_2, 2);
               }
             }
 

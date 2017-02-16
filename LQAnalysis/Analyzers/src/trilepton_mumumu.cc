@@ -113,9 +113,14 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   triggerlist.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v");
   triggerlist.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
 
-  if(!PassTriggerOR(triggerlist)) return;
-  FillCutFlow("TriggerCut", 1.);
-  m_logger << DEBUG << "passedTrigger "<< LQLogger::endmsg;
+  //==== If this is a Cut Optimization study,
+  //==== let's not use trigger pass here.
+  bool DoCutOp = std::find(k_flags.begin(), k_flags.end(), "cutop") != k_flags.end();
+  if(!DoCutOp){
+    if(!PassTriggerOR(triggerlist)) return;
+    FillCutFlow("TriggerCut", 1.);
+    m_logger << DEBUG << "passedTrigger "<< LQLogger::endmsg;
+  }
 
   float trigger_ps_weight= WeightByTrigger(triggerlist, TargetLumi);
   //float weight_trigger_sf = TriggerScaleFactor(electronColl, muonTightColl, "HLT_IsoMu20");
@@ -431,35 +436,51 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
 
   //==== preselection is done
 
-  bool DoCutOp = std::find(k_flags.begin(), k_flags.end(), "cutop") != k_flags.end();
   if(DoCutOp){
-    double cutop[100];
-    cutop[0] = muontriLooseColl.at(0).Pt();
-    cutop[1] = muontriLooseColl.at(1).Pt();
-    cutop[2] = muontriLooseColl.at(2).Pt();
-    cutop[3] = deltaR_OS_min;
-    cutop[4] = HN[0].M();
-    cutop[5] = HN[1].M();
-    cutop[6] = HN[2].M();
-    cutop[7] = HN[3].M();
-    cutop[8] = W_pri_lowmass.M();
-    cutop[9] = W_pri_highmass.M();
-    cutop[10] = weight;
-    cutop[11] = muontriLooseColl.at(0).dXY();
-    cutop[12] = muontriLooseColl.at(1).dXY();
-    cutop[13] = muontriLooseColl.at(2).dXY();
-    cutop[14] = muontriLooseColl.at(0).dZ();
-    cutop[15] = muontriLooseColl.at(1).dZ();
-    cutop[16] = muontriLooseColl.at(2).dZ();
-    cutop[17] = muontriLooseColl.at(0).RelIso04();
-    cutop[18] = muontriLooseColl.at(1).RelIso04();
-    cutop[19] = muontriLooseColl.at(2).RelIso04();
-    cutop[20] = W_sec.M();
-    cutop[21] = MET;
-    cutop[22] = 0.; // weight_err
 
-    FillNtp("cutop",cutop);
+    //==== HLT_Mu50_v 36810.752
+    //==== HLT_IsoTkMu24_v 36810.751
+    //==== HLT_IsoMu24_v 36810.751
+
+    std::vector<TString> triggerlist_1, triggerlist_2, triggerlist_3, triggerlist_123;
+
+    triggerlist_1 = triggerlist;
+    triggerlist_1.push_back("HLT_Mu50_v");
+
+    triggerlist_2 = triggerlist;
+    triggerlist_2.push_back("HLT_IsoTkMu24_v");
+
+    triggerlist_3 = triggerlist;
+    triggerlist_3.push_back("HLT_IsoMu24_v");
+
+    triggerlist_123 = triggerlist;
+    triggerlist_123.push_back("HLT_Mu50_v");
+    triggerlist_123.push_back("HLT_IsoTkMu24_v");
+    triggerlist_123.push_back("HLT_IsoMu24_v");
+
+    if(PassTriggerOR(triggerlist)){
+      FillHist("TriggerStudy_unweighted", 0., 1., 0., 5., 5);
+      FillHist("TriggerStudy_weighted", 0., weight, 0., 5., 5);
+    }
+    if(PassTriggerOR(triggerlist_1)){
+      FillHist("TriggerStudy_unweighted", 1., 1., 0., 5., 5);
+      FillHist("TriggerStudy_weighted", 1., weight, 0., 5., 5);
+    }
+    if(PassTriggerOR(triggerlist_2)){
+      FillHist("TriggerStudy_unweighted", 2., 1., 0., 5., 5);
+      FillHist("TriggerStudy_weighted", 2., weight, 0., 5., 5);
+    }
+    if(PassTriggerOR(triggerlist_3)){
+      FillHist("TriggerStudy_unweighted", 3., 1., 0., 5., 5);
+      FillHist("TriggerStudy_weighted", 3., weight, 0., 5., 5);
+    }
+    if(PassTriggerOR(triggerlist_123)){
+      FillHist("TriggerStudy_unweighted", 4., 1., 0., 5., 5);
+      FillHist("TriggerStudy_weighted", 4., weight, 0., 5., 5);
+    }
+
     return;
+
   }
 
   bool isLowMass = (W_pri_lowmass.M() < 150.);
@@ -620,8 +641,6 @@ void trilepton_mumumu::MakeHistograms(){
   /**
    *  Remove//Overide this trilepton_mumumuCore::MakeHistograms() to make new hists for your analysis
    **/
-
-  MakeNtp("cutop", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:first_dXY:second_dXY:third_dXY:first_dZ:second_dZ:third_dZ:first_RelIso:second_RelIso:third_RelIso:W_sec_highmass_mass:PFMET:weight_err");
 
 }
 

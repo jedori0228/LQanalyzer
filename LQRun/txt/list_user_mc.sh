@@ -30,9 +30,9 @@ declare -a QCD_FR=(
 declare -a FR_MC_Closure=(
 'TTJets_aMC'
 'DYJets_10to50' 'DYJets'
-'WJets'
-'QCD_Pt-1000toInf_MuEnriched' 'QCD_Pt-120to170_MuEnriched' 'QCD_Pt-15to20_MuEnriched' 'QCD_Pt-170to300_MuEnriched' 'QCD_Pt-20to30_MuEnriched' 'QCD_Pt-300to470_MuEnriched' 'QCD_Pt-30to50_MuEnriched' 'QCD_Pt-470to600_MuEnriched' 'QCD_Pt-50to80_MuEnriched' 'QCD_Pt-600to800_MuEnriched' 'QCD_Pt-800to1000_MuEnriched' 'QCD_Pt-80to120_MuEnriched'
-)
+'WJets')
+#'QCD_Pt-1000toInf_MuEnriched' 'QCD_Pt-120to170_MuEnriched' 'QCD_Pt-15to20_MuEnriched' 'QCD_Pt-170to300_MuEnriched' 'QCD_Pt-20to30_MuEnriched' 'QCD_Pt-300to470_MuEnriched' 'QCD_Pt-30to50_MuEnriched' 'QCD_Pt-470to600_MuEnriched' 'QCD_Pt-50to80_MuEnriched' 'QCD_Pt-600to800_MuEnriched' 'QCD_Pt-800to1000_MuEnriched' 'QCD_Pt-80to120_MuEnriched'
+#)
 
 ### SR ###
 declare -a trilep_bkg=(
@@ -88,4 +88,6 @@ declare -a VGamma=(
 # 'WGtoLNuG' 'WGtoLNuMM'
 #)
 
-
+declare -a FourLep=(
+'WZZ' 'WWZ' 'ZZZ' 'ttZ' 'ttH_nonbb'
+)

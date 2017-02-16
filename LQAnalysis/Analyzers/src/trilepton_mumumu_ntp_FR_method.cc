@@ -231,14 +231,13 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     }
 
     //==== Muon
-    std::vector<snu::KMuon> muontriLooseColl, muontriTightColl;
+    std::vector<snu::KMuon> muontriLooseColl;
     if(this_syst == "MuonEn_up"){
       for(unsigned int i=0; i<muontriVLooseColl_lowestPtCut.size(); i++){
         snu::KMuon this_muon = muontriVLooseColl_lowestPtCut.at(i);
         this_muon.SetPtEtaPhiM( this_muon.Pt()*this_muon.PtShiftedUp(), this_muon.Eta(), this_muon.Phi(), this_muon.M() );
         double new_RelIso = this_muon.RelIso04()/this_muon.PtShiftedUp();
         if( this_muon.Pt() >= 10. && new_RelIso < this_RelIso ) muontriLooseColl.push_back( this_muon );
-        if( this_muon.Pt() >= 10. && new_RelIso < 0.1 ) muontriTightColl.push_back( this_muon );
       }
     }
     else if(this_syst == "MuonEn_down"){
@@ -247,7 +246,6 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
         this_muon.SetPtEtaPhiM( this_muon.Pt()*this_muon.PtShiftedDown(), this_muon.Eta(), this_muon.Phi(), this_muon.M() );
         double new_RelIso = this_muon.RelIso04()/this_muon.PtShiftedDown();
         if( this_muon.Pt() >= 10. && new_RelIso < this_RelIso ) muontriLooseColl.push_back( this_muon );
-        if( this_muon.Pt() >= 10. && new_RelIso < 0.1 ) muontriTightColl.push_back( this_muon );
       }
     }
     //==== normal muons
@@ -255,7 +253,6 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
       for(unsigned int i=0; i<muontriVLooseColl_lowestPtCut.size(); i++){
         snu::KMuon this_muon = muontriVLooseColl_lowestPtCut.at(i);
         if( this_muon.Pt() >= 10. && this_muon.RelIso04() < this_RelIso ) muontriLooseColl.push_back( this_muon );
-        if( this_muon.Pt() >= 10. && this_muon.RelIso04() < 0.1 ) muontriTightColl.push_back( this_muon );
       }
     }
 
@@ -279,39 +276,45 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     double MuTrkEffSF =  mcdata_correction->MuonTrackingEffScaleFactor(muontriLooseColl); //FIXME should add syst for this
 
     //==== this weight
-    double this_weight = weight*muon_id_iso_sf*MuTrkEffSF;
+    double this_weight = weight;
 
     double METphi = Evt.METPhi();
 
-    int n_triTight_muons = muontriTightColl.size();
+    int n_triTight_muons(0);
+    for(unsigned int i=0; i<muontriLooseColl.size(); i++){
+      if(muontriLooseColl.at(i).RelIso04() < 0.1) n_triTight_muons++;
+    }
     int n_triLoose_muons = muontriLooseColl.size();
     int n_jets = jetColl_hn.size();
 
-    if( n_triLoose_muons != 3 ) continue;
+    //==== At least thee muons
+    //==== If I want to look single/dimuon event, should not return
+    if( n_triLoose_muons < 3 ) continue;
+
+    bool isThreeMuon = n_triLoose_muons == 3 && n_triTight_muons != 3; // no TTT
+    bool isFourMuon  = n_triLoose_muons == 4 && n_triTight_muons != 4; // no TTTT
 
     double MinLeadingMuonPt = 20;
     if( muontriLooseColl.at(0).Pt() < MinLeadingMuonPt ) continue;
+
+    //=======================
+    //==== Three Muon Event
+    //=======================
 
     snu::KParticle lep[3], HN[4];
     for(int i=0;i<3;i++){
       lep[i] = muontriLooseColl.at(i);
     }
 
-    //==== fake method weighting
-    if( n_triTight_muons == 3 ) continue; // return TTT case
-    std::vector<snu::KElectron> empty_electron;
-    empty_electron.clear();
-    this_weight *= m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", 3, empty_electron, "ELECTRON_HN_TIGHT", 0);
-    double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true, muontriLooseColl, "MUON_HN_TRI_TIGHT", 3, empty_electron, "ELECTRON_HN_TIGHT", 0);
-
-    int OppSign, SameSign[2]; // SameSign[0].Pt() > SameSign[1].Pt()
+    bool AllSameCharge = false;
+    int OppSign=0, SameSign[2]={1,2}; // SameSign[0].Pt() > SameSign[1].Pt()
     if(lep[0].Charge() * lep[1].Charge() > 0){ // Q(0) = Q(1)
       if(lep[1].Charge() * lep[2].Charge() < 0){ // Q(1) != Q(2)
         OppSign = 2;
         SameSign[0] = 0;
         SameSign[1] = 1;
       }
-      else continue; // veto Q(0) = Q(1) = Q(2)
+      else AllSameCharge = true; // veto Q(0) = Q(1) = Q(2)
     }
     else{ // Q(0) != Q(1)
       if(lep[0].Charge() * lep[2].Charge() > 0){ // Q(0) = Q(2)
@@ -326,11 +329,9 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
       }
     } // Find l2 and assign l1&l3 in ptorder 
 
-    // MC samples has m(OS)_saveflavour > 4 GeV cut at gen level
-    // MADGRAPH : https://github.com/cms-sw/genproductions/blob/master/bin/MadGraph5_aMCatNLO/cards/production/13TeV/WZTo3LNu01j_5f_NLO_FXFX/WZTo3LNu01j_5f_NLO_FXFX_run_card.dat#L130
-    // POWHEG   : https://github.com/cms-sw/genproductions/blob/master/bin/Powheg/production/WZTo3lNu_NNPDF30_13TeV/WZ_lllnu_NNPDF30_13TeV.input#L2
+    bool mllsf4 = false;
     if( (lep[SameSign[0]]+lep[OppSign]).M() <= 4. ||
-        (lep[SameSign[1]]+lep[OppSign]).M() <= 4.     ) continue;
+        (lep[SameSign[1]]+lep[OppSign]).M() <= 4.     ) mllsf4 = true;
 
     ///////////////////////////////////////////
     ////////// m(HN) < 80 GeV region //////////
@@ -423,8 +424,7 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
         HN[3] = W_sec + lep[OppSign]; // [class4]
     }
 
-    if(n_bjets>0) continue;
-
+    bool NoBjet = (n_bjets==0);
     bool VetoZResonance = fabs(z_candidate.M()-91.1876) > 15.;
     bool UseZResonance = fabs(z_candidate.M()-91.1876) < 10.;
 
@@ -460,10 +460,51 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     bool METCut = (MET > 30.);
     bool mlllCut = ((lep[SameSign[0]]+lep[SameSign[1]]+lep[OppSign]).M() > 100.);
     bool electronveto = (electronLooseColl.size() == 0);
-    
-    bool isPreselection = VetoZResonance;
-    bool isWZ = ZMuonPtCut && UseZResonance && PtCutOnWMuon && METCut && mlllCut && electronveto;
-    bool isZJets = ZMuonPtCut && UseZResonance && (MET < 20.) && mlllCut && electronveto;
+
+    bool isPreselection = isThreeMuon && (!AllSameCharge) && (!mllsf4) && NoBjet && VetoZResonance;
+    bool isWZ = isThreeMuon && (!AllSameCharge) && (!mllsf4) && NoBjet && ZMuonPtCut && UseZResonance && PtCutOnWMuon && METCut && mlllCut && electronveto;
+    bool isZJets = isThreeMuon && (!AllSameCharge) && (!mllsf4) && NoBjet && ZMuonPtCut && UseZResonance && (MET < 20.) && mlllCut && electronveto; 
+
+    //==== Now, look at four muon event
+
+    bool isZZ = false;
+
+    if(isFourMuon){
+
+      std::vector<snu::KMuon> MuPlus, MuMinus;
+      for(unsigned int i=0; i<muontriLooseColl.size(); i++){
+        if(muontriLooseColl.at(i).Charge() > 0) MuPlus.push_back(muontriLooseColl.at(i));
+        else MuMinus.push_back(muontriLooseColl.at(i));
+      }
+
+      if( (MuPlus.size() == 2) && (MuMinus.size() == 2) ){
+
+        double m_Z = 91.1876;
+
+        //==== Already applied
+        //bool leadPt20 = muontriLooseColl.at(0).Pt() > 20.;
+
+        snu::KParticle ll_case1_1 = MuPlus.at(0)+MuMinus.at(0);
+        snu::KParticle ll_case1_2 = MuPlus.at(1)+MuMinus.at(1);
+        bool TwoOnZ_case1 = ( fabs( ll_case1_1.M() - m_Z ) < 10. ) && ( fabs( ll_case1_2.M() - m_Z ) < 10. );
+
+        snu::KParticle ll_case2_1 = MuPlus.at(0)+MuMinus.at(1);
+        snu::KParticle ll_case2_2 = MuPlus.at(1)+MuMinus.at(0);
+        bool TwoOnZ_case2 = ( fabs( ll_case2_1.M() - m_Z ) < 10. ) && ( fabs( ll_case2_2.M() - m_Z ) < 10. );
+
+        if( (TwoOnZ_case1 || TwoOnZ_case2) ){
+          isZZ = true;
+        }
+
+      }
+
+    }
+
+    //==== fake method weighting
+    std::vector<snu::KElectron> empty_electron;
+    empty_electron.clear();
+    this_weight *= m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", n_triLoose_muons, empty_electron, "ELECTRON_HN_TIGHT", 0);
+    double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true, muontriLooseColl, "MUON_HN_TRI_TIGHT", n_triLoose_muons, empty_electron, "ELECTRON_HN_TIGHT", 0);
 
     double cutop[100];
     cutop[0] = muontriLooseColl.at(0).Pt();
@@ -483,6 +524,7 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     cutop[14] = isPreselection;
     cutop[15] = isWZ;
     cutop[16] = isZJets;
+    cutop[17] = isZZ;
 
     FillNtp("Ntp_"+this_syst,cutop);
 
@@ -563,17 +605,17 @@ void trilepton_mumumu_ntp_FR_method::MakeHistograms(){
    *  Remove//Overide this trilepton_mumumu_ntp_FR_methodCore::MakeHistograms() to make new hists for your analysis
    **/
 
-  MakeNtp("Ntp_MuonEn_up", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets");
-  MakeNtp("Ntp_MuonEn_down", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets");
-  MakeNtp("Ntp_JetEn_up", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets");
-  MakeNtp("Ntp_JetEn_down", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets");
-  MakeNtp("Ntp_JetRes_up", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets");
-  MakeNtp("Ntp_JetRes_down", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets");
-  MakeNtp("Ntp_Unclustered_up", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets");
-  MakeNtp("Ntp_Unclustered_down", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets");
-  MakeNtp("Ntp_Central", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets");
-  MakeNtp("Ntp_MuonIDSF_up", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets");
-  MakeNtp("Ntp_MuonIDSF_down", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets");
+  MakeNtp("Ntp_MuonEn_up", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZZ");
+  MakeNtp("Ntp_MuonEn_down", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZZ");
+  MakeNtp("Ntp_JetEn_up", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZZ");
+  MakeNtp("Ntp_JetEn_down", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZZ");
+  MakeNtp("Ntp_JetRes_up", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZZ");
+  MakeNtp("Ntp_JetRes_down", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZZ");
+  MakeNtp("Ntp_Unclustered_up", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZZ");
+  MakeNtp("Ntp_Unclustered_down", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZZ");
+  MakeNtp("Ntp_Central", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZZ");
+  MakeNtp("Ntp_MuonIDSF_up", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZZ");
+  MakeNtp("Ntp_MuonIDSF_down", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZZ");
 
 }
 

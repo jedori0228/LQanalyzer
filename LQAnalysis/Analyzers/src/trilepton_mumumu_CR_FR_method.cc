@@ -143,7 +143,7 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   //==== No normalization for MC Closure
   if(DoMCClosure){
     weight = 1.*MCweight;
-    m_fakeobj->SetUseQCDFake(true); 
+    m_datadriven_bkg->GetFakeObj()->SetUseQCDFake(true); 
   }
 
   //==================================
@@ -175,6 +175,8 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
 
   bool isTwoMuon   = n_triLoose_muons == 2 && n_triTight_muons != 2; // no TT case
   bool isThreeMuon = n_triLoose_muons == 3 && n_triTight_muons != 3; // no TTT case
+  bool isFourMuon  = n_triLoose_muons == 4 && n_triTight_muons != 4; // no TTTT case
+
   if(n_triLoose_muons == 2 && n_triTight_muons == 0) FillHist("LL_TL_TT", 0., 1., 0., 3., 3);
   if(n_triLoose_muons == 2 && n_triTight_muons == 1) FillHist("LL_TL_TT", 1., 1., 0., 3., 3);
   if(n_triLoose_muons == 2 && n_triTight_muons == 2) FillHist("LL_TL_TT", 2., 1., 0., 3., 3);
@@ -453,7 +455,78 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
 
   } // isThreeMuon
 
+  if(isFourMuon){
 
+    std::vector<snu::KMuon> MuPlus, MuMinus;
+    snu::KMuon lep[4];
+    for(unsigned int i=0; i<muontriLooseColl.size(); i++){
+      lep[i] = muontriLooseColl.at(i);
+      if(muontriLooseColl.at(i).Charge() > 0) MuPlus.push_back(muontriLooseColl.at(i));
+      else MuMinus.push_back(muontriLooseColl.at(i));
+    }
+
+    if( (MuPlus.size() == 2) && (MuMinus.size() == 2) ){
+
+      double m_Z = 91.1876;
+
+      bool leadPt20 = muontriLooseColl.at(0).Pt() > 20.;
+
+      snu::KParticle ll_case1_1 = MuPlus.at(0)+MuMinus.at(0);
+      snu::KParticle ll_case1_2 = MuPlus.at(1)+MuMinus.at(1);
+      bool TwoOnZ_case1 = ( fabs( ll_case1_1.M() - m_Z ) < 10. ) && ( fabs( ll_case1_2.M() - m_Z ) < 10. );
+
+      snu::KParticle ll_case2_1 = MuPlus.at(0)+MuMinus.at(1);
+      snu::KParticle ll_case2_2 = MuPlus.at(1)+MuMinus.at(0);
+      bool TwoOnZ_case2 = ( fabs( ll_case2_1.M() - m_Z ) < 10. ) && ( fabs( ll_case2_2.M() - m_Z ) < 10. );
+
+      if( leadPt20 && (TwoOnZ_case1 || TwoOnZ_case2) ){
+
+        TString this_suffix = "ZZ";
+
+        std::vector<snu::KElectron> empty_electron;
+        empty_electron.clear();
+        double FR_reweight = m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", 4, empty_electron, "ELECTRON_HN_TIGHT", 0);
+        double weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true, muontriLooseColl, "MUON_HN_TRI_TIGHT", 4, empty_electron, "ELECTRON_HN_TIGHT", 0);
+
+        FillUpDownHist("n_events_"+this_suffix, 0, weight*FR_reweight, weight_err, 0., 1., 1);
+        FillUpDownHist("n_vertices_"+this_suffix, eventbase->GetEvent().nVertices(), weight*FR_reweight, weight_err, 0., 50., 50);
+        FillUpDownHist("n_jets_"+this_suffix, n_jets, weight*FR_reweight, weight_err, 0., 10., 10);
+        FillUpDownHist("n_bjets_"+this_suffix, n_bjets, weight*FR_reweight, weight_err, 0., 10., 10);
+        FillUpDownHist("PFMET_"+this_suffix, MET, weight*FR_reweight, weight_err, 0., 500., 500);
+        FillUpDownHist("PFMET_phi_"+this_suffix, METphi, weight*FR_reweight, weight_err, -3.2, 3.2, 64);
+        if(TwoOnZ_case1){
+          FillUpDownHist("osllmass_"+this_suffix, ll_case1_1.M(), weight*FR_reweight, weight_err, 0., 500., 500);
+          FillUpDownHist("osllmass_"+this_suffix, ll_case1_2.M(), weight*FR_reweight, weight_err, 0., 500., 500);
+        }
+        if(TwoOnZ_case2){
+          FillUpDownHist("osllmass_"+this_suffix, ll_case2_1.M(), weight*FR_reweight, weight_err, 0., 500., 500);
+          FillUpDownHist("osllmass_"+this_suffix, ll_case2_2.M(), weight*FR_reweight, weight_err, 0., 500., 500);
+        }
+        FillUpDownHist("m_llll_"+this_suffix, (ll_case1_1+ll_case1_2).M(), weight*FR_reweight, weight_err, 0., 1000., 1000);
+        FillUpDownHist("n_electron_"+this_suffix, electronLooseColl.size(), weight*FR_reweight, weight_err, 0., 10., 10);
+
+        FillUpDownHist("leadingLepton_Pt_"+this_suffix, lep[0].Pt() , weight*FR_reweight, weight_err, 0., 200., 200);
+        FillUpDownHist("leadingLepton_Eta_"+this_suffix, lep[0].Eta() , weight*FR_reweight, weight_err, -3., 3., 60);
+        FillUpDownHist("leadingLepton_RelIso_"+this_suffix, lep[0].RelIso04() , weight*FR_reweight, weight_err, 0., 1.0, 100);
+        FillUpDownHist("leadingLepton_Chi2_"+this_suffix, lep[0].GlobalChi2() , weight*FR_reweight, weight_err, 0., 10., 100);
+        FillUpDownHist("secondLepton_Pt_"+this_suffix, lep[1].Pt() , weight*FR_reweight, weight_err, 0., 200., 200);
+        FillUpDownHist("secondLepton_Eta_"+this_suffix, lep[1].Eta() , weight*FR_reweight, weight_err, -3., 3., 60);
+        FillUpDownHist("secondLepton_RelIso_"+this_suffix, lep[1].RelIso04() , weight*FR_reweight, weight_err, 0., 1.0, 100);
+        FillUpDownHist("secondLepton_Chi2_"+this_suffix, lep[1].GlobalChi2() , weight*FR_reweight, weight_err, 0., 10., 100);
+        FillUpDownHist("thirdLepton_Pt_"+this_suffix, lep[2].Pt() , weight*FR_reweight, weight_err, 0., 200., 200);
+        FillUpDownHist("thirdLepton_Eta_"+this_suffix, lep[2].Eta() , weight*FR_reweight, weight_err, -3., 3., 60);
+        FillUpDownHist("thirdLepton_RelIso_"+this_suffix, lep[2].RelIso04() , weight*FR_reweight, weight_err, 0., 1.0, 100);
+        FillUpDownHist("thirdLepton_Chi2_"+this_suffix, lep[2].GlobalChi2() , weight*FR_reweight, weight_err, 0., 10., 100);
+        FillUpDownHist("fourthLepton_Pt_"+this_suffix, lep[3].Pt() , weight*FR_reweight, weight_err, 0., 200., 200);
+        FillUpDownHist("fourthLepton_Eta_"+this_suffix, lep[3].Eta() , weight*FR_reweight, weight_err, -3., 3., 60);
+        FillUpDownHist("fourthLepton_RelIso_"+this_suffix, lep[3].RelIso04() , weight*FR_reweight, weight_err, 0., 1.0, 100);
+        FillUpDownHist("fourthLepton_Chi2_"+this_suffix, lep[3].GlobalChi2() , weight*FR_reweight, weight_err, 0., 10., 100);
+
+      }
+
+    } // 2OS
+
+  } // isFourMuon
  
   return;
 
