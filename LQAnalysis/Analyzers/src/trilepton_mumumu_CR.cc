@@ -358,7 +358,7 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
 
       //==== N-1 plots
       vector<bool> WZ_cuts;
-      WZ_cuts.push_back( fabs(Z_candidate.M()-m_Z) < 15. );
+      WZ_cuts.push_back( fabs(Z_candidate.M()-m_Z) < 10. );
       WZ_cuts.push_back( (SS[0]+SS[1]+OS).M() > 100. );
       WZ_cuts.push_back( n_bjets == 0 );
       WZ_cuts.push_back( MET > 30. );
