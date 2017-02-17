@@ -131,6 +131,64 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   float etaarray_2 [] = {0.0, 1.479, 2.5};
   float ptarray_2 [] = {10.,15.,40.,200.};
 
+  //==== 2) back-to-back dijet topology
+
+  //==== tag jet collections
+  //==== pt > 40 GeV
+  //==== |eta| > 2.4
+  //==== LeptonVeto
+  std::vector<snu::KJet> jetColl_tag = GetJets("JET_HN", 40., 2.4);
+  std::vector<snu::KMuon> TEST_tight = GetMuons("MUON_HN_TRI_TIGHT");
+  std::vector<snu::KMuon> TEST_loose = GetMuons("MUON_HN_TRI_LOOSE");
+
+  if( PassTrigger("HLT_Mu17_v") || PassTrigger("HLT_Mu8_v") ){
+
+    //==== dijet event seletion
+    if(jetColl_tag.size() != 0){
+      if(TEST_loose.size() == 1){
+
+        Double_t this_weight_Loose = weight*GetPrescale(TEST_loose, PassTrigger("HLT_Mu8_v"), PassTrigger("HLT_Mu17_v"));
+
+        snu::KMuon muon = TEST_loose.at(0);
+
+        float dR=999.9, dPhi=999.9, ptmu_ptjet=999.9;
+        bool histfilled = false;
+        for(unsigned int i=0; i<jetColl_tag.size(); i++){
+
+          if(histfilled) break;
+          dR = jetColl_tag.at(i).DeltaR(muon);
+          dPhi = fabs(jetColl_tag.at(i).DeltaPhi(muon));
+          ptmu_ptjet = muon.Pt() / jetColl_tag.at(i).Pt();
+          FillHist("SingleMuonTrigger_Dijet_dR", dR, this_weight_Loose, 0., 10., 100);
+
+          if( dR > 1.0 && ptmu_ptjet < 1. && dPhi > 2.5 ){
+            FillHist("SingleMuonTrigger_Dijet_eta_F0", muon.Eta(), this_weight_Loose, -3, 3, 30);
+            FillHist("SingleMuonTrigger_Dijet_pt_F0", muon.Pt(), this_weight_Loose, 0., 200., 200);
+            FillHist("SingleMuonTrigger_Dijet_RelIso_F0", muon.RelIso04(), this_weight_Loose, 0., 1., 100);
+            FillHist("SingleMuonTrigger_Dijet_Chi2_F0", muon.GlobalChi2(), this_weight_Loose, 0., 50., 50);
+            FillHist("SingleMuonTrigger_Dijet_dXY_F0", fabs(muon.dXY()), this_weight_Loose, 0., 1., 1000);
+            FillHist("SingleMuonTrigger_Dijet_dXYSig_F0", fabs(muon.dXYSig()), this_weight_Loose, 0., 15., 150);
+            FillHist("SingleMuonTrigger_Dijet_dZ_F0", fabs(muon.dZ()), this_weight_Loose, 0., 0.5, 50);
+            FillHist("SingleMuonTrigger_Dijet_events_F0", muon.Pt(), fabs(muon.Eta()), this_weight_Loose, ptarray, 9, etaarray, 4);
+            if(TEST_tight.size() == 1){
+              histfilled=true;
+              FillHist("SingleMuonTrigger_Dijet_eta_F", muon.Eta(), this_weight_Loose, -3, 3, 30);
+              FillHist("SingleMuonTrigger_Dijet_pt_F", muon.Pt(), this_weight_Loose, 0., 200., 200);
+              FillHist("SingleMuonTrigger_Dijet_RelIso_F", muon.RelIso04(), this_weight_Loose, 0., 1., 100);
+              FillHist("SingleMuonTrigger_Dijet_Chi2_F", muon.GlobalChi2(), this_weight_Loose, 0., 50., 50);
+              FillHist("SingleMuonTrigger_Dijet_dXY_F", fabs(muon.dXY()), this_weight_Loose, 0., 1, 1000);
+              FillHist("SingleMuonTrigger_Dijet_dXYSig_F", fabs(muon.dXYSig()), this_weight_Loose, 0., 15., 150);
+              FillHist("SingleMuonTrigger_Dijet_dZ_F", fabs(muon.dZ()), this_weight_Loose, 0., 0.5, 50);
+              FillHist("SingleMuonTrigger_Dijet_events_F", muon.Pt(), fabs(muon.Eta()), this_weight_Loose, ptarray, 9, etaarray, 4);
+            }
+          }
+
+        } // tag jet for loop
+
+      } // only one muon
+    } // tag jet exist
+  } // trigger
+
   //=========================================================
   //==== Large dXYSig Muon definitions for systematic study
   //=========================================================
