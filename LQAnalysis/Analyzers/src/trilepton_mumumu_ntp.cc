@@ -520,6 +520,10 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
       ZMuon_subleading = ZMuon;
     } 
 
+    snu::KParticle nu;
+    nu.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET);
+    snu::KParticle W_candidate = nu+WMuon;
+
     bool ZMuonPtCut = (ZMuon.Pt() > 20.) || (lep[OppSign].Pt() > 20.);
     bool PtCutOnWMuon = (WMuon.Pt() > 20.);
     bool METCut = (MET > 30.);
@@ -528,7 +532,7 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
 
     bool isPreselection = isThreeMuon && (!AllSameCharge) && (!mllsf4) && NoBjet && VetoZResonance;
     bool isWZ = isThreeMuon && (!AllSameCharge) && (!mllsf4) && NoBjet && ZMuonPtCut && UseZResonance && PtCutOnWMuon && METCut && mlllCut && electronveto;
-    bool isZJets = isThreeMuon && (!AllSameCharge) && (!mllsf4) && NoBjet && ZMuonPtCut && UseZResonance && (MET < 20.) && mlllCut && electronveto;
+    bool isZJets = isThreeMuon && (!AllSameCharge) && (!mllsf4) && NoBjet && ZMuonPtCut && UseZResonance && (MET < 20.) && mlllCut && electronveto && MT(nu, WMuon) < 30.;
 
     //==== Now, look at four muon event
 

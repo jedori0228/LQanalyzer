@@ -379,11 +379,12 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
         }
       }
 
+      snu::KParticle nu;
+      nu.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET);
+      snu::KParticle W_candidate = nu+WMuon;
+
       if( ZMuonPtCut && isZresonance && PtCutOnWMuon && METCut && mlllCut && !mll4 && electronveto && bjetveto ){
         TString this_suffix = "WZ";
-        snu::KParticle nu;
-        nu.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET); 
-        snu::KParticle W_candidate = nu+WMuon;
 
         FillHist("n_events_"+this_suffix, 0, weight, 0., 1., 1);
         FillHist("n_vertices_"+this_suffix, eventbase->GetEvent().nVertices(), weight, 0., 50., 50);
@@ -435,11 +436,8 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
       }
 
       //==== Z+Jets selection
-      if( ZMuonPtCut && isZresonance && (MET < 20.) && mlllCut && !mll4 && electronveto && bjetveto ){
+      if( ZMuonPtCut && isZresonance && (MET < 20.) && mlllCut && !mll4 && electronveto && bjetveto && MT(nu, WMuon) < 30. ){
         TString this_suffix = "ZJets";
-        snu::KParticle nu;
-        nu.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET);
-        snu::KParticle W_candidate = nu+WMuon;
 
         FillHist("n_events_"+this_suffix, 0, weight, 0., 1., 1);
         FillHist("n_vertices_"+this_suffix, eventbase->GetEvent().nVertices(), weight, 0., 50., 50);
