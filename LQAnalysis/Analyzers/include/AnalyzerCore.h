@@ -119,8 +119,10 @@ class AnalyzerCore : public LQCycleBase {
   bool SameCharge(std::vector<snu::KElectron> electrons, bool runcf=false);
   
   float CorrectedMETRochester(TString id, bool updatemet);
+  void CorrectedMETRochester(std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi);
   float CorrectedMETElectron(TString elid_formet, int syst=0);
   float CorrectedMETMuon(TString muid_formet, int syst=0);
+  void CorrectedMETMuon(int sys, std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi);
 
   void CorrectMuonMomentum(vector<snu::KMuon>& k_muons);
   void SetCorrectedMomentum(vector<snu::KMuon>& k_muons);

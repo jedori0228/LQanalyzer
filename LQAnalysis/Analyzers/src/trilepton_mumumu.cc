@@ -332,7 +332,9 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   FillCutFlow("mllsf4", 1.);
 
   snu::KEvent Evt = eventbase->GetEvent();
-  double MET = Evt.MET(), METphi = Evt.METPhi();
+  double MET = Evt.PFMETUnSmeared();
+  double METphi = Evt.METPhi();
+  CorrectedMETRochester(muontriLooseColl, MET, METphi);
   m_HNgenmatch->SetMETInfo(MET, METphi);
   if(k_sample_name.Contains("HN") && m_HNgenmatch->allgenfound) m_HNgenmatch->solution_selection_study(muontriLooseColl);
 

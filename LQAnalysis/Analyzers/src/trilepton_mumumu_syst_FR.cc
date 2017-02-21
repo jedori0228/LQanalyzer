@@ -178,8 +178,6 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
         lep[0] = muontriLooseColl.at(0);
         lep[1] = muontriLooseColl.at(1);
 
-        double this_weight = weight;
-
         if( muontriLooseColl.at(0).Pt() < 20. ) continue;
         bool isSS = muontriLooseColl.at(0).Charge() == muontriLooseColl.at(1).Charge();
 
@@ -192,7 +190,7 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
         m_datadriven_bkg->GetFakeObj()->SetTrilepWP(dXYMins.at(aaa), RelIsoMaxs.at(bbb));
         std::vector<snu::KElectron> empty_electron;
         empty_electron.clear();
-        this_weight *= m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", 2, empty_electron, "ELECTRON_HN_TIGHT", 0);
+        double this_weight = m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", 2, empty_electron, "ELECTRON_HN_TIGHT", 0);
         double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true, muontriLooseColl, "MUON_HN_TRI_TIGHT", 2, empty_electron, "ELECTRON_HN_TIGHT", 0);
 
         for(std::map< TString, bool >::iterator it = map_whichCR_to_isCR.begin(); it != map_whichCR_to_isCR.end(); it++){
@@ -217,13 +215,11 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
         lep[1] = muontriLooseColl.at(1);
         lep[2] = muontriLooseColl.at(2);
 
-        double this_weight = weight;
-
         //==== fake method weighting
         m_datadriven_bkg->GetFakeObj()->SetTrilepWP(dXYMins.at(aaa), RelIsoMaxs.at(bbb));
         std::vector<snu::KElectron> empty_electron;
         empty_electron.clear();
-        this_weight *= m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", 3, empty_electron, "ELECTRON_HN_TIGHT", 0);
+        double this_weight = m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", 3, empty_electron, "ELECTRON_HN_TIGHT", 0);
         double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true, muontriLooseColl, "MUON_HN_TRI_TIGHT", 3, empty_electron, "ELECTRON_HN_TIGHT", 0);
 
         int OppSign, SameSign[2]; // SameSign[0].Pt() > SameSign[1].Pt()
@@ -261,7 +257,10 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
         ///////////////////////////////////////////
 
         snu::KEvent Evt = eventbase->GetEvent();
-        double MET = Evt.MET(), METphi = Evt.METPhi();
+        double MET = Evt.PFMETUnSmeared();
+        double METphi = Evt.METPhi();
+        CorrectedMETRochester(muontriLooseColl, MET, METphi);
+
         snu::KParticle W_pri_lowmass, nu_lowmass, gamma_star, z_candidate;
         nu_lowmass.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET);
         double pz_sol_lowmass[2];

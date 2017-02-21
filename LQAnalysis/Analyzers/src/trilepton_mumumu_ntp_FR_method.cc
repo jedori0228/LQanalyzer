@@ -146,15 +146,16 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
 
     //==== MET
     snu::KEvent Evt = eventbase->GetEvent();
-    double MET;
+    double MET = Evt.PFMETUnSmeared();
+    double METphi = Evt.METPhi();
     TString this_syst;
     if(it_sys==0){
       this_syst = "MuonEn_up";
-      MET = Evt.PFMETShifted(snu::KEvent::MuonEn, snu::KEvent::up);
+      //MET = Evt.PFMETShifted(snu::KEvent::MuonEn, snu::KEvent::up);
     }
     else if(it_sys==1){
       this_syst = "MuonEn_down";
-      MET = Evt.PFMETShifted(snu::KEvent::MuonEn, snu::KEvent::down);
+      //MET = Evt.PFMETShifted(snu::KEvent::MuonEn, snu::KEvent::down);
     }
     else if(it_sys==2){
       this_syst = "JetEn_up";
@@ -182,15 +183,12 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     }
     else if(it_sys==8){
       this_syst = "Central";
-      MET = Evt.MET();
     }
     else if(it_sys==9){
       this_syst = "MuonIDSF_up";
-      MET = Evt.MET();
     }
     else if(it_sys==10){
       this_syst = "MuonIDSF_down";
-      MET = Evt.MET();
     }
     else{
       Message("it_sys out of range!" , INFO);
@@ -239,6 +237,8 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
         double new_RelIso = this_muon.RelIso04()/this_muon.PtShiftedUp();
         if( this_muon.Pt() >= 10. && new_RelIso < this_RelIso ) muontriLooseColl.push_back( this_muon );
       }
+      //==== Correct MET with these muons
+      CorrectedMETMuon(1, muontriLooseColl, MET, METphi);
     }
     else if(this_syst == "MuonEn_down"){
       for(unsigned int i=0; i<muontriVLooseColl_lowestPtCut.size(); i++){
@@ -247,6 +247,8 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
         double new_RelIso = this_muon.RelIso04()/this_muon.PtShiftedDown();
         if( this_muon.Pt() >= 10. && new_RelIso < this_RelIso ) muontriLooseColl.push_back( this_muon );
       }
+      //==== Correct MET with these muons
+      CorrectedMETMuon(-1, muontriLooseColl, MET, METphi);
     }
     //==== normal muons
     else{
@@ -275,10 +277,7 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     //==== Muon TrackEff SF
     double MuTrkEffSF =  mcdata_correction->MuonTrackingEffScaleFactor(muontriLooseColl); //FIXME should add syst for this
 
-    //==== this weight
-    double this_weight = weight;
-
-    double METphi = Evt.METPhi();
+    CorrectedMETRochester(muontriLooseColl, MET, METphi);
 
     int n_triTight_muons(0);
     for(unsigned int i=0; i<muontriLooseColl.size(); i++){
@@ -507,7 +506,8 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     //==== fake method weighting
     std::vector<snu::KElectron> empty_electron;
     empty_electron.clear();
-    this_weight *= m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", n_triLoose_muons, empty_electron, "ELECTRON_HN_TIGHT", 0);
+
+    double this_weight = m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", n_triLoose_muons, empty_electron, "ELECTRON_HN_TIGHT", 0);
     double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true, muontriLooseColl, "MUON_HN_TRI_TIGHT", n_triLoose_muons, empty_electron, "ELECTRON_HN_TIGHT", 0);
 
     double cutop[100];

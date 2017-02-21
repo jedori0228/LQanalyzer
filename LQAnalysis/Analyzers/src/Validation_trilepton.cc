@@ -114,7 +114,6 @@ void Validation_trilepton::ExecuteEvents()throw( LQError ){
   //=====================
 
   snu::KEvent Evt = eventbase->GetEvent();
-  double MET = Evt.MET(), METphi = Evt.METPhi();
 
   //===============
   //==== Get Jets
@@ -162,6 +161,14 @@ void Validation_trilepton::ExecuteEvents()throw( LQError ){
 
     std::vector<snu::KMuon> muoncoll = GetMuons(muonid);
     int n_triTight_muons = muoncoll.size();
+
+    //==================
+    //==== Correct MET
+    //==================
+
+    double MET = Evt.PFMETUnSmeared();
+    double METphi = Evt.METPhi();
+    CorrectedMETRochester(muoncoll, MET, METphi);
 
     //=========================== 
     //==== Get Muon Corrections

@@ -230,7 +230,9 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   if(n_triLoose_muons == 2 && n_triTight_muons == 2) FillHist("LL_TL_TT", 2., 1., 0., 3., 3);
 
   snu::KEvent Evt = eventbase->GetEvent();
-  double MET = Evt.MET(), METphi = Evt.METPhi();
+  double MET = Evt.PFMETUnSmeared();
+  double METphi = Evt.METPhi();
+  CorrectedMETRochester(muontriLooseColl, MET, METphi);
 
   //==== CR with Two Muons
   if(DoMCClosure && isTwoMuon){
