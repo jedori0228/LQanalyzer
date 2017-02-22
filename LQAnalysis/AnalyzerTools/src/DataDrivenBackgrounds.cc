@@ -372,10 +372,12 @@ float DataDrivenBackgrounds::Get_DataDrivenWeight(bool geterr, std::vector<snu::
     }
   }
 
+/*
   if(AllTight){
     //Message("[Get_DataDrivenWeight] All leptons pass Tight. Return 0. weight..", DEBUG);
     return 0.;
   }
+*/
 
   std::vector<TLorentzVector> muons=MakeTLorentz(k_muons);
   std::vector<TLorentzVector> electrons=MakeTLorentz(k_electrons);

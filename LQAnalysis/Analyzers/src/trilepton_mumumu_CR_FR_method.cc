@@ -174,8 +174,11 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   //================
 
   bool isTwoMuon   = n_triLoose_muons == 2 && n_triTight_muons != 2; // no TT case
-  bool isThreeMuon = n_triLoose_muons == 3 && n_triTight_muons != 3; // no TTT case
-  bool isFourMuon  = n_triLoose_muons == 4 && n_triTight_muons != 4; // no TTTT case
+  //bool isThreeMuon = n_triLoose_muons == 3 && n_triTight_muons != 3; // no TTT case
+  //bool isFourMuon  = n_triLoose_muons == 4 && n_triTight_muons != 4; // no TTTT case
+
+  bool isThreeMuon = n_triLoose_muons == 3;
+  bool isFourMuon  = n_triLoose_muons == 4;
 
   if(n_triLoose_muons == 2 && n_triTight_muons == 0) FillHist("LL_TL_TT", 0., 1., 0., 3., 3);
   if(n_triLoose_muons == 2 && n_triTight_muons == 1) FillHist("LL_TL_TT", 1., 1., 0., 3., 3);

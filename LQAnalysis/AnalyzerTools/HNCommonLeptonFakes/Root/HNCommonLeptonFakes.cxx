@@ -1072,32 +1072,57 @@ float HNCommonLeptonFakes::get_eventweight(bool geterr, std::vector<TLorentzVect
   }
 
   //==== let a == f/(1-f)
+  //====     b == (1-p)/p
 
-  vector<float> a, fr_onlyLoose;
+  vector<float> a, b, fr_onlyLoose;
 
-  for(unsigned int i=0; i<n_leptons; i++) a.push_back( fr.at(i)/(1.-fr.at(i)) );
+  //==== Initialise weight
+  float this_weight=-1.;
+
+  for(unsigned int i=0; i<n_leptons; i++){
+    a.push_back( fr.at(i)/(1.-fr.at(i)) );
+    b.push_back( (1.-pr.at(i))/pr.at(i) );
+
+    double A = 1./(1.-a.at(i)*b.at(i));
+    this_weight *= A;
+  }
+
   for(unsigned int i=0; i<n_leptons; i++){
     if(!isT.at(i)) fr_onlyLoose.push_back( a.at(i) );
   }
   n_Loose_not_Tight = fr_onlyLoose.size();
 
-  //==== Initialise weight
-  float this_weight=-1.;
-
-  for(unsigned int i=0; i<fr_onlyLoose.size(); i++){
-    this_weight *= -fr_onlyLoose.at(i);
+  if(n_Loose_not_Tight==0){
+    this_weight = this_weight+1.;
+  }
+  else{
+    for(unsigned int i=0; i<fr_onlyLoose.size(); i++){
+      this_weight *= -fr_onlyLoose.at(i);
+    }
   }
 
   if(!geterr) return this_weight;
 
+  //==== Two terms we should consier
+  //==== 1) a1*a2*a3 term
   //==== d(a)/a = d(f)/f(1-f)
   //==== so, if w = a1*a2,
   //==== d(w)/w = d(a1)/a1 + d(a2)/a2
+  //==== 2) [1/(1-a1*b1)]*[1/(1-a2*b2)]*[1/(1-a3*b3)] term
+  //==== we can sum d( 1/(1-ab) ) / ( 1/(1-ab) )
+  //==== d( 1/(1-ab) ) / ( 1/(1-ab) ) = (bda+adb)/(1-ab) = [ab/(1-ab)] [ (da/a) + (db/b) ]
 
-  vector<float> da_over_a;
-  for(unsigned int i=0; i<n_leptons; i++) da_over_a.push_back( fr_err.at(i) / ( fr.at(i)*(1.-fr.at(i)) ) );
+  //==== for convenience, let's make d(a)/a and d(b)/b
+  vector<float> da_over_a, db_over_b;
+  for(unsigned int i=0; i<n_leptons; i++){
+    da_over_a.push_back( fr_err.at(i) / ( fr.at(i)*(1.-fr.at(i)) ) );
+    db_over_b.push_back( pr_err.at(i) / ( pr.at(i)*(1.-pr.at(i)) ) );
+  }
+
   float this_weight_err = 0.;
   for(unsigned int i=0; i<n_leptons; i++){
+    double ab = a.at(i)*b.at(i);
+    this_weight_err += pow( ab/(1.-ab) * sqrt( da_over_a.at(i)*da_over_a.at(i) + db_over_b.at(i)*db_over_b.at(i)  ) ,2 );
     if(!isT.at(i)) this_weight_err += da_over_a.at(i)*da_over_a.at(i);
   }
 
