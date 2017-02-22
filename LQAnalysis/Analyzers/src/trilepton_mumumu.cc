@@ -438,6 +438,35 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
 
   //==== preselection is done
 
+
+/*
+
+  //==== Trigger Check...
+
+  FillHist("TEST_Triggers", 0., 1., 0., 10., 10);
+  std::vector<TString> TESTtriggerlist1;
+  TESTtriggerlist1.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v");
+  TESTtriggerlist1.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v");
+  if(PassTriggerOR(TESTtriggerlist1)){
+    FillHist("TEST_Triggers", 1., 1., 0., 10., 10);
+  }
+  std::vector<TString> TESTtriggerlist2;
+  TESTtriggerlist2.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
+  TESTtriggerlist2.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
+  if(PassTriggerOR(TESTtriggerlist2)){
+    FillHist("TEST_Triggers", 2., 1., 0., 10., 10);
+  }
+  std::vector<TString> TESTtriggerlist3;
+  TESTtriggerlist3.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
+  TESTtriggerlist3.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
+  TESTtriggerlist3.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v");
+  TESTtriggerlist3.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v");
+  if(PassTriggerOR(TESTtriggerlist3)){
+    FillHist("TEST_Triggers", 3., 1., 0., 10., 10);
+  }
+  return;
+*/
+
   if(DoCutOp){
 
     //==== HLT_Mu50_v 36810.752
