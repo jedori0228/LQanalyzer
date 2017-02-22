@@ -310,8 +310,12 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
         for(unsigned int i=0; i<muontriNodXYCutLooseColl.size(); i++){
           snu::KMuon this_muon = muontriNodXYCutLooseColl.at(i);
           if(fabs(this_muon.dXY()) < 1.){
-            FillHist(str_dXYCut+"_prompt_Loose_dXYSig", fabs(this_muon.dXYSig()), 1., 0., 15., 150 );
-            if(this_muon.RelIso04()<0.1) FillHist(str_dXYCut+"_prompt_Tight_dXYSig", fabs(this_muon.dXYSig()), 1., 0., 15., 150 ); 
+            FillHist(str_dXYCut+"_prompt_Loose_dXYSig", fabs(this_muon.dXYSig()), 1., 0., 15., 150);
+            FillHist(str_dXYCut+"_prompt_Loose_dXY", fabs(this_muon.dXY()), 1., 0., 0.1, 100);
+            if(this_muon.RelIso04()<0.1){
+              FillHist(str_dXYCut+"_prompt_Tight_dXYSig", fabs(this_muon.dXYSig()), 1., 0., 15., 150);
+              FillHist(str_dXYCut+"_prompt_Tight_dXY", fabs(this_muon.dXY()), 1., 0., 0.1, 100);
+            }
           }
         }
 
@@ -321,8 +325,12 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
         for(unsigned int i=0; i<muontriNodXYCutLooseColl_raw.size(); i++){
           snu::KMuon this_muon = muontriNodXYCutLooseColl_raw.at(i);
           if( fabs(this_muon.dXY()) < 1. && !this_muon.MCMatched() ){
-            FillHist(str_dXYCut+"_fake_Loose_dXYSig", fabs(this_muon.dXYSig()), 1., 0., 15., 150 );
-            if(this_muon.RelIso04()<0.1) FillHist(str_dXYCut+"_fake_Tight_dXYSig", fabs(this_muon.dXYSig()), 1., 0., 15., 150 );
+            FillHist(str_dXYCut+"_fake_Loose_dXYSig", fabs(this_muon.dXYSig()), 1., 0., 15., 150);
+            FillHist(str_dXYCut+"_fake_Loose_dXY", fabs(this_muon.dXY()), 1., 0., 0.1, 100);
+            if(this_muon.RelIso04()<0.1){
+              FillHist(str_dXYCut+"_fake_Tight_dXYSig", fabs(this_muon.dXYSig()), 1., 0., 15., 150);
+              FillHist(str_dXYCut+"_fake_Tight_dXY", fabs(this_muon.dXY()), 1., 0., 0.1, 100);
+            }
           }
         }
 
