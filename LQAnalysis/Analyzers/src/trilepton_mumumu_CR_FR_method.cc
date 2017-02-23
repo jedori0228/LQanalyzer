@@ -212,6 +212,7 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
     //==== fake method weighting
     std::vector<snu::KElectron> empty_electron;
     empty_electron.clear();
+    m_datadriven_bkg->GetFakeObj()->SetDataPeriod(GetDatePeriod());
     double this_weight = m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", 2, empty_electron, "ELECTRON_HN_TIGHT", 0);
     double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true, muontriLooseColl, "MUON_HN_TRI_TIGHT", 2, empty_electron, "ELECTRON_HN_TIGHT", 0);
 
@@ -253,6 +254,7 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
     //==== fake method weighting
     std::vector<snu::KElectron> empty_electron;
     empty_electron.clear();
+    m_datadriven_bkg->GetFakeObj()->SetDataPeriod(GetDatePeriod());
     double this_weight = m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", 3, empty_electron, "ELECTRON_HN_TIGHT", 0);
     double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true, muontriLooseColl, "MUON_HN_TRI_TIGHT", 3, empty_electron, "ELECTRON_HN_TIGHT", 0);
 

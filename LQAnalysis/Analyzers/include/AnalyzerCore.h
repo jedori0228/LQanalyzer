@@ -327,6 +327,7 @@ class AnalyzerCore : public LQCycleBase {
   bool GenMatching(snu::KParticle a, snu::KParticle b, double maxDeltaR, double maxPtDiff);
   std::vector<snu::KMuon> GetHNTriMuonsByLooseRelIso(double LooseRelIsoMax, bool keepfake);
   void PrintTruth();
+  TString GetDatePeriod();
 
   
 };

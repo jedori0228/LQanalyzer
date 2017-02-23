@@ -1607,6 +1607,24 @@ void AnalyzerCore::PrintTruth(){
 
 }
 
+TString AnalyzerCore::GetDatePeriod(){
+
+  if(k_sample_name.Contains("periodB")) return "B";
+  else if(k_sample_name.Contains("periodC")) return "C";
+  else if(k_sample_name.Contains("periodD")) return "D";
+  else if(k_sample_name.Contains("periodE")) return "E";
+  else if(k_sample_name.Contains("periodF")) return "F";
+  else if(k_sample_name.Contains("periodG")) return "G";
+  else if(k_sample_name.Contains("periodH_v2")) return "H_v2";
+  else if(k_sample_name.Contains("periodH_v3")) return "H_v3";
+  else{
+    Message("[AnalyzerCore::GetDatePeriod()] Data Period not correct.. Returning B", INFO);
+    return "B";
+  }
+
+
+}
+
 
 void AnalyzerCore::Message(TString message, LQMsgType type){
   m_logger <<  type << message << LQLogger::endmsg;
