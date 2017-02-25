@@ -228,6 +228,28 @@ float AnalyzerCore::CorrectedMETRochester(TString muid_formet, bool update_met){
 }   
 
 
+void AnalyzerCore::CorrectedMETRochester(std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi){
+
+  float met_x = OrignialMET*TMath::Cos(OriginalMETPhi);
+  float met_y = OrignialMET*TMath::Sin(OriginalMETPhi);
+
+  float px_orig(0.), py_orig(0.),px_corrected(0.), py_corrected(0.);
+  for(unsigned int im=0; im < muall.size() ; im++){
+
+      px_orig+= muall.at(im).MiniAODPt()*TMath::Cos(muall.at(im).Phi());
+      py_orig+= muall.at(im).MiniAODPt()*TMath::Sin(muall.at(im).Phi());
+
+      px_corrected += muall.at(im).Px();
+      py_corrected += muall.at(im).Py();
+
+  }
+  met_x = met_x + px_orig - px_corrected;
+  met_y = met_y + py_orig - py_corrected;
+
+  OrignialMET =  sqrt(met_x*met_x + met_y*met_y);
+  OriginalMETPhi = TMath::ATan2(met_x,met_y);
+
+}
 
 
 
@@ -284,6 +306,31 @@ float AnalyzerCore::CorrectedMETMuon(TString muid_formet, int sys){
   
   return sqrt(met_x*met_x + met_y*met_y);
   
+}
+
+void AnalyzerCore::CorrectedMETMuon(int sys, std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi){
+
+  float met_x = OrignialMET*TMath::Cos(OriginalMETPhi);
+  float met_y = OrignialMET*TMath::Sin(OriginalMETPhi);
+
+  float px_orig(0.), py_orig(0.),px_shifted(0.), py_shifted(0.);
+  for(unsigned int imu=0; imu < muall.size() ; imu++){
+
+    px_orig+= muall.at(imu).Px();
+    py_orig+= muall.at(imu).Py();
+    if(sys==1){
+      px_shifted += muall.at(imu).Px()*muall.at(imu).PtShiftedUp();
+    }
+    if(sys==-1){
+      px_shifted += muall.at(imu).Px()*muall.at(imu).PtShiftedDown();
+    }
+  }
+  met_x = met_x + px_orig - px_shifted;
+  met_y = met_y + py_orig - py_shifted;
+
+  OrignialMET =  sqrt(met_x*met_x + met_y*met_y);
+  OriginalMETPhi = TMath::ATan2(met_x,met_y);
+
 }
 
 
@@ -1755,6 +1802,14 @@ void AnalyzerCore::FillHist(TString histname, float value, float w , TString lab
   
   
   return;
+}
+
+void AnalyzerCore::FillUpDownHist(TString histname, float value, float w, float w_err, float xmin, float xmax, int nbins , TString label){
+
+  FillHist(histname+"_up", value, w+w_err, xmin, xmax, nbins, label);
+  FillHist(histname+"_down", value, w-w_err, xmin, xmax, nbins, label);
+  FillHist(histname, value, w, xmin, xmax, nbins, label);
+
 }
 
 void AnalyzerCore::FillCLHist(histtype type, TString hist, vector<snu::KMuon> muons, double w){
