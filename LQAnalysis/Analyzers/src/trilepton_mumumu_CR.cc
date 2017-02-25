@@ -85,8 +85,8 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
 
   std::vector<TString> triggerlist;
   triggerlist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
-  triggerlist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v");
-  triggerlist.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v");
+  //triggerlist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v");
+  //triggerlist.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v");
   triggerlist.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
 
   if(!PassTriggerOR(triggerlist)) return;
@@ -230,7 +230,7 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   if(n_triLoose_muons == 2 && n_triTight_muons == 2) FillHist("LL_TL_TT", 2., 1., 0., 3., 3);
 
   snu::KEvent Evt = eventbase->GetEvent();
-  double MET = Evt.PFMETUnSmeared();
+  double MET = Evt.MET();
   double METphi = Evt.METPhi();
   CorrectedMETRochester(muontriLooseColl, MET, METphi);
 

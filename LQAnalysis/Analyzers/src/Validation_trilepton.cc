@@ -86,8 +86,8 @@ void Validation_trilepton::ExecuteEvents()throw( LQError ){
 
   std::vector<TString> triggerlist;
   triggerlist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
-  triggerlist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v");
-  triggerlist.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v");
+  //triggerlist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v");
+  //triggerlist.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v");
   triggerlist.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
 
   if(!PassTriggerOR(triggerlist)) return;
@@ -166,7 +166,7 @@ void Validation_trilepton::ExecuteEvents()throw( LQError ){
     //==== Correct MET
     //==================
 
-    double MET = Evt.PFMETUnSmeared();
+    double MET = Evt.MET();
     double METphi = Evt.METPhi();
     CorrectedMETRochester(muoncoll, MET, METphi);
 

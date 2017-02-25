@@ -89,8 +89,8 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
 
   std::vector<TString> triggerlist;
   triggerlist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
-  triggerlist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v");
-  triggerlist.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v");
+  //triggerlist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v");
+  //triggerlist.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v");
   triggerlist.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
 
   //==== If this is a Cut Optimization study,
@@ -216,7 +216,7 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   ///////////////////////////////////////////
 
   snu::KEvent Evt = eventbase->GetEvent();
-  double MET = Evt.PFMETUnSmeared();
+  double MET = Evt.MET();
   double METphi = Evt.METPhi();
   CorrectedMETRochester(muontriLooseColl, MET, METphi);
 

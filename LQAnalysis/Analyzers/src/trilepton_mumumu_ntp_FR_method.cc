@@ -89,8 +89,8 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
 
   std::vector<TString> triggerlist;
   triggerlist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
-  triggerlist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v");
-  triggerlist.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v");
+  //triggerlist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v");
+  //triggerlist.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v");
   triggerlist.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
 
   if(!PassTriggerOR(triggerlist)) return;
@@ -146,7 +146,7 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
 
     //==== MET
     snu::KEvent Evt = eventbase->GetEvent();
-    double MET = Evt.PFMETUnSmeared();
+    double MET = Evt.MET();
     double METphi = Evt.METPhi();
     TString this_syst;
     if(it_sys==0){
@@ -237,8 +237,6 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
         double new_RelIso = this_muon.RelIso04()/this_muon.PtShiftedUp();
         if( this_muon.Pt() >= 10. && new_RelIso < this_RelIso ) muontriLooseColl.push_back( this_muon );
       }
-      //==== Correct MET with these muons
-      CorrectedMETMuon(1, muontriLooseColl, MET, METphi);
     }
     else if(this_syst == "MuonEn_down"){
       for(unsigned int i=0; i<muontriVLooseColl_lowestPtCut.size(); i++){
@@ -247,8 +245,6 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
         double new_RelIso = this_muon.RelIso04()/this_muon.PtShiftedDown();
         if( this_muon.Pt() >= 10. && new_RelIso < this_RelIso ) muontriLooseColl.push_back( this_muon );
       }
-      //==== Correct MET with these muons
-      CorrectedMETMuon(-1, muontriLooseColl, MET, METphi);
     }
     //==== normal muons
     else{
@@ -257,6 +253,14 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
         if( this_muon.Pt() >= 10. && this_muon.RelIso04() < this_RelIso ) muontriLooseColl.push_back( this_muon );
       }
     }
+
+    //==== MET is calculated with No-Rochestor-Corrected Muons
+    //==== In this step, muons are 
+    //==== 1) Rochestor corrected & Up/Down
+    //==== 2) Rochestor corrected
+    //==== Both cases, we can correct MET (w.r.t. muon) using
+    //==== AnalyzerCore::CorrectedMETRochester(std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi)
+    CorrectedMETRochester(muontriLooseColl, MET, METphi);
 
     //==== This is a data-driven run,
     //==== So IDSF and TrkEffSF are 1.
@@ -276,8 +280,6 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
 
     //==== Muon TrackEff SF
     double MuTrkEffSF =  mcdata_correction->MuonTrackingEffScaleFactor(muontriLooseColl); //FIXME should add syst for this
-
-    CorrectedMETRochester(muontriLooseColl, MET, METphi);
 
     int n_triTight_muons(0);
     for(unsigned int i=0; i<muontriLooseColl.size(); i++){
