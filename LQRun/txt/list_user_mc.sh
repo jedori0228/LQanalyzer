@@ -30,9 +30,9 @@ declare -a QCD_FR=(
 declare -a FR_MC_Closure=(
 'TTJets_aMC'
 'DYJets_10to50' 'DYJets'
-'WJets')
-#'QCD_Pt-1000toInf_MuEnriched' 'QCD_Pt-120to170_MuEnriched' 'QCD_Pt-15to20_MuEnriched' 'QCD_Pt-170to300_MuEnriched' 'QCD_Pt-20to30_MuEnriched' 'QCD_Pt-300to470_MuEnriched' 'QCD_Pt-30to50_MuEnriched' 'QCD_Pt-470to600_MuEnriched' 'QCD_Pt-50to80_MuEnriched' 'QCD_Pt-600to800_MuEnriched' 'QCD_Pt-800to1000_MuEnriched' 'QCD_Pt-80to120_MuEnriched'
-#)
+'WJets'
+'QCD_Pt-1000toInf_MuEnriched' 'QCD_Pt-120to170_MuEnriched' 'QCD_Pt-15to20_MuEnriched' 'QCD_Pt-170to300_MuEnriched' 'QCD_Pt-20to30_MuEnriched' 'QCD_Pt-300to470_MuEnriched' 'QCD_Pt-30to50_MuEnriched' 'QCD_Pt-470to600_MuEnriched' 'QCD_Pt-50to80_MuEnriched' 'QCD_Pt-600to800_MuEnriched' 'QCD_Pt-800to1000_MuEnriched' 'QCD_Pt-80to120_MuEnriched'
+)
 
 ### SR ###
 declare -a trilep_bkg=(
@@ -66,6 +66,24 @@ declare -a trilep_signal=(
 'HN_MuMuMu_500'
 'HN_MuMuMu_700'
 'HN_MuMuMu_1000')
+declare -a Official_trilep_signal=(
+'Official_HN_MuMuMu_5'
+'Official_HN_MuMuMu_10'
+'Official_HN_MuMuMu_20'
+'Official_HN_MuMuMu_30'
+'Official_HN_MuMuMu_40'
+'Official_HN_MuMuMu_50'
+'Official_HN_MuMuMu_60'
+'Official_HN_MuMuMu_70'
+'Official_HN_MuMuMu_90'
+'Official_HN_MuMuMu_100'
+'Official_HN_MuMuMu_150'
+'Official_HN_MuMuMu_200'
+'Official_HN_MuMuMu_300'
+'Official_HN_MuMuMu_400'
+'Official_HN_MuMuMu_500'
+'Official_HN_MuMuMu_700'
+'Official_HN_MuMuMu_1000')
 
 ### CR ###
 declare -a trilep_CR_bkg=(
