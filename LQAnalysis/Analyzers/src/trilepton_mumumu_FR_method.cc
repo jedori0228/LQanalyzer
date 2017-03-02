@@ -129,7 +129,7 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   int n_jets = jetColl_hn.size();
   int n_bjets=0;
   for(int j=0; j<n_jets; j++){
-    if(jetColl_hn.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Tight)){
+    if(jetColl_hn.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Medium)){
       n_bjets++;
       FillHist("bjet_pt", jetColl_hn.at(j).Pt(), 1., 0., 200., 200);
     }
@@ -311,7 +311,7 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   if(!VetoZResonance) return;
   FillCutFlow("ZVeto", 1.);
 
-  if(n_bjets>0) return;
+  //if(n_bjets>0) return;
   FillCutFlow("bjetVeto", 1.);
 
   //==== preselection is done

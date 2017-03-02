@@ -130,7 +130,7 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
   //==== Get Electrons
   //====================
   
-  std::vector<snu::KElectron> electronLooseColl = GetElectrons(BaseSelection::ELECTRON_POG_LOOSE);
+  std::vector<snu::KElectron> electrontriLooseColl = GetElectrons(false, false, "ELECTRON_HN_FAKELOOSE");
 
   //====================================
   //==== Systematic source loop starts
@@ -141,10 +141,13 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
   //==== 5) Muon ID Scale Factor
   //====================================
 
+  double m_Z = 91.1876;
+
   int N_sys = 2*5+1;
   for(int it_sys=0; it_sys<N_sys; it_sys++){
 
     //==== MET
+    //==== also set string for this systematic type
     snu::KEvent Evt = eventbase->GetEvent();
     double MET = Evt.MET();
     double METphi = Evt.METPhi();
@@ -225,7 +228,7 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     }
     int n_bjets=0;
     for(int j=0; j<jetColl_hn.size(); j++){
-      if(jetColl_hn.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Tight)) n_bjets++;
+      if(jetColl_hn.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Medium)) n_bjets++;
     }
 
     //==== Muon
@@ -281,256 +284,397 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     //==== Muon TrackEff SF
     double MuTrkEffSF =  mcdata_correction->MuonTrackingEffScaleFactor(muontriLooseColl); //FIXME should add syst for this
 
+    //==== number of leptons
+    int n_triLoose_muons = muontriLooseColl.size();
     int n_triTight_muons(0);
     for(unsigned int i=0; i<muontriLooseColl.size(); i++){
-      if(muontriLooseColl.at(i).RelIso04() < 0.1) n_triTight_muons++;
-    }
-    int n_triLoose_muons = muontriLooseColl.size();
-    int n_jets = jetColl_hn.size();
-
-    //==== At least thee muons
-    //==== If I want to look single/dimuon event, should not return
-    if( n_triLoose_muons < 3 ) continue;
-
-    bool isThreeMuon = n_triLoose_muons == 3 && n_triTight_muons != 3; // no TTT
-    bool isFourMuon  = n_triLoose_muons == 4 && n_triTight_muons != 4; // no TTTT
-
-    double MinLeadingMuonPt = 20;
-    if( muontriLooseColl.at(0).Pt() < MinLeadingMuonPt ) continue;
-
-    //=======================
-    //==== Three Muon Event
-    //=======================
-
-    snu::KParticle lep[3], HN[4];
-    for(int i=0;i<3;i++){
-      lep[i] = muontriLooseColl.at(i);
+      if(eventbase->GetMuonSel()->MuonPass(muontriLooseColl.at(i), "MUON_HN_TRI_TIGHT")) n_triTight_muons++;
     }
 
-    bool AllSameCharge = false;
-    int OppSign=0, SameSign[2]={1,2}; // SameSign[0].Pt() > SameSign[1].Pt()
-    if(lep[0].Charge() * lep[1].Charge() > 0){ // Q(0) = Q(1)
-      if(lep[1].Charge() * lep[2].Charge() < 0){ // Q(1) != Q(2)
-        OppSign = 2;
-        SameSign[0] = 0;
-        SameSign[1] = 1;
+    int n_triLoose_electrons = electrontriLooseColl.size();
+    int n_triTight_electrons(0);
+    for(unsigned int i=0; i<electrontriLooseColl.size(); i++){
+      if(eventbase->GetElectronSel()->ElectronPass(electrontriLooseColl.at(i), "ELECTRON_HN_TIGHT")) n_triTight_electrons++;
+    }
+    int n_triLoose_leptons = n_triLoose_muons+n_triLoose_electrons;
+    int n_triTight_leptons = n_triTight_muons+n_triTight_electrons;
+
+    bool isThreeMuon = n_triLoose_muons == 3 && n_triTight_muons != 3;
+    bool isThreeLepton = n_triLoose_leptons == 3 && n_triTight_leptons != 3;
+    bool isFourLepton  = ( n_triLoose_muons == 4     ||
+                           n_triLoose_electrons == 4 ||
+                           (n_triLoose_muons == 2 && n_triLoose_electrons == 2)
+                         )
+                         && n_triTight_leptons != 4;
+
+    if(n_triLoose_leptons < 3) continue;
+
+    //==============================
+    //==== Signal Region Variables
+    //==============================
+
+    bool isPreselection(false);
+    snu::KParticle HN[4], W_pri_lowmass, W_pri_highmass, W_sec;
+
+    if(isThreeMuon){
+
+      snu::KParticle mu[3];
+      for(int i=0;i<3;i++){
+        mu[i] = muontriLooseColl.at(i);
       }
-      else AllSameCharge = true; // veto Q(0) = Q(1) = Q(2)
-    }
-    else{ // Q(0) != Q(1)
-      if(lep[0].Charge() * lep[2].Charge() > 0){ // Q(0) = Q(2)
-        OppSign = 1;
-        SameSign[0] = 0;
-        SameSign[1] = 2;
+
+      bool AllSameCharge = false;
+      int OppSign=0, SameSign[2]={1,2}; // SameSign[0].Pt() > SameSign[1].Pt()
+      if(mu[0].Charge() * mu[1].Charge() > 0){ // Q(0) = Q(1)
+        if(mu[1].Charge() * mu[2].Charge() < 0){ // Q(1) != Q(2)
+          OppSign = 2;
+          SameSign[0] = 0;
+          SameSign[1] = 1;
+        }
+        else AllSameCharge = true; // veto Q(0) = Q(1) = Q(2)
       }
-      else if(lep[1].Charge() * lep[2].Charge() > 0){ // Q(1) = Q(2)
-        OppSign = 0;
-        SameSign[0] = 1;
-        SameSign[1] = 2;
+      else{ // Q(0) != Q(1)
+        if(mu[0].Charge() * mu[2].Charge() > 0){ // Q(0) = Q(2)
+          OppSign = 1;
+          SameSign[0] = 0;
+          SameSign[1] = 2;
+        }
+        else if(mu[1].Charge() * mu[2].Charge() > 0){ // Q(1) = Q(2)
+          OppSign = 0;
+          SameSign[0] = 1;
+          SameSign[1] = 2;
+        }
+      } // Find l2 and assign l1&l3 in ptorder 
+
+      bool mllsf4 = false;
+      if( (mu[SameSign[0]]+mu[OppSign]).M() <= 4. ||
+          (mu[SameSign[1]]+mu[OppSign]).M() <= 4.     ) mllsf4 = true;
+
+      //==== m(HN) < 80 GeV region
+
+      snu::KParticle nu_lowmass;
+      nu_lowmass.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET);
+      double pz_sol_lowmass[2];
+      pz_sol_lowmass[0] = solveqdeq(80.4, mu[0]+mu[1]+mu[2], MET, METphi, "m"); // 0 = minus
+      pz_sol_lowmass[1] = solveqdeq(80.4, mu[0]+mu[1]+mu[2], MET, METphi, "p"); // 1 = plus
+      //PutNuPz(&selection_nu[0], solveqdeq(80.4, mu[0]+mu[1]+mu[2], MET, METphi, "m"));
+      //PutNuPz(&selection_nu[1], solveqdeq(80.4, mu[0]+mu[1]+mu[2], MET, METphi, "p")); // 0 = minus, 1 = plus
+
+      int solution_selection_lowmass = 0;
+      if( pz_sol_lowmass[0] != pz_sol_lowmass[1] ){
+        //==== take the one with smaller magnitude
+        if( fabs( pz_sol_lowmass[0] ) > fabs( pz_sol_lowmass[1] ) ){
+          solution_selection_lowmass = 1;
+        }
       }
-    } // Find l2 and assign l1&l3 in ptorder 
 
-    bool mllsf4 = false;
-    if( (lep[SameSign[0]]+lep[OppSign]).M() <= 4. ||
-        (lep[SameSign[1]]+lep[OppSign]).M() <= 4.     ) mllsf4 = true;
+      //==== reconstruct HN and W_real 4-vec with selected Pz solution
+      PutNuPz(&nu_lowmass, pz_sol_lowmass[solution_selection_lowmass] );
+      //==== SameSign[0] : leading among SS
+      //==== SameSign[1] : subleading among SS
+      //==== [class1]
+      //==== HN40, HN50 - SS_leading is primary
+      //==== [class2]
+      //==== HN60       - SS_subleading is primary
 
-    ///////////////////////////////////////////
-    ////////// m(HN) < 80 GeV region //////////
-    ///////////////////////////////////////////
+      HN[0] = mu[OppSign] + mu[SameSign[1]] + nu_lowmass; // [class1]
+      HN[1] = mu[OppSign] + mu[SameSign[0]] + nu_lowmass; // [class2]
+      W_pri_lowmass = mu[0] + mu[1] + mu[2] + nu_lowmass;
 
-    snu::KParticle W_pri_lowmass, nu_lowmass, gamma_star, z_candidate;
-    nu_lowmass.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET);
-    double pz_sol_lowmass[2];
-    pz_sol_lowmass[0] = solveqdeq(80.4, lep[0]+lep[1]+lep[2], MET, METphi, "m"); // 0 = minus
-    pz_sol_lowmass[1] = solveqdeq(80.4, lep[0]+lep[1]+lep[2], MET, METphi, "p"); // 1 = plus
-    //PutNuPz(&selection_nu[0], solveqdeq(80.4, lep[0]+lep[1]+lep[2], MET, METphi, "m"));
-    //PutNuPz(&selection_nu[1], solveqdeq(80.4, lep[0]+lep[1]+lep[2], MET, METphi, "p")); // 0 = minus, 1 = plus
 
-    int solution_selection_lowmass = 0;
-    if( pz_sol_lowmass[0] != pz_sol_lowmass[1] ){
-      // take the one with smaller magnitude
-      if( fabs( pz_sol_lowmass[0] ) > fabs( pz_sol_lowmass[1] ) ){
-        solution_selection_lowmass = 1;
+      //==== m(HN) > 80 GeV region
+
+      snu::KParticle nu_highmass;
+      nu_highmass.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET);
+      int l_3_index = find_mlmet_closest_to_W(mu, nu_highmass);
+      double pz_sol_highmass[2];
+      pz_sol_highmass[0] = solveqdeq(80.4, mu[l_3_index], MET, METphi, "m"); // 0 = minus
+      pz_sol_highmass[1] = solveqdeq(80.4, mu[l_3_index], MET, METphi, "p"); // 1 = plus
+      int solution_selection_highmass = 0;
+      if( pz_sol_highmass[0] != pz_sol_highmass[1] ){
+        //==== take the one with smaller magnitude
+        if( fabs( pz_sol_highmass[0] ) > fabs( pz_sol_highmass[1] ) ){
+          solution_selection_highmass = 1;
+        }
       }
-    }
-    
-    // reconstruct HN and W_real 4-vec with selected Pz solution
-    PutNuPz(&nu_lowmass, pz_sol_lowmass[solution_selection_lowmass] );
-    // SameSign[0] : leading among SS
-    // SameSign[1] : subleading among SS
-    // [class1]
-    // HN40, HN50 - SS_leading is primary
-    // [class2]
-    // HN60       - SS_subleading is primary
+      PutNuPz( &nu_highmass, pz_sol_highmass[solution_selection_highmass] );
 
-    HN[0] = lep[OppSign] + lep[SameSign[1]] + nu_lowmass; // [class1]
-    HN[1] = lep[OppSign] + lep[SameSign[0]] + nu_lowmass; // [class2]
-    W_pri_lowmass = lep[0] + lep[1] + lep[2] + nu_lowmass;
-    
+      W_pri_highmass = mu[0] + mu[1] + mu[2] + nu_highmass;
 
-    double deltaR_OS_min;
-    if( lep[OppSign].DeltaR(lep[SameSign[0]]) < lep[OppSign].DeltaR(lep[SameSign[1]]) ){
-      deltaR_OS_min = lep[OppSign].DeltaR(lep[SameSign[0]]);
-      gamma_star = lep[OppSign] + lep[SameSign[0]];
-    }
-    else{
-      deltaR_OS_min = lep[OppSign].DeltaR(lep[SameSign[1]]);
-      gamma_star = lep[OppSign] + lep[SameSign[1]];
-    }
+      //==== [class3]
+      //==== m(HN) : 90 ~ 1000 GeV - primary lepton has larger pT
+      //==== [class4]
+      //==== m(HN) > 1000 GeV - primary lepton has smaller pT
 
-    if( fabs( (lep[OppSign] + lep[SameSign[0]]).M() - 91.1876 ) <
-        fabs( (lep[OppSign] + lep[SameSign[1]]).M() - 91.1876 )   ){
-      z_candidate = lep[OppSign] + lep[SameSign[0]];
-    }
-    else{
-      z_candidate = lep[OppSign] + lep[SameSign[1]];
-    }
+      W_sec = mu[l_3_index] + nu_highmass;
 
-    ///////////////////////////////////////////
-    ////////// m(HN) > 80 GeV region //////////
-    ///////////////////////////////////////////
-
-    snu::KParticle W_pri_highmass, nu_highmass, W_sec;
-    nu_highmass.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET);
-    int l_3_index = find_mlmet_closest_to_W(lep, nu_highmass);
-    double pz_sol_highmass[2]; 
-    pz_sol_highmass[0] = solveqdeq(80.4, lep[l_3_index], MET, METphi, "m"); // 0 = minus
-    pz_sol_highmass[1] = solveqdeq(80.4, lep[l_3_index], MET, METphi, "p"); // 1 = plus
-    int solution_selection_highmass = 0;
-    if( pz_sol_highmass[0] != pz_sol_highmass[1] ){ 
-      // take the one with smaller magnitude
-      if( fabs( pz_sol_highmass[0] ) > fabs( pz_sol_highmass[1] ) ){
-        solution_selection_highmass = 1;
+      if(l_3_index == OppSign){
+        HN[2] = W_sec + mu[SameSign[1]]; // [class3]
+        HN[3] = W_sec + mu[SameSign[0]]; // [class4]
       }
-    }
-    PutNuPz( &nu_highmass, pz_sol_highmass[solution_selection_highmass] );
+      else{
+          HN[2] = W_sec + mu[OppSign]; // [class3]
+          HN[3] = W_sec + mu[OppSign]; // [class4]
+      }
 
-    W_pri_highmass = lep[0] + lep[1] + lep[2] + nu_highmass;
+      //==== make mZ for Z veto
 
-    // [class3]
-    // m(HN) : 90 ~ 500 GeV - primary lepton has larger pT
-    // [class4]
-    // m(HN) : 700 ~ 1000 GeV - primary lepton has smaller pT
+      double mz_SR = 0.;
+      if( fabs( (mu[OppSign] + mu[SameSign[0]]).M() - 91.1876 ) <
+          fabs( (mu[OppSign] + mu[SameSign[1]]).M() - 91.1876 )   ){
+        mz_SR = (mu[OppSign] + mu[SameSign[0]]).M();
+      }
+      else{
+        mz_SR = (mu[OppSign] + mu[SameSign[1]]).M();
+      }
 
-    W_sec = lep[l_3_index] + nu_highmass;
+      bool LeadMuonPtCut = muontriLooseColl.at(0).Pt() > 20.;
+      bool bjetveto = (n_bjets==0);
+      //==== TEST //FIXME
+      bjetveto = true;
 
-    if(l_3_index == OppSign){
-       
-      HN[2] = W_sec + lep[SameSign[1]]; // [class3]
-      HN[3] = W_sec + lep[SameSign[0]]; // [class4]
-   
-    }
-    else{
-        HN[2] = W_sec + lep[OppSign]; // [class3]
-        HN[3] = W_sec + lep[OppSign]; // [class4]
-    }
+      bool VetoZResonance = fabs(mz_SR-91.1876) > 15.;
 
-    bool NoBjet = (n_bjets==0);
-    bool VetoZResonance = fabs(z_candidate.M()-91.1876) > 15.;
-    bool UseZResonance = fabs(z_candidate.M()-91.1876) < 10.;
+      //==== Finally, boolean for Preselection
+      isPreselection = isThreeMuon && LeadMuonPtCut && (!AllSameCharge) && (!mllsf4) && bjetveto && VetoZResonance;
 
-    double m_dimuon[2], m_Z = 91.1876;
-    m_dimuon[0] = ( lep[SameSign[0]] + lep[OppSign] ).M();
-    m_dimuon[1] = ( lep[SameSign[1]] + lep[OppSign] ).M();
-
-    snu::KParticle Z_candidate;
-    snu::KParticle ZMuon, WMuon;
-    if( fabs(m_dimuon[0]-m_Z) < fabs(m_dimuon[1]-m_Z) ){
-      Z_candidate = lep[SameSign[0]] + lep[OppSign];
-      ZMuon = lep[SameSign[0]];
-      WMuon = lep[SameSign[1]];
-    }
-    else{
-      Z_candidate = lep[SameSign[1]] + lep[OppSign];
-      ZMuon = lep[SameSign[1]];
-      WMuon = lep[SameSign[0]];
     }
 
-    snu::KParticle ZMuon_leading, ZMuon_subleading;
-    if( ZMuon.Pt() > lep[OppSign].Pt() ){
-      ZMuon_leading = ZMuon;
-      ZMuon_subleading = lep[OppSign];
-    }
-    else{
-      ZMuon_leading = lep[OppSign];
-      ZMuon_subleading = ZMuon;
-    }
+    //===============================
+    //==== Control Region Variables
+    //===============================
 
-    snu::KParticle nu;
-    nu.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET);
-    snu::KParticle W_candidate = nu+WMuon;
+    bool isWZ(false), isZJets(false), isZLep(false), isZGamma(false);
+    int ThreeLeptonConfig = -999;
+    bool isZZ(false);
+    int FourLeptonConfig = -999;
 
-    bool ZMuonPtCut = (ZMuon.Pt() > 20.) || (lep[OppSign].Pt() > 20.);
-    bool PtCutOnWMuon = (WMuon.Pt() > 20.);
-    bool METCut = (MET > 30.);
-    bool mlllCut = ((lep[SameSign[0]]+lep[SameSign[1]]+lep[OppSign]).M() > 100.);
-    bool electronveto = (electronLooseColl.size() == 0);
+    if(isThreeLepton){
 
-    bool isPreselection = isThreeMuon && (!AllSameCharge) && (!mllsf4) && NoBjet && VetoZResonance;
-    bool isWZ = isThreeMuon && (!AllSameCharge) && (!mllsf4) && NoBjet && ZMuonPtCut && UseZResonance && PtCutOnWMuon && METCut && mlllCut && electronveto;
-    bool isZJets = isThreeMuon && (!AllSameCharge) && (!mllsf4) && NoBjet && ZMuonPtCut && UseZResonance && (MET < 20.) && mlllCut && electronveto && MT(nu, WMuon) < 30.;
-
-    //==== Now, look at four muon event
-
-    bool isZZ = false;
-
-    if(isFourMuon){
-
-      std::vector<snu::KMuon> MuPlus, MuMinus;
+      std::vector<KLepton> lep;
       for(unsigned int i=0; i<muontriLooseColl.size(); i++){
-        if(muontriLooseColl.at(i).Charge() > 0) MuPlus.push_back(muontriLooseColl.at(i));
-        else MuMinus.push_back(muontriLooseColl.at(i));
+        KLepton this_lep( muontriLooseColl.at(i) );
+        lep.push_back( this_lep );
+      }
+      for(unsigned int i=0; i<electrontriLooseColl.size(); i++){
+        KLepton this_lep( electrontriLooseColl.at(i) );
+        lep.push_back( this_lep );
       }
 
-      if( (MuPlus.size() == 2) && (MuMinus.size() == 2) ){
+      bool AllSameCharge(false);
+      //==== 3 Muon : ThreeLeptonConfig = 0;
+      //==== 2 Muon + 1 Electron : ThreeLeptonConfig = 1;
+      //==== 1 Muon + 2 Electron ; ThreeLeptonConfig = 2;
+      //==== 3 Electron : ThreeLeptonConfig = 3;
 
-        double m_Z = 91.1876;
+      if(muontriLooseColl.size()==3 || electrontriLooseColl.size()==3){
 
-        //==== Already applied
-        //bool leadPt20 = muontriLooseColl.at(0).Pt() > 20.;
+        if(muontriLooseColl.size()==3)     ThreeLeptonConfig = 0;
+        if(electrontriLooseColl.size()==3) ThreeLeptonConfig = 3;
 
-        snu::KParticle ll_case1_1 = MuPlus.at(0)+MuMinus.at(0);
-        snu::KParticle ll_case1_2 = MuPlus.at(1)+MuMinus.at(1);
-        bool TwoOnZ_case1 = ( fabs( ll_case1_1.M() - m_Z ) < 10. ) && ( fabs( ll_case1_2.M() - m_Z ) < 10. );
+        if( ( lep.at(0).Charge() == lep.at(1).Charge() ) &&
+            ( lep.at(0).Charge() == lep.at(2).Charge() ) ) AllSameCharge = true;
+      }
+      else if(muontriLooseColl.size()==2){
 
-        snu::KParticle ll_case2_1 = MuPlus.at(0)+MuMinus.at(1);
-        snu::KParticle ll_case2_2 = MuPlus.at(1)+MuMinus.at(0);
-        bool TwoOnZ_case2 = ( fabs( ll_case2_1.M() - m_Z ) < 10. ) && ( fabs( ll_case2_2.M() - m_Z ) < 10. );
+        ThreeLeptonConfig = 1;
 
-        if( (TwoOnZ_case1 || TwoOnZ_case2) ){
-          isZZ = true;
+        if( muontriLooseColl.at(0).Charge() == muontriLooseColl.at(1).Charge() ) AllSameCharge = true;
+      }
+      else if(electrontriLooseColl.size()==2){
+
+        ThreeLeptonConfig = 2;
+
+        if( electrontriLooseColl.at(0).Charge() == electrontriLooseColl.at(1).Charge() ) AllSameCharge = true;
+      }
+      else{
+        Message("?", INFO);
+      }
+
+      if( !AllSameCharge ){
+
+        snu::KParticle Z_candidate;
+        KLepton ZLepton_leading, ZLepton_subleading, WLepton;
+        double m_OSSF[2];
+
+        if(ThreeLeptonConfig == 0 || ThreeLeptonConfig == 3){
+          KLepton OS, SS[2];
+          if     ( lep.at(0).Charge() == lep.at(1).Charge() ){
+            SS[0] = lep.at(0);
+            SS[1] = lep.at(1);
+            OS    = lep.at(2);
+          }
+          else if( lep.at(0).Charge() == lep.at(2).Charge() ){
+            SS[0] = lep.at(0);
+            SS[1] = lep.at(2);
+            OS    = lep.at(1);
+          }
+          else if( lep.at(1).Charge() == lep.at(2).Charge() ){
+            SS[0] = lep.at(1);
+            SS[1] = lep.at(2);
+            OS    = lep.at(0);
+          }
+          else Message("?", INFO);
+
+          m_OSSF[0] = ( SS[0] + OS ).M();
+          m_OSSF[1] = ( SS[1] + OS ).M();
+
+          KLepton SS_ZMuon;
+          if( fabs(m_OSSF[0]-m_Z) < fabs(m_OSSF[1]-m_Z) ){
+            Z_candidate = SS[0] + OS;
+            SS_ZMuon = SS[0];
+            WLepton = SS[1];
+          }
+          else{
+            Z_candidate = SS[1] + OS;
+            SS_ZMuon = SS[1];
+            WLepton = SS[0];
+          }
+
+          if( SS_ZMuon.Pt() > OS.Pt() ){
+            ZLepton_leading = SS_ZMuon;
+            ZLepton_subleading = OS;
+          }
+          else{
+            ZLepton_leading = OS;
+            ZLepton_subleading = SS_ZMuon;
+          }
+
+        }
+        else if(ThreeLeptonConfig == 1){
+          Z_candidate = muontriLooseColl.at(0)+muontriLooseColl.at(1);
+          ZLepton_leading = muontriLooseColl.at(0);
+          ZLepton_subleading = muontriLooseColl.at(1);
+          WLepton = electrontriLooseColl.at(0);
+
+          m_OSSF[0] = Z_candidate.M();
+          m_OSSF[1] = Z_candidate.M();
+
+        }
+        else if(ThreeLeptonConfig == 2){
+          Z_candidate = electrontriLooseColl.at(0)+electrontriLooseColl.at(1);
+          ZLepton_leading = electrontriLooseColl.at(0);
+          ZLepton_subleading = electrontriLooseColl.at(1);
+          WLepton = muontriLooseColl.at(0);
+
+          m_OSSF[0] = Z_candidate.M();
+          m_OSSF[1] = Z_candidate.M();
         }
 
+        double mlll = (lep.at(0)+lep.at(1)+lep.at(2)).M();
+        bool ZLeptonPtCut = (ZLepton_leading.Pt() > 20.);
+        bool WLeptonPtCut = (WLepton.Pt() > 20.);
+        bool isZresonance = (fabs(Z_candidate.M()-m_Z) < 10.);
+        bool METCut = (MET > 30.);
+        bool mlllCut = (mlll > 100.);
+        bool mll4 = (m_OSSF[0] < 4.) || (m_OSSF[1] < 4.);
+        bool bjetveto = (n_bjets == 0);
+        //==== TEST //FIXME
+        bjetveto = true;
+
+        snu::KParticle nu;
+        nu.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET);
+        snu::KParticle W_candidate = nu+WLepton;
+
+        isWZ    = ZLeptonPtCut && isZresonance && WLeptonPtCut && METCut      && mlllCut   && !mll4 && bjetveto;
+        isZJets = ZLeptonPtCut && isZresonance                 && (MET < 20.) && mlllCut   && !mll4 && bjetveto && MT(nu, WLepton) < 30.;
+        isZLep  = ZLeptonPtCut && isZresonance                                && mlllCut   && !mll4 && bjetveto;
+        isZGamma= ZLeptonPtCut && isZresonance                                && mlll<100. && !mll4 && bjetveto;
+
+      } // Not All Same Charge
+    } // isThreeLepton
+
+    if(isFourLepton){
+
+     std::vector<KLepton> lep;
+      for(unsigned int i=0; i<muontriLooseColl.size(); i++){
+        KLepton this_lep( muontriLooseColl.at(i) );
+        lep.push_back( this_lep );
+      }
+      for(unsigned int i=0; i<electrontriLooseColl.size(); i++){
+        KLepton this_lep( electrontriLooseColl.at(i) );
+        lep.push_back( this_lep );
       }
 
+      //==== 4 Muon : FourLeptonConfig = 0;
+      //==== 2 Muon + 2 Electron : FourLeptonConfig = 1;
+      //==== 4 Electron : FourLeptonConfig = 2;
+
+      if(muontriLooseColl.size()==4 || electrontriLooseColl.size()==4){
+
+        if(muontriLooseColl.size()==4)     FourLeptonConfig = 0;
+        if(electrontriLooseColl.size()==4) FourLeptonConfig = 2;
+
+      }
+      else if(muontriLooseColl.size()==2){
+
+        FourLeptonConfig = 1;
+
+      }
+      else{
+        Message("?", INFO);
+      }
+
+      std::vector<KLepton> LepPlus, LepMinus;
+      for(unsigned int i=0; i<lep.size(); i++){
+        if(lep.at(i).Charge() > 0) LepPlus.push_back(lep.at(i));
+        else                       LepMinus.push_back(lep.at(i));
+      }
+      if( (LepPlus.size() == 2) && (LepMinus.size() == 2) ){
+
+        snu::KParticle ll_case1_1 = LepPlus.at(0)+LepMinus.at(0);
+        snu::KParticle ll_case1_2 = LepPlus.at(1)+LepMinus.at(1);
+        bool TwoOnZ_case1 = ( fabs( ll_case1_1.M() - m_Z ) < 10. ) && (LepPlus.at(0).LeptonFlavour()==LepMinus.at(0).LeptonFlavour()) &&
+                            ( fabs( ll_case1_2.M() - m_Z ) < 10. ) && (LepPlus.at(1).LeptonFlavour()==LepMinus.at(1).LeptonFlavour());
+
+        snu::KParticle ll_case2_1 = LepPlus.at(0)+LepMinus.at(1);
+        snu::KParticle ll_case2_2 = LepPlus.at(1)+LepMinus.at(0);
+        bool TwoOnZ_case2 = ( fabs( ll_case2_1.M() - m_Z ) < 10. ) && (LepPlus.at(0).LeptonFlavour()==LepMinus.at(1).LeptonFlavour()) &&
+                            ( fabs( ll_case2_2.M() - m_Z ) < 10. ) && (LepPlus.at(1).LeptonFlavour()==LepMinus.at(0).LeptonFlavour());
+
+        if( (TwoOnZ_case1 && min(LepPlus.at(0).Pt(),LepMinus.at(0).Pt())>20. && min(LepPlus.at(1).Pt(),LepMinus.at(1).Pt())>20. ) ||
+            (TwoOnZ_case2 && min(LepPlus.at(0).Pt(),LepMinus.at(1).Pt())>20. && min(LepPlus.at(1).Pt(),LepMinus.at(0).Pt())>20. )     ){
+
+          isZZ = true;
+
+        }
+
+      } // 2OS
+
+    } // isFourLepton
+
+
+    double pt0(0.), pt1(0.), pt2(0.);
+    if(isPreselection){
+      pt0 = muontriLooseColl.at(0).Pt();
+      pt1 = muontriLooseColl.at(1).Pt();
+      pt2 = muontriLooseColl.at(2).Pt();
     }
 
     //==== fake method weighting
-    std::vector<snu::KElectron> empty_electron;
-    empty_electron.clear();
-
-    double this_weight = m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", n_triLoose_muons, empty_electron, "ELECTRON_HN_TIGHT", 0);
-    double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true, muontriLooseColl, "MUON_HN_TRI_TIGHT", n_triLoose_muons, empty_electron, "ELECTRON_HN_TIGHT", 0);
+    double this_weight     = m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_HN_TIGHT", electrontriLooseColl.size());
+    double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true,  muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_HN_TIGHT", electrontriLooseColl.size());
 
     double cutop[100];
-    cutop[0] = muontriLooseColl.at(0).Pt();
-    cutop[1] = muontriLooseColl.at(1).Pt();
-    cutop[2] = muontriLooseColl.at(2).Pt();
-    cutop[3] = deltaR_OS_min;
-    cutop[4] = HN[0].M();
-    cutop[5] = HN[1].M();
-    cutop[6] = HN[2].M();
-    cutop[7] = HN[3].M();
-    cutop[8] = W_pri_lowmass.M();
-    cutop[9] = W_pri_highmass.M();
-    cutop[10] = this_weight;
-    cutop[11] = W_sec.M();
-    cutop[12] = MET;
-    cutop[13] = this_weight_err;
-    cutop[14] = isPreselection;
-    cutop[15] = isWZ;
-    cutop[16] = isZJets;
-    cutop[17] = isZZ;
+    cutop[0] = pt0;
+    cutop[1] = pt1;
+    cutop[2] = pt2;
+    cutop[3] = HN[0].M();
+    cutop[4] = HN[1].M();
+    cutop[5] = HN[2].M();
+    cutop[6] = HN[3].M();
+    cutop[7] = W_pri_lowmass.M();
+    cutop[8] = W_pri_highmass.M();
+    cutop[9] = this_weight;
+    cutop[10] = W_sec.M();
+    cutop[11] = MET;
+    cutop[12] = 0.; //weight_err
+    cutop[13] = isPreselection;
+    cutop[14] = isWZ;
+    cutop[15] = isZJets;
+    cutop[16] = isZLep;
+    cutop[17] = isZGamma;
+    cutop[18] = isZZ;
 
     FillNtp("Ntp_"+this_syst,cutop);
 
@@ -611,17 +755,17 @@ void trilepton_mumumu_ntp_FR_method::MakeHistograms(){
    *  Remove//Overide this trilepton_mumumu_ntp_FR_methodCore::MakeHistograms() to make new hists for your analysis
    **/
 
-  MakeNtp("Ntp_MuonEn_up", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZZ");
-  MakeNtp("Ntp_MuonEn_down", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZZ");
-  MakeNtp("Ntp_JetEn_up", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZZ");
-  MakeNtp("Ntp_JetEn_down", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZZ");
-  MakeNtp("Ntp_JetRes_up", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZZ");
-  MakeNtp("Ntp_JetRes_down", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZZ");
-  MakeNtp("Ntp_Unclustered_up", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZZ");
-  MakeNtp("Ntp_Unclustered_down", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZZ");
-  MakeNtp("Ntp_Central", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZZ");
-  MakeNtp("Ntp_MuonIDSF_up", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZZ");
-  MakeNtp("Ntp_MuonIDSF_down", "first_pt:second_pt:third_pt:deltaR_OS_min:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZZ");
+  MakeNtp("Ntp_MuonEn_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig");
+  MakeNtp("Ntp_MuonEn_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig");
+  MakeNtp("Ntp_JetEn_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig");
+  MakeNtp("Ntp_JetEn_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig");
+  MakeNtp("Ntp_JetRes_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig");
+  MakeNtp("Ntp_JetRes_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig");
+  MakeNtp("Ntp_Unclustered_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig");
+  MakeNtp("Ntp_Unclustered_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig");
+  MakeNtp("Ntp_Central", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig");
+  MakeNtp("Ntp_MuonIDSF_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig");
+  MakeNtp("Ntp_MuonIDSF_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig");
 
 }
 

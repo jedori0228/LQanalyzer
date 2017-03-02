@@ -421,7 +421,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
           int n_jets = jetColl_hn.size();
           int n_bjets=0;
           for(int j=0; j<n_jets; j++){
-            if(jetColl_hn.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Tight)) n_bjets++;
+            if(jetColl_hn.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Medium)) n_bjets++;
           }
 
           if( n_jets == 0){
