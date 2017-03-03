@@ -135,6 +135,9 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
     }
   }
 
+  m_datadriven_bkg->GetFakeObj()->SetNJet(n_jets);
+  //m_datadriven_bkg->GetFakeObj()->SetNBJet(n_bjets);
+
   //=======================================================
   //==== For MC Closure test, let's not normalise to Lumi
   //=======================================================
