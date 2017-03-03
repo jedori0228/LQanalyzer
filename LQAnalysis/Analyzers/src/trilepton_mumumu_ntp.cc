@@ -258,11 +258,7 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
     }
     else if(it_sys==7){
       this_syst = "Unclustered_down";
-      cout << "eventbase->GetEvent().RunNumber() = " << eventbase->GetEvent().RunNumber() << endl;
-      cout << "eventbase->GetEvent().EventNumber() = " << eventbase->GetEvent().EventNumber() << endl;
-      cout << "eventbase->GetEvent().MET() = " << eventbase->GetEvent().MET() << endl;
       MET = Evt.PFMETShifted(snu::KEvent::Unclustered, snu::KEvent::down);
-      cout << "eventbase->GetEvent().PFMETShifted(snu::KEvent::Unclustered, snu::KEvent::down) = " << eventbase->GetEvent().PFMETShifted(snu::KEvent::Unclustered, snu::KEvent::down) << endl;
     }
     else if(it_sys==8){
       this_syst = "Central";
