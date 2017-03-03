@@ -777,17 +777,21 @@ float HNCommonLeptonFakes::getTrilepFakeRate_muon(bool geterr, float pt,  float 
   }
   else if(UseJetConf && !UseBjetConf){
     if(n_jet==0){
+      applysf = false;
       wp = wp+"_0jet";
     }
     else{
+      applysf = false;
       wp = wp+"_withjet";
     }
   }
   else if(!UseJetConf && UseBjetConf){
     if(n_bjet==0){
+      applysf = false;
       wp = wp+"_0bjet";
     }
     else{
+      applysf = false;
       wp = wp+"_withbjet";
     }
   }
