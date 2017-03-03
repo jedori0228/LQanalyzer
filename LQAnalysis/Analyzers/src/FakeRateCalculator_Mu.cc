@@ -95,6 +95,12 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
 
   std::vector<snu::KJet> jetColl_hn = GetJets("JET_HN", 30., 2.4);
 
+  int n_jets = jetColl_hn.size();
+  int n_bjets=0;
+  for(int j=0; j<n_jets; j++){
+    if(jetColl_hn.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Medium)) n_bjets++;
+  }
+
   //======================
   //==== Pileup Reweight
   //======================
@@ -394,6 +400,9 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
         if(muontriHighdXYLooseColl.size()==1){
           snu::KMuon HighdXYmuon = muontriHighdXYLooseColl.at(0);
           double LeptonRelIso = HighdXYmuon.RelIso04();
+
+          //==== all jet
+
           FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_eta_F0", HighdXYmuon.Eta(), this_weight_HighdXYLoose, -3., 3., 30);
           FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_pt_F0", HighdXYmuon.Pt(), this_weight_HighdXYLoose, 0., 200., 200);
           FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_RelIso_F0", LeptonRelIso, this_weight_HighdXYLoose, 0., 1., 100);
@@ -415,14 +424,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
             FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_events_F", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 9, etaarray, 4);
           }
 
-          //==== check # of jet dependecy
           //==== no jet
-
-          int n_jets = jetColl_hn.size();
-          int n_bjets=0;
-          for(int j=0; j<n_jets; j++){
-            if(jetColl_hn.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Medium)) n_bjets++;
-          }
 
           if( n_jets == 0){
             FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_0jet_eta_F0", HighdXYmuon.Eta(), this_weight_HighdXYLoose, -3., 3., 30);
@@ -448,8 +450,10 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
               FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_0jet_events_F", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 9, etaarray, 4);
             }
           }
+
           //==== with jet
-          if( n_jets != 0){
+
+          else{
             FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_eta_F0", HighdXYmuon.Eta(), this_weight_HighdXYLoose, -3., 3., 30);
             FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_pt_F0", HighdXYmuon.Pt(), this_weight_HighdXYLoose, 0., 200., 200);
             FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_RelIso_F0", LeptonRelIso, this_weight_HighdXYLoose, 0., 1., 100);
@@ -472,59 +476,61 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
               FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_n_jets_F", n_jets, this_weight_HighdXYLoose, 0., 10., 10);
               FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_events_F", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 9, etaarray, 4);
             }
-            //==== with b-jet
-            if( n_bjets == 0){
-              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_0bjet_eta_F0", HighdXYmuon.Eta(), this_weight_HighdXYLoose, -3., 3., 30);
-              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_0bjet_pt_F0", HighdXYmuon.Pt(), this_weight_HighdXYLoose, 0., 200., 200);
-              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_0bjet_RelIso_F0", LeptonRelIso, this_weight_HighdXYLoose, 0., 1., 100);
-              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_0bjet_Chi2_F0", HighdXYmuon.GlobalChi2(), this_weight_HighdXYLoose, 0., 50., 50);
-              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_0bjet_dXY_F0", fabs(HighdXYmuon.dXY()), this_weight_HighdXYLoose, 0., 1., 1000);
-              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_0bjet_dXYSig_F0", fabs(HighdXYmuon.dXYSig()), this_weight_HighdXYLoose, 0., 15., 150);
-              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_0bjet_dZ_F0", fabs(HighdXYmuon.dZ()), this_weight_HighdXYLoose, 0., 0.5, 50);
-              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_0bjet_onebin_F0", 0., this_weight_HighdXYLoose, 0., 1., 1);
-              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_0bjet_n_jets_F0", n_jets, this_weight_HighdXYLoose, 0., 10., 10);
-              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_0bjet_events_F0", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 9, etaarray, 4);
-              if( LeptonRelIso < 0.1 ){
-                FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_0bjet_eta_F", HighdXYmuon.Eta(), this_weight_HighdXYLoose, -3., 3., 30);
-                FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_0bjet_pt_F", HighdXYmuon.Pt(), this_weight_HighdXYLoose, 0., 200., 200);
-                FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_0bjet_RelIso_F", LeptonRelIso, this_weight_HighdXYLoose, 0., 1., 100);
-                FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_0bjet_Chi2_F", HighdXYmuon.GlobalChi2(), this_weight_HighdXYLoose, 0., 50., 50);
-                FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_0bjet_dXY_F", fabs(HighdXYmuon.dXY()), this_weight_HighdXYLoose, 0., 1., 1000);
-                FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_0bjet_dXYSig_F", fabs(HighdXYmuon.dXYSig()), this_weight_HighdXYLoose, 0., 15., 150);
-                FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_0bjet_dZ_F", fabs(HighdXYmuon.dZ()), this_weight_HighdXYLoose, 0., 0.5, 50);
-                FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_0bjet_onebin_F", 0., this_weight_HighdXYLoose, 0., 1., 1);
-                FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_0bjet_n_jets_F", n_jets, this_weight_HighdXYLoose, 0., 10., 10);
-                FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_0bjet_events_F", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 9, etaarray, 4);
-              }
-            }
-            //==== no b-jet
-            if( n_bjets != 0){
-              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_withbjet_eta_F0", HighdXYmuon.Eta(), this_weight_HighdXYLoose, -3., 3., 30);
-              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_withbjet_pt_F0", HighdXYmuon.Pt(), this_weight_HighdXYLoose, 0., 200., 200);
-              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_withbjet_RelIso_F0", LeptonRelIso, this_weight_HighdXYLoose, 0., 1., 100);
-              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_withbjet_Chi2_F0", HighdXYmuon.GlobalChi2(), this_weight_HighdXYLoose, 0., 50., 50);
-              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_withbjet_dXY_F0", fabs(HighdXYmuon.dXY()), this_weight_HighdXYLoose, 0., 1., 1000);
-              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_withbjet_dXYSig_F0", fabs(HighdXYmuon.dXYSig()), this_weight_HighdXYLoose, 0., 15., 150);
-              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_withbjet_dZ_F0", fabs(HighdXYmuon.dZ()), this_weight_HighdXYLoose, 0., 0.5, 50);
-              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_withbjet_onebin_F0", 0., this_weight_HighdXYLoose, 0., 1., 1);
-              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_withbjet_n_jets_F0", n_jets, this_weight_HighdXYLoose, 0., 10., 10);
-              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_withbjet_events_F0", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 9, etaarray, 4);
-              if( LeptonRelIso < 0.1 ){
-                FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_withbjet_eta_F", HighdXYmuon.Eta(), this_weight_HighdXYLoose, -3., 3., 30);
-                FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_withbjet_pt_F", HighdXYmuon.Pt(), this_weight_HighdXYLoose, 0., 200., 200);
-                FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_withbjet_RelIso_F", LeptonRelIso, this_weight_HighdXYLoose, 0., 1., 100);
-                FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_withbjet_Chi2_F", HighdXYmuon.GlobalChi2(), this_weight_HighdXYLoose, 0., 50., 50);
-                FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_withbjet_dXY_F", fabs(HighdXYmuon.dXY()), this_weight_HighdXYLoose, 0., 1., 1000);
-                FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_withbjet_dXYSig_F", fabs(HighdXYmuon.dXYSig()), this_weight_HighdXYLoose, 0., 15., 150);
-                FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_withbjet_dZ_F", fabs(HighdXYmuon.dZ()), this_weight_HighdXYLoose, 0., 0.5, 50);
-                FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_withbjet_onebin_F", 0., this_weight_HighdXYLoose, 0., 1., 1);
-                FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_withbjet_n_jets_F", n_jets, this_weight_HighdXYLoose, 0., 10., 10);
-                FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withjet_withbjet_events_F", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 9, etaarray, 4);
-              }
-            }
+          }
 
-          } // END with jet
+          //==== no b-jet
 
+          if( n_bjets == 0){
+            FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_0bjet_eta_F0", HighdXYmuon.Eta(), this_weight_HighdXYLoose, -3., 3., 30);
+            FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_0bjet_pt_F0", HighdXYmuon.Pt(), this_weight_HighdXYLoose, 0., 200., 200);
+            FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_0bjet_RelIso_F0", LeptonRelIso, this_weight_HighdXYLoose, 0., 1., 100);
+            FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_0bjet_Chi2_F0", HighdXYmuon.GlobalChi2(), this_weight_HighdXYLoose, 0., 50., 50);
+            FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_0bjet_dXY_F0", fabs(HighdXYmuon.dXY()), this_weight_HighdXYLoose, 0., 1., 1000);
+            FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_0bjet_dXYSig_F0", fabs(HighdXYmuon.dXYSig()), this_weight_HighdXYLoose, 0., 15., 150);
+            FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_0bjet_dZ_F0", fabs(HighdXYmuon.dZ()), this_weight_HighdXYLoose, 0., 0.5, 50);
+            FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_0bjet_onebin_F0", 0., this_weight_HighdXYLoose, 0., 1., 1);
+            FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_0bjet_n_jets_F0", n_jets, this_weight_HighdXYLoose, 0., 10., 10);
+            FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_0bjet_events_F0", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 9, etaarray, 4);
+            if( LeptonRelIso < 0.1 ){
+              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_0bjet_eta_F", HighdXYmuon.Eta(), this_weight_HighdXYLoose, -3., 3., 30);
+              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_0bjet_pt_F", HighdXYmuon.Pt(), this_weight_HighdXYLoose, 0., 200., 200);
+              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_0bjet_RelIso_F", LeptonRelIso, this_weight_HighdXYLoose, 0., 1., 100);
+              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_0bjet_Chi2_F", HighdXYmuon.GlobalChi2(), this_weight_HighdXYLoose, 0., 50., 50);
+              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_0bjet_dXY_F", fabs(HighdXYmuon.dXY()), this_weight_HighdXYLoose, 0., 1., 1000);
+              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_0bjet_dXYSig_F", fabs(HighdXYmuon.dXYSig()), this_weight_HighdXYLoose, 0., 15., 150);
+              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_0bjet_dZ_F", fabs(HighdXYmuon.dZ()), this_weight_HighdXYLoose, 0., 0.5, 50);
+              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_0bjet_onebin_F", 0., this_weight_HighdXYLoose, 0., 1., 1);
+              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_0bjet_n_jets_F", n_jets, this_weight_HighdXYLoose, 0., 10., 10);
+              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_0bjet_events_F", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 9, etaarray, 4);
+            }
+          }
+
+          //==== with b-jet
+
+          else{
+            FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withbjet_eta_F0", HighdXYmuon.Eta(), this_weight_HighdXYLoose, -3., 3., 30);
+            FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withbjet_pt_F0", HighdXYmuon.Pt(), this_weight_HighdXYLoose, 0., 200., 200);
+            FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withbjet_RelIso_F0", LeptonRelIso, this_weight_HighdXYLoose, 0., 1., 100); 
+            FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withbjet_Chi2_F0", HighdXYmuon.GlobalChi2(), this_weight_HighdXYLoose, 0., 50., 50);
+            FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withbjet_dXY_F0", fabs(HighdXYmuon.dXY()), this_weight_HighdXYLoose, 0., 1., 1000); 
+            FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withbjet_dXYSig_F0", fabs(HighdXYmuon.dXYSig()), this_weight_HighdXYLoose, 0., 15., 150);
+            FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withbjet_dZ_F0", fabs(HighdXYmuon.dZ()), this_weight_HighdXYLoose, 0., 0.5, 50);
+            FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withbjet_onebin_F0", 0., this_weight_HighdXYLoose, 0., 1., 1);
+            FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withbjet_n_jets_F0", n_jets, this_weight_HighdXYLoose, 0., 10., 10);
+            FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withbjet_events_F0", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 9, etaarray, 4);
+            if( LeptonRelIso < 0.1 ){
+              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withbjet_eta_F", HighdXYmuon.Eta(), this_weight_HighdXYLoose, -3., 3., 30);
+              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withbjet_pt_F", HighdXYmuon.Pt(), this_weight_HighdXYLoose, 0., 200., 200);
+              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withbjet_RelIso_F", LeptonRelIso, this_weight_HighdXYLoose, 0., 1., 100);
+              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withbjet_Chi2_F", HighdXYmuon.GlobalChi2(), this_weight_HighdXYLoose, 0., 50., 50);
+              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withbjet_dXY_F", fabs(HighdXYmuon.dXY()), this_weight_HighdXYLoose, 0., 1., 1000);
+              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withbjet_dXYSig_F", fabs(HighdXYmuon.dXYSig()), this_weight_HighdXYLoose, 0., 15., 150);
+              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withbjet_dZ_F", fabs(HighdXYmuon.dZ()), this_weight_HighdXYLoose, 0., 0.5, 50);
+              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withbjet_onebin_F", 0., this_weight_HighdXYLoose, 0., 1., 1);
+              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withbjet_n_jets_F", n_jets, this_weight_HighdXYLoose, 0., 10., 10);
+              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_withbjet_events_F", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 9, etaarray, 4);
+            }
+          }
         }
 
         //==== 5) MC Truth
@@ -540,9 +546,14 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
 
             double LeptonRelIso = muon.RelIso04();
 
+            //=================================================
             //==== 1) |dXY| < 1 cm, |dXY/err| > dXYMins[aaa].
+            //=================================================
+
             if( fabs( muon.dXY() ) < 1. &&
                 fabs( muon.dXYSig() ) > dXYMins[aaa] ){
+
+              //==== all jet
 
               FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_eta_F0", muon.Eta(), 1., -3, 3, 30);
               FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_pt_F0", muon.Pt(), 1., 0., 200., 200);
@@ -565,11 +576,117 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
                 FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_events_F", muon.Pt(), fabs(muon.Eta()), 1., ptarray, 9, etaarray, 4);
               }
 
-            }
+              //==== no jet
 
+              if(n_jets==0){
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0jet_eta_F0", muon.Eta(), 1., -3, 3, 30);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0jet_pt_F0", muon.Pt(), 1., 0., 200., 200);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0jet_RelIso_F0", LeptonRelIso, 1., 0., 1., 100);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0jet_Chi2_F0", muon.GlobalChi2(), 1., 0, 50., 50);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0jet_dXY_F0", fabs(muon.dXY()),1., 0., 1., 1000);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0jet_dXYSig_F0", fabs(muon.dXYSig()),1., 0., 15., 150);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0jet_dZ_F0", fabs(muon.dZ()), 1., 0., 0.5, 50);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0jet_onebin_F0", 0., 1., 0., 1., 1);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0jet_events_F0", muon.Pt(), fabs(muon.Eta()), 1., ptarray, 9, etaarray, 4);
+                if( LeptonRelIso < 0.1 ){
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0jet_eta_F", muon.Eta(), 1., -3, 3, 30);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0jet_pt_F", muon.Pt(), 1., 0., 200., 200);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0jet_RelIso_F", LeptonRelIso, 1., 0., 1., 100);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0jet_Chi2_F", muon.GlobalChi2(), 1., 0, 50., 50);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0jet_dXY_F", fabs(muon.dXY()), 1., 0., 1., 1000);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0jet_dXYSig_F", fabs(muon.dXYSig()), 1., 0., 15., 150);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0jet_dZ_F", fabs(muon.dZ()), 1., 0., 0.5, 50);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0jet_onebin_F", 0., 1., 0., 1., 1);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0jet_events_F", muon.Pt(), fabs(muon.Eta()), 1., ptarray, 9, etaarray, 4);
+                }
+              }
+
+              //==== with jet
+
+              else{
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withjet_eta_F0", muon.Eta(), 1., -3, 3, 30);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withjet_pt_F0", muon.Pt(), 1., 0., 200., 200);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withjet_RelIso_F0", LeptonRelIso, 1., 0., 1., 100);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withjet_Chi2_F0", muon.GlobalChi2(), 1., 0, 50., 50);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withjet_dXY_F0", fabs(muon.dXY()),1., 0., 1., 1000);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withjet_dXYSig_F0", fabs(muon.dXYSig()),1., 0., 15., 150);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withjet_dZ_F0", fabs(muon.dZ()), 1., 0., 0.5, 50);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withjet_onebin_F0", 0., 1., 0., 1., 1);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withjet_events_F0", muon.Pt(), fabs(muon.Eta()), 1., ptarray, 9, etaarray, 4);
+                if( LeptonRelIso < 0.1 ){
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withjet_eta_F", muon.Eta(), 1., -3, 3, 30);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withjet_pt_F", muon.Pt(), 1., 0., 200., 200);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withjet_RelIso_F", LeptonRelIso, 1., 0., 1., 100);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withjet_Chi2_F", muon.GlobalChi2(), 1., 0, 50., 50);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withjet_dXY_F", fabs(muon.dXY()), 1., 0., 1., 1000);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withjet_dXYSig_F", fabs(muon.dXYSig()), 1., 0., 15., 150);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withjet_dZ_F", fabs(muon.dZ()), 1., 0., 0.5, 50);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withjet_onebin_F", 0., 1., 0., 1., 1);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withjet_events_F", muon.Pt(), fabs(muon.Eta()), 1., ptarray, 9, etaarray, 4);
+                }
+              }
+
+              //==== no b-jet
+
+              if(n_bjets==0){
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0bjet_eta_F0", muon.Eta(), 1., -3, 3, 30);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0bjet_pt_F0", muon.Pt(), 1., 0., 200., 200);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0bjet_RelIso_F0", LeptonRelIso, 1., 0., 1., 100);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0bjet_Chi2_F0", muon.GlobalChi2(), 1., 0, 50., 50);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0bjet_dXY_F0", fabs(muon.dXY()),1., 0., 1., 1000);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0bjet_dXYSig_F0", fabs(muon.dXYSig()),1., 0., 15., 150);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0bjet_dZ_F0", fabs(muon.dZ()), 1., 0., 0.5, 50);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0bjet_onebin_F0", 0., 1., 0., 1., 1);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0bjet_events_F0", muon.Pt(), fabs(muon.Eta()), 1., ptarray, 9, etaarray, 4);
+                if( LeptonRelIso < 0.1 ){
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0bjet_eta_F", muon.Eta(), 1., -3, 3, 30);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0bjet_pt_F", muon.Pt(), 1., 0., 200., 200);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0bjet_RelIso_F", LeptonRelIso, 1., 0., 1., 100);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0bjet_Chi2_F", muon.GlobalChi2(), 1., 0, 50., 50);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0bjet_dXY_F", fabs(muon.dXY()), 1., 0., 1., 1000);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0bjet_dXYSig_F", fabs(muon.dXYSig()), 1., 0., 15., 150);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0bjet_dZ_F", fabs(muon.dZ()), 1., 0., 0.5, 50);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0bjet_onebin_F", 0., 1., 0., 1., 1);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_0bjet_events_F", muon.Pt(), fabs(muon.Eta()), 1., ptarray, 9, etaarray, 4);
+                }
+              }
+
+              //==== with b-jet
+
+              else{
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withbjet_eta_F0", muon.Eta(), 1., -3, 3, 30);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withbjet_pt_F0", muon.Pt(), 1., 0., 200., 200);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withbjet_RelIso_F0", LeptonRelIso, 1., 0., 1., 100);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withbjet_Chi2_F0", muon.GlobalChi2(), 1., 0, 50., 50);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withbjet_dXY_F0", fabs(muon.dXY()),1., 0., 1., 1000);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withbjet_dXYSig_F0", fabs(muon.dXYSig()),1., 0., 15., 150);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withbjet_dZ_F0", fabs(muon.dZ()), 1., 0., 0.5, 50);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withbjet_onebin_F0", 0., 1., 0., 1., 1);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withbjet_events_F0", muon.Pt(), fabs(muon.Eta()), 1., ptarray, 9, etaarray, 4);
+                if( LeptonRelIso < 0.1 ){
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withbjet_eta_F", muon.Eta(), 1., -3, 3, 30);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withbjet_pt_F", muon.Pt(), 1., 0., 200., 200);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withbjet_RelIso_F", LeptonRelIso, 1., 0., 1., 100);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withbjet_Chi2_F", muon.GlobalChi2(), 1., 0, 50., 50);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withbjet_dXY_F", fabs(muon.dXY()), 1., 0., 1., 1000);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withbjet_dXYSig_F", fabs(muon.dXYSig()), 1., 0., 15., 150);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withbjet_dZ_F", fabs(muon.dZ()), 1., 0., 0.5, 50);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withbjet_onebin_F", 0., 1., 0., 1., 1);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_HighdXY_withbjet_events_F", muon.Pt(), fabs(muon.Eta()), 1., ptarray, 9, etaarray, 4);
+                }
+              }
+
+            } // small dXYSig region
+
+
+            //=========================================
             //==== 2) |dXY| < 0.05 cm, |dXY/err| < 3.
+            //=========================================
+
             if( fabs( muon.dXY() ) < 0.05 &&
                 fabs( muon.dXYSig() ) < 3. ){
+
+              //==== all jet
 
               FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_eta_F0", muon.Eta(), 1., -3, 3, 30);
               FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_pt_F0", muon.Pt(), 1., 0., 200., 200);
@@ -592,7 +709,107 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
                 FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_events_F", muon.Pt(), fabs(muon.Eta()), 1., ptarray, 9, etaarray, 4);
               }
 
-            }
+              //==== no jet
+
+              if(n_jets==0){
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0jet_eta_F0", muon.Eta(), 1., -3, 3, 30);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0jet_pt_F0", muon.Pt(), 1., 0., 200., 200);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0jet_RelIso_F0", LeptonRelIso, 1., 0., 1., 100);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0jet_Chi2_F0", muon.GlobalChi2(), 1., 0, 50., 50);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0jet_dXY_F0", fabs(muon.dXY()), 1., 0., 0.1, 100);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0jet_dXYSig_F0", fabs(muon.dXYSig()), 1., 0., 15., 150);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0jet_dZ_F0", fabs(muon.dZ()), 1., 0, 0.5, 50);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0jet_onebin_F0", 0., 1., 0, 1., 1);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0jet_events_F0", muon.Pt(), fabs(muon.Eta()), 1., ptarray, 9, etaarray, 4);
+                if( LeptonRelIso < 0.1 ){
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0jet_eta_F", muon.Eta(), 1., -3, 3, 30);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0jet_pt_F", muon.Pt(), 1., 0., 200., 200);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0jet_RelIso_F", LeptonRelIso, 1., 0., 1., 100);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0jet_Chi2_F", muon.GlobalChi2(), 1., 0, 50., 50);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0jet_dXY_F", fabs(muon.dXY()), 1., 0., 0.1, 100);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0jet_dXYSig_F", fabs(muon.dXYSig()), 1., 0., 15., 150);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0jet_dZ_F", fabs(muon.dZ()), 1., 0, 0.5, 50);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0jet_onebin_F", 0., 1., 0, 1., 1);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0jet_events_F", muon.Pt(), fabs(muon.Eta()), 1., ptarray, 9, etaarray, 4);
+                }
+              }
+
+              //==== with jet
+
+              else{
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withjet_eta_F0", muon.Eta(), 1., -3, 3, 30);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withjet_pt_F0", muon.Pt(), 1., 0., 200., 200);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withjet_RelIso_F0", LeptonRelIso, 1., 0., 1., 100);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withjet_Chi2_F0", muon.GlobalChi2(), 1., 0, 50., 50);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withjet_dXY_F0", fabs(muon.dXY()), 1., 0., 0.1, 100);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withjet_dXYSig_F0", fabs(muon.dXYSig()), 1., 0., 15., 150);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withjet_dZ_F0", fabs(muon.dZ()), 1., 0, 0.5, 50);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withjet_onebin_F0", 0., 1., 0, 1., 1);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withjet_events_F0", muon.Pt(), fabs(muon.Eta()), 1., ptarray, 9, etaarray, 4);
+                if( LeptonRelIso < 0.1 ){
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withjet_eta_F", muon.Eta(), 1., -3, 3, 30);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withjet_pt_F", muon.Pt(), 1., 0., 200., 200);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withjet_RelIso_F", LeptonRelIso, 1., 0., 1., 100);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withjet_Chi2_F", muon.GlobalChi2(), 1., 0, 50., 50);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withjet_dXY_F", fabs(muon.dXY()), 1., 0., 0.1, 100);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withjet_dXYSig_F", fabs(muon.dXYSig()), 1., 0., 15., 150);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withjet_dZ_F", fabs(muon.dZ()), 1., 0, 0.5, 50);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withjet_onebin_F", 0., 1., 0, 1., 1);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withjet_events_F", muon.Pt(), fabs(muon.Eta()), 1., ptarray, 9, etaarray, 4);
+                }
+              }
+
+              //==== no b-jet
+
+              if(n_bjets==0){
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0bjet_eta_F0", muon.Eta(), 1., -3, 3, 30);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0bjet_pt_F0", muon.Pt(), 1., 0., 200., 200);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0bjet_RelIso_F0", LeptonRelIso, 1., 0., 1., 100);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0bjet_Chi2_F0", muon.GlobalChi2(), 1., 0, 50., 50);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0bjet_dXY_F0", fabs(muon.dXY()), 1., 0., 0.1, 100);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0bjet_dXYSig_F0", fabs(muon.dXYSig()), 1., 0., 15., 150);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0bjet_dZ_F0", fabs(muon.dZ()), 1., 0, 0.5, 50);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0bjet_onebin_F0", 0., 1., 0, 1., 1);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0bjet_events_F0", muon.Pt(), fabs(muon.Eta()), 1., ptarray, 9, etaarray, 4);
+                if( LeptonRelIso < 0.1 ){
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0bjet_eta_F", muon.Eta(), 1., -3, 3, 30);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0bjet_pt_F", muon.Pt(), 1., 0., 200., 200);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0bjet_RelIso_F", LeptonRelIso, 1., 0., 1., 100);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0bjet_Chi2_F", muon.GlobalChi2(), 1., 0, 50., 50);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0bjet_dXY_F", fabs(muon.dXY()), 1., 0., 0.1, 100);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0bjet_dXYSig_F", fabs(muon.dXYSig()), 1., 0., 15., 150);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0bjet_dZ_F", fabs(muon.dZ()), 1., 0, 0.5, 50);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0bjet_onebin_F", 0., 1., 0, 1., 1);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_0bjet_events_F", muon.Pt(), fabs(muon.Eta()), 1., ptarray, 9, etaarray, 4);
+                }
+              }
+
+              //==== with b-jet
+
+              else{
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withbjet_eta_F0", muon.Eta(), 1., -3, 3, 30);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withbjet_pt_F0", muon.Pt(), 1., 0., 200., 200);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withbjet_RelIso_F0", LeptonRelIso, 1., 0., 1., 100);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withbjet_Chi2_F0", muon.GlobalChi2(), 1., 0, 50., 50);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withbjet_dXY_F0", fabs(muon.dXY()), 1., 0., 0.1, 100);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withbjet_dXYSig_F0", fabs(muon.dXYSig()), 1., 0., 15., 150);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withbjet_dZ_F0", fabs(muon.dZ()), 1., 0, 0.5, 50);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withbjet_onebin_F0", 0., 1., 0, 1., 1);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withbjet_events_F0", muon.Pt(), fabs(muon.Eta()), 1., ptarray, 9, etaarray, 4);
+                if( LeptonRelIso < 0.1 ){
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withbjet_eta_F", muon.Eta(), 1., -3, 3, 30);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withbjet_pt_F", muon.Pt(), 1., 0., 200., 200);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withbjet_RelIso_F", LeptonRelIso, 1., 0., 1., 100);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withbjet_Chi2_F", muon.GlobalChi2(), 1., 0, 50., 50);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withbjet_dXY_F", fabs(muon.dXY()), 1., 0., 0.1, 100);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withbjet_dXYSig_F", fabs(muon.dXYSig()), 1., 0., 15., 150);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withbjet_dZ_F", fabs(muon.dZ()), 1., 0, 0.5, 50);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withbjet_onebin_F", 0., 1., 0, 1., 1);
+                  FillHist(str_dXYCut+"_SingleMuonTrigger_MCTruth_withbjet_events_F", muon.Pt(), fabs(muon.Eta()), 1., ptarray, 9, etaarray, 4);
+                }
+              }
+
+            } // Large dXYSig Region
 
 
           } // END Muon loop
