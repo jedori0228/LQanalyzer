@@ -123,8 +123,10 @@ class AnalyzerCore : public LQCycleBase {
   bool SameCharge(std::vector<snu::KElectron> electrons, bool runcf=false);
   
   float CorrectedMETRochester(TString id, bool updatemet);
+  void CorrectedMETRochester(std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi);
   float CorrectedMETElectron(TString elid_formet, int syst=0);
   float CorrectedMETMuon(TString muid_formet, int syst=0);
+  void CorrectedMETMuon(int sys, std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi);
 
   void CorrectMuonMomentum(vector<snu::KMuon>& k_muons);
   void SetCorrectedMomentum(vector<snu::KMuon>& k_muons);
@@ -281,6 +283,7 @@ class AnalyzerCore : public LQCycleBase {
   void FillHist(TString histname, float value, float w , float xmin[], int nbins=0 , TString label="");
   void FillHist(TString histname, float value1, float value2, float w , float x[], int nbinsx, float y[], int nbinsy , TString label="");
   void FillHist(TString histname, float value1,  float value2, float w , float xmin, float xmax, int nbinsx,  float ymin, float ymax, int nbinsy , TString label="");
+  void FillUpDownHist(TString histname, float value, float w , float w_err, float xmin, float xmax, int nbins=0, TString label="");
 
   /// Fills clever hists
   void FillCLHist(histtype type, TString hist, snu::KEvent ev,vector<snu::KMuon> muons, vector<snu::KElectron> electrons, vector<snu::KJet> jets,double weight);
