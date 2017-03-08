@@ -135,6 +135,27 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
     }
   }
 
+  std::vector<snu::KJet> jetColl_hn_nolepveto = GetJets("JET_HN_NOLEPVETO", 25., 2.4);
+  std::vector<snu::KJet> jetColl_hn_nearby;
+  for(unsigned int i=0; i<jetColl_hn_nolepveto.size(); i++){
+    bool isNearByJet = false;
+    for(unsigned int j=0; j<muontriLooseColl.size(); j++){
+      if(jetColl_hn_nolepveto.at(i).DeltaR( muontriLooseColl.at(j) ) < 0.4){
+        isNearByJet = true;
+        break;
+      }
+    }
+    if(isNearByJet) jetColl_hn_nearby.push_back( jetColl_hn_nolepveto.at(i) );
+  }
+  int n_jets_nearby = jetColl_hn_nearby.size();
+  int n_bjets_nearby=0;
+  for(int j=0; j<n_jets_nearby; j++){
+    if(jetColl_hn_nearby.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Medium)){
+      n_bjets_nearby++;
+      FillHist("bjet_nearby_pt", jetColl_hn_nearby.at(j).Pt(), 1., 0., 200., 200);
+    }
+  }
+
   m_datadriven_bkg->GetFakeObj()->SetNJet(n_jets);
   //m_datadriven_bkg->GetFakeObj()->SetNBJet(n_bjets);
 
@@ -259,7 +280,9 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
       }
     } 
 
-  } // is TwoMuon
+    return;
+
+  } // MC Closure
 
   if(isThreeLepton){
 
@@ -390,8 +413,9 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
       bool mlllCut = (mlll > 100.);
       bool mll4 = (m_OSSF[0] < 4.) || (m_OSSF[1] < 4.);
       bool bjetveto = (n_bjets == 0);
-      //==== TEST //FIXME
-      bjetveto = true;
+
+      //==== If you don't want to veto b-jet, set it true
+      //bjetveto = true;
 
       FillUpDownHist("m_Z_candidate_before_cut_WZ", Z_candidate.M(), this_weight, this_weight_err, 0., 150., 150);
       FillUpDownHist("m_lll_before_cut_WZ", mlll, this_weight, this_weight_err, 0., 500., 500);
@@ -431,7 +455,7 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
       map_whichCR_to_isCR["WZ"]    = ZLeptonPtCut && isZresonance && WLeptonPtCut && METCut      && mlllCut   && !mll4 && bjetveto;
       map_whichCR_to_isCR["ZJets"] = ZLeptonPtCut && isZresonance                 && (MET < 20.) && mlllCut   && !mll4 && bjetveto && MT(nu, WLepton) < 30.;
       map_whichCR_to_isCR["ZLep"]  = ZLeptonPtCut && isZresonance                                && mlllCut   && !mll4 && bjetveto;
-      map_whichCR_to_isCR["ZGamma"]= ZLeptonPtCut && isZresonance                                && mlll<100. && !mll4 && bjetveto;
+      map_whichCR_to_isCR["ZGamma"]= ZLeptonPtCut && (fabs(Z_candidate.M()-m_Z) > 15.) && (MET < 50.) && (fabs(mlll-m_Z) < 10.) && !mll4 && bjetveto;
 
       map_whichCR_to_isCR["WZ_3mu0el"] = map_whichCR_to_isCR["WZ"] && (ThreeLeptonConfig==0);
       map_whichCR_to_isCR["WZ_2mu1el"] = map_whichCR_to_isCR["WZ"] && (ThreeLeptonConfig==1);
@@ -458,6 +482,8 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
           FillUpDownHist("n_vertices_"+this_suffix, eventbase->GetEvent().nVertices(), this_weight, this_weight_err, 0., 50., 50);
           FillUpDownHist("n_jets_"+this_suffix, n_jets, this_weight, this_weight_err, 0., 10., 10);
           FillUpDownHist("n_bjets_"+this_suffix, n_bjets, this_weight, this_weight_err, 0., 10., 10);
+          FillUpDownHist("n_jets_nearby_"+this_suffix, n_jets_nearby, this_weight, this_weight_err, 0., 10., 10);
+          FillUpDownHist("n_bjets_nearby_"+this_suffix, n_bjets_nearby, this_weight, this_weight_err, 0., 10., 10);
           FillUpDownHist("PFMET_"+this_suffix, MET, this_weight, this_weight_err, 0., 500., 500);
           FillUpDownHist("PFMET_phi_"+this_suffix, METphi, this_weight, this_weight_err, -3.2, 3.2, 64);
           FillUpDownHist("osllmass_"+this_suffix, m_OSSF[0], this_weight, this_weight_err, 0., 500., 500);
@@ -470,6 +496,12 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
           FillUpDownHist("dRZLeptonWLepton_"+this_suffix, ZLepton_leading.DeltaR(WLepton), this_weight, this_weight_err, 0., 6., 60);
           FillUpDownHist("dRZLeptonWLepton_"+this_suffix, ZLepton_subleading.DeltaR(WLepton), this_weight, this_weight_err, 0., 6., 60);
           FillUpDownHist("dRMETWLepton_"+this_suffix, nu.DeltaR(WLepton), this_weight, this_weight_err, 0., 6., 60);
+          for(unsigned int j=0; j<jetColl_hn_nearby.size(); j++){
+            FillUpDownHist("dRNearByJetWLepton_"+this_suffix, jetColl_hn_nearby.at(j).DeltaR(WLepton), this_weight, this_weight_err, 0., 6., 60);
+            if(jetColl_hn_nearby.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Medium)){
+              FillUpDownHist("dRNearByBJetWLepton_"+this_suffix, jetColl_hn_nearby.at(j).DeltaR(WLepton), this_weight, this_weight_err, 0., 6., 60);
+            }
+          }
 
           FillUpDownLeptonKinematicPlot(lep, this_suffix, this_weight, this_weight_err);
 
@@ -733,6 +765,8 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
             FillUpDownHist("n_vertices_"+this_suffix, eventbase->GetEvent().nVertices(), this_weight, this_weight_err, 0., 50., 50);
             FillUpDownHist("n_jets_"+this_suffix, n_jets, this_weight, this_weight_err, 0., 10., 10);
             FillUpDownHist("n_bjets_"+this_suffix, n_bjets, this_weight, this_weight_err, 0., 10., 10);
+            FillUpDownHist("n_jets_nearby_"+this_suffix, n_jets_nearby, this_weight, this_weight_err, 0., 10., 10);
+            FillUpDownHist("n_bjets_nearby_"+this_suffix, n_bjets_nearby, this_weight, this_weight_err, 0., 10., 10);
             FillUpDownHist("PFMET_"+this_suffix, MET, this_weight, this_weight_err, 0., 500., 500);
             FillUpDownHist("PFMET_phi_"+this_suffix, METphi, this_weight, this_weight_err, -3.2, 3.2, 64);
             if(TwoOnZ_case1){

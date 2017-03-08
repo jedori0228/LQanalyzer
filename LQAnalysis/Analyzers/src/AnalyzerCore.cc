@@ -2578,7 +2578,7 @@ vector<snu::KMuon> AnalyzerCore::GetTruePrompt(vector<snu::KMuon> muons, bool ke
     if(!k_isdata){
 
       if(keepfake) prompt_muons.push_back(muons.at(i));
-      else if(muons.at(i).MCMatched()) prompt_muons.push_back(muons.at(i));
+      else if(muons.at(i).MCMatched() || muons.at(i).MCFromTau()) prompt_muons.push_back(muons.at(i));
     }// Data
     else prompt_muons.push_back(muons.at(i));
   }/// loop

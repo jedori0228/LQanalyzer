@@ -736,31 +736,30 @@ float HNCommonLeptonFakes::getTrilepFakeRate_muon(bool geterr, float pt,  float 
   if(n_bjet>=0) UseBjetConf = true;
 
   if(UseJetConf && UseBjetConf){
-    cout << "UseJetConf == true && UseBjetConf == true. Using alljet config.." << endl;
+    cout << "[HNCommonLeptonFakes::getTrilepFakeRate_muon] UseJetConf == true && UseBjetConf == true. Using alljet config.." << endl;
     wp = wp+"_alljet";
   }
   else if(UseJetConf && !UseBjetConf){
     if(n_jet==0){
-      applysf = false;
       wp = wp+"_0jet";
     }
     else{
-      applysf = false;
       wp = wp+"_withjet";
     }
   }
   else if(!UseJetConf && UseBjetConf){
     if(n_bjet==0){
-      applysf = false;
       wp = wp+"_0bjet";
     }
     else{
-      applysf = false;
       wp = wp+"_withbjet";
     }
   }
-  else{
+  else if(!UseJetConf && !UseBjetConf){
     wp = wp+"_alljet";
+  }
+  else{
+    cout << "[HNCommonLeptonFakes::getTrilepFakeRate_muon] ??" << endl;
   }
 
   //cout << "n_jet = " << n_jet << endl;

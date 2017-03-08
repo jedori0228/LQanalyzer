@@ -287,7 +287,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
         //==== for MC,
         //==== fill only MCMatched() muons
         else{
-          if( this_muon.MCMatched() ){
+          if( this_muon.MCMatched() || this_muon.MCFromTau() ){
             //==== Fill NodXYCut
             muontriNodXYCutLooseColl.push_back( this_muon );
             if( this_muon.RelIso04() < 0.1 ) muontriNodXYCutTightColl.push_back( this_muon );
@@ -330,7 +330,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
 
         for(unsigned int i=0; i<muontriNodXYCutLooseColl_raw.size(); i++){
           snu::KMuon this_muon = muontriNodXYCutLooseColl_raw.at(i);
-          if( fabs(this_muon.dXY()) < 1. && !this_muon.MCMatched() ){
+          if( fabs(this_muon.dXY()) < 1. && !this_muon.MCMatched() && !this_muon.MCFromTau() ){
             FillHist(str_dXYCut+"_fake_Loose_dXYSig", fabs(this_muon.dXYSig()), 1., 0., 15., 150);
             FillHist(str_dXYCut+"_fake_Loose_dXY", fabs(this_muon.dXY()), 1., 0., 0.1, 100);
             if(this_muon.RelIso04()<0.1){
@@ -542,7 +542,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
             snu::KMuon muon = muontriNodXYCutLooseColl_raw.at(i);
 
             //==== if prompt, skip
-            if( muon.MCMatched() ) continue;
+            if( muon.MCMatched() || muon.MCFromTau() ) continue;
 
             double LeptonRelIso = muon.RelIso04();
 
@@ -940,7 +940,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
     std::vector<snu::KMuon> PtEtaMuons = GetMuons("MUON_PTETA", false);
     for(unsigned int i=0; i<PtEtaMuons.size(); i++){
       snu::KMuon this_muon = PtEtaMuons.at(i);
-      if(this_muon.MCMatched()){
+      if( this_muon.MCMatched() || this_muon.MCFromTau() ){
         FillHist("DiMuonTrigger_PromptRate_eta_F0", this_muon.Eta(), this_weight, -3, 3, 30);
         FillHist("DiMuonTrigger_PromptRate_pt_F0", this_muon.Pt(), this_weight, 0., 200., 200);
         FillHist("DiMuonTrigger_PromptRate_RelIso_F0", this_muon.RelIso04(), this_weight, 0., 1., 100);
