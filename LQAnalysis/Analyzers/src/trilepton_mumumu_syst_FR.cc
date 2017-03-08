@@ -117,11 +117,14 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
   int n_jets = jetColl_hn.size();
   int n_bjets=0;
   for(int j=0; j<n_jets; j++){
-    if(jetColl_hn.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Tight)){
+    if(jetColl_hn.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Medium)){
       n_bjets++;
       FillHist("bjet_pt", jetColl_hn.at(j).Pt(), 1., 0., 200., 200);
     }
   }
+
+  //m_datadriven_bkg->GetFakeObj()->SetNJet(n_jets);
+  m_datadriven_bkg->GetFakeObj()->SetNBJet(n_bjets);
 
   //=======================================================
   //==== For MC Closure test, let's not normalise to Lumi
@@ -355,7 +358,7 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
 
         std::map< TString, bool > map_whichCR_to_isCR;
         map_whichCR_to_isCR.clear();
-        map_whichCR_to_isCR["Preselection"] = VetoZResonance && n_bjets==0;
+        map_whichCR_to_isCR["Preselection"] = VetoZResonance;// && n_bjets==0;
         map_whichCR_to_isCR["LowMass"] = map_whichCR_to_isCR["Preselection"] && isLowMass;
         map_whichCR_to_isCR["HighMass"] = map_whichCR_to_isCR["Preselection"] && isHighMass;
 

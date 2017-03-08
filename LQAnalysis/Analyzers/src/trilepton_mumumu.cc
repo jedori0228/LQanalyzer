@@ -195,6 +195,93 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   //==== non-prompt : keep fake
   else if( k_sample_name.Contains("DY") || k_sample_name.Contains("WJets") || k_sample_name.Contains("TTJets") || k_sample_name.Contains("QCD") ){
     muontriLooseColl = GetHNTriMuonsByLooseRelIso(this_RelIso, true);
+
+    //==== below is for MC fake test
+
+/*
+    for(unsigned int i=0; i<muontriLooseColl.size(); i++){
+      snu::KMuon this_muon = muontriLooseColl.at(i);
+
+      if(this_muon.MCIsFromConversion()){
+        FillHist("TEST_Muon_FR_Conversion", 0., 1., 0., 2., 2);
+        if(this_muon.RelIso04()<0.1){
+          FillHist("TEST_Muon_FR_Conversion", 1., 1., 0., 2., 2);
+        }
+      }
+
+      if(this_muon.MCFromTau()){
+        FillHist("TEST_Muon_FR_Tau", 0., 1., 0., 2., 2);
+        if(this_muon.RelIso04()<0.1){
+          FillHist("TEST_Muon_FR_Tau", 1., 1., 0., 2., 2);
+        }
+      }
+
+      if(!this_muon.MCMatched() && !this_muon.MCIsFromConversion() && !this_muon.MCFromTau()){
+
+        std::vector<snu::KJet> jetColl_hn_nolepveto = GetJets("JET_HN_NOLEPVETO", 25., 2.4);
+        std::vector<snu::KJet> jetColl_hn_nearby;
+        for(unsigned int i=0; i<jetColl_hn_nolepveto.size(); i++){
+          bool isNearByJet = false;
+          for(unsigned int j=0; j<muontriLooseColl.size(); j++){
+            if(jetColl_hn_nolepveto.at(i).DeltaR( muontriLooseColl.at(j) ) < 0.4){
+              isNearByJet = true;
+              break;
+            }
+          }
+          if(isNearByJet) jetColl_hn_nearby.push_back( jetColl_hn_nolepveto.at(i) );
+        }
+        int n_jets_nearby = jetColl_hn_nearby.size();
+        int n_bjets_nearby=0;
+        for(int j=0; j<n_jets_nearby; j++){
+          if(jetColl_hn_nearby.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Medium)){
+            n_bjets_nearby++;
+          }
+        }
+
+        for(unsigned int j=0; j<jetColl_hn_nearby.size(); j++){
+          FillHist("dRNearByJetFakeMuon", jetColl_hn_nearby.at(j).DeltaR(this_muon), weight, 0., 6., 60);
+          if(jetColl_hn_nearby.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Medium)){
+            FillHist("dRNearByBJetFakeMuon", jetColl_hn_nearby.at(j).DeltaR(this_muon), weight, 0., 6., 60);
+          }
+        }
+
+        FillHist("TEST_Muon_FR_Fakable", 0., 1., 0., 2., 2);
+        if(this_muon.RelIso04()<0.1){
+          FillHist("TEST_Muon_FR_Fakable", 1., 1., 0., 2., 2);
+        }
+      }
+
+    }
+
+    std::vector<snu::KElectron> electrontriLooseColl = GetElectrons(true, false, "ELECTRON_HN_FAKELOOSE");
+    for(unsigned int i=0; i<electrontriLooseColl.size(); i++){
+      snu::KElectron this_electron = electrontriLooseColl.at(i);
+
+      if(this_electron.MCIsFromConversion()){
+        FillHist("TEST_Electron_FR_Conversion", 0., 1., 0., 2., 2);
+        if(eventbase->GetElectronSel()->ElectronPass(this_electron,"ELECTRON_HN_TIGHT")){
+          FillHist("TEST_Electron_FR_Conversion", 1., 1., 0., 2., 2);
+        }
+      }
+
+      if(this_electron.MCFromTau()){
+        FillHist("TEST_Electron_FR_Tau", 0., 1., 0., 2., 2);
+        if(eventbase->GetElectronSel()->ElectronPass(this_electron,"ELECTRON_HN_TIGHT")){
+          FillHist("TEST_Electron_FR_Tau", 1., 1., 0., 2., 2);
+        }
+      }
+
+      if(!this_electron.MCMatched() && !this_electron.MCIsFromConversion() && !this_electron.MCFromTau()){
+        FillHist("TEST_Electron_FR_Fakable", 0., 1., 0., 2., 2);
+        if(eventbase->GetElectronSel()->ElectronPass(this_electron,"ELECTRON_HN_TIGHT")){
+          FillHist("TEST_Electron_FR_Fakable", 1., 1., 0., 2., 2);
+        }
+      }
+    }
+
+    return;
+*/
+
   }
   //==== diboson, but hadronic decays
   else if( (k_sample_name.Contains("WZ") || k_sample_name.Contains("ZZ") || k_sample_name.Contains("WW") ) && diboson_had ){
@@ -222,7 +309,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   int n_jets = jetColl_hn.size();
   int n_bjets=0;
   for(int j=0; j<n_jets; j++){
-    if(jetColl_hn.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Tight)){
+    if(jetColl_hn.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Medium)){
       n_bjets++;
       FillHist("bjet_pt", jetColl_hn.at(j).Pt(), 1., 0., 200., 200);
     }
@@ -433,7 +520,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   if(!VetoZResonance) return;
   FillCutFlow("ZVeto", 1.);
 
-  if(n_bjets>0) return;
+  //if(n_bjets>0) return;
   FillCutFlow("bjetVeto", 1.);
 
   //==== preselection is done
