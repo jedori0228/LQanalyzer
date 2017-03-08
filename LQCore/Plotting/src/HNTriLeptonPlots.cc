@@ -212,7 +212,7 @@ void HNTriLeptonPlots::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std:
   Fill("h_Njets",jets.size(), weight);
   int nbjet=0;
   for(UInt_t j=0; j < jets.size(); j++){
-    if(jets.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Tight)) nbjet++;
+    if(jets.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Medium)) nbjet++;
   }
   Fill("h_Nbjets", nbjet, weight); 
   
