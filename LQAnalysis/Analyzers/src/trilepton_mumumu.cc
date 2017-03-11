@@ -123,7 +123,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   }
 
   float trigger_ps_weight= WeightByTrigger(triggerlist, TargetLumi);
-  //float weight_trigger_sf = TriggerScaleFactor(electronColl, muonTightColl, "HLT_IsoMu20");
+  //float weight_trigger_sf = TriggerScaleFactor(electrontriLooseColl, muonTightColl, "HLT_IsoMu20");
 
   //=======================
   //==== [CUT] Vertex cut
@@ -196,9 +196,8 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   else if( k_sample_name.Contains("DY") || k_sample_name.Contains("WJets") || k_sample_name.Contains("TTJets") || k_sample_name.Contains("QCD") ){
     muontriLooseColl = GetHNTriMuonsByLooseRelIso(this_RelIso, true);
 
-    //==== below is for MC fake test
-
 /*
+    //==== below is for MC fake test
     for(unsigned int i=0; i<muontriLooseColl.size(); i++){
       snu::KMuon this_muon = muontriLooseColl.at(i);
 
@@ -218,7 +217,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
 
       if(!this_muon.MCMatched() && !this_muon.MCIsFromConversion() && !this_muon.MCFromTau()){
 
-        std::vector<snu::KJet> jetColl_hn_nolepveto = GetJets("JET_HN_NOLEPVETO", 25., 2.4);
+        std::vector<snu::KJet> jetColl_hn_nolepveto = GetJets("JET_NOLEPTONVETO", 25., 2.4);
         std::vector<snu::KJet> jetColl_hn_nearby;
         for(unsigned int i=0; i<jetColl_hn_nolepveto.size(); i++){
           bool isNearByJet = false;
@@ -253,7 +252,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
 
     }
 
-    std::vector<snu::KElectron> electrontriLooseColl = GetElectrons(true, false, "ELECTRON_HN_FAKELOOSE");
+    std::vector<snu::KElectron> electrontriLooseColl = GetElectrons(true, true, "ELECTRON_HN_FAKELOOSE");
     for(unsigned int i=0; i<electrontriLooseColl.size(); i++){
       snu::KElectron this_electron = electrontriLooseColl.at(i);
 
@@ -281,6 +280,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
 
     return;
 */
+
 
   }
   //==== diboson, but hadronic decays
@@ -319,7 +319,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   //==== Get Electrons
   //====================
 
-  std::vector<snu::KElectron> electronColl = GetElectrons("ELECTRON_POG_TIGHT");
+  std::vector<snu::KElectron> electrontriLooseColl = GetElectrons(false, false, "ELECTRON_HN_FAKELOOSE");
 
   //======================
   //==== Pileup Reweight
@@ -355,6 +355,27 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     if(eventbase->GetMuonSel()->MuonPass(muontriLooseColl.at(i), "MUON_HN_TRI_TIGHT")) n_triTight_muons++;
   }
 
+  int n_triLoose_electrons = electrontriLooseColl.size();
+  int n_triTight_electrons(0);
+  for(unsigned int i=0; i<electrontriLooseColl.size(); i++){
+    if(eventbase->GetElectronSel()->ElectronPass(electrontriLooseColl.at(i), "ELECTRON_HN_TIGHT")) n_triTight_electrons++;
+  }
+
+  int n_triLoose_leptons = n_triLoose_muons+n_triLoose_electrons;
+  int n_triTight_leptons = n_triTight_muons+n_triTight_electrons;
+
+/*
+  //==== Tight RelIso Study
+  for(int i=0; i<100; i++){
+    double test_reliso = 0.01*(i+1);
+    std::vector<snu::KMuon> TestMuon = GetHNTriMuonsByLooseRelIso(test_reliso, true);
+    if(TestMuon.size()==3){
+      FillHist("TEST_TightRelIso", i, 1., 0., 100., 100);
+    }
+  }
+  return;
+*/
+
   //==== ppp to TTL/TLL/LLL ?
   if(!k_isdata){
     if(n_triLoose_muons==3){
@@ -365,12 +386,45 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   FillHist("n_loose_muon", n_triLoose_muons, 1., 0., 10., 10);
   FillHist("n_tight_muon", n_triTight_muons, 1., 0., 10., 10);
 
+/*
+  //==== ZG study
+  if(k_sample_name.Contains("ZG")){
+
+    std::vector<snu::KElectron> allel = GetElectrons(false, true, "ELECTRON_HN_TIGHT");
+    bool isthisit=false;
+    for(unsigned int i=0; i<allel.size(); i++){
+      if(!allel.at(i).MCMatched() && allel.at(i).MCIsFromConversion()){
+        cout << "pt = " << allel.at(i).Pt() << "\t" << allel.at(i).Eta() << endl;
+        isthisit = true;
+      }
+    }
+
+    if(!isthisit) return;
+
+    std::vector<snu::KTruth> truthColl;
+    eventbase->GetTruthSel()->Selection(truthColl);
+    cout << "=========================================================" << endl;
+    cout << "RunNumber = " << eventbase->GetEvent().RunNumber() << endl;
+    cout << "EventNumber = " << eventbase->GetEvent().EventNumber() << endl;
+    cout << "truth size = " << truthColl.size() << endl;
+    cout << "index" << '\t' << "pdgid" << '\t' << "mother" << '\t' << "mother pid" << endl;
+    for(int i=2; i<truthColl.size(); i++){
+      cout << i << '\t' << truthColl.at(i).PdgId() << '\t' << truthColl.at(i).IndexMother() << '\t' << truthColl.at( truthColl.at(i).IndexMother() ).PdgId() << "\t" << truthColl.at(i).Pt() << "\t" << truthColl.at(i).Eta() << endl;
+    }
+
+    return;
+  }
+*/
+
   //=============================
   //==== [CUT] Three Tight mons
   //=============================
 
-  if( n_triLoose_muons != 3 ) return;
-  if( n_triTight_muons != 3 ) return;
+  //==== Three Tight Muons, and no fourth loose lepton
+  bool isThreeMuon     = (n_triLoose_leptons == 3)
+                         && (n_triLoose_muons == 3 && n_triTight_muons == 3);
+
+  if(!isThreeMuon) return;
 
   double MinLeadingMuonPt = 20;
   if( muontriLooseColl.at(0).Pt() < MinLeadingMuonPt ) return;
@@ -520,11 +574,10 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   if(!VetoZResonance) return;
   FillCutFlow("ZVeto", 1.);
 
-  //if(n_bjets>0) return;
+  if(n_bjets>0) return;
   FillCutFlow("bjetVeto", 1.);
 
   //==== preselection is done
-
 
 /*
 
@@ -614,7 +667,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   FillHist("deltaR_OS_min_cut0", deltaR_OS_min, weight, 0., 5., 50);
   FillHist("gamma_star_mass_cut0", gamma_star.M(), weight, 0., 200., 200);
   FillHist("z_candidate_mass_cut0", z_candidate.M(), weight, 0., 200., 200);
-  FillCLHist(hntrilephist, "cut0", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_hn, weight);
+  FillCLHist(hntrilephist, "cut0", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, weight);
   FillHist("n_events_cut0", 0, weight, 0., 1., 1);
 
   if( isLowMass ){
@@ -628,7 +681,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     FillHist("deltaR_OS_min_cutWlow", deltaR_OS_min, weight, 0., 5., 50);
     FillHist("gamma_star_mass_cutWlow", gamma_star.M(), weight, 0., 200., 200);
     FillHist("z_candidate_mass_cutWlow", z_candidate.M(), weight, 0., 200., 200);
-    FillCLHist(hntrilephist, "cutWlow", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_hn, weight);
+    FillCLHist(hntrilephist, "cutWlow", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, weight);
     FillHist("n_events_cutWlow", 0, weight, 0., 1., 1);
 
     FillCutFlow("LowMass", 1.);
@@ -646,7 +699,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     FillHist("deltaR_OS_min_cutWhigh", deltaR_OS_min, weight, 0., 5., 50);
     FillHist("gamma_star_mass_cutWhigh", gamma_star.M(), weight, 0., 200., 200);
     FillHist("z_candidate_mass_cutWhigh", z_candidate.M(), weight, 0., 200., 200);
-    FillCLHist(hntrilephist, "cutWhigh", eventbase->GetEvent(), muontriLooseColl, electronColl, jetColl_hn, weight);
+    FillCLHist(hntrilephist, "cutWhigh", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, weight);
     FillHist("n_events_cutWhigh", 0, weight, 0., 1., 1);
 
     FillCutFlow("HighMass", 1.);

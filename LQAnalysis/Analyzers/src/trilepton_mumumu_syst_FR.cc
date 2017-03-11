@@ -124,7 +124,19 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
   }
 
   //m_datadriven_bkg->GetFakeObj()->SetNJet(n_jets);
-  m_datadriven_bkg->GetFakeObj()->SetNBJet(n_bjets);
+  //m_datadriven_bkg->GetFakeObj()->SetNBJet(n_bjets);
+
+  //====================
+  //==== Get Electrons
+  //====================
+
+  std::vector<snu::KElectron> electrontriLooseColl = GetElectrons(false, false, "ELECTRON_HN_FAKELOOSE");
+
+  int n_triLoose_electrons = electrontriLooseColl.size();
+  int n_triTight_electrons(0);
+  for(unsigned int i=0; i<electrontriLooseColl.size(); i++){
+    if(eventbase->GetElectronSel()->ElectronPass(electrontriLooseColl.at(i), "ELECTRON_HN_TIGHT")) n_triTight_electrons++;
+  }
 
   //=======================================================
   //==== For MC Closure test, let's not normalise to Lumi
@@ -170,8 +182,13 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
       }
       int n_triLoose_muons = muontriLooseColl.size();
 
-      bool isTwoMuon   = n_triLoose_muons == 2 && n_triTight_muons != 2; // no TT case
-      bool isThreeMuon = n_triLoose_muons == 3 && n_triTight_muons != 3; // no TTT case
+      int n_triLoose_leptons = n_triLoose_muons+n_triLoose_electrons;
+      int n_triTight_leptons = n_triTight_muons+n_triTight_electrons;
+
+      bool isTwoMuon = (n_triLoose_leptons == 2)
+                       && (n_triLoose_muons == 2 && n_triTight_muons != 2);
+      bool isThreeMuon = (n_triLoose_leptons == 3)
+                         && (n_triLoose_muons == 3 && n_triTight_muons != 3);
 
       //==== MCClosure
 
@@ -358,7 +375,7 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
 
         std::map< TString, bool > map_whichCR_to_isCR;
         map_whichCR_to_isCR.clear();
-        map_whichCR_to_isCR["Preselection"] = VetoZResonance;// && n_bjets==0;
+        map_whichCR_to_isCR["Preselection"] = VetoZResonance && n_bjets==0;
         map_whichCR_to_isCR["LowMass"] = map_whichCR_to_isCR["Preselection"] && isLowMass;
         map_whichCR_to_isCR["HighMass"] = map_whichCR_to_isCR["Preselection"] && isHighMass;
 

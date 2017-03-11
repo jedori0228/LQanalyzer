@@ -102,9 +102,9 @@ declare -a trilep_bkg_miss=(
 )
 
 declare -a VGamma=(
-'ZGto2LG')
-# 'WGtoLNuG' 'WGtoLNuMM'
-#)
+'ZGto2LG'
+'WGtoLNuG')
+#'WGtoLNuMM')
 
 declare -a FourLep=(
 'WZZ' 'WWZ' 'ZZZ' 'ttZ' 'ttH_nonbb'

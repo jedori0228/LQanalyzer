@@ -135,7 +135,7 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
     }
   }
 
-  std::vector<snu::KJet> jetColl_hn_nolepveto = GetJets("JET_HN_NOLEPVETO", 25., 2.4);
+  std::vector<snu::KJet> jetColl_hn_nolepveto = GetJets("JET_NOLEPTONVETO", 25., 2.4);
   std::vector<snu::KJet> jetColl_hn_nearby;
   for(unsigned int i=0; i<jetColl_hn_nolepveto.size(); i++){
     bool isNearByJet = false;
@@ -156,7 +156,7 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
     }
   }
 
-  m_datadriven_bkg->GetFakeObj()->SetNJet(n_jets);
+  //m_datadriven_bkg->GetFakeObj()->SetNJet(n_jets);
   //m_datadriven_bkg->GetFakeObj()->SetNBJet(n_bjets);
 
   //=======================================================
@@ -209,13 +209,16 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   //==== define CR
   //================
 
-  bool isTwoMuon   = n_triLoose_muons == 2 && n_triTight_muons != 2; // no TT case
-  bool isThreeLepton = n_triLoose_leptons == 3 && n_triTight_leptons != 3; // no TTT case
-  bool isFourLepton  = ( n_triLoose_muons == 4     ||
-                         n_triLoose_electrons == 4 ||
-                         (n_triLoose_muons == 2 && n_triLoose_electrons == 2)
-                       )
-                       && n_triTight_leptons != 4;
+  bool isTwoMuon     = (n_triLoose_leptons == 2)
+                       && (n_triLoose_muons == 2 && n_triTight_muons != 2);
+  bool isThreeLepton = (n_triLoose_leptons == 3) && (n_triTight_leptons != 3);
+  bool isFourLepton  = (n_triLoose_leptons == 4)
+                       && (
+                         (n_triLoose_muons == 4 && n_triTight_muons != 4) ||
+                         (n_triLoose_electrons == 4 && n_triTight_electrons != 4) ||
+                         (n_triLoose_muons == 2 && n_triTight_muons != 2 && n_triLoose_electrons == 2 && n_triTight_electrons != 2)
+                       );
+
   if(n_triLoose_muons == 2 && n_triTight_muons == 0) FillHist("LL_TL_TT", 0., 1., 0., 3., 3);
   if(n_triLoose_muons == 2 && n_triTight_muons == 1) FillHist("LL_TL_TT", 1., 1., 0., 3., 3);
   if(n_triLoose_muons == 2 && n_triTight_muons == 2) FillHist("LL_TL_TT", 2., 1., 0., 3., 3);
@@ -235,6 +238,8 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
 
     bool leadPt20 = muontriLooseColl.at(0).Pt() > 20.;
     bool isSS = muontriLooseColl.at(0).Charge() == muontriLooseColl.at(1).Charge();
+
+    if(k_sample_name.Contains("DY") && !isSS) return;
 
     double m_Z = 91.1876;
     double m_dimuon = ( muontriLooseColl.at(0) + muontriLooseColl.at(1) ).M();
