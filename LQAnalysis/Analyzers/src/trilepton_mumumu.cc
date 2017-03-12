@@ -315,6 +315,8 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     }
   }
 
+  float BTagSF = BTagScaleFactor_1a_Weighted(jetColl_hn, snu::KJet::CSVv2, snu::KJet::Medium);
+
   //====================
   //==== Get Electrons
   //====================
@@ -343,6 +345,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     weight*=MuTrkEffSF;
     weight*=trigger_ps_weight;
     weight*=pileup_reweight;
+    weight*=BTagSF;
   }
 
   //==================================

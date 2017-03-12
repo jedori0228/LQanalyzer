@@ -314,6 +314,8 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
       if(jetColl_hn.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Medium)) n_bjets++;
     }
 
+    float BTagSF = BTagScaleFactor_1a_Weighted(jetColl_hn, snu::KJet::CSVv2, snu::KJet::Medium);
+
     //==== Muon
     std::vector<snu::KMuon> muontriLooseColl;
     if(this_syst == "MuonEn_up"){
@@ -364,7 +366,7 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
     double MuTrkEffSF =  mcdata_correction->MuonTrackingEffScaleFactor(muontriLooseColl); //FIXME should add syst for this
 
     //==== this weight
-    double this_weight = weight*muon_id_iso_sf*MuTrkEffSF;
+    double this_weight = weight*muon_id_iso_sf*MuTrkEffSF*BTagSF;
 
     //==== now apply pileup reweight
     if(!k_isdata){

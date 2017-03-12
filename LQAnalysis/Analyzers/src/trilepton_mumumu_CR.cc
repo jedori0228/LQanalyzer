@@ -174,6 +174,8 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
     }
   }
 
+  float BTagSF = BTagScaleFactor_1a_Weighted(jetColl_hn, snu::KJet::CSVv2, snu::KJet::Medium);
+
   std::vector<snu::KJet> jetColl_hn_nolepveto = GetJets("JET_NOLEPTONVETO", 25., 2.4);
   std::vector<snu::KJet> jetColl_hn_nearby;
   for(unsigned int i=0; i<jetColl_hn_nolepveto.size(); i++){
@@ -220,6 +222,7 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
     weight*=MuTrkEffSF;
     weight*=electron_sf;
     weight*=electron_RecoSF;
+    weight*=BTagSF;
     if(DoMCClosure){
       weight = 1.*MCweight;
     }
