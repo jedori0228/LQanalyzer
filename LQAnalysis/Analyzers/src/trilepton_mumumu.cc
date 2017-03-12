@@ -298,7 +298,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   //==== Get Muon Corrections
   //===========================
 
-  double muon_id_iso_sf = mcdata_correction->MuonScaleFactor("MUON_HN_TRI_TIGHT", muontriLooseColl, 0);
+  double muon_id_iso_sf = mcdata_correction->MuonScaleFactor_Weighted("MUON_HN_TRI_TIGHT", muontriLooseColl, 0);
   double MuTrkEffSF =  mcdata_correction->MuonTrackingEffScaleFactor(muontriLooseColl);
 
   //===============

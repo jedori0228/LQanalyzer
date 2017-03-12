@@ -353,13 +353,13 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
     //==== Muon ID SF
     double muon_id_iso_sf;
     if(this_syst=="MuonIDSF_up"){
-      muon_id_iso_sf = mcdata_correction->MuonScaleFactor("MUON_HN_TRI_TIGHT", muontriLooseColl, 1.); 
+      muon_id_iso_sf = mcdata_correction->MuonScaleFactor_Weighted("MUON_HN_TRI_TIGHT", muontriLooseColl, 1.); 
     }
     else if(this_syst=="MuonIDSF_down"){
-      muon_id_iso_sf = mcdata_correction->MuonScaleFactor("MUON_HN_TRI_TIGHT", muontriLooseColl, -1.);
+      muon_id_iso_sf = mcdata_correction->MuonScaleFactor_Weighted("MUON_HN_TRI_TIGHT", muontriLooseColl, -1.);
     }
     else{
-      muon_id_iso_sf = mcdata_correction->MuonScaleFactor("MUON_HN_TRI_TIGHT", muontriLooseColl, 0);
+      muon_id_iso_sf = mcdata_correction->MuonScaleFactor_Weighted("MUON_HN_TRI_TIGHT", muontriLooseColl, 0);
     }
 
     //==== Muon TrackEff SF
