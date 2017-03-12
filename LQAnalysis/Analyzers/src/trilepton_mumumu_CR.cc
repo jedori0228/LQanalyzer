@@ -151,13 +151,13 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   //==== Get Electrons
   //====================
 
-  std::vector<snu::KElectron> electrontriLooseColl = GetElectrons(false, false, "ELECTRON_HN_FAKELOOSE");
+  std::vector<snu::KElectron> electrontriLooseColl = GetElectrons(false, false, "ELECTRON_HN_LOWDXY_FAKELOOSE");
 
   //===============================
   //==== Get Electron Corrections
   //===============================
 
-  double electron_sf = mcdata_correction->ElectronScaleFactor("ELECTRON_HN_TIGHT", electrontriLooseColl, 0);
+  double electron_sf = mcdata_correction->ElectronScaleFactor("ELECTRON_HN_LOWDXY_TIGHT", electrontriLooseColl, 0);
   double electron_RecoSF =  mcdata_correction->ElectronRecoScaleFactor(electrontriLooseColl);
 
   //===============
@@ -241,7 +241,7 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   int n_triLoose_electrons = electrontriLooseColl.size();
   int n_triTight_electrons(0);
   for(unsigned int i=0; i<electrontriLooseColl.size(); i++){
-    if(eventbase->GetElectronSel()->ElectronPass(electrontriLooseColl.at(i), "ELECTRON_HN_TIGHT")) n_triTight_electrons++;
+    if(eventbase->GetElectronSel()->ElectronPass(electrontriLooseColl.at(i), "ELECTRON_HN_LOWDXY_TIGHT")) n_triTight_electrons++;
   }
 
   int n_triLoose_leptons = n_triLoose_muons+n_triLoose_electrons;

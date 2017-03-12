@@ -130,7 +130,7 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
   //==== Get Electrons
   //====================
   
-  std::vector<snu::KElectron> electrontriLooseColl = GetElectrons(false, false, "ELECTRON_HN_FAKELOOSE");
+  std::vector<snu::KElectron> electrontriLooseColl = GetElectrons(false, false, "ELECTRON_HN_LOWDXY_FAKELOOSE");
 
   //====================================
   //==== Systematic source loop starts
@@ -305,7 +305,7 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     int n_triLoose_electrons = electrontriLooseColl.size();
     int n_triTight_electrons(0);
     for(unsigned int i=0; i<electrontriLooseColl.size(); i++){
-      if(eventbase->GetElectronSel()->ElectronPass(electrontriLooseColl.at(i), "ELECTRON_HN_TIGHT")) n_triTight_electrons++;
+      if(eventbase->GetElectronSel()->ElectronPass(electrontriLooseColl.at(i), "ELECTRON_HN_LOWDXY_TIGHT")) n_triTight_electrons++;
     }
     int n_triLoose_leptons = n_triLoose_muons+n_triLoose_electrons;
     int n_triTight_leptons = n_triTight_muons+n_triTight_electrons;
@@ -665,8 +665,8 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     }
 
     //==== fake method weighting
-    double this_weight     = m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_HN_TIGHT", electrontriLooseColl.size());
-    double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true,  muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_HN_TIGHT", electrontriLooseColl.size());
+    double this_weight     = m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_HN_LOWDXY_TIGHT", electrontriLooseColl.size());
+    double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true,  muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_HN_LOWDXY_TIGHT", electrontriLooseColl.size());
 
     double cutop[100];
     cutop[0] = pt0;

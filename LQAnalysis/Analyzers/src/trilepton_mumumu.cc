@@ -252,27 +252,27 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
 
     }
 
-    std::vector<snu::KElectron> electrontriLooseColl = GetElectrons(true, true, "ELECTRON_HN_FAKELOOSE");
+    std::vector<snu::KElectron> electrontriLooseColl = GetElectrons(true, true, "ELECTRON_HN_LOWDXY_FAKELOOSE");
     for(unsigned int i=0; i<electrontriLooseColl.size(); i++){
       snu::KElectron this_electron = electrontriLooseColl.at(i);
 
       if(this_electron.MCIsFromConversion()){
         FillHist("TEST_Electron_FR_Conversion", 0., 1., 0., 2., 2);
-        if(eventbase->GetElectronSel()->ElectronPass(this_electron,"ELECTRON_HN_TIGHT")){
+        if(eventbase->GetElectronSel()->ElectronPass(this_electron,"ELECTRON_HN_LOWDXY_TIGHT")){
           FillHist("TEST_Electron_FR_Conversion", 1., 1., 0., 2., 2);
         }
       }
 
       if(this_electron.MCFromTau()){
         FillHist("TEST_Electron_FR_Tau", 0., 1., 0., 2., 2);
-        if(eventbase->GetElectronSel()->ElectronPass(this_electron,"ELECTRON_HN_TIGHT")){
+        if(eventbase->GetElectronSel()->ElectronPass(this_electron,"ELECTRON_HN_LOWDXY_TIGHT")){
           FillHist("TEST_Electron_FR_Tau", 1., 1., 0., 2., 2);
         }
       }
 
       if(!this_electron.MCMatched() && !this_electron.MCIsFromConversion() && !this_electron.MCFromTau()){
         FillHist("TEST_Electron_FR_Fakable", 0., 1., 0., 2., 2);
-        if(eventbase->GetElectronSel()->ElectronPass(this_electron,"ELECTRON_HN_TIGHT")){
+        if(eventbase->GetElectronSel()->ElectronPass(this_electron,"ELECTRON_HN_LOWDXY_TIGHT")){
           FillHist("TEST_Electron_FR_Fakable", 1., 1., 0., 2., 2);
         }
       }
@@ -321,7 +321,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   //==== Get Electrons
   //====================
 
-  std::vector<snu::KElectron> electrontriLooseColl = GetElectrons(false, false, "ELECTRON_HN_FAKELOOSE");
+  std::vector<snu::KElectron> electrontriLooseColl = GetElectrons(false, false, "ELECTRON_HN_LOWDXY_FAKELOOSE");
 
   //======================
   //==== Pileup Reweight
@@ -361,7 +361,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   int n_triLoose_electrons = electrontriLooseColl.size();
   int n_triTight_electrons(0);
   for(unsigned int i=0; i<electrontriLooseColl.size(); i++){
-    if(eventbase->GetElectronSel()->ElectronPass(electrontriLooseColl.at(i), "ELECTRON_HN_TIGHT")) n_triTight_electrons++;
+    if(eventbase->GetElectronSel()->ElectronPass(electrontriLooseColl.at(i), "ELECTRON_HN_LOWDXY_TIGHT")) n_triTight_electrons++;
   }
 
   int n_triLoose_leptons = n_triLoose_muons+n_triLoose_electrons;
@@ -393,7 +393,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   //==== ZG study
   if(k_sample_name.Contains("ZG")){
 
-    std::vector<snu::KElectron> allel = GetElectrons(false, true, "ELECTRON_HN_TIGHT");
+    std::vector<snu::KElectron> allel = GetElectrons(false, true, "ELECTRON_HN_LOWDXY_TIGHT");
     bool isthisit=false;
     for(unsigned int i=0; i<allel.size(); i++){
       if(!allel.at(i).MCMatched() && allel.at(i).MCIsFromConversion()){

@@ -40,6 +40,7 @@ declare -a trilep_bkg=(
 'WWW' 'WZZ' 'WWZ' 'ZZZ'
 'ttW' 'ttZ'
 'ttH_nonbb'
+'ZGto2LG' 'WGtoLNuG'
 )
 declare -a trilep_nonprompt_bkg=(
 'DYJets_10to50' 'DYJets' 'WJets' 'TTJets_aMC'
@@ -91,6 +92,7 @@ declare -a trilep_CR_bkg=(
 'WWW' 'WZZ' 'WWZ' 'ZZZ'
 'ttW' 'ttZ'
 'ttH_nonbb'
+'ZGto2LG' 'WGtoLNuG'
 )
 declare -a dilep_CR_bkg=(
 'DYJets_10to50' 'DYJets'

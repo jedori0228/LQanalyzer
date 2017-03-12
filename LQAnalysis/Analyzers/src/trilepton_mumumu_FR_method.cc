@@ -142,7 +142,7 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   //==== Get Electrons
   //====================
 
-  std::vector<snu::KElectron> electrontriLooseColl = GetElectrons(false, false, "ELECTRON_HN_FAKELOOSE");
+  std::vector<snu::KElectron> electrontriLooseColl = GetElectrons(false, false, "ELECTRON_HN_LOWDXY_FAKELOOSE");
 
   //==================================
   //==== Number of Loose/Tight Muons
@@ -157,7 +157,7 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   int n_triLoose_electrons = electrontriLooseColl.size();
   int n_triTight_electrons(0);
   for(unsigned int i=0; i<electrontriLooseColl.size(); i++){
-    if(eventbase->GetElectronSel()->ElectronPass(electrontriLooseColl.at(i), "ELECTRON_HN_TIGHT")) n_triTight_electrons++;
+    if(eventbase->GetElectronSel()->ElectronPass(electrontriLooseColl.at(i), "ELECTRON_HN_LOWDXY_TIGHT")) n_triTight_electrons++;
   }
 
   int n_triLoose_leptons = n_triLoose_muons+n_triLoose_electrons;
@@ -187,8 +187,8 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   if( n_triTight_muons == 3 ) return; // return TTT case
   std::vector<snu::KElectron> empty_electron;
   empty_electron.clear();
-  double this_weight = m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", 3, empty_electron, "ELECTRON_HN_TIGHT", 0);
-  double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true, muontriLooseColl, "MUON_HN_TRI_TIGHT", 3, empty_electron, "ELECTRON_HN_TIGHT", 0);
+  double this_weight = m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", 3, empty_electron, "ELECTRON_HN_LOWDXY_TIGHT", 0);
+  double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true, muontriLooseColl, "MUON_HN_TRI_TIGHT", 3, empty_electron, "ELECTRON_HN_LOWDXY_TIGHT", 0);
 
   int OppSign, SameSign[2]; // SameSign[0].Pt() > SameSign[1].Pt()
   if(lep[0].Charge() * lep[1].Charge() > 0){ // Q(0) = Q(1)
