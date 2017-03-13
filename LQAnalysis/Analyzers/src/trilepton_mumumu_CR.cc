@@ -339,7 +339,7 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   } // MCClosure
 
   //==== CR with Three Muons
-  if(isThreeLepton){
+  if(!DoMCClosure && isThreeLepton){
 
     FillCutFlow("3muon", 1.);
 

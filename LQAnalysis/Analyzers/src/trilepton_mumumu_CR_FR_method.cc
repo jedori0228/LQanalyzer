@@ -112,8 +112,15 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   //==== Prepare Muons
   //====================
 
-  double this_RelIso = 0.4;
   std::vector<snu::KMuon> muontriLooseColl = GetHNTriMuonsByLooseRelIso(this_RelIso, true);
+  double this_RelIso = 0.4;
+
+  bool DoMCClosure = std::find(k_flags.begin(), k_flags.end(), "MCClosure") != k_flags.end();
+
+  if( DoMCClosure ){
+    std::vector<snu::KMuon> muontriLooseColl_prompt = GetHNTriMuonsByLooseRelIso(this_RelIso, false);
+    if(muontriLooseColl_prompt.size()==2) return;
+  }
 
   //====================
   //==== Get Electrons
@@ -163,7 +170,6 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   //==== For MC Closure test, let's not normalise to Lumi
   //=======================================================
 
-  bool DoMCClosure = std::find(k_flags.begin(), k_flags.end(), "MCClosure") != k_flags.end();
   //==== No normalization for MC Closure
   if(DoMCClosure){
     weight = 1.*MCweight;
@@ -241,7 +247,6 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
 
     if(k_sample_name.Contains("DY") && !isSS) return;
 
-    double m_Z = 91.1876;
     double m_dimuon = ( muontriLooseColl.at(0) + muontriLooseColl.at(1) ).M();
     bool ZResonance = fabs(m_dimuon-m_Z) < 10.;
 
@@ -262,6 +267,7 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
       TString this_suffix = it->first;
       if(it->second){
         FillHist("weight_"+this_suffix, this_weight, 1., -1., 1., 1000);
+        FillHist("n_tight_"+this_suffix, n_triTight_muons, 1., 0., 5., 5);
         FillUpDownHist("n_events_"+this_suffix+"", 0, this_weight, this_weight_err, 0., 1., 1);
         FillUpDownHist("n_jets_"+this_suffix+"", n_jets, this_weight, this_weight_err, 0., 10., 10);
         FillUpDownHist("n_bjets_"+this_suffix+"", n_bjets, this_weight, this_weight_err, 0., 10., 10);
@@ -289,7 +295,7 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
 
   } // MC Closure
 
-  if(isThreeLepton){
+  if(!DoMCClosure && isThreeLepton){
 
     std::vector<KLepton> lep;
     TString lepOrder[3] = {"leading", "second", "third"};
