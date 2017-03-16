@@ -461,12 +461,12 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   } // Find l2 and assign l1&l3 in ptorder 
   FillCutFlow("2SS1OS", 1.);
 
-  FillHist("lowosllmass", ( lep[OppSign]+lep[SameSign[0]] ).M(), 1., 0., 20., 200);
-  FillHist("lowosllmass", ( lep[OppSign]+lep[SameSign[1]] ).M(), 1., 0., 20., 200);
-  FillHist("lowssllmass", ( lep[SameSign[0]]+lep[SameSign[1]] ).M(), 1., 0., 20., 200);
-  FillHist("lowllmass", ( lep[OppSign]+lep[SameSign[0]] ).M(), 1., 0., 20., 200);
-  FillHist("lowllmass", ( lep[OppSign]+lep[SameSign[1]] ).M(), 1., 0., 20., 200);
-  FillHist("lowllmass", ( lep[SameSign[0]]+lep[SameSign[1]] ).M(), 1., 0., 20., 200);
+  FillHist("CutStudy_lowosllmass", ( lep[OppSign]+lep[SameSign[0]] ).M(), 1., 0., 20., 200);
+  FillHist("CutStudy_lowosllmass", ( lep[OppSign]+lep[SameSign[1]] ).M(), 1., 0., 20., 200);
+  FillHist("CutStudy_lowssllmass", ( lep[SameSign[0]]+lep[SameSign[1]] ).M(), 1., 0., 20., 200);
+  FillHist("CutStudy_lowllmass", ( lep[OppSign]+lep[SameSign[0]] ).M(), 1., 0., 20., 200);
+  FillHist("CutStudy_lowllmass", ( lep[OppSign]+lep[SameSign[1]] ).M(), 1., 0., 20., 200);
+  FillHist("CutStudy_lowllmass", ( lep[SameSign[0]]+lep[SameSign[1]] ).M(), 1., 0., 20., 200);
 
   //==== MC samples has m(OS)_saveflavour > 4 GeV cut at gen level
   //==== MADGRAPH : https://github.com/cms-sw/genproductions/blob/master/bin/MadGraph5_aMCatNLO/cards/production/13TeV/WZTo3LNu01j_5f_NLO_FXFX/WZTo3LNu01j_5f_NLO_FXFX_run_card.dat#L130
@@ -573,9 +573,19 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
       HN[3] = W_sec + lep[OppSign]; // [class4]
   }
 
+  FillHist("CutStudy_m_Z_candidate", z_candidate.M(), 1., 0., 1000., 1000);
+
   bool VetoZResonance = fabs(z_candidate.M()-91.1876) > 15.;
   if(!VetoZResonance) return;
   FillCutFlow("ZVeto", 1.);
+
+  FillHist("CutStudy_mlll", (lep[0] + lep[1] + lep[2]).M(), 1., 0., 1000., 1000);
+
+  bool mllloffZ = fabs( (lep[0] + lep[1] + lep[2]).M() - 91.1876 ) > 15.;
+  if(!mllloffZ) return;
+  FillCutFlow("mllloffZ", 1.);
+
+  FillHist("CutStudy_nbjet", n_bjets, 1., 0., 10., 10);
 
   if(n_bjets>0) return;
   FillCutFlow("bjetVeto", 1.);
@@ -779,7 +789,7 @@ void trilepton_mumumu::FillCutFlow(TString cut, float weight){
    
   }
   else{
-    AnalyzerCore::MakeHistograms("cutflow", 11,0.,11.);
+    AnalyzerCore::MakeHistograms("cutflow", 12,0.,12.);
 
     GetHist("cutflow")->GetXaxis()->SetBinLabel(1,"NoCut");
     GetHist("cutflow")->GetXaxis()->SetBinLabel(2,"EventCut");
@@ -789,9 +799,10 @@ void trilepton_mumumu::FillCutFlow(TString cut, float weight){
     GetHist("cutflow")->GetXaxis()->SetBinLabel(6,"2SS1OS"); 
     GetHist("cutflow")->GetXaxis()->SetBinLabel(7,"mllsf4");
     GetHist("cutflow")->GetXaxis()->SetBinLabel(8,"ZVeto");
-    GetHist("cutflow")->GetXaxis()->SetBinLabel(9,"bjetVeto");
-    GetHist("cutflow")->GetXaxis()->SetBinLabel(10,"LowMass");
-    GetHist("cutflow")->GetXaxis()->SetBinLabel(11,"HighMass");
+    GetHist("cutflow")->GetXaxis()->SetBinLabel(9,"mllloffZ");
+    GetHist("cutflow")->GetXaxis()->SetBinLabel(10,"bjetVeto");
+    GetHist("cutflow")->GetXaxis()->SetBinLabel(11,"LowMass");
+    GetHist("cutflow")->GetXaxis()->SetBinLabel(12,"HighMass");
     
   }
 }

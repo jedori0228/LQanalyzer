@@ -533,8 +533,10 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
 
       bool VetoZResonance = fabs(mz_SR-91.1876) > 15.;
 
+      bool mllloffZ = fabs( (mu[0] + mu[1] + mu[2]).M() - 91.1876 ) > 15.;
+
       //==== Finally, boolean for Preselection
-      isPreselection = isThreeMuon && LeadMuonPtCut && (!AllSameCharge) && (!mllsf4) && bjetveto && VetoZResonance;
+      isPreselection = isThreeMuon && LeadMuonPtCut && (!AllSameCharge) && (!mllsf4) && bjetveto && VetoZResonance && mllloffZ;
 
     }
 

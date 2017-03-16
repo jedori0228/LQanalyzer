@@ -265,6 +265,7 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
         } // Find l2 and assign l1&l3 in ptorder 
 
         bool VetoZResonance;
+        bool mllloffZ;
         bool isLowMass;
         bool isHighMass;
 
@@ -370,14 +371,19 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
         }
 
         VetoZResonance = fabs(z_candidate.M()-91.1876) > 15.;
+        mllloffZ = fabs( (lep[0] + lep[1] + lep[2]).M() - 91.1876 ) > 15.;
+
         isLowMass = (W_pri_lowmass.M() < 150.);
         isHighMass = (MET > 20.);
 
         std::map< TString, bool > map_whichCR_to_isCR;
         map_whichCR_to_isCR.clear();
-        map_whichCR_to_isCR["Preselection"] = VetoZResonance && n_bjets==0;
-        map_whichCR_to_isCR["LowMass"] = map_whichCR_to_isCR["Preselection"] && isLowMass;
-        map_whichCR_to_isCR["HighMass"] = map_whichCR_to_isCR["Preselection"] && isHighMass;
+        map_whichCR_to_isCR["BasicSelection"] = true;
+        map_whichCR_to_isCR["ZVeto"]          = VetoZResonance;
+        map_whichCR_to_isCR["ZVeto_mllloffZ"] = VetoZResonance && mllloffZ;
+        map_whichCR_to_isCR["Preselection"]   = VetoZResonance && mllloffZ && n_bjets==0;
+        map_whichCR_to_isCR["LowMass"]        = map_whichCR_to_isCR["Preselection"] && isLowMass;
+        map_whichCR_to_isCR["HighMass"]       = map_whichCR_to_isCR["Preselection"] && isHighMass;
 
         for(std::map< TString, bool >::iterator it = map_whichCR_to_isCR.begin(); it != map_whichCR_to_isCR.end(); it++){
           TString this_suffix = it->first;
