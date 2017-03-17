@@ -1768,9 +1768,9 @@ void AnalyzerCore::PrintTruth(){
   
   cout << "=========================================================" << endl;
   cout << "truth size = " << truthColl.size() << endl;
-  cout << "index" << '\t' << "pdgid" << '\t' << "mother" << '\t' << "mother pid" << endl;
+  cout << "index" << '\t' << "pdgid" << '\t' << "mother" << '\t' << "mother pid" << "\t" << "pt" << "\t" << "eta" << "\t" << "mass" << endl;
   for(int i=2; i<truthColl.size(); i++){
-    cout << i << '\t' << truthColl.at(i).PdgId() << '\t' << truthColl.at(i).IndexMother() << '\t' << truthColl.at( truthColl.at(i).IndexMother() ).PdgId() << endl;
+    cout << i << '\t' << truthColl.at(i).PdgId() << '\t' << truthColl.at(i).IndexMother() << '\t' << truthColl.at( truthColl.at(i).IndexMother() ).PdgId() << "\t" << truthColl.at(i).Pt() << "\t" << truthColl.at(i).Eta() << "\t" << truthColl.at(i).M() << endl;
   }
 
 }
