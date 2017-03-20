@@ -311,10 +311,8 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
     }
     int n_bjets=0;
     for(int j=0; j<jetColl_hn.size(); j++){
-      if(jetColl_hn.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Medium)) n_bjets++;
+      if(IsBTagged(jetColl_hn.at(j), snu::KJet::CSVv2, snu::KJet::Medium)) n_bjets++;
     }
-
-    float BTagSF = BTagScaleFactor_1a_Weighted(jetColl_hn, snu::KJet::CSVv2, snu::KJet::Medium);
 
     //==== Muon
     std::vector<snu::KMuon> muontriLooseColl;
@@ -353,20 +351,20 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
     //==== Muon ID SF
     double muon_id_iso_sf;
     if(this_syst=="MuonIDSF_up"){
-      muon_id_iso_sf = mcdata_correction->MuonScaleFactor_Weighted("MUON_HN_TRI_TIGHT", muontriLooseColl, 1.); 
+      muon_id_iso_sf = mcdata_correction->MuonScaleFactor("MUON_HN_TRI_TIGHT", muontriLooseColl, 1.); 
     }
     else if(this_syst=="MuonIDSF_down"){
-      muon_id_iso_sf = mcdata_correction->MuonScaleFactor_Weighted("MUON_HN_TRI_TIGHT", muontriLooseColl, -1.);
+      muon_id_iso_sf = mcdata_correction->MuonScaleFactor("MUON_HN_TRI_TIGHT", muontriLooseColl, -1.);
     }
     else{
-      muon_id_iso_sf = mcdata_correction->MuonScaleFactor_Weighted("MUON_HN_TRI_TIGHT", muontriLooseColl, 0);
+      muon_id_iso_sf = mcdata_correction->MuonScaleFactor("MUON_HN_TRI_TIGHT", muontriLooseColl, 0);
     }
 
     //==== Muon TrackEff SF
     double MuTrkEffSF =  mcdata_correction->MuonTrackingEffScaleFactor(muontriLooseColl); //FIXME should add syst for this
 
     //==== this weight
-    double this_weight = weight*muon_id_iso_sf*MuTrkEffSF*BTagSF;
+    double this_weight = weight*muon_id_iso_sf*MuTrkEffSF;
 
     //==== now apply pileup reweight
     if(!k_isdata){

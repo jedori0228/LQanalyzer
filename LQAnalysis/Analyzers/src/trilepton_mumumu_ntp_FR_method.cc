@@ -236,7 +236,7 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     int n_jets = jetColl_hn.size();
     int n_bjets=0;
     for(int j=0; j<jetColl_hn.size(); j++){
-      if(jetColl_hn.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Medium)) n_bjets++;
+      if( IsBTagged(jetColl_hn.at(j), snu::KJet::CSVv2, snu::KJet::Medium) ) n_bjets++;
     }
 
     //m_datadriven_bkg->GetFakeObj()->SetNJet(n_jets);
@@ -283,13 +283,13 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     //==== Muon ID SF
     double muon_id_iso_sf;
     if(this_syst=="MuonIDSF_up"){
-      muon_id_iso_sf = mcdata_correction->MuonScaleFactor_Weighted("MUON_HN_TRI_TIGHT", muontriLooseColl, 1.);
+      muon_id_iso_sf = mcdata_correction->MuonScaleFactor("MUON_HN_TRI_TIGHT", muontriLooseColl, 1.);
     }
     else if(this_syst=="MuonIDSF_down"){
-      muon_id_iso_sf = mcdata_correction->MuonScaleFactor_Weighted("MUON_HN_TRI_TIGHT", muontriLooseColl, -1.);
+      muon_id_iso_sf = mcdata_correction->MuonScaleFactor("MUON_HN_TRI_TIGHT", muontriLooseColl, -1.);
     }
     else{
-      muon_id_iso_sf = mcdata_correction->MuonScaleFactor_Weighted("MUON_HN_TRI_TIGHT", muontriLooseColl, 0);
+      muon_id_iso_sf = mcdata_correction->MuonScaleFactor("MUON_HN_TRI_TIGHT", muontriLooseColl, 0);
     }
 
     //==== Muon TrackEff SF

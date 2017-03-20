@@ -144,7 +144,7 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   //==== Get Muon Corrections
   //===========================
 
-  double muon_id_iso_sf = mcdata_correction->MuonScaleFactor_Weighted("MUON_HN_TRI_TIGHT", muontriLooseColl, 0);
+  double muon_id_iso_sf = mcdata_correction->MuonScaleFactor("MUON_HN_TRI_TIGHT", muontriLooseColl, 0);
   double MuTrkEffSF =  mcdata_correction->MuonTrackingEffScaleFactor(muontriLooseColl);
 
   //====================
@@ -168,13 +168,11 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   int n_jets = jetColl_hn.size();
   int n_bjets=0;
   for(int j=0; j<n_jets; j++){
-    if(jetColl_hn.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Medium)){
+    if( IsBTagged(jetColl_hn.at(j), snu::KJet::CSVv2, snu::KJet::Medium) ){
       n_bjets++;
       FillHist("bjet_pt", jetColl_hn.at(j).Pt(), 1., 0., 200., 200);
     }
   }
-
-  float BTagSF = BTagScaleFactor_1a_Weighted(jetColl_hn, snu::KJet::CSVv2, snu::KJet::Medium);
 
   std::vector<snu::KJet> jetColl_hn_nolepveto = GetJets("JET_NOLEPTONVETO", 25., 2.4);
   std::vector<snu::KJet> jetColl_hn_nearby;
@@ -191,7 +189,7 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   int n_jets_nearby = jetColl_hn_nearby.size();
   int n_bjets_nearby=0;
   for(int j=0; j<n_jets_nearby; j++){
-    if(jetColl_hn_nearby.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Medium)){
+    if( IsBTagged(jetColl_hn_nearby.at(j), snu::KJet::CSVv2, snu::KJet::Medium) ){
       n_bjets_nearby++;
       FillHist("bjet_nearby_pt", jetColl_hn_nearby.at(j).Pt(), 1., 0., 200., 200);
     }
@@ -222,7 +220,6 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
     weight*=MuTrkEffSF;
     weight*=electron_sf;
     weight*=electron_RecoSF;
-    weight*=BTagSF;
     if(DoMCClosure){
       weight = 1.*MCweight;
     }

@@ -136,7 +136,7 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   int n_jets = jetColl_hn.size();
   int n_bjets=0;
   for(int j=0; j<n_jets; j++){
-    if(jetColl_hn.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Medium)){
+    if( IsBTagged(jetColl_hn.at(j), snu::KJet::CSVv2, snu::KJet::Medium) ){
       n_bjets++;
       FillHist("bjet_pt", jetColl_hn.at(j).Pt(), 1., 0., 200., 200);
     }
@@ -157,7 +157,7 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   int n_jets_nearby = jetColl_hn_nearby.size();
   int n_bjets_nearby=0;
   for(int j=0; j<n_jets_nearby; j++){
-    if(jetColl_hn_nearby.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Medium)){
+    if( IsBTagged(jetColl_hn_nearby.at(j), snu::KJet::CSVv2, snu::KJet::Medium) ){
       n_bjets_nearby++;
       FillHist("bjet_nearby_pt", jetColl_hn_nearby.at(j).Pt(), 1., 0., 200., 200);
     }

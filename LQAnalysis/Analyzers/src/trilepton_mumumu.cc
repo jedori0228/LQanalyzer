@@ -298,7 +298,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   //==== Get Muon Corrections
   //===========================
 
-  double muon_id_iso_sf = mcdata_correction->MuonScaleFactor_Weighted("MUON_HN_TRI_TIGHT", muontriLooseColl, 0);
+  double muon_id_iso_sf = mcdata_correction->MuonScaleFactor("MUON_HN_TRI_TIGHT", muontriLooseColl, 0);
   double MuTrkEffSF =  mcdata_correction->MuonTrackingEffScaleFactor(muontriLooseColl);
 
   //===============
@@ -309,13 +309,11 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   int n_jets = jetColl_hn.size();
   int n_bjets=0;
   for(int j=0; j<n_jets; j++){
-    if(jetColl_hn.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Medium)){
+    if( IsBTagged(jetColl_hn.at(j), snu::KJet::CSVv2, snu::KJet::Medium) ){
       n_bjets++;
       FillHist("bjet_pt", jetColl_hn.at(j).Pt(), 1., 0., 200., 200);
     }
   }
-
-  float BTagSF = BTagScaleFactor_1a_Weighted(jetColl_hn, snu::KJet::CSVv2, snu::KJet::Medium);
 
   //====================
   //==== Get Electrons
@@ -345,7 +343,6 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     weight*=MuTrkEffSF;
     weight*=trigger_ps_weight;
     weight*=pileup_reweight;
-    weight*=BTagSF;
   }
 
   //==================================
