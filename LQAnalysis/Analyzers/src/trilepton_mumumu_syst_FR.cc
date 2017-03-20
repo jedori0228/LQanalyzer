@@ -135,7 +135,7 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
   int n_triLoose_electrons = electrontriLooseColl.size();
   int n_triTight_electrons(0);
   for(unsigned int i=0; i<electrontriLooseColl.size(); i++){
-    if(eventbase->GetElectronSel()->ElectronPass(electrontriLooseColl.at(i), "ELECTRON_HN_LOWDXY_TIGHT")) n_triTight_electrons++;
+    if(PassID(electrontriLooseColl.at(i), "ELECTRON_HN_LOWDXY_TIGHT")) n_triTight_electrons++;
   }
 
   //=======================================================
@@ -178,7 +178,7 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
 
       int n_triTight_muons(0);
       for(unsigned int i=0; i<muontriLooseColl.size(); i++){
-        if(muontriLooseColl.at(i).RelIso04() < 0.1) n_triTight_muons++;
+        if(PassID(muontriLooseColl.at(i), "MUON_HN_TRI_TIGHT")) n_triTight_muons++;
       }
       int n_triLoose_muons = muontriLooseColl.size();
 

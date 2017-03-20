@@ -299,13 +299,13 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     int n_triLoose_muons = muontriLooseColl.size();
     int n_triTight_muons(0);
     for(unsigned int i=0; i<muontriLooseColl.size(); i++){
-      if(eventbase->GetMuonSel()->MuonPass(muontriLooseColl.at(i), "MUON_HN_TRI_TIGHT")) n_triTight_muons++;
+      if(PassID(muontriLooseColl.at(i), "MUON_HN_TRI_TIGHT")) n_triTight_muons++;
     }
 
     int n_triLoose_electrons = electrontriLooseColl.size();
     int n_triTight_electrons(0);
     for(unsigned int i=0; i<electrontriLooseColl.size(); i++){
-      if(eventbase->GetElectronSel()->ElectronPass(electrontriLooseColl.at(i), "ELECTRON_HN_LOWDXY_TIGHT")) n_triTight_electrons++;
+      if(PassID(electrontriLooseColl.at(i), "ELECTRON_HN_LOWDXY_TIGHT")) n_triTight_electrons++;
     }
     int n_triLoose_leptons = n_triLoose_muons+n_triLoose_electrons;
     int n_triTight_leptons = n_triTight_muons+n_triTight_electrons;
