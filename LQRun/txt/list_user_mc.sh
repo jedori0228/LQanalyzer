@@ -11,6 +11,7 @@ declare -a trilep_fake_bkg=(
 'WJets'
 'WZ' 'ZZ' 'WW'
 'TTJets_aMC'
+'ZGto2LG' 'WGtoLNuG'
 )
 declare -a trilep_fake_bkg_short=(
 'DYJets_10to50'
