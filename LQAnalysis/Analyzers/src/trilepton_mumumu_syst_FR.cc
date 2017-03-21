@@ -41,11 +41,6 @@ void trilepton_mumumu_syst_FR::InitialiseAnalysis() throw( LQError ) {
   // You can also use m_logger << level << "comment" << int/double  << LQLogger::endmsg;
   //
 
-  dXYMins.clear();
-  RelIsoMaxs.clear(); 
-  dXYMins = m_datadriven_bkg->GetFakeObj()->GetdXYMins();
-  RelIsoMaxs = m_datadriven_bkg->GetFakeObj()->GetRelIsoMaxs();
-
   return;
 
 }
@@ -148,6 +143,10 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
     weight = 1.*MCweight;
     m_datadriven_bkg->GetFakeObj()->SetUseQCDFake(true);
   }
+  dXYMins.clear();
+  RelIsoMaxs.clear();
+  dXYMins = m_datadriven_bkg->GetFakeObj()->GetdXYMins();
+  RelIsoMaxs = m_datadriven_bkg->GetFakeObj()->GetRelIsoMaxs();
 
   //===============================================
   //==== Large dXYSig muon definition loop starts
