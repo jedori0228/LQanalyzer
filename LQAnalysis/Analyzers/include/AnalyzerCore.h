@@ -23,6 +23,7 @@ class EventBase;
 #include "MCDataCorrections.h"
 #include "DataDrivenBackgrounds.h"
 #include "HNGenMatching.h"
+#include "KLepton.h"
 
 
 class AnalyzerCore : public LQCycleBase {
@@ -134,7 +135,8 @@ class AnalyzerCore : public LQCycleBase {
   float CorrectedMETRochester(std::vector<snu::KMuon> muons , bool updatemet);
   float CorrectedMETElectron(std::vector<snu::KElectron> electrons,  int syst=0);
   float CorrectedMETMuon(std::vector<snu::KMuon> muons ,int syst=0);
-
+  void CorrectedMETRochester(std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi);
+  void CorrectedMETMuon(int sys, std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi);
 
   void CorrectMuonMomentum(vector<snu::KMuon>& k_muons);
   void SetCorrectedMomentum(vector<snu::KMuon>& k_muons);
@@ -292,6 +294,7 @@ class AnalyzerCore : public LQCycleBase {
   void FillHist(TString histname, float value, float w , float xmin[], int nbins=0 , TString label="");
   void FillHist(TString histname, float value1, float value2, float w , float x[], int nbinsx, float y[], int nbinsy , TString label="");
   void FillHist(TString histname, float value1,  float value2, float w , float xmin, float xmax, int nbinsx,  float ymin, float ymax, int nbinsy , TString label="");
+  void FillUpDownHist(TString histname, float value, float w , float w_err, float xmin, float xmax, int nbins=0, TString label="");
 
   /// Fills clever hists
   void FillCLHist(histtype type, TString hist, snu::KEvent ev,vector<snu::KMuon> muons, vector<snu::KElectron> electrons, vector<snu::KJet> jets,double weight);
@@ -339,6 +342,8 @@ class AnalyzerCore : public LQCycleBase {
   bool GenMatching(snu::KParticle a, snu::KParticle b, double maxDeltaR, double maxPtDiff);
   std::vector<snu::KMuon> GetHNTriMuonsByLooseRelIso(double LooseRelIsoMax, bool keepfake);
   void PrintTruth();
+  void FillLeptonKinematicPlot(std::vector<KLepton> lep, TString suffix, double w);
+  void FillUpDownLeptonKinematicPlot(std::vector<KLepton> lep, TString suffix, double w, double w_err);
 
   
 };
