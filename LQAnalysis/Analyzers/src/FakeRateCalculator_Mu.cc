@@ -49,6 +49,34 @@ void FakeRateCalculator_Mu::InitialiseAnalysis() throw( LQError ) {
   /// To set uncomment the line below:
   //ResetLumiMask(snu::KEvent::gold);
 
+  TDirectory* origDir = gDirectory;
+
+  string lqdir = getenv("LQANALYZER_DIR");
+  TFile *file_tmp = new TFile( (lqdir+"/data/Fake/80X/FR_sampleA.root").c_str() );
+
+  gROOT->cd();
+  TDirectory* tempDir = 0;
+  int counter = 0;
+  while (not tempDir) {
+    // First, let's find a directory name that doesn't exist yet
+    std::stringstream dirname;
+    dirname << "HNCommonLeptonFakes_%i" << counter;
+    if (gROOT->GetDirectory((dirname.str()).c_str())) {
+      ++counter;
+      continue;
+    }
+    // Let's try to make this directory
+    tempDir = gROOT->mkdir((dirname.str()).c_str());
+
+  }
+  tempDir->cd();
+
+  FR_sampleA = (TH2D*)file_tmp->Get("FR_sampleA")->Clone();
+
+  file_tmp->Close();
+  delete file_tmp;
+
+  origDir->cd();
 
   return;
 }
@@ -198,6 +226,9 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   //=========================================================
   //==== Large dXYSig Muon definitions for systematic study
   //=========================================================
+
+  double dXYMin_central = 4.0;
+  double RelIsoMax_central = 0.4;
 
   const int n_dXYMins = 3;
   double dXYMins[n_dXYMins] = {3.0, 4.0, 5.0};
@@ -400,6 +431,55 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
         if(muontriHighdXYLooseColl.size()==1){
           snu::KMuon HighdXYmuon = muontriHighdXYLooseColl.at(0);
           double LeptonRelIso = HighdXYmuon.RelIso04();
+
+          //==== half sample test
+          if(dXYMins[aaa]== dXYMin_central && RelIsoMaxs[bbb]==RelIsoMax_central){
+
+            int EventNumber = eventbase->GetEvent().EventNumber();
+
+            double pt_for_FR = HighdXYmuon.Pt();
+            double eta_for_FR = fabs(HighdXYmuon.Eta());
+            if(pt_for_FR>=60.) pt_for_FR=59.;
+            if(eta_for_FR>=2.5) eta_for_FR=2.2;
+
+            int this_FR_bin = FR_sampleA->FindBin(pt_for_FR,eta_for_FR);
+            double this_FR_sampleA = FR_sampleA->GetBinContent(this_FR_bin);
+
+            snu::KEvent Evt = eventbase->GetEvent();
+            double MET = Evt.MET();
+
+            //==== sample A
+            if(abs(EventNumber%2==0)){
+              FillHist("TEST_HalfSample", 0., 1., 0., 2., 2);
+              TString HalfSampleIndex = "SampleA";
+              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_HalfSample_"+HalfSampleIndex+"_events_F0", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 9, etaarray, 4);
+              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_HalfSample_"+HalfSampleIndex+"_PFMET_F0", MET, this_weight_HighdXYLoose, 0., 500., 500);
+              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_HalfSample_"+HalfSampleIndex+"_njets_F0", n_jets, this_weight_HighdXYLoose, 0., 10., 10);
+
+              if( LeptonRelIso < 0.1 ){
+                FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_HalfSample_"+HalfSampleIndex+"_events_F", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 9, etaarray, 4);
+              }
+
+              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_HalfSample_"+HalfSampleIndex+"_PFMET_Predicted", MET, this_weight_HighdXYLoose*this_FR_sampleA, 0., 500., 500);
+              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_HalfSample_"+HalfSampleIndex+"_njets_Predicted", n_jets, this_weight_HighdXYLoose*this_FR_sampleA, 0., 10., 10);
+
+
+            }
+            //==== sample B
+            else{
+              FillHist("TEST_HalfSample", 1., 1., 0., 2., 2);
+              TString HalfSampleIndex = "SampleB";
+              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_HalfSample_"+HalfSampleIndex+"_events_F0", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 9, etaarray, 4);
+              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_HalfSample_"+HalfSampleIndex+"_PFMET_F0", MET, this_weight_HighdXYLoose, 0., 500., 500);
+              FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_HalfSample_"+HalfSampleIndex+"_njets_F0", n_jets, this_weight_HighdXYLoose, 0., 10., 10);
+              if( LeptonRelIso < 0.1 ){
+                FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_HalfSample_"+HalfSampleIndex+"_events_F", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 9, etaarray, 4);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_HalfSample_"+HalfSampleIndex+"_PFMET_F", MET, this_weight_HighdXYLoose, 0., 500., 500);
+                FillHist(str_dXYCut+"_SingleMuonTrigger_HighdXY_HalfSample_"+HalfSampleIndex+"_njets_F", n_jets, this_weight_HighdXYLoose, 0., 10., 10);
+              }
+            }
+
+          }
 
           //==== all jet
 

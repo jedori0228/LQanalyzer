@@ -32,6 +32,7 @@ class FakeRateCalculator_Mu : public AnalyzerCore {
   /// Vectors for output objetcs
   std::vector<snu::KMuon> out_muons;
   std::vector<snu::KElectron> out_electrons;
+  TH2D *FR_sampleA;
 
 
   ClassDef ( FakeRateCalculator_Mu, 1);
