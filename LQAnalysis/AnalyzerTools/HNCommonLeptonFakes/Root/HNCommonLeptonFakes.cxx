@@ -193,7 +193,7 @@ void HNCommonLeptonFakes::InitialiseFake(){
         TString this_njet = FRnjets.at(k);
 
         _2DEfficiencyMap_Double["MUON_FR_"+this_wp+"_"+this_njet] = dynamic_cast<TH2D*>((file_trilep_fake->Get(this_wp+"_FR_"+this_njet))->Clone());
-        _2DEfficiencyMap_Double["MUON_FR_QCD_"+this_wp+"_"+this_njet] = dynamic_cast<TH2D*>((file_trilep_fake->Get(this_wp+"_FR_QCD_"+this_njet))->Clone());
+        _2DEfficiencyMap_Double["MUON_FR_QCD_"+this_wp+"_"+this_njet] = dynamic_cast<TH2D*>((file_trilep_fake->Get(this_wp+"_FR_QCD_"+this_njet))->Clone()); 
         _2DEfficiencyMap_Double["MUON_FRSF_"+this_wp+"_"+this_njet] = dynamic_cast<TH2D*>((file_trilep_fake->Get(this_wp+"_FRSF_QCD_"+this_njet))->Clone());
 
       }
@@ -448,7 +448,6 @@ float HNCommonLeptonFakes::getFakeRate_electronEta(int sys,float pt, float eta, 
     int binx =  mapit->second->FindBin(pt,fabs(eta));
     //cout << "el pt = " << pt << ", eta = " << eta << endl;
     //cout << "Bin = " << binx  << endl;
-
     eff_fake =  mapit->second->GetBinContent(binx);
     //cout << "eff_fake = " << eff_fake << endl;
     if(sys != 0) return mapit->second->GetBinError(binx); 
@@ -722,8 +721,8 @@ float HNCommonLeptonFakes::getTrilepFakeRate_muon(bool geterr, float pt,  float 
   if(fabs(eta) >= 2.5) eta = 2.4;
 
   TString wp = DoubleToTString(Current_dXYSig, Current_RelIso);
-  if(UseQCDFake) wp = "QCD_"+wp; 
-  
+  if(UseQCDFake) wp = "QCD_"+wp;
+
   bool UseJetConf = false;
   bool UseBjetConf = false;
 
@@ -764,7 +763,7 @@ float HNCommonLeptonFakes::getTrilepFakeRate_muon(bool geterr, float pt,  float 
   //==== Get FR
   map<TString,TH2D*>::const_iterator mapit_FR = _2DEfficiencyMap_Double.find("MUON_FR_"+wp);
   map<TString,TH2D*>::const_iterator mapit_FRSF = _2DEfficiencyMap_Double.find("MUON_FRSF_"+wp);
-
+  
   if(UseQCDFake){
     if( mapit_FR==_2DEfficiencyMap_Double.end()){
       NoHist("MUON_FR_"+DoubleToTString(Current_dXYSig, Current_RelIso));
@@ -796,19 +795,19 @@ float HNCommonLeptonFakes::getTrilepFakeRate_muon(bool geterr, float pt,  float 
       TDirectory* tempDir = getTemporaryDirectory();
       tempDir->cd();
       TH2D *hist_FR = (TH2D*)mapit_FR->second->Clone();
-      if(applysf) hist_FR->Multiply(mapit_FRSF->second);
+      if(applysf) hist_FR->Multiply(mapit_FRSF->second); 
 
       origDir->cd();
-
+      
       int binx = hist_FR->FindBin(pt, abs(eta));
 
       if(geterr) return hist_FR->GetBinError(binx);
       else return hist_FR->GetBinContent(binx);
-    }
-
+    } 
+    
   }
   return 0.;
-
+  
 }
 
 float HNCommonLeptonFakes::getTrilepPromptRate_muon(bool geterr, float pt, float eta){
