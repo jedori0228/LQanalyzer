@@ -213,16 +213,25 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   //========================
 
   if(!isData && !k_running_nonprompt){
-    weight*=muon_id_iso_sf;
-    //weight*=weight_trigger_sf;
-    weight*=trigger_ps_weight;
-    weight*=pileup_reweight;
-    weight*=MuTrkEffSF;
-    weight*=electron_sf;
-    weight*=electron_RecoSF;
+
     if(DoMCClosure){
-      weight = 1.*MCweight;
+      if(k_sample_name.Contains("QCD")){
+        weight = weight;
+      }
+      else{
+        weight = 1.*MCweight;
+      }
     }
+    else{
+      weight*=muon_id_iso_sf;
+      //weight*=weight_trigger_sf;
+      weight*=trigger_ps_weight;
+      weight*=pileup_reweight;
+      weight*=MuTrkEffSF;
+      weight*=electron_sf;
+      weight*=electron_RecoSF;
+    }
+
   }
 
   //============================================

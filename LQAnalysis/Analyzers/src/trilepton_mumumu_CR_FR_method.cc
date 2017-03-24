@@ -172,7 +172,14 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
 
   //==== No normalization for MC Closure
   if(DoMCClosure){
-    weight = 1.*MCweight;
+
+    if(k_sample_name.Contains("QCD")){
+      weight = weight;
+    }
+    else{
+      weight = 1.*MCweight;
+    }
+
     m_datadriven_bkg->GetFakeObj()->SetUseQCDFake(true); 
   }
 
@@ -262,6 +269,8 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
     empty_electron.clear();
     double this_weight = m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", 2, empty_electron, "ELECTRON_HN_LOWDXY_TIGHT", 0);
     double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true, muontriLooseColl, "MUON_HN_TRI_TIGHT", 2, empty_electron, "ELECTRON_HN_LOWDXY_TIGHT", 0);
+
+    this_weight *= weight; // for aMCNLO, sign
 
     for(std::map< TString, bool >::iterator it = map_whichCR_to_isCR.begin(); it != map_whichCR_to_isCR.end(); it++){
       TString this_suffix = it->first;
