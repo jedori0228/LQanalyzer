@@ -1077,7 +1077,7 @@ TDirectory* HNCommonLeptonFakes::getTemporaryDirectory(void) const
   return tempDir;
 }
 
-float HNCommonLeptonFakes::get_eventweight(bool geterr, std::vector<TLorentzVector> muons, TString muid, std::vector<TLorentzVector> electrons, TString elid, std::vector<bool> isT){
+float HNCommonLeptonFakes::get_eventweight(bool geterr, std::vector<TLorentzVector> muons, TString muid, std::vector<TLorentzVector> electrons, TString elid, std::vector<bool> isT, int HalfSampleErrorDir){
 
   unsigned int n_leptons = isT.size();
 
@@ -1120,6 +1120,22 @@ float HNCommonLeptonFakes::get_eventweight(bool geterr, std::vector<TLorentzVect
       pr.push_back( getEfficiency_electron(0, lep_pt.at(i), lep_eta.at(i)) );
       fr_err.push_back( getFakeRate_electronEta(1, lep_pt.at(i), lep_eta.at(i), "dxysig_pt_eta_HNTight_b050_e100_40") );
       pr_err.push_back( getEfficiency_electron(1, lep_pt.at(i), lep_eta.at(i)) );
+    }
+  }
+
+  //==== if HalfSampleErrorDir!=0,
+  //==== assign "5 %" HalfSampleTest Systematic Uncertainty
+
+  if(HalfSampleErrorDir>0){
+    for(unsigned int i=0; i<fr.size(); i++){
+      fr.at(i)     = fr.at(i)    *(1.+0.05);
+      fr_err.at(i) = fr_err.at(i)*(1.+0.05);
+    }
+  }
+  else if(HalfSampleErrorDir<0){
+    for(unsigned int i=0; i<fr.size(); i++){
+      fr.at(i)     = fr.at(i)    *(1.-0.05);
+      fr_err.at(i) = fr_err.at(i)*(1.-0.05);
     }
   }
 
