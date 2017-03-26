@@ -140,11 +140,12 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
   //==== 4) Unclustered Energy
   //==== 5) Muon ID Scale Factor
   //==== 6) Pileup
+  //==== 7) Fake Rate HalfSampleTest Error
   //====================================
 
   double m_Z = 91.1876;
 
-  int N_sys = 2*6+1;
+  int N_sys = 2*7+1;
   for(int it_sys=0; it_sys<N_sys; it_sys++){
 
     //==== MET
@@ -199,6 +200,12 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     }
     else if(it_sys==12){
       this_syst = "PU_up";
+    }
+    else if(it_sys==13){
+      this_syst = "FR_HalfSample_down";
+    }
+    else if(it_sys==14){
+      this_syst = "FR_HalfSample_up";
     }
     else{
       Message("it_sys out of range!" , INFO);
@@ -667,8 +674,12 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     }
 
     //==== fake method weighting
-    double this_weight     = m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_HN_LOWDXY_TIGHT", electrontriLooseColl.size());
-    double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true,  muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_HN_LOWDXY_TIGHT", electrontriLooseColl.size());
+    int Dir_HalfSample = 0;
+    if(this_syst=="FR_HalfSample_down") Dir_HalfSample = -1;
+    if(this_syst=="FR_HalfSample_up") Dir_HalfSample = +1;
+
+    double this_weight     = m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_HN_LOWDXY_TIGHT", electrontriLooseColl.size(), Dir_HalfSample);
+    double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true,  muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_HN_LOWDXY_TIGHT", electrontriLooseColl.size(), Dir_HalfSample);
 
     double cutop[100];
     cutop[0] = pt0;
@@ -786,6 +797,8 @@ void trilepton_mumumu_ntp_FR_method::MakeHistograms(){
   MakeNtp("Ntp_MuonIDSF_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets");
   MakeNtp("Ntp_PU_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets");
   MakeNtp("Ntp_PU_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets");
+  MakeNtp("Ntp_FR_HalfSample_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets");
+  MakeNtp("Ntp_FR_HalfSample_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets");
 
 }
 
