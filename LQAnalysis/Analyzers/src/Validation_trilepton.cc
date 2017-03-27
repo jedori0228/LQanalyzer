@@ -206,6 +206,14 @@ void Validation_trilepton::ExecuteEvents()throw( LQError ){
       map_whichCR_to_isCR[muonid+"_OSDiMuon"] = leadPt20 && !isSS;
       map_whichCR_to_isCR[muonid+"_OSDiMuon_Z_10GeV"] = leadPt20 && !isSS && ZResonance;
 
+      double trigger_sf = 1.;
+      if(!k_isdata && muonid=="MUON_HN_TRI_TIGHT"){
+        std::vector<snu::KElectron> empty_el;
+        double trigger_eff_Data = mcdata_correction->TriggerEfficiencyLegByLeg(empty_el, muoncoll, 0, 0, 0);
+        double trigger_eff_MC = mcdata_correction->TriggerEfficiencyLegByLeg(empty_el, muoncoll, 0, 1, 0);
+        trigger_sf = trigger_eff_Data/trigger_eff_MC;
+      }
+
       for(std::map< TString, bool >::iterator it = map_whichCR_to_isCR.begin(); it != map_whichCR_to_isCR.end(); it++){
         TString this_suffix = it->first;
         if(it->second){
@@ -253,6 +261,28 @@ void Validation_trilepton::ExecuteEvents()throw( LQError ){
           FillHist("secondLepton_Chi2_"+this_suffix+"_PUJohn", lep[1].GlobalChi2() , this_weight*pileup_reweight_John, 0., 10., 100);
           FillHist("secondLepton_dXY_"+this_suffix+"_PUJohn"+"", fabs(lep[1].dXY()) , this_weight*pileup_reweight_John, 0., 0.1, 100);
           FillHist("secondLepton_dXYSig_"+this_suffix+"_PUJohn"+"", fabs(lep[1].dXYSig()) , this_weight*pileup_reweight_John, 0., 4., 40);
+
+          //==== CATTools PU reweight Trigger Scale Factor
+
+          FillHist("weight_"+this_suffix+"_PUCATTools_TriggerSF", this_weight*trigger_sf, 1., -1., 1., 1000);
+          FillHist("n_events_"+this_suffix+"_PUCATTools_TriggerSF", 0, this_weight*trigger_sf, 0., 1., 1);
+          FillHist("n_jets_"+this_suffix+"_PUCATTools_TriggerSF", n_jets, this_weight*trigger_sf, 0., 10., 10);
+          FillHist("n_bjets_"+this_suffix+"_PUCATTools_TriggerSF", n_bjets, this_weight*trigger_sf, 0., 10., 10);
+          FillHist("PFMET_"+this_suffix+"_PUCATTools_TriggerSF", MET, this_weight*trigger_sf, 0., 500., 500);
+          FillHist("mll_"+this_suffix+"_PUCATTools_TriggerSF", m_dimuon , this_weight*trigger_sf, 0., 200., 200);
+          FillHist("n_vertices_"+this_suffix+"_PUCATTools_TriggerSF", numberVertices, this_weight*trigger_sf, 0., 50., 50);
+          FillHist("leadingLepton_Pt_"+this_suffix+"_PUCATTools_TriggerSF", lep[0].Pt() , this_weight*trigger_sf, 0., 200., 200);
+          FillHist("leadingLepton_Eta_"+this_suffix+"_PUCATTools_TriggerSF", lep[0].Eta() , this_weight*trigger_sf, -3., 3., 60);
+          FillHist("leadingLepton_RelIso_"+this_suffix+"_PUCATTools_TriggerSF", lep[0].RelIso04() , this_weight*trigger_sf, 0., 1.0, 100);
+          FillHist("leadingLepton_Chi2_"+this_suffix+"_PUCATTools_TriggerSF", lep[0].GlobalChi2() , this_weight*trigger_sf, 0., 10., 100);
+          FillHist("leadingLepton_dXY_"+this_suffix+"_PUCATTools_TriggerSF"+"", fabs(lep[0].dXY()) , this_weight*trigger_sf, 0., 0.1, 100);
+          FillHist("leadingLepton_dXYSig_"+this_suffix+"_PUCATTools_TriggerSF"+"", fabs(lep[0].dXYSig()) , this_weight*trigger_sf, 0., 4., 40);
+          FillHist("secondLepton_Pt_"+this_suffix+"_PUCATTools_TriggerSF", lep[1].Pt() , this_weight*trigger_sf, 0., 200., 200);
+          FillHist("secondLepton_Eta_"+this_suffix+"_PUCATTools_TriggerSF", lep[1].Eta() , this_weight*trigger_sf, -3., 3., 60);
+          FillHist("secondLepton_RelIso_"+this_suffix+"_PUCATTools_TriggerSF", lep[1].RelIso04() , this_weight*trigger_sf, 0., 1.0, 100);
+          FillHist("secondLepton_Chi2_"+this_suffix+"_PUCATTools_TriggerSF", lep[1].GlobalChi2() , this_weight*trigger_sf, 0., 10., 100);
+          FillHist("secondLepton_dXY_"+this_suffix+"_PUCATTools_TriggerSF"+"", fabs(lep[1].dXY()) , this_weight*trigger_sf, 0., 0.1, 100);
+          FillHist("secondLepton_dXYSig_"+this_suffix+"_PUCATTools_TriggerSF"+"", fabs(lep[1].dXYSig()) , this_weight*trigger_sf, 0., 4., 40);
 
         }
       } 
