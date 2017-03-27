@@ -29,6 +29,25 @@ trilepton_mumumu_FR_method::trilepton_mumumu_FR_method() :  AnalyzerCore(), out_
   // This function sets up Root files and histograms Needed in ExecuteEvents
   InitialiseAnalysis();
 
+  MakeCleverHistograms(hntrilephist, "cut0");
+  MakeCleverHistograms(hntrilephist, "cut0_up");
+  MakeCleverHistograms(hntrilephist, "cut0_down");
+  MakeCleverHistograms(hntrilephist, "cutWlow");
+  MakeCleverHistograms(hntrilephist, "cutWlow_up");
+  MakeCleverHistograms(hntrilephist, "cutWlow_down");
+  MakeCleverHistograms(hntrilephist, "cutWhigh");
+  MakeCleverHistograms(hntrilephist, "cutWhigh_up");
+  MakeCleverHistograms(hntrilephist, "cutWhigh_down");
+
+  int signal_masses[] = {5, 10, 20, 30, 40, 50, 60, 70, 90, 100, 150, 200, 300, 400, 500, 700, 1000};
+  for(int i=0; i<17; i++){
+    TString thiscut = "cutHN"+TString::Itoa(signal_masses[i],10);
+    MakeCleverHistograms(hntrilephist, thiscut);
+    MakeCleverHistograms(hntrilephist, thiscut+"_up");
+    MakeCleverHistograms(hntrilephist, thiscut+"_down");
+  }
+
+
 }
 
 
@@ -389,6 +408,8 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
 
   }
 
+  SetPlotHNTriLepMetInfo(MET, METphi);
+
   bool isLowMass = (W_pri_lowmass.M() < 150.);
   bool isHighMass = (MET > 20.);
 
@@ -418,6 +439,8 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
     FillUpDownHist("deltaR_OS_min_cutWlow", deltaR_OS_min, this_weight, this_weight_err, 0, 5, 50);
     FillUpDownHist("gamma_star_mass_cutWlow", gamma_star.M(), this_weight, this_weight_err, 0., 200., 200);
     FillUpDownHist("z_candidate_mass_cutWlow", z_candidate.M(), this_weight, this_weight_err, 0., 200., 200);
+    FillUpDownHist("PFMET_cutWlow", MET, this_weight, this_weight_err, 0., 500., 100);
+    FillUpDownHist("PFMET_phi_cutWlow", METphi, this_weight, this_weight_err, -3.2,3.2, 100);
     FillUpDownHist("n_events_cutWlow", 0, this_weight, this_weight_err, 0, 1, 1);
     FillCLHist(hntrilephist, "cutWlow_up", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight+this_weight_err);
     FillCLHist(hntrilephist, "cutWlow_down", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight-this_weight_err);
@@ -438,12 +461,42 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
     FillUpDownHist("deltaR_OS_min_cutWhigh", deltaR_OS_min, this_weight, this_weight_err, 0, 5, 50);
     FillUpDownHist("gamma_star_mass_cutWhigh", gamma_star.M(), this_weight, this_weight_err, 0., 200., 200);
     FillUpDownHist("z_candidate_mass_cutWhigh", z_candidate.M(), this_weight, this_weight_err, 0., 200., 200);
+    FillUpDownHist("PFMET_cutWhigh", MET, this_weight, this_weight_err, 0., 500., 100);
+    FillUpDownHist("PFMET_phi_cutWhigh", METphi, this_weight, this_weight_err, -3.2,3.2, 100);
     FillUpDownHist("n_events_cutWhigh", 0, this_weight, this_weight_err, 0, 1, 1);
     FillCLHist(hntrilephist, "cutWhigh_up", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight+this_weight_err);
     FillCLHist(hntrilephist, "cutWhigh_down", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight-this_weight_err);
     FillCLHist(hntrilephist, "cutWhigh", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight);
 
     FillCutFlow("HighMass", 1.);
+
+  }
+
+  int signal_masses[] = {5, 10, 20, 30, 40, 50, 60, 70, 90, 100, 150, 200, 300, 400, 500, 700, 1000};
+  for(int i=0; i<17; i++){
+
+    TString thiscut = "cutHN"+TString::Itoa(signal_masses[i],10);
+    double this_W_pri_mass = W_pri_lowmass.M();
+    if( signal_masses[i] > 80 ) this_W_pri_mass = W_pri_highmass.M();
+
+    if( PassOptimizedCut(signal_masses[i], lep[0].Pt(), lep[1].Pt(), lep[2].Pt(), this_W_pri_mass, MET) ){
+    FillUpDownHist("HN_mass_class1_"+thiscut, HN[0].M(), this_weight, this_weight_err, 0., 2000., 2000);
+    FillUpDownHist("HN_mass_class2_"+thiscut, HN[1].M(), this_weight, this_weight_err, 0., 2000., 2000);
+    FillUpDownHist("HN_mass_class3_"+thiscut, HN[2].M(), this_weight, this_weight_err, 0, 2000, 2000);
+    FillUpDownHist("HN_mass_class4_"+thiscut, HN[3].M(), this_weight, this_weight_err, 0, 2000, 2000);
+    FillUpDownHist("W_pri_lowmass_mass_"+thiscut, W_pri_lowmass.M(), this_weight, this_weight_err, 0., 2000., 2000);
+    FillUpDownHist("W_pri_highmass_mass_"+thiscut, W_pri_highmass.M(), this_weight, this_weight_err, 0, 2000, 2000);
+    FillUpDownHist("W_sec_highmass_mass_"+thiscut, W_sec.M(), this_weight, this_weight_err, 0., 2000., 2000);
+    FillUpDownHist("deltaR_OS_min_"+thiscut, deltaR_OS_min, this_weight, this_weight_err, 0, 5, 50);
+    FillUpDownHist("gamma_star_mass_"+thiscut, gamma_star.M(), this_weight, this_weight_err, 0., 200., 200);
+    FillUpDownHist("z_candidate_mass_"+thiscut, z_candidate.M(), this_weight, this_weight_err, 0., 200., 200);
+    FillUpDownHist("n_events_"+thiscut, 0, this_weight, this_weight_err, 0, 1, 1);
+    FillCLHist(hntrilephist, thiscut+"_up", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight+this_weight_err);
+    FillCLHist(hntrilephist, thiscut+"_down", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight-this_weight_err);
+    FillCLHist(hntrilephist, thiscut, eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight);
+
+      FillHist("n_events_"+thiscut, 0, weight, 0., 1., 1);
+    }
 
   }
 
@@ -546,4 +599,165 @@ void trilepton_mumumu_FR_method::ClearOutputVectors() throw(LQError) {
   out_muons.clear();
   out_electrons.clear();
 }
+
+bool trilepton_mumumu_FR_method::PassOptimizedCut(int sig_mass, double first_pt, double second_pt, double third_pt, double W_pri_mass, double PFMET){
+
+  double cut_first_pt(0.), cut_second_pt(0.), cut_third_pt(0.), cut_W_pri_mass(0.), cut_PFMET(0.);
+
+  if(sig_mass == 5){
+    cut_first_pt = 60.;
+    cut_second_pt = 45.;
+    cut_third_pt = 25.;
+    cut_W_pri_mass = 125.;
+    cut_PFMET = 0.;
+  }
+  else if(sig_mass == 10){
+    cut_first_pt = 55.;
+    cut_second_pt = 40.;
+    cut_third_pt = 35.;
+    cut_W_pri_mass = 130.;
+    cut_PFMET = 0.;
+  }
+  else if(sig_mass == 20){
+    cut_first_pt = 50.;
+    cut_second_pt = 40.;
+    cut_third_pt = 40.;
+    cut_W_pri_mass = 130.;
+    cut_PFMET = 0.;
+  }
+  else if(sig_mass == 30){
+    cut_first_pt = 45.;
+    cut_second_pt = 40.;
+    cut_third_pt = 35.;
+    cut_W_pri_mass = 130.;
+    cut_PFMET = 0.;
+  }
+  else if(sig_mass == 40){
+    cut_first_pt = 35.;
+    cut_second_pt = 30.;
+    cut_third_pt = 25.;
+    cut_W_pri_mass = 130.;
+    cut_PFMET = 0.;
+  }
+  else if(sig_mass == 50){
+    cut_first_pt = 30.;
+    cut_second_pt = 30.;
+    cut_third_pt = 30.;
+    cut_W_pri_mass = 125.;
+    cut_PFMET = 0.;
+  }
+  else if(sig_mass == 60){
+    cut_first_pt = 30.;
+    cut_second_pt = 25.;
+    cut_third_pt = 25.;
+    cut_W_pri_mass = 130.;
+    cut_PFMET = 0.;
+  }
+  else if(sig_mass == 70){
+    cut_first_pt = 35.;
+    cut_second_pt = 30.;
+    cut_third_pt = 25.;
+    cut_W_pri_mass = 125.;
+    cut_PFMET = 0.;
+  }
+  else if(sig_mass == 90){
+    cut_first_pt = 45.;
+    cut_second_pt = 40.;
+    cut_third_pt = 15.;
+    cut_W_pri_mass = 80.;
+    cut_PFMET = 20.;
+  }
+  else if(sig_mass == 100){
+    cut_first_pt = 30.;
+    cut_second_pt = 15.;
+    cut_third_pt = 15.;
+    cut_W_pri_mass = 110.;
+    cut_PFMET = 20.;
+  }
+  else if(sig_mass == 150){
+    cut_first_pt = 45.;
+    cut_second_pt = 40.;
+    cut_third_pt = 25.;
+    cut_W_pri_mass = 160.;
+    cut_PFMET = 20.;
+  }
+  else if(sig_mass == 200){
+    cut_first_pt = 65.;
+    cut_second_pt = 55.;
+    cut_third_pt = 30.;
+    cut_W_pri_mass = 250.;
+    cut_PFMET = 20.;
+  }
+  else if(sig_mass == 300){
+    cut_first_pt = 120.;
+    cut_second_pt = 75.;
+    cut_third_pt = 45.;
+    cut_W_pri_mass = 350.;
+    cut_PFMET = 20.;
+  }
+  else if(sig_mass == 400){
+    cut_first_pt = 120.;
+    cut_second_pt = 65.;
+    cut_third_pt = 50.;
+    cut_W_pri_mass = 480.;
+    cut_PFMET = 40.;
+  }
+  else if(sig_mass == 500){
+    cut_first_pt = 150.;
+    cut_second_pt = 100.;
+    cut_third_pt = 50.;
+    cut_W_pri_mass = 530.;
+    cut_PFMET = 50.;
+  }
+  else if(sig_mass == 700){
+    cut_first_pt = 200.;
+    cut_second_pt = 100.;
+    cut_third_pt = 45.;
+    cut_W_pri_mass = 760.;
+    cut_PFMET = 50.;
+  }
+  else if(sig_mass == 1000){
+    cut_first_pt = 290.;
+    cut_second_pt = 180.;
+    cut_third_pt = 50.;
+    cut_W_pri_mass = 920.;
+    cut_PFMET = 50.;
+  }
+  else{
+    cout << "[trilepton_mumumu::PassOptimizedCut] Signal mass wrong" << endl;
+  }
+
+  bool pass = true;
+  if(sig_mass < 80){
+    if( !(first_pt < cut_first_pt) ) pass = false;
+    if( !(second_pt < cut_second_pt) ) pass = false;
+    if( !(third_pt < cut_third_pt) ) pass = false;
+    if( !(W_pri_mass < cut_W_pri_mass) ) pass = false;
+  }
+  else{
+    if( !(first_pt > cut_first_pt) ) pass = false;
+    if( !(second_pt > cut_second_pt) ) pass = false;
+    if( !(third_pt > cut_third_pt) ) pass = false;
+    if( !(PFMET > cut_PFMET) ) pass = false;
+    if( !(W_pri_mass > cut_W_pri_mass) ) pass = false;
+  }
+
+  return pass;
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

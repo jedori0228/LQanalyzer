@@ -23,6 +23,7 @@ class trilepton_mumumu : public AnalyzerCore {
   int find_genmatching(snu::KParticle gen, std::vector<snu::KMuon> recos, std::vector<int>& used_index);
   int GetSignalMass();
   std::vector<snu::KMuon> sort_muons_ptorder(std::vector<snu::KMuon> muons);
+  bool PassOptimizedCut(int sig_mass, double first_pt, double second_pt, double third_pt, double W_pri_mass, double PFMET);
 
  private:
   

@@ -2882,6 +2882,14 @@ void AnalyzerCore::FillUpDownLeptonKinematicPlot(std::vector<KLepton> lep, TStri
 }
 
 
+void AnalyzerCore::SetPlotHNTriLepMetInfo(double met, double metphi){
+
+  for(map<TString, HNTriLeptonPlots*>::iterator it = mapCLhistHNTriLep.begin(); it != mapCLhistHNTriLep.end(); it++){
+    cout << "[AnalyzerCore::SetPlotHNTriLepMetInfo] histname = "<<it->first<<endl;
+    it->second->SetMetInfo(met,metphi);
+  }
+
+}
 
 
 

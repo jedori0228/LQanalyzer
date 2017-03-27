@@ -345,6 +345,8 @@ class AnalyzerCore : public LQCycleBase {
   void FillLeptonKinematicPlot(std::vector<KLepton> lep, TString suffix, double w);
   void FillUpDownLeptonKinematicPlot(std::vector<KLepton> lep, TString suffix, double w, double w_err);
 
+  void SetPlotHNTriLepMetInfo(double met, double metphi);
+
   
 };
 #endif

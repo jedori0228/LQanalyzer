@@ -70,6 +70,8 @@ HNTriLeptonPlots::HNTriLeptonPlots(TString name): StdPlots(name){
 
 
 
+  MET = -999.;
+  METphi = -999.;
 
 }
 
@@ -217,9 +219,13 @@ void HNTriLeptonPlots::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std:
     if(jets.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Medium)) nbjet++;
   }
   Fill("h_Nbjets", nbjet, weight); 
-  
-  Fill("h_PFMET",ev.PFMET(), weight);
-  Fill("h_PFMET_phi",ev.METPhi(snu::KEvent::pfmet), weight);
+
+  double thismet(MET), thismetphi(METphi);
+  if(MET    == -999.) thismet = ev.PFMET();
+  if(METphi == -999.) thismetphi = ev.METPhi(snu::KEvent::pfmet);
+
+  Fill("h_PFMET",thismet, weight);
+  Fill("h_PFMET_phi",thismetphi, weight);
   Fill("h_nVertices", ev.nVertices(), weight);
 
 
@@ -340,6 +346,14 @@ void HNTriLeptonPlots::Fill(TString name, double value1, double value2, double v
   else cout << name << " not found in map_sig" << endl;
   return;
 }
+
+void HNTriLeptonPlots::SetMetInfo(double met, double metphi){
+  //cout << "[HNTriLeptonPlots::SetMetInfo] MET set" << endl;
+  MET = met;
+  METphi = metphi;
+}
+
+
 
 
 
