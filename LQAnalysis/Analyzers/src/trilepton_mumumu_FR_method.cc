@@ -408,6 +408,7 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
 
   }
 
+  muontriLooseColl = sort_muons_ptorder(muontriLooseColl);
   SetPlotHNTriLepMetInfo(MET, METphi);
 
   bool isLowMass = (W_pri_lowmass.M() < 150.);
@@ -479,23 +480,21 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
     double this_W_pri_mass = W_pri_lowmass.M();
     if( signal_masses[i] > 80 ) this_W_pri_mass = W_pri_highmass.M();
 
-    if( PassOptimizedCut(signal_masses[i], lep[0].Pt(), lep[1].Pt(), lep[2].Pt(), this_W_pri_mass, MET) ){
-    FillUpDownHist("HN_mass_class1_"+thiscut, HN[0].M(), this_weight, this_weight_err, 0., 2000., 2000);
-    FillUpDownHist("HN_mass_class2_"+thiscut, HN[1].M(), this_weight, this_weight_err, 0., 2000., 2000);
-    FillUpDownHist("HN_mass_class3_"+thiscut, HN[2].M(), this_weight, this_weight_err, 0, 2000, 2000);
-    FillUpDownHist("HN_mass_class4_"+thiscut, HN[3].M(), this_weight, this_weight_err, 0, 2000, 2000);
-    FillUpDownHist("W_pri_lowmass_mass_"+thiscut, W_pri_lowmass.M(), this_weight, this_weight_err, 0., 2000., 2000);
-    FillUpDownHist("W_pri_highmass_mass_"+thiscut, W_pri_highmass.M(), this_weight, this_weight_err, 0, 2000, 2000);
-    FillUpDownHist("W_sec_highmass_mass_"+thiscut, W_sec.M(), this_weight, this_weight_err, 0., 2000., 2000);
-    FillUpDownHist("deltaR_OS_min_"+thiscut, deltaR_OS_min, this_weight, this_weight_err, 0, 5, 50);
-    FillUpDownHist("gamma_star_mass_"+thiscut, gamma_star.M(), this_weight, this_weight_err, 0., 200., 200);
-    FillUpDownHist("z_candidate_mass_"+thiscut, z_candidate.M(), this_weight, this_weight_err, 0., 200., 200);
-    FillUpDownHist("n_events_"+thiscut, 0, this_weight, this_weight_err, 0, 1, 1);
-    FillCLHist(hntrilephist, thiscut+"_up", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight+this_weight_err);
-    FillCLHist(hntrilephist, thiscut+"_down", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight-this_weight_err);
-    FillCLHist(hntrilephist, thiscut, eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight);
-
-      FillHist("n_events_"+thiscut, 0, weight, 0., 1., 1);
+    if( PassOptimizedCut(signal_masses[i], muontriLooseColl.at(0).Pt(), muontriLooseColl.at(1).Pt(), muontriLooseColl.at(2).Pt(), this_W_pri_mass, MET) ){
+      FillUpDownHist("HN_mass_class1_"+thiscut, HN[0].M(), this_weight, this_weight_err, 0., 2000., 2000);
+      FillUpDownHist("HN_mass_class2_"+thiscut, HN[1].M(), this_weight, this_weight_err, 0., 2000., 2000);
+      FillUpDownHist("HN_mass_class3_"+thiscut, HN[2].M(), this_weight, this_weight_err, 0, 2000, 2000);
+      FillUpDownHist("HN_mass_class4_"+thiscut, HN[3].M(), this_weight, this_weight_err, 0, 2000, 2000);
+      FillUpDownHist("W_pri_lowmass_mass_"+thiscut, W_pri_lowmass.M(), this_weight, this_weight_err, 0., 2000., 2000);
+      FillUpDownHist("W_pri_highmass_mass_"+thiscut, W_pri_highmass.M(), this_weight, this_weight_err, 0, 2000, 2000);
+      FillUpDownHist("W_sec_highmass_mass_"+thiscut, W_sec.M(), this_weight, this_weight_err, 0., 2000., 2000);
+      FillUpDownHist("deltaR_OS_min_"+thiscut, deltaR_OS_min, this_weight, this_weight_err, 0, 5, 50);
+      FillUpDownHist("gamma_star_mass_"+thiscut, gamma_star.M(), this_weight, this_weight_err, 0., 200., 200);
+      FillUpDownHist("z_candidate_mass_"+thiscut, z_candidate.M(), this_weight, this_weight_err, 0., 200., 200);
+      FillUpDownHist("n_events_"+thiscut, 0, this_weight, this_weight_err, 0, 1, 1);
+      FillCLHist(hntrilephist, thiscut+"_up", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight+this_weight_err);
+      FillCLHist(hntrilephist, thiscut+"_down", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight-this_weight_err);
+      FillCLHist(hntrilephist, thiscut, eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight);
     }
 
   }

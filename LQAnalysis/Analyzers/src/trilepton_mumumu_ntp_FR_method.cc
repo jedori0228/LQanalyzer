@@ -668,9 +668,13 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
 
     double pt0(0.), pt1(0.), pt2(0.);
     if(isPreselection){
-      pt0 = muontriLooseColl.at(0).Pt();
-      pt1 = muontriLooseColl.at(1).Pt();
-      pt2 = muontriLooseColl.at(2).Pt();
+
+      std::vector<snu::KMuon> sorted_pt = sort_muons_ptorder(muontriLooseColl);
+      
+      pt0 = sorted_pt.at(0).Pt();
+      pt1 = sorted_pt.at(1).Pt();
+      pt2 = sorted_pt.at(2).Pt();
+
     }
 
     //==== fake method weighting
@@ -815,8 +819,6 @@ void trilepton_mumumu_ntp_FR_method::ClearOutputVectors() throw(LQError) {
   out_muons.clear();
   out_electrons.clear();
 }
-
-
 
 
 

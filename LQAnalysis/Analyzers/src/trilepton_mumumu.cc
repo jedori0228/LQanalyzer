@@ -687,6 +687,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
 
   }
 
+  muontriLooseColl = sort_muons_ptorder(muontriLooseColl);
   SetPlotHNTriLepMetInfo(MET, METphi);
 
   bool isLowMass = (W_pri_lowmass.M() < 150.);
@@ -748,7 +749,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     double this_W_pri_mass = W_pri_lowmass.M();
     if( signal_masses[i] > 80 ) this_W_pri_mass = W_pri_highmass.M();
 
-    if( PassOptimizedCut(signal_masses[i], lep[0].Pt(), lep[1].Pt(), lep[2].Pt(), this_W_pri_mass, MET) ){
+    if( PassOptimizedCut(signal_masses[i], muontriLooseColl.at(0).Pt(), muontriLooseColl.at(1).Pt(), muontriLooseColl.at(2).Pt(), this_W_pri_mass, MET) ){
       FillHist("HN_mass_class1_"+thiscut, HN[0].M(), weight, 0., 2000., 2000);
       FillHist("HN_mass_class2_"+thiscut, HN[1].M(), weight, 0., 2000., 2000);
       FillHist("HN_mass_class3_"+thiscut, HN[2].M(), weight, 0., 2000., 2000);
@@ -907,27 +908,6 @@ int trilepton_mumumu::find_genmatching(snu::KParticle gen, std::vector<snu::KMuo
   }
   used_index.push_back(found);
   return found;
-}
-
-std::vector<snu::KMuon> trilepton_mumumu::sort_muons_ptorder(std::vector<snu::KMuon> muons){
-
-  std::vector<snu::KMuon> outmuon;
-  while(outmuon.size() != muons.size()){
-    double this_maxpt = 0.;
-    int index(0);
-    for(unsigned int i=0; i<muons.size(); i++){
-      bool isthisused = std::find( outmuon.begin(), outmuon.end(), muons.at(i) ) != outmuon.end();
-      if(isthisused) continue;
-      if( muons.at(i).Pt() > this_maxpt ){
-        index = i;
-        this_maxpt = muons.at(i).Pt();
-      }
-    }
-    outmuon.push_back( muons.at(index) );
-  }
-  return outmuon;
- 
-
 }
 
 int trilepton_mumumu::GetSignalMass(){

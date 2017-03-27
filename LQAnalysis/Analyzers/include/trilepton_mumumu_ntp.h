@@ -22,7 +22,6 @@ class trilepton_mumumu_ntp : public AnalyzerCore {
   void FillCutFlow(TString cut, float w);
   int find_genmatching(snu::KParticle gen, std::vector<snu::KMuon> recos, std::vector<int>& used_index);
   int GetSignalMass();
-  std::vector<snu::KMuon> sort_muons_ptorder(std::vector<snu::KMuon> muons);
 
  private:
   

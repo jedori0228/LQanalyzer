@@ -765,9 +765,13 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
 
     double pt0(0.), pt1(0.), pt2(0.);
     if(isPreselection){
-      pt0 = muontriLooseColl.at(0).Pt();
-      pt1 = muontriLooseColl.at(1).Pt();
-      pt2 = muontriLooseColl.at(2).Pt();
+
+      std::vector<snu::KMuon> sorted_pt = sort_muons_ptorder(muontriLooseColl);
+
+      pt0 = sorted_pt.at(0).Pt();
+      pt1 = sorted_pt.at(1).Pt();
+      pt2 = sorted_pt.at(2).Pt();
+
     }
 
     double cutop[100];
@@ -920,28 +924,6 @@ int trilepton_mumumu_ntp::find_genmatching(snu::KParticle gen, std::vector<snu::
   used_index.push_back(found);
   return found;
 }
-
-std::vector<snu::KMuon> trilepton_mumumu_ntp::sort_muons_ptorder(std::vector<snu::KMuon> muons){
-
-  std::vector<snu::KMuon> outmuon;
-  while(outmuon.size() != muons.size()){
-    double this_maxpt = 0.;
-    int index(0);
-    for(unsigned int i=0; i<muons.size(); i++){
-      bool isthisused = std::find( outmuon.begin(), outmuon.end(), muons.at(i) ) != outmuon.end();
-      if(isthisused) continue;
-      if( muons.at(i).Pt() > this_maxpt ){
-        index = i;
-        this_maxpt = muons.at(i).Pt();
-      }
-    }
-    outmuon.push_back( muons.at(index) );
-  }
-  return outmuon;
- 
-
-}
-
 
 int trilepton_mumumu_ntp::GetSignalMass(){
 
