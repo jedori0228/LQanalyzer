@@ -216,11 +216,12 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
   //==== 4) Unclustered Energy
   //==== 5) Muon ID Scale Factor
   //==== 6) Pileup
+  //==== 7) Trigger SF
   //====================================
 
   double m_Z = 91.1876;
 
-  int N_sys = 2*6+1;
+  int N_sys = 2*7+1;
   for(int it_sys=0; it_sys<N_sys; it_sys++){
 
     //==== MET
@@ -275,6 +276,12 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
     }
     else if(it_sys==12){
       this_syst = "PU_up";
+    }
+    else if(it_sys==13){
+      this_syst = "TriggerSF_down";
+    }
+    else if(it_sys==14){
+      this_syst = "TriggerSF_up";
     }
     else{
       Message("it_sys out of range!" , INFO);
@@ -378,6 +385,19 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
         this_weight *= pileup_reweight;
       }
     }
+
+    //==== Trigger SF
+    double trigger_sf = 1.;
+    int trigger_sf_dir = 0;
+    if(this_syst == "TriggerSF_down") trigger_sf_dir = -1;
+    if(this_syst == "TriggerSF_up") trigger_sf_dir = +1;
+
+    if(!k_isdata){
+      double trigger_eff_Data = mcdata_correction->TriggerEfficiencyLegByLeg(electrontriLooseColl, muontriLooseColl, 0, 0, trigger_sf_dir);
+      double trigger_eff_MC = mcdata_correction->TriggerEfficiencyLegByLeg(electrontriLooseColl, muontriLooseColl, 0, 1, trigger_sf_dir);
+      trigger_sf = trigger_eff_Data/trigger_eff_MC;
+    }
+    this_weight *= trigger_sf;
 
     //==== number of leptons
     int n_triLoose_muons = muontriLooseColl.size();
@@ -866,7 +886,8 @@ void trilepton_mumumu_ntp::MakeHistograms(){
   MakeNtp("Ntp_MuonIDSF_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets");
   MakeNtp("Ntp_PU_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets");
   MakeNtp("Ntp_PU_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets");
-
+  MakeNtp("Ntp_TriggerSF_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets");
+  MakeNtp("Ntp_TriggerSF_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets");
 }
 
 

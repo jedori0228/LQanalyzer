@@ -94,7 +94,6 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   m_logger << DEBUG << "passedTrigger "<< LQLogger::endmsg;
 
   float trigger_ps_weight= WeightByTrigger(triggerlist, TargetLumi);
-  //float weight_trigger_sf = TriggerScaleFactor(electrontriLooseColl, muonTightColl, "HLT_IsoMu20");
 
   //=======================
   //==== [CUT] Vertex cut
@@ -195,6 +194,16 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
     }
   }
 
+  //===========================
+  //==== Trigger Scale Factor
+  //===========================
+
+  double trigger_sf = 1.;
+  if(!k_isdata){
+    double trigger_eff_Data = mcdata_correction->TriggerEfficiencyLegByLeg(electrontriLooseColl, muontriLooseColl, 0, 0, 0);
+    double trigger_eff_MC = mcdata_correction->TriggerEfficiencyLegByLeg(electrontriLooseColl, muontriLooseColl, 0, 1, 0);
+    trigger_sf = trigger_eff_Data/trigger_eff_MC;
+  }
 
   //======================
   //==== Pileup Reweight
@@ -224,7 +233,7 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
     }
     else{
       weight*=muon_id_iso_sf;
-      //weight*=weight_trigger_sf;
+      weight*=trigger_sf;
       weight*=trigger_ps_weight;
       weight*=pileup_reweight;
       weight*=MuTrkEffSF;
@@ -348,6 +357,7 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   if(!DoMCClosure && isThreeLepton){
 
     FillCutFlow("3muon", 1.);
+    FillHist("TEST_trigger_sf", trigger_sf, 1., 0., 2., 2000);
 
     std::vector<KLepton> lep;
     TString lepOrder[3] = {"leading", "second", "third"};
