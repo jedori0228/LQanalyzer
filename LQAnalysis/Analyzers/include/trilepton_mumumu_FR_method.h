@@ -21,7 +21,6 @@ class trilepton_mumumu_FR_method : public AnalyzerCore {
   void MakeHistograms();
   void FillCutFlow(TString cut, float w);
   double this_dXYSig, this_RelIso;
-  bool PassOptimizedCut(int sig_mass, double first_pt, double second_pt, double third_pt, double W_pri_mass, double PFMET);
 
  private:
   

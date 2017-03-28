@@ -774,6 +774,9 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
 
     }
 
+    //==== k-factor //FIXME will use function in next tag
+    if(k_sample_name.Contains("ZZTo4L_powheg")) this_weight *= 1.16;
+
     double cutop[100];
     cutop[0] = pt0;
     cutop[1] = pt1;

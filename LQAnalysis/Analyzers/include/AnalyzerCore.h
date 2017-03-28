@@ -346,6 +346,7 @@ class AnalyzerCore : public LQCycleBase {
   void FillUpDownLeptonKinematicPlot(std::vector<KLepton> lep, TString suffix, double w, double w_err);
   void SetPlotHNTriLepMetInfo(double met, double metphi);
   std::vector<snu::KMuon> sort_muons_ptorder(std::vector<snu::KMuon> muons);
+  bool PassOptimizedCut(int sig_mass, double first_pt, double second_pt, double third_pt, double W_pri_mass, double PFMET);
 
   
 };

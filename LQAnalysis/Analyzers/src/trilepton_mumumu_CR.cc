@@ -243,6 +243,8 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
 
   }
 
+  if(k_sample_name.Contains("ZZTo4L_powheg")) weight *= 1.16;
+
   //============================================
   //==== Number of Loose/Tight Muons/Electrons
   //============================================
