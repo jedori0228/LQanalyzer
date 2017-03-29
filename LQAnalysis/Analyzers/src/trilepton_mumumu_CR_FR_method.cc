@@ -86,15 +86,16 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   //==== [CUT] Trigger
   //====================
 
-  std::vector<TString> triggerlist;
-  triggerlist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
-  //triggerlist.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v");
-  //triggerlist.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v");
-  triggerlist.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
+  std::vector<TString> dimutrigger, dieltrigger;
 
-  if(!PassTriggerOR(triggerlist)) return;
-  FillCutFlow("TriggerCut", 1.);
-  m_logger << DEBUG << "passedTrigger "<< LQLogger::endmsg;
+  dimutrigger.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
+  //dimutrigger.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v");
+  //dimutrigger.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v");
+  dimutrigger.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
+
+  dieltrigger.push_back("HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_v");
+
+  float trigger_ps_weight= WeightByTrigger(dimutrigger, TargetLumi);
 
   //=======================
   //==== [CUT] Vertex cut
@@ -126,7 +127,12 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   //==== Get Electrons
   //====================
 
-  std::vector<snu::KElectron> electrontriLooseColl = GetElectrons("ELECTRON_HN_LOWDXY_FAKELOOSE");
+  std::vector<snu::KElectron> electrontriLooseColl = GetElectrons(false, true, "ELECTRON_HN_LOWDXY_FAKELOOSE");
+
+  if(DoMCClosure){
+    std::vector<snu::KElectron> electrontriLooseColl_prompt = GetElectrons(false, false, "ELECTRON_HN_LOWDXY_FAKELOOSE");
+    if(electrontriLooseColl_prompt.size()==2) return;
+  }
 
   //===============
   //==== Get Jets
@@ -224,6 +230,7 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
 
   bool isTwoMuon     = (n_triLoose_leptons == 2)
                        && (n_triLoose_muons == 2 && n_triTight_muons != 2);
+  bool isTwoLepton = (n_triLoose_leptons == 2) && (n_triTight_leptons != 2);
   bool isThreeLepton = (n_triLoose_leptons == 3) && (n_triTight_leptons != 3);
   bool isFourLepton  = (n_triLoose_leptons == 4)
                        && (
@@ -244,31 +251,64 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   double m_Z = 91.1876;
 
   //==== CR with Two Muons
-  if(DoMCClosure && isTwoMuon){
-    snu::KMuon lep[2];
-    lep[0] = muontriLooseColl.at(0);
-    lep[1] = muontriLooseColl.at(1);
+  if(DoMCClosure && isTwoLepton){
 
-    bool leadPt20 = muontriLooseColl.at(0).Pt() > 20.;
-    bool isSS = muontriLooseColl.at(0).Charge() == muontriLooseColl.at(1).Charge();
+    KLepton lep[2];
+
+    //==== 2 Muon : TwoLeptonConfig = 0;
+    //==== 2 Electron : TwoLeptonConfig = 1;
+
+    TString lepconfig="";
+    int TwoLeptonConfig = 0;
+    double m_dimuon(0.);
+    if(n_triLoose_muons==2){
+      TwoLeptonConfig = 0;
+
+      lep[0] = muontriLooseColl.at(0);
+      lep[1] = muontriLooseColl.at(1);
+
+      if(!PassTriggerOR(dimutrigger)) return;
+      if(lep[0].Pt() < 20.) return;
+
+      m_dimuon = (muontriLooseColl.at(0)+muontriLooseColl.at(1)).M();
+
+      lepconfig = "DiMuon";
+    }
+    else if(n_triLoose_electrons==2){
+      TwoLeptonConfig = 1;
+
+      lep[0] = electrontriLooseColl.at(0);
+      lep[1] = electrontriLooseColl.at(1);
+
+      if(!PassTriggerOR(dieltrigger)) return;
+      if(lep[0].Pt() < 20.) return;
+      if(lep[1].Pt() < 15.) return;
+
+      m_dimuon = (electrontriLooseColl.at(0)+electrontriLooseColl.at(1)).M();
+      lepconfig = "DiElectron";
+    }
+    else{
+      return;
+    }
+
+    bool isSS = lep[0].Charge() == lep[1].Charge();
 
     if(k_sample_name.Contains("DY") && !isSS) return;
 
-    double m_dimuon = ( muontriLooseColl.at(0) + muontriLooseColl.at(1) ).M();
     bool ZResonance = fabs(m_dimuon-m_Z) < 10.;
 
     std::map< TString, bool > map_whichCR_to_isCR;
     map_whichCR_to_isCR.clear();
-    map_whichCR_to_isCR["DiMuon"] = isTwoMuon && leadPt20;
-    map_whichCR_to_isCR["SSDiMuon"] = isTwoMuon && leadPt20 && isSS;
-    map_whichCR_to_isCR["OSDiMuon"] = isTwoMuon && leadPt20 && !isSS;
-    map_whichCR_to_isCR["OSDiMuon_Z_10GeV"] = isTwoMuon && leadPt20 && !isSS && ZResonance;
+    map_whichCR_to_isCR[lepconfig] = true;
+    map_whichCR_to_isCR["SS"+lepconfig] = isSS;
+    map_whichCR_to_isCR["OS"+lepconfig] = !isSS;
+    map_whichCR_to_isCR["OS"+lepconfig+"_Z_10GeV"] = !isSS && ZResonance;
 
     //==== fake method weighting
     std::vector<snu::KElectron> empty_electron;
     empty_electron.clear();
-    double this_weight = m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", 2, empty_electron, "ELECTRON_HN_LOWDXY_TIGHT", 0);
-    double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true, muontriLooseColl, "MUON_HN_TRI_TIGHT", 2, empty_electron, "ELECTRON_HN_LOWDXY_TIGHT", 0);
+    double this_weight = m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_HN_LOWDXY_TIGHT", electrontriLooseColl.size());
+    double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true, muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_HN_LOWDXY_TIGHT", electrontriLooseColl.size());
 
     this_weight *= weight; // for aMCNLO, sign
 
@@ -286,14 +326,14 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
         FillUpDownHist("n_vertices_"+this_suffix, numberVertices, weight, this_weight_err, 0., 50., 50);
         FillUpDownHist("leadingLepton_Pt_"+this_suffix+"", lep[0].Pt() , this_weight, this_weight_err, 0., 200., 200);
         FillUpDownHist("leadingLepton_Eta_"+this_suffix+"", lep[0].Eta() , this_weight, this_weight_err, -3., 3., 60);
-        FillUpDownHist("leadingLepton_RelIso_"+this_suffix+"", lep[0].RelIso04() , this_weight, this_weight_err, 0., 1.0, 100);
-        FillUpDownHist("leadingLepton_Chi2_"+this_suffix+"", lep[0].GlobalChi2() , this_weight, this_weight_err, 0., 10, 100);
+        FillUpDownHist("leadingLepton_RelIso_"+this_suffix+"", lep[0].RelIso() , this_weight, this_weight_err, 0., 1.0, 100);
+        //FillUpDownHist("leadingLepton_Chi2_"+this_suffix+"", lep[0].GlobalChi2() , this_weight, this_weight_err, 0., 10, 100);
         FillUpDownHist("leadingLepton_dXY_"+this_suffix+"", fabs(lep[0].dXY()) , this_weight, this_weight_err, 0., 0.1, 100);
         FillUpDownHist("leadingLepton_dXYSig_"+this_suffix+"", fabs(lep[0].dXYSig()) , this_weight, this_weight_err, 0., 4., 40);
         FillUpDownHist("secondLepton_Pt_"+this_suffix+"", lep[1].Pt() , this_weight, this_weight_err, 0., 200., 200);
         FillUpDownHist("secondLepton_Eta_"+this_suffix+"", lep[1].Eta() , this_weight, this_weight_err, -3., 3., 60);
-        FillUpDownHist("secondLepton_RelIso_"+this_suffix+"", lep[1].RelIso04() , this_weight, this_weight_err, 0., 1.0, 100);
-        FillUpDownHist("secondLepton_Chi2_"+this_suffix+"", lep[1].GlobalChi2() , this_weight, this_weight_err, 0., 10, 100);
+        FillUpDownHist("secondLepton_RelIso_"+this_suffix+"", lep[1].RelIso() , this_weight, this_weight_err, 0., 1.0, 100);
+        //FillUpDownHist("secondLepton_Chi2_"+this_suffix+"", lep[1].GlobalChi2() , this_weight, this_weight_err, 0., 10, 100);
         FillUpDownHist("secondLepton_dXY_"+this_suffix+"", fabs(lep[1].dXY()) , this_weight, this_weight_err, 0., 0.1, 100);
         FillUpDownHist("secondLepton_dXYSig_"+this_suffix+"", fabs(lep[1].dXYSig()) , this_weight, this_weight_err, 0., 4., 40);
 
@@ -305,6 +345,10 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
   } // MC Closure
 
   if(!DoMCClosure && isThreeLepton){
+
+    if(!PassTriggerOR(dimutrigger)) return;
+    FillCutFlow("TriggerCut", 1.);
+    m_logger << DEBUG << "passedTrigger "<< LQLogger::endmsg;
 
     std::vector<KLepton> lep;
     TString lepOrder[3] = {"leading", "second", "third"};
