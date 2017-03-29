@@ -116,3 +116,6 @@ declare -a FourLep=(
 declare -a VV_metphi=(
 'WZTo3LNu_powheg_metphi' 'ZZTo4L_powheg_metphi'
 )
+declare -a ggZZ=(
+'ggZZto2e2mu' 'ggZZto2e2nu' 'ggZZto2e2tau' 'ggZZto2mu2nu' 'ggZZto2mu2tau' 'ggZZto4e' 'ggZZto4mu' 'ggZZto4tau'
+)
