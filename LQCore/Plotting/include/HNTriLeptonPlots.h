@@ -60,8 +60,14 @@ class HNTriLeptonPlots : public StdPlots{
   void Write();
 
   bool isPlotsFilled;
+  snu::KParticle *HN;
+  snu::KParticle W_pri_lowmass, W_pri_highmass, W_sec;
+  int OppSign, SameSign[2];
 
   void SetMetInfo(double met, double metphi);
+  void SetParticleInfo(snu::KParticle *hn, snu::KParticle w_pri_lowmass, snu::KParticle w_pri_highmass, snu::KParticle w_sec);
+  void SetChargeSign(double os, double ss0, double ss1);
+  void SetBJet(int nbjet);
 
  private:
   std::map<TString, TH1*> map_sig; 
@@ -69,6 +75,7 @@ class HNTriLeptonPlots : public StdPlots{
   std::map<TString, TH3*> map_sig3; 
 
   double MET, METphi;
+  int NBjet;
 
 
 };

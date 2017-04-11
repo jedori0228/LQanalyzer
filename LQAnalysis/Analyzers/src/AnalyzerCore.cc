@@ -2885,8 +2885,31 @@ void AnalyzerCore::FillUpDownLeptonKinematicPlot(std::vector<KLepton> lep, TStri
 void AnalyzerCore::SetPlotHNTriLepMetInfo(double met, double metphi){
 
   for(map<TString, HNTriLeptonPlots*>::iterator it = mapCLhistHNTriLep.begin(); it != mapCLhistHNTriLep.end(); it++){
-    cout << "[AnalyzerCore::SetPlotHNTriLepMetInfo] histname = "<<it->first<<endl;
     it->second->SetMetInfo(met,metphi);
+  }
+
+}
+
+void AnalyzerCore::SetPlotHNTriLepParticleInfo(snu::KParticle *hn, snu::KParticle w_pri_lowmass, snu::KParticle w_pri_highmass, snu::KParticle w_sec){
+
+  for(map<TString, HNTriLeptonPlots*>::iterator it = mapCLhistHNTriLep.begin(); it != mapCLhistHNTriLep.end(); it++){
+    it->second->SetParticleInfo(hn, w_pri_lowmass, w_pri_highmass, w_sec);
+  }
+
+}
+
+void AnalyzerCore::SetPlotHNTriLepChargeSign(double os, double ss0, double ss1){
+
+  for(map<TString, HNTriLeptonPlots*>::iterator it = mapCLhistHNTriLep.begin(); it != mapCLhistHNTriLep.end(); it++){
+    it->second->SetChargeSign(os, ss0, ss1);
+  }
+
+}
+
+void AnalyzerCore::SetPlotHNTriBJet(int nbjet){
+
+  for(map<TString, HNTriLeptonPlots*>::iterator it = mapCLhistHNTriLep.begin(); it != mapCLhistHNTriLep.end(); it++){
+    it->second->SetBJet(nbjet);
   }
 
 }
@@ -2909,6 +2932,27 @@ std::vector<snu::KMuon> AnalyzerCore::sort_muons_ptorder(std::vector<snu::KMuon>
   }
   return outmuon;
  
+
+}
+
+std::vector<KLepton> AnalyzerCore::sort_leptons_ptorder(std::vector<KLepton> leptons){
+
+  std::vector<KLepton> outlepton;
+  while(outlepton.size() != leptons.size()){
+    double this_maxpt = 0.;
+    int index(0);
+    for(unsigned int i=0; i<leptons.size(); i++){
+      bool isthisused = std::find( outlepton.begin(), outlepton.end(), leptons.at(i) ) != outlepton.end();
+      if(isthisused) continue;
+      if( leptons.at(i).Pt() > this_maxpt ){
+        index = i;
+        this_maxpt = leptons.at(i).Pt();
+      }
+    }
+    outlepton.push_back( leptons.at(index) );
+  }
+  return outlepton;
+
 
 }
 
@@ -3056,6 +3100,37 @@ bool AnalyzerCore::PassOptimizedCut(int sig_mass, double first_pt, double second
 
   return pass;
 
+}
+
+int AnalyzerCore::find_genmatching(snu::KTruth gen, std::vector<KLepton> recos, std::vector<int>& used_index){
+
+  double mindr = 0.1;
+  double maxPtDiff = 9999.;
+  int found=-1;
+  for(unsigned int i=0; i<recos.size(); i++){
+    if(abs(gen.PdgId())==13){
+      if(recos.at(i).LeptonFlavour() != KLepton::MUON) continue;
+    }
+    else if(abs(gen.PdgId())==11){
+      if(recos.at(i).LeptonFlavour() != KLepton::ELECTRON) continue;
+    }
+    else{
+      cout << "HNGenMatched lepton is not lepton?!" << endl;
+      cout << "  gen.PdgId() = " << gen.PdgId() << endl;
+    }
+    
+    //cout << "["<<i<<"th reco] : pt = " << recos.at(i).Pt() << ", eta = " << recos.at(i).Eta() << endl;
+    double dr = gen.DeltaR(recos.at(i));
+    bool ptmatched(true);
+    //if( fabs(gen.Pt() - recos.at(i).Pt()) / TMath::Min( gen.Pt(), recos.at(i).Pt() ) >= maxPtDiff ) ptmatched = false;
+    bool isthisused = std::find(used_index.begin(), used_index.end(), i) != used_index.end();
+    if(dr < mindr && ptmatched && !isthisused){
+      mindr = dr;
+      found = i;
+    }
+  }
+  used_index.push_back(found);
+  return found;
 }
 
 
