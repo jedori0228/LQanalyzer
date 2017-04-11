@@ -341,7 +341,7 @@ float DataDrivenBackgrounds::Get_DataDrivenWeight_MMM(bool geterr, vector<snu::K
   return mmm_weight;
 }
 
-float DataDrivenBackgrounds::Get_DataDrivenWeight(bool geterr, std::vector<snu::KMuon> k_muons, TString muid, int n_muons, std::vector<snu::KElectron> k_electrons, TString elid, int n_electrons, TString elidloose, TString elmethod){
+float DataDrivenBackgrounds::Get_DataDrivenWeight(bool geterr, std::vector<snu::KMuon> k_muons, TString muid, int n_muons, std::vector<snu::KElectron> k_electrons, TString elid, int n_electrons, TString elidloose, TString elmethod, int HalfSampleErrorDir){
 
   float this_weight = 0.;
 
@@ -380,7 +380,7 @@ float DataDrivenBackgrounds::Get_DataDrivenWeight(bool geterr, std::vector<snu::
   std::vector<TLorentzVector> muons=MakeTLorentz(k_muons);
   std::vector<TLorentzVector> electrons=MakeTLorentz(k_electrons);
   TString elkey = GetElFRKey(elidloose, elid, elmethod);
-  this_weight =m_fakeobj->get_eventweight(geterr, muons, muid, electrons, elkey , isT);
+  this_weight =m_fakeobj->get_eventweight(geterr, muons, muid, electrons, elkey , isT, HalfSampleErrorDir);
 
   return this_weight;
 }

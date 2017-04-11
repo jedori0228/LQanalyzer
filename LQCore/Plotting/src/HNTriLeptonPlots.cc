@@ -18,6 +18,7 @@ HNTriLeptonPlots::HNTriLeptonPlots(TString name): StdPlots(name){
   map_sig["h_l1jjmass"]               =     new TH1D("h_l1jjmass_"          + name,"Invariant mass of the two leading jets and leading electron",100,0,1000);
   map_sig["h_l2jjmass"]               =     new TH1D("h_l2jjmass_"          + name,"Invariant mass of the two leading jets and second electron",100,0,1000);
   map_sig["h_dijetmass"]               =     new TH1D("h_dijetmass_"          + name,"Invariant mass of the two leading jets" ,100,0,1000);
+  map_sig["h_mlll"] = new TH1D("h_mlll_"+name, "", 1000, 0., 1000.);
 
   map_sig["h_LeptonPt"]               =     new TH1D("h_LeptonPt_"          + name,"lepton pt",100,0,500);
   map_sig["h_leadingLepton_Pt"]        =     new TH1D("h_leadingLepton_Pt_"   + name,"leading lepton pt",100,0,500);
@@ -69,6 +70,8 @@ HNTriLeptonPlots::HNTriLeptonPlots(TString name): StdPlots(name){
 
 
 
+  MET = -999.;
+  METphi = -999.;
 
 }
 
@@ -98,6 +101,7 @@ void HNTriLeptonPlots::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std:
     if(muons[0].Charge() != muons[1].Charge())    Fill("h_osllmass", (muons[0]+muons[1]).M(),weight);
     if(muons[0].Charge() != muons[2].Charge())    Fill("h_osllmass", (muons[0]+muons[2]).M(),weight);
     if(muons[1].Charge() != muons[2].Charge())    Fill("h_osllmass", (muons[1]+muons[2]).M(),weight);
+    Fill("h_mlll", (muons[0]+muons[1]+muons[2]).M(), weight);
     int imu=0;
     for(std::vector<snu::KMuon>::iterator muit = muons.begin(); muit != muons.end(); muit++, imu++){
       double LeptonRelIso = muit->RelIso04();
@@ -212,12 +216,16 @@ void HNTriLeptonPlots::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std:
   Fill("h_Njets",jets.size(), weight);
   int nbjet=0;
   for(UInt_t j=0; j < jets.size(); j++){
-    if(jets.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Tight)) nbjet++;
+    if(jets.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Medium)) nbjet++;
   }
   Fill("h_Nbjets", nbjet, weight); 
-  
-  Fill("h_PFMET",ev.PFMET(), weight);
-  Fill("h_PFMET_phi",ev.METPhi(snu::KEvent::pfmet), weight);
+
+  double thismet(MET), thismetphi(METphi);
+  if(MET    == -999.) thismet = ev.PFMET();
+  if(METphi == -999.) thismetphi = ev.METPhi(snu::KEvent::pfmet);
+
+  Fill("h_PFMET",thismet, weight);
+  Fill("h_PFMET_phi",thismetphi, weight);
   Fill("h_nVertices", ev.nVertices(), weight);
 
 
@@ -338,6 +346,14 @@ void HNTriLeptonPlots::Fill(TString name, double value1, double value2, double v
   else cout << name << " not found in map_sig" << endl;
   return;
 }
+
+void HNTriLeptonPlots::SetMetInfo(double met, double metphi){
+  //cout << "[HNTriLeptonPlots::SetMetInfo] MET set" << endl;
+  MET = met;
+  METphi = metphi;
+}
+
+
 
 
 

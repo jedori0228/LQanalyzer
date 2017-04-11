@@ -61,10 +61,14 @@ class HNTriLeptonPlots : public StdPlots{
 
   bool isPlotsFilled;
 
+  void SetMetInfo(double met, double metphi);
+
  private:
   std::map<TString, TH1*> map_sig; 
   std::map<TString, TH2*> map_sig2; 
   std::map<TString, TH3*> map_sig3; 
+
+  double MET, METphi;
 
 
 };
