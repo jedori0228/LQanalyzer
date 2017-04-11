@@ -42,6 +42,7 @@ declare -a trilep_bkg=(
 'ttW' 'ttZ'
 'ttH_nonbb'
 'ZGto2LG' 'WGtoLNuG'
+'ggZZto2e2mu' 'ggZZto2e2nu' 'ggZZto2e2tau' 'ggZZto2mu2nu' 'ggZZto2mu2tau' 'ggZZto4e' 'ggZZto4mu' 'ggZZto4tau'
 )
 declare -a trilep_nonprompt_bkg=(
 'DYJets_10to50' 'DYJets' 'WJets' 'TTJets_aMC'
@@ -68,24 +69,25 @@ declare -a trilep_signal=(
 'HN_MuMuMu_500'
 'HN_MuMuMu_700'
 'HN_MuMuMu_1000')
-declare -a Official_trilep_signal=(
-'Official_HN_MuMuMu_5'
-'Official_HN_MuMuMu_10'
-'Official_HN_MuMuMu_20'
-'Official_HN_MuMuMu_30'
-'Official_HN_MuMuMu_40'
-'Official_HN_MuMuMu_50'
-'Official_HN_MuMuMu_60'
-'Official_HN_MuMuMu_70'
-'Official_HN_MuMuMu_90'
-'Official_HN_MuMuMu_100'
-'Official_HN_MuMuMu_150'
-'Official_HN_MuMuMu_200'
-'Official_HN_MuMuMu_300'
-'Official_HN_MuMuMu_400'
-'Official_HN_MuMuMu_500'
-'Official_HN_MuMuMu_700'
-'Official_HN_MuMuMu_1000')
+
+declare -a trilep_mumue_signal=(
+'HN_SSSF_MuMuE_5'
+'HN_SSSF_MuMuE_10'
+'HN_SSSF_MuMuE_20'
+'HN_SSSF_MuMuE_30'
+'HN_SSSF_MuMuE_40'
+'HN_SSSF_MuMuE_50'
+'HN_SSSF_MuMuE_60'
+'HN_SSSF_MuMuE_70'
+'HN_SSSF_MuMuE_90'
+'HN_SSSF_MuMuE_100'
+'HN_SSSF_MuMuE_150'
+'HN_SSSF_MuMuE_200'
+'HN_SSSF_MuMuE_300'
+'HN_SSSF_MuMuE_400'
+'HN_SSSF_MuMuE_500'
+'HN_SSSF_MuMuE_700'
+'HN_SSSF_MuMuE_1000')
 
 ### CR ###
 declare -a trilep_CR_bkg=(

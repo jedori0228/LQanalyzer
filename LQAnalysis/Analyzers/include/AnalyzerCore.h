@@ -363,8 +363,13 @@ class AnalyzerCore : public LQCycleBase {
   void FillLeptonKinematicPlot(std::vector<KLepton> lep, TString suffix, double w);
   void FillUpDownLeptonKinematicPlot(std::vector<KLepton> lep, TString suffix, double w, double w_err);
   void SetPlotHNTriLepMetInfo(double met, double metphi);
+  void SetPlotHNTriLepParticleInfo(snu::KParticle* hn, snu::KParticle w_pri_lowmass, snu::KParticle w_pri_highmass, snu::KParticle w_sec);
+  void SetPlotHNTriLepChargeSign(double os, double ss0, double ss1);
+  void SetPlotHNTriBJet(int nbjet);
   std::vector<snu::KMuon> sort_muons_ptorder(std::vector<snu::KMuon> muons);
+  std::vector<KLepton> sort_leptons_ptorder(std::vector<KLepton> leptons);
   bool PassOptimizedCut(int sig_mass, double first_pt, double second_pt, double third_pt, double W_pri_mass, double PFMET);
+  int find_genmatching(snu::KTruth gen, std::vector<KLepton> recos, std::vector<int>& used_index);
 
   
 };

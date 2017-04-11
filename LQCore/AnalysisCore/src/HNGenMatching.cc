@@ -108,7 +108,7 @@ void HNGenMatching::FindGenParticles(bool debug){
       for(unsigned int j=0;j<1;j++){
         //==== 1) |PID| = 13
         //==== 2) Mother = Mother of HN.at(0) : becase they are generated at the same time.
-        if(abs(AllGenParticles.at(i).PdgId()) == 13 && AllGenParticles.at(i).IndexMother() == AllGenParticles.at(gen_HN_indices.at(j)).IndexMother()){
+        if( IsLepton(AllGenParticles.at(i)) && AllGenParticles.at(i).IndexMother() == AllGenParticles.at(gen_HN_indices.at(j)).IndexMother()){
           gen_l_1_indices.push_back(i);
           find_decay(AllGenParticles, i, gen_l_1_indices);
           break;
@@ -168,7 +168,7 @@ void HNGenMatching::FindGenParticles(bool debug){
         for(unsigned int j=0;j<gen_HN_indices.size();j++){
           //==== 1) PID = 14
           //==== 2) Mother = {HN}
-          if(abs(AllGenParticles.at(i).PdgId()) == 14 && AllGenParticles.at(i).IndexMother() == gen_HN_indices.at(j) ){
+          if( IsNeutrino(AllGenParticles.at(i)) && AllGenParticles.at(i).IndexMother() == gen_HN_indices.at(j) ){
             gen_nu_indices.push_back(i);
             find_decay(AllGenParticles, i, gen_nu_indices);
             break;
@@ -182,14 +182,14 @@ void HNGenMatching::FindGenParticles(bool debug){
         return;
       }
 
-      //==== Let l_1 and l_2 are SS (considering dilep channel :D)
+      //==== Let l_1 and l_2 are SS (to be consistent with dilep channel :D)
       //==== find l_2 at gen. level
       if(debug) cout << "[HNGenMatching::FindGenParticles]LowMass][1] Trying to find l_2" << endl;
       for(int i=2;i<truthmax;i++){
         for(unsigned int j=0;j<gen_HN_indices.size();j++){
-          //==== 1) PID = PID of l_1 (SS)
+          //==== 1) lepton and SS with l_1
           //==== 2) Mother = {HN}
-          if(AllGenParticles.at(i).PdgId() == AllGenParticles.at(gen_l_1_indices.at(0)).PdgId() && AllGenParticles.at(i).IndexMother() == gen_HN_indices.at(j) ){
+          if( IsLepton(AllGenParticles.at(i)) && AllGenParticles.at(i).PdgId()*AllGenParticles.at(gen_l_1_indices.at(0)).PdgId() > 0 && AllGenParticles.at(i).IndexMother() == gen_HN_indices.at(j) ){
             gen_l_2_indices.push_back(i);
             find_decay(AllGenParticles, i, gen_l_2_indices);
             break;
@@ -207,9 +207,9 @@ void HNGenMatching::FindGenParticles(bool debug){
       if(debug) cout << "[HNGenMatching::FindGenParticles]LowMass][1] Trying to find l_3" << endl;
       for(int i=2;i<truthmax;i++){
         for(unsigned int j=0;j<gen_HN_indices.size();j++){
-          //==== 1) PID = - (PID of l_1) (OS)
+          //==== 1) lepton and OS with l_1
           //==== 2) Mother = {HN}
-          if(AllGenParticles.at(i).PdgId() == -AllGenParticles.at(gen_l_1_indices.at(0)).PdgId() && AllGenParticles.at(i).IndexMother() == gen_HN_indices.at(j) ){
+          if( IsLepton(AllGenParticles.at(i)) && AllGenParticles.at(i).PdgId()*AllGenParticles.at(gen_l_1_indices.at(0)).PdgId() < 0 && AllGenParticles.at(i).IndexMother() == gen_HN_indices.at(j) ){
             gen_l_3_indices.push_back(i);
             find_decay(AllGenParticles, i, gen_l_3_indices);
             break;
@@ -234,7 +234,7 @@ void HNGenMatching::FindGenParticles(bool debug){
         for(unsigned int j=0;j<gen_HN_indices.size();j++){
           //==== 1) |PID| = 14
           //==== 2) Mother = {HN}
-          if(abs(AllGenParticles.at(i).PdgId()) == 14 && AllGenParticles.at(i).IndexMother() == gen_HN_indices.at(j) ){
+          if( IsNeutrino(AllGenParticles.at(i)) && AllGenParticles.at(i).IndexMother() == gen_HN_indices.at(j) ){
             gen_nu_indices.push_back(i);
             find_decay(AllGenParticles, i, gen_nu_indices);
             break;
@@ -252,9 +252,9 @@ void HNGenMatching::FindGenParticles(bool debug){
       //==== find l_2 at gen. level
       for(int i=2;i<truthmax;i++){
         for(unsigned int j=0;j<gen_Z_indices.size();j++){
-          //==== 1) PID = PID of l_1 (SS)
+          //==== 1) lepton and PID = PID of l_1 (SS)
           //==== 2) Mother = {Z}
-          if(AllGenParticles.at(i).PdgId() == AllGenParticles.at(gen_l_1_indices.at(0)).PdgId() && AllGenParticles.at(i).IndexMother() == gen_Z_indices.at(j) ){
+          if( IsLepton(AllGenParticles.at(i)) && AllGenParticles.at(i).PdgId() == AllGenParticles.at(gen_l_1_indices.at(0)).PdgId() && AllGenParticles.at(i).IndexMother() == gen_Z_indices.at(j) ){
             gen_l_2_indices.push_back(i);
             find_decay(AllGenParticles, i, gen_l_2_indices);
             break;
@@ -271,9 +271,9 @@ void HNGenMatching::FindGenParticles(bool debug){
       //==== find l_3 at gen. level
       for(int i=2;i<truthmax;i++){
         for(unsigned int j=0;j<gen_Z_indices.size();j++){
-          //==== 1) PID = - (PID of l_1) (OS)
+          //==== 1) lepton and lepton and PID = - (PID of l_1) (OS)
           //==== 2) Mother = {Z}
-          if(AllGenParticles.at(i).PdgId() == -AllGenParticles.at(gen_l_1_indices.at(0)).PdgId() && AllGenParticles.at(i).IndexMother() == gen_Z_indices.at(j) ){
+          if( IsLepton(AllGenParticles.at(i)) && AllGenParticles.at(i).PdgId()*AllGenParticles.at(gen_l_1_indices.at(0)).PdgId() < 0 && AllGenParticles.at(i).IndexMother() == gen_Z_indices.at(j) ){
             gen_l_3_indices.push_back(i);
             find_decay(AllGenParticles, i, gen_l_3_indices);
             break;
@@ -299,7 +299,7 @@ void HNGenMatching::FindGenParticles(bool debug){
         for(unsigned int j=0;j<gen_W_sec_indices.size();j++){
           //==== 1) |PID| = 14
           //==== 2) Mother = {W_sec}
-          if(abs(AllGenParticles.at(i).PdgId()) == 14 && AllGenParticles.at(i).IndexMother() == gen_W_sec_indices.at(j) ){
+          if( IsNeutrino(AllGenParticles.at(i)) && AllGenParticles.at(i).IndexMother() == gen_W_sec_indices.at(j) ){
             gen_nu_indices.push_back(i);
             find_decay(AllGenParticles, i, gen_nu_indices);
             break;
@@ -318,7 +318,7 @@ void HNGenMatching::FindGenParticles(bool debug){
         for(unsigned int j=0;j<gen_W_sec_indices.size();j++){
           //==== 1) |PID| = 13
           //==== 2) Mother = {W_sec}
-          if(fabs(AllGenParticles.at(i).PdgId()) == 13 && AllGenParticles.at(i).IndexMother() == gen_W_sec_indices.at(j) ){
+          if( IsLepton(AllGenParticles.at(i)) && AllGenParticles.at(i).IndexMother() == gen_W_sec_indices.at(j) ){
             gen_l_3_indices.push_back(i);
             find_decay(AllGenParticles, i, gen_nu_indices);
             break;
@@ -337,7 +337,7 @@ void HNGenMatching::FindGenParticles(bool debug){
         for(unsigned int j=0;j<gen_HN_indices.size();j++){
           //==== 1) |PID| = 13
           //==== 2) Mother = {HN}
-          if(fabs(AllGenParticles.at(i).PdgId()) == 13 && AllGenParticles.at(i).IndexMother() == gen_HN_indices.at(j) ){
+          if( IsLepton(AllGenParticles.at(i)) && AllGenParticles.at(i).IndexMother() == gen_HN_indices.at(j) ){
             gen_l_2_indices.push_back(i);
             find_decay(AllGenParticles, i, gen_l_2_indices);
             break;
@@ -370,7 +370,7 @@ void HNGenMatching::FindGenParticles(bool debug){
       for(unsigned int j=0;j<1;j++){
         //==== 1) |PID| = 13
         //==== 2) Mother = Mother of HN.at(0) : becase they are generated at the same time.
-        if(abs(AllGenParticles.at(i).PdgId()) == 13 && AllGenParticles.at(i).IndexMother() == AllGenParticles.at(gen_HN_indices.at(j)).IndexMother()){
+        if( IsLepton(AllGenParticles.at(i)) && AllGenParticles.at(i).IndexMother() == AllGenParticles.at(gen_HN_indices.at(j)).IndexMother()){
           gen_l_1_indices.push_back(i);
           find_decay(AllGenParticles, i, gen_l_1_indices);
           break;
@@ -386,7 +386,7 @@ void HNGenMatching::FindGenParticles(bool debug){
       for(unsigned int j=0;j<gen_HN_indices.size();j++){
       //==== 1) |PID| = 13
       //==== 2) Mother = {HN}
-        if(abs(AllGenParticles.at(i).PdgId()) == 13 && AllGenParticles.at(i).IndexMother() == gen_HN_indices.at(j) ){
+        if( IsLepton(AllGenParticles.at(i)) && AllGenParticles.at(i).IndexMother() == gen_HN_indices.at(j) ){
           gen_l_2_indices.push_back(i);
           find_decay(AllGenParticles, i, gen_l_2_indices);
           break;
@@ -418,7 +418,7 @@ void HNGenMatching::FindGenParticles(bool debug){
       for(unsigned int j=0;j<gen_W_sec_indices.size();j++){
         //==== 1) |PID| = 14
         //==== 2) Mother = {W_sec}
-        if(abs(AllGenParticles.at(i).PdgId()) == 14 && AllGenParticles.at(i).IndexMother() == gen_W_sec_indices.at(j) ){
+        if( IsNeutrino(AllGenParticles.at(i)) && AllGenParticles.at(i).IndexMother() == gen_W_sec_indices.at(j) ){
           gen_nu_indices.push_back(i);
           find_decay(AllGenParticles, i, gen_nu_indices);
           break;
@@ -434,7 +434,7 @@ void HNGenMatching::FindGenParticles(bool debug){
       for(unsigned int j=0;j<gen_W_sec_indices.size();j++){
         //==== 1) |PID| = 13
         //==== 2) Mother = {W_sec}
-        if(abs(AllGenParticles.at(i).PdgId()) == 13 && AllGenParticles.at(i).IndexMother() == gen_W_sec_indices.at(j) ){
+        if( IsLepton(AllGenParticles.at(i)) && AllGenParticles.at(i).IndexMother() == gen_W_sec_indices.at(j) ){
           gen_l_3_indices.push_back(i);
           find_decay(AllGenParticles, i, gen_l_3_indices);
           break;
@@ -875,6 +875,27 @@ bool HNGenMatching::GenMatching(snu::KParticle gen, snu::KParticle reco, double 
   return matched;
 
 }
+
+bool HNGenMatching::IsLepton(snu::KTruth ptl){
+
+  bool pass=false;
+  if( abs(ptl.PdgId()) == 11 ) pass = true;
+  if( abs(ptl.PdgId()) == 13 ) pass = true;
+  if( abs(ptl.PdgId()) == 15 ) pass = true;
+  return pass;
+
+}
+
+bool HNGenMatching::IsNeutrino(snu::KTruth ptl){
+
+  bool pass=false;
+  if( abs(ptl.PdgId()) == 12 ) pass = true;
+  if( abs(ptl.PdgId()) == 14 ) pass = true;
+  if( abs(ptl.PdgId()) == 16 ) pass = true;
+  return pass;
+
+}
+
 
 //==== Histograms
 TH1D* HNGenMatching::GetHist(TString hname){

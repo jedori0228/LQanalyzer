@@ -751,8 +751,8 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
         bool TwoOnZ_case2 = ( fabs( ll_case2_1.M() - m_Z ) < 10. ) && (LepPlus.at(0).LeptonFlavour()==LepMinus.at(1).LeptonFlavour()) &&
                             ( fabs( ll_case2_2.M() - m_Z ) < 10. ) && (LepPlus.at(1).LeptonFlavour()==LepMinus.at(0).LeptonFlavour());
 
-        if( (TwoOnZ_case1 && min(LepPlus.at(0).Pt(),LepMinus.at(0).Pt())>20. && min(LepPlus.at(1).Pt(),LepMinus.at(1).Pt())>20. ) ||
-            (TwoOnZ_case2 && min(LepPlus.at(0).Pt(),LepMinus.at(1).Pt())>20. && min(LepPlus.at(1).Pt(),LepMinus.at(0).Pt())>20. )     ){
+        if( (TwoOnZ_case1 && max(LepPlus.at(0).Pt(),LepMinus.at(0).Pt())>20. && max(LepPlus.at(1).Pt(),LepMinus.at(1).Pt())>20. ) ||
+            (TwoOnZ_case2 && max(LepPlus.at(0).Pt(),LepMinus.at(1).Pt())>20. && max(LepPlus.at(1).Pt(),LepMinus.at(0).Pt())>20. )     ){
 
           isZZ = true;
 

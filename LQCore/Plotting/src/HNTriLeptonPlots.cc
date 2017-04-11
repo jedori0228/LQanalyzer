@@ -8,6 +8,7 @@ using namespace std;
 HNTriLeptonPlots::HNTriLeptonPlots(TString name): StdPlots(name){
 
   TH1::SetDefaultSumw2(true);
+  map_sig["h_Nevents"] = new TH1D("h_Nevents_"+name, "", 1, 0., 1.);
   map_sig["h_Njets"]                  =     new TH1D("h_Njets_"             + name,"number of jets",10,0,10);
   map_sig["h_Nbjets"]                 =     new TH1D("h_Nbjets_"            + name,"number of b jets",5,0,5);
   map_sig["h_jets_pt"]                =     new TH1D("h_jets_pt_"           + name,"jet pt",60,0,300);
@@ -68,10 +69,23 @@ HNTriLeptonPlots::HNTriLeptonPlots(TString name): StdPlots(name){
   map_sig["h_Nmuons"]                 =     new TH1D("h_Nmuons_"           + name,"number of mu",5,0,5);
   map_sig["h_Nelectrons"]             =     new TH1D("h_Nelectrons_"           + name,"number of el",5,0,5);
 
+  map_sig["h_HN_mass_class1"] = new TH1D("h_HN_mass_class1_"+name, "", 2000, 0., 2000.);
+  map_sig["h_HN_mass_class2"] = new TH1D("h_HN_mass_class2_"+name, "", 2000, 0., 2000.);
+  map_sig["h_HN_mass_class3"] = new TH1D("h_HN_mass_class3_"+name, "", 2000, 0., 2000.);
+  map_sig["h_HN_mass_class4"] = new TH1D("h_HN_mass_class4_"+name, "", 2000, 0., 2000.);
+  map_sig["h_W_pri_lowmass_mass"] = new TH1D("h_W_pri_lowmass_mass_"+name, "", 2000, 0., 2000.);
+  map_sig["h_W_pri_highmass_mass"] = new TH1D("h_W_pri_highmass_mass_"+name, "", 2000, 0., 2000.);
+  map_sig["h_W_sec_highmass_mass"] = new TH1D("h_W_sec_highmass_mass_"+name, "", 2000, 0., 2000.);
+  map_sig["h_deltaR_OS_min"] = new TH1D("h_deltaR_OS_min_"+name, "", 50, 0., 50.);
+  map_sig["h_gamma_star_mass"] = new TH1D("h_gamma_star_mass_"+name, "", 200, 0., 200.);
+  map_sig["h_z_candidate_mass"] = new TH1D("h_z_candidate_mass_"+name, "", 200, 0., 200.);
+
+
 
 
   MET = -999.;
   METphi = -999.;
+  NBjet = -999;
 
 }
 
@@ -79,25 +93,55 @@ HNTriLeptonPlots::HNTriLeptonPlots(TString name): StdPlots(name){
 
 
 void HNTriLeptonPlots::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std::vector<snu::KElectron>& electrons, std::vector<snu::KJet>& jets, Double_t weight) {
-  
+
+  cout << "here1" << endl;
+  Fill("h_Nevents", 0., weight);
+  cout << "here2" << endl;
   Fill("h_Nmuons" ,muons.size(), weight);
+  cout << "here3" << endl;
   Fill("h_Nelectrons" ,electrons.size(), weight);
-  //if(! (muons.size()==3 || electrons.size()==3 || (electrons.size() == 2 && muons.size() ==1) || (electrons.size() == 1 && muons.size() ==2) )) return;
-  //if(electrons.size() == 3 && muons.size() > 0) return;
-  //if(electrons.size() > 0 && muons.size() ==3) return;
+  cout << "here4" << endl;
 
-  Fill("h_Nmuons" ,muons.size(), weight);
-  Fill("h_Nelectrons" ,electrons.size(), weight);
-
-
-  //if(electrons.size()==2){
-  //  if(electrons[0].Charge() != electrons[1].Charge())   Fill("h_osllmass", (electrons[0]+electrons[1]).M(),weight);
-  //}
-  //if(muons.size()==2){
-  //  if(muons[0].Charge() != muons[1].Charge())   Fill("h_osllmass", (muons[0]+muons[1]).M(),weight);
-  //}
+  Fill("h_HN_mass_class1", HN[0].M(), weight);
+  cout << "here5" << endl;
+  Fill("h_HN_mass_class2", HN[1].M(), weight);
+  cout << "here6" << endl;
+  Fill("h_HN_mass_class3", HN[2].M(), weight);
+  cout << "here7" << endl;
+  Fill("h_HN_mass_class4", HN[3].M(), weight);
+  cout << "here8" << endl;
+  Fill("h_W_pri_lowmass_mass", W_pri_lowmass.M(), weight);
+  cout << "here9" << endl;
+  Fill("h_W_pri_highmass_mass", W_pri_highmass.M(), weight);
+  cout << "here10" << endl;
+  Fill("h_W_sec_highmass_mass", W_sec.M(), weight);
+  cout << "here11" << endl;
 
   if(muons.size()==3){
+
+    snu::KParticle gamma_star, z_candidate;
+    double deltaR_OS_min;
+    if( muons[OppSign].DeltaR(muons[SameSign[0]]) < muons[OppSign].DeltaR(muons[SameSign[1]]) ){
+      deltaR_OS_min = muons[OppSign].DeltaR(muons[SameSign[0]]);
+      gamma_star = muons[OppSign] + muons[SameSign[0]];
+    }
+    else{
+      deltaR_OS_min = muons[OppSign].DeltaR(muons[SameSign[1]]);
+      gamma_star = muons[OppSign] + muons[SameSign[1]];
+    }
+
+    if( fabs( (muons[OppSign] + muons[SameSign[0]]).M() - 91.1876 ) <
+        fabs( (muons[OppSign] + muons[SameSign[1]]).M() - 91.1876 )   ){
+      z_candidate = muons[OppSign] + muons[SameSign[0]];
+    }
+    else{
+      z_candidate = muons[OppSign] + muons[SameSign[1]];
+    }
+
+    Fill("h_deltaR_OS_min", deltaR_OS_min, weight);
+    Fill("h_gamma_star_mass", gamma_star.M(), weight);
+    Fill("h_z_candidate_mass", z_candidate.M(), weight);
+
     if(muons[0].Charge() != muons[1].Charge())    Fill("h_osllmass", (muons[0]+muons[1]).M(),weight);
     if(muons[0].Charge() != muons[2].Charge())    Fill("h_osllmass", (muons[0]+muons[2]).M(),weight);
     if(muons[1].Charge() != muons[2].Charge())    Fill("h_osllmass", (muons[1]+muons[2]).M(),weight);
@@ -141,82 +185,58 @@ void HNTriLeptonPlots::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std:
       }
       
     }
-    if(jets.size() >1){
-      snu::KParticle jj = jets[0] + jets[1];
-      snu::KParticle l1jj = muons[0] + jets[0] + jets[1];
-      snu::KParticle l2jj = muons[1] + jets[0] + jets[1];
-      snu::KParticle llljj = muons[0] + muons[1] + muons[2] + jets[0] + jets[1];
-      Fill("h_l1jjmass", l1jj.M() ,weight);
-      Fill("h_l2jjmass", l2jj.M() ,weight);
-      Fill("h_llljjmass", llljj.M() ,weight);
-      Fill("h_dijetmass", jj.M() ,weight);
 
-    }
   }
 
-/*
-  if(electrons.size()==3){
-    if(electrons[0].Charge() != electrons[1].Charge())    Fill("h_osllmass", (electrons[0]+electrons[1]).M(),weight);
-    if(electrons[0].Charge() != electrons[2].Charge())    Fill("h_osllmass", (electrons[0]+electrons[2]).M(),weight);
-    if(electrons[1].Charge() != electrons[2].Charge())    Fill("h_osllmass", (electrons[1]+electrons[2]).M(),weight);
+  if(muons.size() == 2 && electrons.size()==1){
+    cout << "here12" << endl;
+
+    Fill("h_mlll", (muons[0]+muons[1]+electrons[0]).M(), weight);
     int imu=0;
-    for(std::vector<snu::KElectron>::iterator muit = electrons.begin(); muit != electrons.end(); muit++, imu++){
+    for(std::vector<snu::KMuon>::iterator muit = muons.begin(); muit != muons.end(); muit++, imu++){
+      double LeptonRelIso = muit->RelIso04();
       Fill("h_LeptonPt", muit->Pt(),weight);
       Fill("h_LeptonEta",muit->Eta(),weight);
+      Fill("h_LeptonRelIso", LeptonRelIso, weight);
+      Fill("h_dXY", fabs(muit->dXY()), weight);
+      Fill("h_dXYSig", fabs(muit->dXYSig()), weight);
+      Fill("h_dZ", muit->dZ(), weight);
+      Fill("h_GlobalChi2", muit->GlobalChi2(), weight);
       if(imu ==0) {
-        Fill("h_leadingLeptonPt", muit->Pt(),weight);
-        Fill("h_leadingLeptonEta",muit->Eta(),weight);
+        Fill("h_leadingLepton_Pt", muit->Pt(),weight);
+        Fill("h_leadingLepton_Eta",muit->Eta(),weight);
+        Fill("h_leadingLepton_LeptonRelIso", LeptonRelIso, weight);
+        Fill("h_leadingLepton_dXY", fabs(muit->dXY()), weight);
+        Fill("h_leadingLepton_dXYSig", fabs(muit->dXYSig()), weight);
+        Fill("h_leadingLepton_dZ", muit->dZ(), weight);
+        Fill("h_leadingLepton_GlobalChi2", muit->GlobalChi2(), weight);
       }
       if(imu ==1) {
-        Fill("h_secondLeptonPt", muit->Pt(),weight);
-        Fill("h_secondLeptonEta",muit->Eta(),weight);
+        Fill("h_secondLepton_Pt", muit->Pt(),weight);
+        Fill("h_secondLepton_Eta",muit->Eta(),weight);
+        Fill("h_secondLepton_LeptonRelIso", LeptonRelIso, weight);
+        Fill("h_secondLepton_dXY", fabs(muit->dXY()), weight);
+        Fill("h_secondLepton_dXYSig", fabs(muit->dXYSig()), weight);
+        Fill("h_secondLepton_dZ", muit->dZ(), weight);
+        Fill("h_secondLepton_GlobalChi2", muit->GlobalChi2(), weight);
       }
-      if(imu ==2) {
-        Fill("h_thirdLeptonPt", muit->Pt(),weight);
-        Fill("h_thirdLeptonEta",muit->Eta(),weight);
-      }
+    }
+    Fill("h_thirdLepton_Pt", electrons[0].Pt(),weight);
+    Fill("h_thirdLepton_Eta",electrons[0].Eta(),weight);
+    Fill("h_thirdLepton_LeptonRelIso", electrons[0].PFRelIso(0.3), weight);
+    Fill("h_thirdLepton_dXY", fabs(electrons[0].dxy()), weight);
+    Fill("h_thirdLepton_dXYSig", fabs(electrons[0].dxySig()), weight);
+    Fill("h_thirdLepton_dZ", electrons[0].dz(), weight);
 
-    }
-
-    if(jets.size() >1){
-      snu::KParticle jj = jets[0] + jets[1];
-      snu::KParticle l1jj = electrons[0] + jets[0] + jets[1];
-      snu::KParticle l2jj = electrons[1] + jets[0] + jets[1];
-      snu::KParticle llljj = electrons[0] + electrons[1] + electrons[2] + jets[0] + jets[1];
-      Fill("h_l1jjmass", l1jj.M() ,weight);
-      Fill("h_l2jjmass", l2jj.M() ,weight);
-      Fill("h_llljjmass", llljj.M() ,weight);
-      Fill("h_dijetmass", jj.M() ,weight);
-
-    }
- 
-  }
-*/
-  
-  int sum_charge=0;
-  for(std::vector<snu::KElectron>::iterator muit = electrons.begin(); muit != electrons.end(); muit++){
-    sum_charge+= muit->Charge();
-  }
-  for(std::vector<snu::KMuon>::iterator muit = muons.begin(); muit != muons.end(); muit++){
-    sum_charge+= muit->Charge();
-  }
-  if(fabs(sum_charge)!=1){
-    for(std::vector<snu::KElectron>::iterator muit = electrons.begin(); muit != electrons.end(); muit++){
-      cout << "Electron charge = " <<  muit->Charge() << endl;
-    }
-    for(std::vector<snu::KMuon>::iterator muit = muons.begin(); muit != muons.end(); muit++){
-      cout << "Muon Charge = " << muit->Charge() << endl;
-    }
-    cout << "Sum charge = " << sum_charge << endl;
   }
   
-  Fill("h_sumcharge",sum_charge, weight);
-  
- 
   Fill("h_Njets",jets.size(), weight);
-  int nbjet=0;
-  for(UInt_t j=0; j < jets.size(); j++){
-    if(jets.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Medium)) nbjet++;
+  int nbjet(NBjet);
+  if(NBjet==-999){
+    int nbjet=0;
+    for(UInt_t j=0; j < jets.size(); j++){
+      if(jets.at(j).IsBTagged(snu::KJet::CSVv2, snu::KJet::Medium)) nbjet++;
+    }
   }
   Fill("h_Nbjets", nbjet, weight); 
 
@@ -227,8 +247,6 @@ void HNTriLeptonPlots::Fill(snu::KEvent ev, std::vector<snu::KMuon>& muons, std:
   Fill("h_PFMET",thismet, weight);
   Fill("h_PFMET_phi",thismetphi, weight);
   Fill("h_nVertices", ev.nVertices(), weight);
-
-
   
   for(UInt_t j=0; j < jets.size(); j++){
     Fill("h_jets_pt", jets[j].Pt(),weight);
@@ -353,7 +371,28 @@ void HNTriLeptonPlots::SetMetInfo(double met, double metphi){
   METphi = metphi;
 }
 
+void HNTriLeptonPlots::SetParticleInfo(snu::KParticle *hn, snu::KParticle w_pri_lowmass, snu::KParticle w_pri_highmass, snu::KParticle w_sec){
 
+  HN = hn;
+  W_pri_lowmass = w_pri_lowmass;
+  W_pri_highmass = w_pri_highmass;
+  W_sec = w_sec;
+
+}
+
+void HNTriLeptonPlots::SetChargeSign(double os, double ss0, double ss1){
+
+  OppSign = os;
+  SameSign[0] = ss0;
+  SameSign[1] = ss1;
+
+}
+
+void HNTriLeptonPlots::SetBJet(int nbjet){
+
+  NBjet = nbjet;
+
+}
 
 
 
