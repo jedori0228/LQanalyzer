@@ -147,6 +147,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
 
   if(!isData && !k_running_nonprompt){
     weight*=pileup_reweight;
+    weight*=GetKFactor();
   }
 
   //==========================

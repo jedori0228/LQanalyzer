@@ -20,7 +20,6 @@ class trilepton_mumumu_ntp : public AnalyzerCore {
   void InitialiseAnalysis() throw( LQError );
   void MakeHistograms();
   void FillCutFlow(TString cut, float w);
-  int find_genmatching(snu::KParticle gen, std::vector<snu::KMuon> recos, std::vector<int>& used_index);
   int GetSignalMass();
 
  private:

@@ -72,6 +72,52 @@ void trilepton_mumumu::InitialiseAnalysis() throw( LQError ) {
 
 void trilepton_mumumu::ExecuteEvents()throw( LQError ){
 
+/*
+
+  //==== Electron Charge flip
+
+  float etaarray [] = {0.0, 0.9, 1.4442, 1.556, 2.5};
+  float ptarray [] = {20., 30., 40., 50., 60., 70., 80., 90., 100., 120., 140., 160., 180., 200., 220., 240., 260., 280., 300., 320., 340., 360., 380., 400., 450., 500.};
+  std::vector<snu::KElectron> testel = GetElectrons(true, true, "ELECTRON_HN_TIGHT");
+  for(unsigned int i=0; i<testel.size(); i++){
+    snu::KElectron el = testel.at(i);
+    FillHist("TEST_Electron_CF_F0", fabs(el.Eta()), el.Pt(), 1., etaarray, 4, ptarray, 25);
+    if(MCIsCF(el)) FillHist("TEST_Electron_CF_F", fabs(el.Eta()), el.Pt(), 1., etaarray, 4, ptarray, 25);
+  }
+  return;
+*/
+
+/*
+
+  //==== Muon from tau prompt check
+
+  std::vector<snu::KMuon> testmuon = GetHNTriMuonsByLooseRelIso(0.4, true);
+  for(unsigned int i=0;i<testmuon.size();i++){
+    snu::KMuon muon = testmuon.at(i);
+    if(!muon.MCMatched() && muon.MCFromTau()){
+      FillHist("TEST_FromTauNotMCMatched", 0., 1., 0., 2., 2);
+      if(muon.RelIso04()<0.1){
+        FillHist("TEST_FromTauNotMCMatched", 1., 1., 0., 2., 2);
+      }
+
+      int mpdgid = muon.MotherPdgId();
+      if(mpdgid<50){
+        FillHist("TEST_FromTauNotMCMatched_mpdgidless50", 0., 1., 0., 2., 2);
+        if(muon.RelIso04()<0.1){
+          FillHist("TEST_FromTauNotMCMatched_mpdgidless50", 1., 1., 0., 2., 2);
+        }
+      }
+      else{
+        FillHist("TEST_FromTauNotMCMatched_mpdgidgreater50", 0., 1., 0., 2., 2);
+        if(muon.RelIso04()<0.1){
+          FillHist("TEST_FromTauNotMCMatched_mpdgidgreater50", 1., 1., 0., 2., 2);
+        }
+      }
+    }
+  }
+  return;
+*/
+
   //============================================
   //==== Apply the gen weight (for NLO, +1,-1)
   //============================================
@@ -177,16 +223,6 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     std::vector<KLepton> leptontriLooseColl_raw;
     for(unsigned int i=0; i<muontriLooseColl_raw.size(); i++) leptontriLooseColl_raw.push_back( muontriLooseColl_raw.at(i) );
     for(unsigned int i=0; i<electrontriLooseColl_raw.size(); i++) leptontriLooseColl_raw.push_back( electrontriLooseColl_raw.at(i) );
-/*
-      cout << "Making KLepton from Muon.." << endl;
-      KLepton leptmp = KLepton(muontriLooseColl_raw.at(i));
-      leptontriLooseColl_raw.push_back( leptmp );
-    }
-    for(unsigned int i=0; i<electrontriLooseColl_raw.size(); i++){
-      KLepton leptmp = KLepton(electrontriLooseColl_raw.at(i));
-      leptontriLooseColl_raw.push_back( leptmp );
-    }
-*/
 
     //==== find gen_l_1
     //cout << "[gen_l_1] : pt = " << gen_l_1.Pt() << ", eta = " << gen_l_1.Eta() << endl;
@@ -202,15 +238,57 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     std::vector<KLepton> leptontriLooseColl_genorder;
     if(loose_l_1_index!=-1){
       leptontriLooseColl_genorder.push_back( leptontriLooseColl_raw.at(loose_l_1_index) );
+/*
+      if(leptontriLooseColl_raw.at(loose_l_1_index).LeptonFlavour() == KLepton::MUON){
+        FillHist("TEST_gen_l_1_dXY", fabs(leptontriLooseColl_raw.at(loose_l_1_index).dXY()), 1., 0., 0.1, 1000);
+        FillHist("TEST_gen_l_1_dXYSig", fabs(leptontriLooseColl_raw.at(loose_l_1_index).dXYSig()), 1., 0., 10., 100);
+        if(fabs(leptontriLooseColl_raw.at(loose_l_1_index).Eta()) < 1.4442){
+          FillHist("TEST_gen_l_1_dXY_Barrel", fabs(leptontriLooseColl_raw.at(loose_l_1_index).dXY()), 1., 0., 0.1, 1000);
+          FillHist("TEST_gen_l_1_dXYSig_Barrel", fabs(leptontriLooseColl_raw.at(loose_l_1_index).dXYSig()), 1., 0., 10., 100);
+        }
+        else{
+          FillHist("TEST_gen_l_1_dXY_Endcap", fabs(leptontriLooseColl_raw.at(loose_l_1_index).dXY()), 1., 0., 0.1, 1000);
+          FillHist("TEST_gen_l_1_dXYSig_Endcap", fabs(leptontriLooseColl_raw.at(loose_l_1_index).dXYSig()), 1., 0., 10., 100);
+        }
+      }
+*/
     }
     if(loose_l_2_index!=-1){
       leptontriLooseColl_genorder.push_back( leptontriLooseColl_raw.at(loose_l_2_index) );
+/*
+      if(leptontriLooseColl_raw.at(loose_l_2_index).LeptonFlavour() == KLepton::MUON){
+        FillHist("TEST_gen_l_2_dXY", fabs(leptontriLooseColl_raw.at(loose_l_2_index).dXY()), 1., 0., 0.1, 1000);
+        FillHist("TEST_gen_l_2_dXYSig", fabs(leptontriLooseColl_raw.at(loose_l_2_index).dXYSig()), 1., 0., 10., 100);
+        if(fabs(leptontriLooseColl_raw.at(loose_l_2_index).Eta()) < 1.4442){
+          FillHist("TEST_gen_l_2_dXY_Barrel", fabs(leptontriLooseColl_raw.at(loose_l_2_index).dXY()), 1., 0., 0.1, 1000);
+          FillHist("TEST_gen_l_2_dXYSig_Barrel", fabs(leptontriLooseColl_raw.at(loose_l_2_index).dXYSig()), 1., 0., 10., 100);
+        }
+        else{
+          FillHist("TEST_gen_l_2_dXY_Endcap", fabs(leptontriLooseColl_raw.at(loose_l_2_index).dXY()), 1., 0., 0.1, 1000);
+          FillHist("TEST_gen_l_2_dXYSig_Endcap", fabs(leptontriLooseColl_raw.at(loose_l_2_index).dXYSig()), 1., 0., 10., 100);
+        }
+      }
+*/
     }
     if(loose_l_3_index!=-1){
       leptontriLooseColl_genorder.push_back( leptontriLooseColl_raw.at(loose_l_3_index) );
+/*
+      if(leptontriLooseColl_raw.at(loose_l_3_index).LeptonFlavour() == KLepton::MUON){
+        FillHist("TEST_gen_l_3_dXY", fabs(leptontriLooseColl_raw.at(loose_l_3_index).dXY()), 1., 0., 0.1, 1000);
+        FillHist("TEST_gen_l_3_dXYSig", fabs(leptontriLooseColl_raw.at(loose_l_3_index).dXYSig()), 1., 0., 10., 100);
+        if(fabs(leptontriLooseColl_raw.at(loose_l_3_index).Eta()) < 1.4442){
+          FillHist("TEST_gen_l_3_dXY_Barrel", fabs(leptontriLooseColl_raw.at(loose_l_3_index).dXY()), 1., 0., 0.1, 1000);
+          FillHist("TEST_gen_l_3_dXYSig_Barrel", fabs(leptontriLooseColl_raw.at(loose_l_3_index).dXYSig()), 1., 0., 10., 100);
+        }
+        else{
+          FillHist("TEST_gen_l_3_dXY_Endcap", fabs(leptontriLooseColl_raw.at(loose_l_3_index).dXY()), 1., 0., 0.1, 1000);
+          FillHist("TEST_gen_l_3_dXYSig_Endcap", fabs(leptontriLooseColl_raw.at(loose_l_3_index).dXYSig()), 1., 0., 10., 100);
+        }
+      }
+*/
     }
 
-    //==== now osrt leptontriLooseColl_genorder to ptorder, and replace
+    //==== now sort leptontriLooseColl_genorder to ptorder, and replace
     leptontriLooseColl_genorder = sort_leptons_ptorder( leptontriLooseColl_genorder );
     for(unsigned int i=0; i<leptontriLooseColl_genorder.size(); i++){
       if(leptontriLooseColl_genorder.at(i).LeptonFlavour() == KLepton::MUON) muontriLooseColl.push_back( *leptontriLooseColl_genorder.at(i).GetMuonPtr() );
@@ -324,8 +402,8 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     muontriLooseColl = GetHNTriMuonsByLooseRelIso(this_RelIso, false);
     electrontriLooseColl = GetElectrons(false, false, "ELECTRON_HN_LOWDXY_FAKELOOSE");
   }
-  muontriLooseColl = GetHNTriMuonsByLooseRelIso(this_RelIso, false);
-  electrontriLooseColl = GetElectrons(false, false, "ELECTRON_HN_LOWDXY_FAKELOOSE");
+
+  muontriLooseColl = sort_muons_ptorder(muontriLooseColl);
 
   //=========================== 
   //==== Get Muon Corrections
@@ -381,6 +459,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     weight*=MuTrkEffSF;
     weight*=trigger_ps_weight;
     weight*=pileup_reweight;
+    weight*=GetKFactor();
   }
 
   //==================================
@@ -403,7 +482,9 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   int n_triTight_leptons = n_triTight_muons+n_triTight_electrons;
 
 /*
+
   //==== Tight RelIso Study
+
   for(int i=0; i<100; i++){
     double test_reliso = 0.01*(i+1);
     std::vector<snu::KMuon> TestMuon = GetHNTriMuonsByLooseRelIso(test_reliso, true);
@@ -425,7 +506,9 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   FillHist("n_tight_muon", n_triTight_muons, 1., 0., 10., 10);
 
 /*
+
   //==== ZG study
+
   if(k_sample_name.Contains("ZG")){
 
     std::vector<snu::KElectron> allel = GetElectrons(false, true, "ELECTRON_HN_LOWDXY_TIGHT");
@@ -743,8 +826,6 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     return;
 
   }
-
-  if(k_sample_name.Contains("ZZTo4L_powheg")) weight *= 1.16;
 
   muontriLooseColl = sort_muons_ptorder(muontriLooseColl);
   SetPlotHNTriLepMetInfo(MET, METphi);

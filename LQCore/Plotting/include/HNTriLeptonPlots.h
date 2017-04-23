@@ -68,6 +68,7 @@ class HNTriLeptonPlots : public StdPlots{
   void SetParticleInfo(snu::KParticle *hn, snu::KParticle w_pri_lowmass, snu::KParticle w_pri_highmass, snu::KParticle w_sec);
   void SetChargeSign(double os, double ss0, double ss1);
   void SetBJet(int nbjet);
+  double MT(TLorentzVector a, TLorentzVector b);
 
  private:
   std::map<TString, TH1*> map_sig; 

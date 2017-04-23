@@ -138,6 +138,8 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
     muontriLooseColl = GetHNTriMuonsByLooseRelIso(this_RelIso, false);
   }
 
+  muontriLooseColl = sort_muons_ptorder(muontriLooseColl);
+
   //=========================== 
   //==== Get Muon Corrections
   //===========================
@@ -247,11 +249,10 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
       weight*=MuTrkEffSF;
       weight*=electron_sf;
       weight*=electron_RecoSF;
+      weight*=GetKFactor();
     }
 
   }
-
-  if(k_sample_name.Contains("ZZTo4L_powheg")) weight *= 1.16;
 
   //============================================
   //==== Number of Loose/Tight Muons/Electrons

@@ -96,6 +96,7 @@ declare -a trilep_CR_bkg=(
 'ttW' 'ttZ'
 'ttH_nonbb'
 'ZGto2LG' 'WGtoLNuG'
+'ggZZto2e2mu' 'ggZZto2e2nu' 'ggZZto2e2tau' 'ggZZto2mu2nu' 'ggZZto2mu2tau' 'ggZZto4e' 'ggZZto4mu' 'ggZZto4tau'
 )
 declare -a dilep_CR_bkg=(
 'DYJets_10to50' 'DYJets'

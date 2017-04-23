@@ -275,6 +275,8 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
       }
     }
 
+    muontriLooseColl = sort_muons_ptorder(muontriLooseColl);
+
     //==== MET is calculated with No-Rochestor-Corrected Muons
     //==== In this step, muons are 
     //==== 1) Rochestor corrected & Up/Down
@@ -319,6 +321,9 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
 
     bool isThreeMuon   = (n_triLoose_leptons == 3)
                          && (n_triLoose_muons == 3 && n_triTight_muons != 3);
+    bool isTwoMuonOneElectron = (n_triLoose_leptons == 3)
+                                && (n_triLoose_muons == 2 && n_triTight_muons == 2)
+                                && (n_triLoose_electrons == 1 && n_triTight_electrons == 1);
     bool isThreeLepton = (n_triLoose_leptons == 3) && (n_triTight_leptons != 3);
     bool isFourLepton  = (n_triLoose_leptons == 4)
                          && (
@@ -329,56 +334,135 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
 
     if(n_triLoose_leptons < 3) continue;
 
+    std::vector<KLepton> lep;
+    for(unsigned int i=0; i<muontriLooseColl.size(); i++){
+      KLepton this_lep( muontriLooseColl.at(i) );
+      lep.push_back( this_lep );
+    }
+    for(unsigned int i=0; i<electrontriLooseColl.size(); i++){
+      KLepton this_lep( electrontriLooseColl.at(i) );
+      lep.push_back( this_lep );
+    }
+
+    int ThreeLeptonConfig = -999, FourLeptonConfig = -999;
+
+    if(isThreeLepton){
+
+      //==== 3 Muon : ThreeLeptonConfig = 0;
+      //==== 2 Muon + 1 Electron : ThreeLeptonConfig = 1;
+      //==== 1 Muon + 2 Electron ; ThreeLeptonConfig = 2;
+      //==== 3 Electron : ThreeLeptonConfig = 3;
+
+      if(muontriLooseColl.size()==3 || electrontriLooseColl.size()==3){
+
+        if(muontriLooseColl.size()==3)     ThreeLeptonConfig = 0;
+        if(electrontriLooseColl.size()==3) ThreeLeptonConfig = 3;
+
+      }
+      else if(muontriLooseColl.size()==2){
+
+        ThreeLeptonConfig = 1;
+
+      }
+      else if(electrontriLooseColl.size()==2){
+
+        ThreeLeptonConfig = 2;
+
+      }
+      else{
+
+        Message("?", INFO);
+
+      }
+    }
+
+    if(isFourLepton){
+
+      //==== 4 Muon : FourLeptonConfig = 0;
+      //==== 2 Muon + 2 Electron : FourLeptonConfig = 1;
+      //==== 4 Electron : FourLeptonConfig = 2;
+
+      if(muontriLooseColl.size()==4 || electrontriLooseColl.size()==4){
+
+        if(muontriLooseColl.size()==4)     FourLeptonConfig = 0;
+        if(electrontriLooseColl.size()==4) FourLeptonConfig = 2;
+
+      }
+      else if(muontriLooseColl.size()==2){
+
+        FourLeptonConfig = 1;
+
+      }
+      else{
+        Message("?", INFO);
+      }
+    }
+
     //==============================
     //==== Signal Region Variables
     //==============================
 
     bool isPreselection(false);
-    snu::KParticle HN[4], W_pri_lowmass, W_pri_highmass, W_sec;
+    snu::KParticle HN[4], W_pri_lowmass, W_pri_highmass, W_sec, gamma_star;
+    double deltaR_OS_min(-999);
 
-    if(isThreeMuon){
+    if(isThreeMuon || isTwoMuonOneElectron){
 
-      snu::KParticle mu[3];
-      for(int i=0;i<3;i++){
-        mu[i] = muontriLooseColl.at(i);
-      }
-
-      bool AllSameCharge = false;
+     bool AllSameCharge = false;
       int OppSign=0, SameSign[2]={1,2}; // SameSign[0].Pt() > SameSign[1].Pt()
-      if(mu[0].Charge() * mu[1].Charge() > 0){ // Q(0) = Q(1)
-        if(mu[1].Charge() * mu[2].Charge() < 0){ // Q(1) != Q(2)
-          OppSign = 2;
-          SameSign[0] = 0;
-          SameSign[1] = 1;
+      if(isThreeMuon){
+
+        if(lep[0].Charge() * lep[1].Charge() > 0){ // Q(0) = Q(1)
+          if(lep[1].Charge() * lep[2].Charge() < 0){ // Q(1) != Q(2)
+            OppSign = 2;
+            SameSign[0] = 0;
+            SameSign[1] = 1;
+          }
+          else AllSameCharge = true; // veto Q(0) = Q(1) = Q(2)
         }
-        else AllSameCharge = true; // veto Q(0) = Q(1) = Q(2)
+        else{ // Q(0) != Q(1)
+          if(lep[0].Charge() * lep[2].Charge() > 0){ // Q(0) = Q(2)
+            OppSign = 1;
+            SameSign[0] = 0;
+            SameSign[1] = 2;
+          }
+          else if(lep[1].Charge() * lep[2].Charge() > 0){ // Q(1) = Q(2)
+            OppSign = 0;
+            SameSign[0] = 1;
+            SameSign[1] = 2;
+          }
+        } // Find l2 and assign l1&l3 in ptorder 
+
       }
-      else{ // Q(0) != Q(1)
-        if(mu[0].Charge() * mu[2].Charge() > 0){ // Q(0) = Q(2)
-          OppSign = 1;
-          SameSign[0] = 0;
-          SameSign[1] = 2;
-        }
-        else if(mu[1].Charge() * mu[2].Charge() > 0){ // Q(1) = Q(2)
-          OppSign = 0;
-          SameSign[0] = 1;
-          SameSign[1] = 2;
-        }
-      } // Find l2 and assign l1&l3 in ptorder 
+      else if(isTwoMuonOneElectron){
+
+        //==== We want SS muon.
+        //==== If OS, return
+        if(muontriLooseColl.at(0).Charge() != muontriLooseColl.at(1).Charge()) AllSameCharge = true;
+        //==== Remaining electron should have opposite sign
+        //==== If SS, return
+        if(muontriLooseColl.at(0).Charge() == electrontriLooseColl.at(0).Charge()) AllSameCharge = true;
+
+        OppSign = 2;
+        SameSign[0] = 0;
+        SameSign[1] = 1;
+
+      }
+      else{}
 
       bool mllsf4 = false;
-      if( (mu[SameSign[0]]+mu[OppSign]).M() <= 4. ||
-          (mu[SameSign[1]]+mu[OppSign]).M() <= 4.     ) mllsf4 = true;
+      if(isThreeMuon){
+        if( (lep[SameSign[0]]+lep[OppSign]).M() <= 4. ||
+            (lep[SameSign[1]]+lep[OppSign]).M() <= 4.     ) mllsf4 = true;
+      }
 
       //==== m(HN) < 80 GeV region
 
       snu::KParticle nu_lowmass;
       nu_lowmass.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET);
       double pz_sol_lowmass[2];
-      pz_sol_lowmass[0] = solveqdeq(80.4, mu[0]+mu[1]+mu[2], MET, METphi, "m"); // 0 = minus
-      pz_sol_lowmass[1] = solveqdeq(80.4, mu[0]+mu[1]+mu[2], MET, METphi, "p"); // 1 = plus
-      //PutNuPz(&selection_nu[0], solveqdeq(80.4, mu[0]+mu[1]+mu[2], MET, METphi, "m"));
-      //PutNuPz(&selection_nu[1], solveqdeq(80.4, mu[0]+mu[1]+mu[2], MET, METphi, "p")); // 0 = minus, 1 = plus
+      pz_sol_lowmass[0] = solveqdeq(80.4, lep[0]+lep[1]+lep[2], MET, METphi, "m"); // 0 = minus
+      pz_sol_lowmass[1] = solveqdeq(80.4, lep[0]+lep[1]+lep[2], MET, METphi, "p"); // 1 = plus
 
       int solution_selection_lowmass = 0;
       if( pz_sol_lowmass[0] != pz_sol_lowmass[1] ){
@@ -397,18 +481,20 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
       //==== [class2]
       //==== HN60       - SS_subleading is primary
 
-      HN[0] = mu[OppSign] + mu[SameSign[1]] + nu_lowmass; // [class1]
-      HN[1] = mu[OppSign] + mu[SameSign[0]] + nu_lowmass; // [class2]
-      W_pri_lowmass = mu[0] + mu[1] + mu[2] + nu_lowmass;
+      HN[0] = lep[OppSign] + lep[SameSign[1]] + nu_lowmass; // [class1]
+      HN[1] = lep[OppSign] + lep[SameSign[0]] + nu_lowmass; // [class2]
+      W_pri_lowmass = lep[0] + lep[1] + lep[2] + nu_lowmass;
 
       //==== m(HN) > 80 GeV region
 
       snu::KParticle nu_highmass;
       nu_highmass.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET);
-      int l_3_index = find_mlmet_closest_to_W(mu, nu_highmass);
+      int l_3_index(0);
+      if(isThreeMuon) l_3_index = find_mlmet_closest_to_W(lep, nu_highmass);
+      else if(isTwoMuonOneElectron) l_3_index = 2;
       double pz_sol_highmass[2];
-      pz_sol_highmass[0] = solveqdeq(80.4, mu[l_3_index], MET, METphi, "m"); // 0 = minus
-      pz_sol_highmass[1] = solveqdeq(80.4, mu[l_3_index], MET, METphi, "p"); // 1 = plus
+      pz_sol_highmass[0] = solveqdeq(80.4, lep[l_3_index], MET, METphi, "m"); // 0 = minus
+      pz_sol_highmass[1] = solveqdeq(80.4, lep[l_3_index], MET, METphi, "p"); // 1 = plus
       int solution_selection_highmass = 0;
       if( pz_sol_highmass[0] != pz_sol_highmass[1] ){
         //==== take the one with smaller magnitude
@@ -418,33 +504,52 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
       }
       PutNuPz( &nu_highmass, pz_sol_highmass[solution_selection_highmass] );
 
-      W_pri_highmass = mu[0] + mu[1] + mu[2] + nu_highmass;
+      W_pri_highmass = lep[0] + lep[1] + lep[2] + nu_highmass;
 
       //==== [class3]
       //==== m(HN) : 90 ~ 1000 GeV - primary lepton has larger pT
       //==== [class4]
       //==== m(HN) > 1000 GeV - primary lepton has smaller pT
 
-      W_sec = mu[l_3_index] + nu_highmass;
+      W_sec = lep[l_3_index] + nu_highmass;
 
-      if(l_3_index == OppSign){
-        HN[2] = W_sec + mu[SameSign[1]]; // [class3]
-        HN[3] = W_sec + mu[SameSign[0]]; // [class4]
+      if(isThreeMuon){
+
+        if(l_3_index == OppSign){
+          HN[2] = W_sec + lep[SameSign[1]]; // [class3]
+          HN[3] = W_sec + lep[SameSign[0]]; // [class4]
+        }
+        else{
+          HN[2] = W_sec + lep[OppSign]; // [class3]
+          HN[3] = W_sec + lep[OppSign]; // [class4]
+        }
+
       }
-      else{
-          HN[2] = W_sec + mu[OppSign]; // [class3]
-          HN[3] = W_sec + mu[OppSign]; // [class4]
+      else if(isTwoMuonOneElectron){
+
+        HN[2] = W_sec + lep[SameSign[1]]; // [class3]
+        HN[3] = W_sec + lep[SameSign[0]]; // [class4]
+
       }
 
       //==== make mZ for Z veto
 
-      double mz_SR = 0.;
-      if( fabs( (mu[OppSign] + mu[SameSign[0]]).M() - 91.1876 ) <
-          fabs( (mu[OppSign] + mu[SameSign[1]]).M() - 91.1876 )   ){
-        mz_SR = (mu[OppSign] + mu[SameSign[0]]).M();
+      if( lep[OppSign].DeltaR(lep[SameSign[0]]) < lep[OppSign].DeltaR(lep[SameSign[1]]) ){
+        deltaR_OS_min = lep[OppSign].DeltaR(lep[SameSign[0]]);
+        gamma_star = lep[OppSign] + lep[SameSign[0]];
       }
       else{
-        mz_SR = (mu[OppSign] + mu[SameSign[1]]).M();
+        deltaR_OS_min = lep[OppSign].DeltaR(lep[SameSign[1]]);
+        gamma_star = lep[OppSign] + lep[SameSign[1]];
+      }
+
+      double mz_SR = 0.;
+      if( fabs( (lep[OppSign] + lep[SameSign[0]]).M() - 91.1876 ) <
+          fabs( (lep[OppSign] + lep[SameSign[1]]).M() - 91.1876 )   ){
+        mz_SR = (lep[OppSign] + lep[SameSign[0]]).M();
+      }
+      else{
+        mz_SR = (lep[OppSign] + lep[SameSign[1]]).M();
       }
 
       bool LeadMuonPtCut = muontriLooseColl.at(0).Pt() > 20.;
@@ -453,11 +558,13 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
       bjetveto = true;
 
       bool VetoZResonance = fabs(mz_SR-91.1876) > 15.;
+      if(isTwoMuonOneElectron) VetoZResonance = true;
 
-      bool mllloffZ = fabs( (mu[0] + mu[1] + mu[2]).M() - 91.1876 ) > 15.;
+      bool mllloffZ = fabs( (lep[0] + lep[1] + lep[2]).M() - 91.1876 ) > 15.;
+      if(isTwoMuonOneElectron) mllloffZ = true;
 
       //==== Finally, boolean for Preselection
-      isPreselection = isThreeMuon && LeadMuonPtCut && (!AllSameCharge) && (!mllsf4) && bjetveto && VetoZResonance && mllloffZ;
+      isPreselection = LeadMuonPtCut && (!AllSameCharge) && (!mllsf4) && bjetveto && VetoZResonance && mllloffZ;
 
     }
 
@@ -466,47 +573,32 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     //===============================
 
     bool isWZ(false), isZJets(false), isZLep(false), isZGamma(false);
-    int ThreeLeptonConfig = -999;
     bool isZZ(false);
-    int FourLeptonConfig = -999;
 
     if(isThreeLepton){
 
-      std::vector<KLepton> lep;
-      for(unsigned int i=0; i<muontriLooseColl.size(); i++){
-        KLepton this_lep( muontriLooseColl.at(i) );
-        lep.push_back( this_lep );
-      }
-      for(unsigned int i=0; i<electrontriLooseColl.size(); i++){
-        KLepton this_lep( electrontriLooseColl.at(i) );
-        lep.push_back( this_lep );
-      }
-
       bool AllSameCharge(false);
+
       //==== 3 Muon : ThreeLeptonConfig = 0;
       //==== 2 Muon + 1 Electron : ThreeLeptonConfig = 1;
       //==== 1 Muon + 2 Electron ; ThreeLeptonConfig = 2;
       //==== 3 Electron : ThreeLeptonConfig = 3;
 
-      if(muontriLooseColl.size()==3 || electrontriLooseColl.size()==3){
-
-        if(muontriLooseColl.size()==3)     ThreeLeptonConfig = 0;
-        if(electrontriLooseColl.size()==3) ThreeLeptonConfig = 3;
+      if(ThreeLeptonConfig==0 || ThreeLeptonConfig==3){
 
         if( ( lep.at(0).Charge() == lep.at(1).Charge() ) &&
             ( lep.at(0).Charge() == lep.at(2).Charge() ) ) AllSameCharge = true;
-      }
-      else if(muontriLooseColl.size()==2){
 
-        ThreeLeptonConfig = 1;
+      }
+      else if(ThreeLeptonConfig==1){
 
         if( muontriLooseColl.at(0).Charge() == muontriLooseColl.at(1).Charge() ) AllSameCharge = true;
-      }
-      else if(electrontriLooseColl.size()==2){
 
-        ThreeLeptonConfig = 2;
+      }
+      else if(ThreeLeptonConfig==2){
 
         if( electrontriLooseColl.at(0).Charge() == electrontriLooseColl.at(1).Charge() ) AllSameCharge = true;
+
       }
       else{
         Message("?", INFO);
@@ -618,25 +710,6 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
         lep.push_back( this_lep );
       }
 
-      //==== 4 Muon : FourLeptonConfig = 0;
-      //==== 2 Muon + 2 Electron : FourLeptonConfig = 1;
-      //==== 4 Electron : FourLeptonConfig = 2;
-
-      if(muontriLooseColl.size()==4 || electrontriLooseColl.size()==4){
-
-        if(muontriLooseColl.size()==4)     FourLeptonConfig = 0;
-        if(electrontriLooseColl.size()==4) FourLeptonConfig = 2;
-
-      }
-      else if(muontriLooseColl.size()==2){
-
-        FourLeptonConfig = 1;
-
-      }
-      else{
-        Message("?", INFO);
-      }
-
       std::vector<KLepton> LepPlus, LepMinus;
       for(unsigned int i=0; i<lep.size(); i++){
         if(lep.at(i).Charge() > 0) LepPlus.push_back(lep.at(i));
@@ -669,11 +742,9 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     double pt0(0.), pt1(0.), pt2(0.);
     if(isPreselection){
 
-      std::vector<snu::KMuon> sorted_pt = sort_muons_ptorder(muontriLooseColl);
-      
-      pt0 = sorted_pt.at(0).Pt();
-      pt1 = sorted_pt.at(1).Pt();
-      pt2 = sorted_pt.at(2).Pt();
+      pt0 = lep.at(0).Pt();
+      pt1 = lep.at(1).Pt();
+      pt2 = lep.at(2).Pt();
 
     }
 
@@ -682,8 +753,8 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     if(this_syst=="FR_HalfSample_down") Dir_HalfSample = -1;
     if(this_syst=="FR_HalfSample_up") Dir_HalfSample = +1;
 
-    double this_weight     = m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_HN_LOWDXY_TIGHT", electrontriLooseColl.size(), Dir_HalfSample);
-    double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true,  muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_HN_LOWDXY_TIGHT", electrontriLooseColl.size(), Dir_HalfSample);
+    double this_weight =     m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON16_HN_TIGHT", electrontriLooseColl.size(), "ELECTRON16_HN_FAKELOOSE", "dijet_ajet40", Dir_HalfSample);
+    double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true,  muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON16_HN_TIGHT", electrontriLooseColl.size(), "ELECTRON16_HN_FAKELOOSE", "dijet_ajet40", Dir_HalfSample);
 
     double cutop[100];
     cutop[0] = pt0;
@@ -708,6 +779,8 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     cutop[19] = ThreeLeptonConfig;
     cutop[20] = FourLeptonConfig;
     cutop[21] = n_bjets;
+    cutop[22] = deltaR_OS_min;
+    cutop[23] = gamma_star.M();
 
     FillNtp("Ntp_"+this_syst,cutop);
 
@@ -788,21 +861,22 @@ void trilepton_mumumu_ntp_FR_method::MakeHistograms(){
    *  Remove//Overide this trilepton_mumumu_ntp_FR_methodCore::MakeHistograms() to make new hists for your analysis
    **/
 
-  MakeNtp("Ntp_MuonEn_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets");
-  MakeNtp("Ntp_MuonEn_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets");
-  MakeNtp("Ntp_JetEn_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets");
-  MakeNtp("Ntp_JetEn_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets");
-  MakeNtp("Ntp_JetRes_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets");
-  MakeNtp("Ntp_JetRes_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets");
-  MakeNtp("Ntp_Unclustered_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets");
-  MakeNtp("Ntp_Unclustered_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets");
-  MakeNtp("Ntp_Central", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets");
-  MakeNtp("Ntp_MuonIDSF_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets");
-  MakeNtp("Ntp_MuonIDSF_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets");
-  MakeNtp("Ntp_PU_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets");
-  MakeNtp("Ntp_PU_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets");
-  MakeNtp("Ntp_FR_HalfSample_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets");
-  MakeNtp("Ntp_FR_HalfSample_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets");
+MakeNtp("Ntp_MuonEn_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
+MakeNtp("Ntp_MuonEn_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
+MakeNtp("Ntp_JetEn_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
+MakeNtp("Ntp_JetEn_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
+MakeNtp("Ntp_JetRes_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
+MakeNtp("Ntp_JetRes_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
+MakeNtp("Ntp_Unclustered_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
+MakeNtp("Ntp_Unclustered_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
+MakeNtp("Ntp_Central", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
+MakeNtp("Ntp_MuonIDSF_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
+MakeNtp("Ntp_MuonIDSF_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
+MakeNtp("Ntp_PU_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
+MakeNtp("Ntp_PU_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
+MakeNtp("Ntp_FR_HalfSample_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
+MakeNtp("Ntp_FR_HalfSample_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
+
 
 }
 
