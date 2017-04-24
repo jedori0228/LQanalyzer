@@ -84,6 +84,8 @@ void FakeRateCalculator_Mu::InitialiseAnalysis() throw( LQError ) {
 
 void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
 
+  double thisdXYCut = 0.01;
+
   //============================================
   //==== Apply the gen weight (for NLO, +1,-1)
   //============================================
@@ -288,7 +290,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
         muontriNodXYCutLooseColl_raw.push_back( this_muon ); 
         if( this_muon.RelIso04() < 0.1 ) muontriNodXYCutTightColl_raw.push_back( this_muon );
         //==== Fill Small dXYSig
-        if( fabs(this_muon.dXY()) < 0.05 && fabs(this_muon.dXYSig()) < 3.0 ){
+        if( fabs(this_muon.dXY()) < thisdXYCut && fabs(this_muon.dXYSig()) < 3.0 ){
           muontriLooseColl_raw.push_back( this_muon );
           if( this_muon.RelIso04() < 0.1 ) muontriTightColl_raw.push_back( this_muon );
         }
@@ -305,7 +307,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
           muontriNodXYCutLooseColl.push_back( this_muon );
           if( this_muon.RelIso04() < 0.1 ) muontriNodXYCutTightColl.push_back( this_muon );
           //==== Fill Small dXYSig
-          if( fabs(this_muon.dXY()) < 0.05 && fabs(this_muon.dXYSig()) < 3.0 ){
+          if( fabs(this_muon.dXY()) < thisdXYCut && fabs(this_muon.dXYSig()) < 3.0 ){
             muontriLooseColl.push_back( this_muon );
             if( this_muon.RelIso04() < 0.1 ) muontriTightColl.push_back( this_muon );
           }
@@ -324,7 +326,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
             muontriNodXYCutLooseColl.push_back( this_muon );
             if( this_muon.RelIso04() < 0.1 ) muontriNodXYCutTightColl.push_back( this_muon );
             //==== Fill Small dXYSig
-            if( fabs(this_muon.dXY()) < 0.05 && fabs(this_muon.dXYSig()) < 3.0 ){
+            if( fabs(this_muon.dXY()) < thisdXYCut && fabs(this_muon.dXYSig()) < 3.0 ){
               muontriLooseColl.push_back( this_muon );
               if( this_muon.RelIso04() < 0.1 ) muontriTightColl.push_back( this_muon );
             }
@@ -761,10 +763,10 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
 
 
             //=========================================
-            //==== 2) |dXY| < 0.05 cm, |dXY/err| < 3.
+            //==== 2) |dXY| < thisdXYCut cm, |dXY/err| < 3.
             //=========================================
 
-            if( fabs( muon.dXY() ) < 0.05 &&
+            if( fabs( muon.dXY() ) < thisdXYCut &&
                 fabs( muon.dXYSig() ) < 3. ){
 
               //==== all jet
@@ -925,8 +927,8 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
           for(unsigned i=0; i<n_nodxycut_loose-1; i++){
             for(unsigned j=i+1; j<n_nodxycut_loose; j++){
               if( muontriNodXYCutLooseColl.at(i).Charge() == muontriNodXYCutLooseColl.at(j).Charge() ) continue;
-          bool i_muon_tight =  fabs(muontriNodXYCutLooseColl.at(i).dXY())<0.05 && fabs(muontriNodXYCutLooseColl.at(i).dXYSig())<3.0 && muontriNodXYCutLooseColl.at(i).RelIso04()<0.1;
-          bool j_muon_tight =  fabs(muontriNodXYCutLooseColl.at(j).dXY())<0.05 && fabs(muontriNodXYCutLooseColl.at(j).dXYSig())<3.0 && muontriNodXYCutLooseColl.at(j).RelIso04()<0.1;
+          bool i_muon_tight =  fabs(muontriNodXYCutLooseColl.at(i).dXY())<thisdXYCut && fabs(muontriNodXYCutLooseColl.at(i).dXYSig())<3.0 && muontriNodXYCutLooseColl.at(i).RelIso04()<0.1;
+          bool j_muon_tight =  fabs(muontriNodXYCutLooseColl.at(j).dXY())<thisdXYCut && fabs(muontriNodXYCutLooseColl.at(j).dXYSig())<3.0 && muontriNodXYCutLooseColl.at(j).RelIso04()<0.1;
 
               double m_thisOS = ( muontriNodXYCutLooseColl.at(i)+muontriNodXYCutLooseColl.at(j) ).M();
               if(  i_muon_tight &&  j_muon_tight && fabs(m_thisOS-91.2) < fabs(m_OS_Zclosest-91.2) ){
@@ -975,7 +977,7 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
             }
 
             //==== Small dXYSig
-            if( fabs(this_muon.dXY()) < 0.05 && fabs(this_muon.dXYSig()) < 3.0 ){
+            if( fabs(this_muon.dXY()) < thisdXYCut && fabs(this_muon.dXYSig()) < 3.0 ){
               FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_dXYSig", 0, this_weight, 0., 2., 2);
 
               FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_eta_F0", this_muon.Eta(), this_weight, -3, 3, 30);
