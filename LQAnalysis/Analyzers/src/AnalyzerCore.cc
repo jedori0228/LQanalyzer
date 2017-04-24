@@ -3319,64 +3319,95 @@ std::vector<KLepton> AnalyzerCore::sort_leptons_ptorder(std::vector<KLepton> lep
 
 }
 
-bool AnalyzerCore::PassOptimizedCut(int sig_mass, double first_pt, double second_pt, double third_pt, double W_pri_mass, double PFMET){
+bool AnalyzerCore::PassOptimizedCut(
+  int sig_mass, double first_pt, double second_pt, double third_pt,
+  double W_pri_mass, double HN_mass, 
+  double deltaR_OS_min, double gamma_star_mass,
+  double PFMET){
 
-  double cut_first_pt(0.), cut_second_pt(0.), cut_third_pt(0.), cut_W_pri_mass(0.), cut_PFMET(0.);
+  double cut_first_pt(0.), cut_second_pt(0.), cut_third_pt(0.),
+         cut_W_pri_mass(0.), cut_HN_mass(0.), 
+         cut_deltaR_OS_min(0.), cut_gamma_star_mass(0.),
+         cut_PFMET(0.);
 
   if(sig_mass == 5){
     cut_first_pt = 60.;
-    cut_second_pt = 45.;
+    cut_second_pt = 35.;
     cut_third_pt = 25.;
-    cut_W_pri_mass = 125.;
+    cut_W_pri_mass = 115.;
+    cut_HN_mass = 35.;
+    cut_deltaR_OS_min = 0;
+    cut_gamma_star_mass = 0.;
     cut_PFMET = 0.;
   }
   else if(sig_mass == 10){
-    cut_first_pt = 55.;
-    cut_second_pt = 40.;
-    cut_third_pt = 35.;
-    cut_W_pri_mass = 130.;
+    cut_first_pt = 60.;
+    cut_second_pt = 30.;
+    cut_third_pt = 30.;
+    cut_W_pri_mass = 140.;
+    cut_HN_mass = 40.;
+    cut_deltaR_OS_min = 0;
+    cut_gamma_star_mass = 0.;
     cut_PFMET = 0.;
   }
   else if(sig_mass == 20){
-    cut_first_pt = 50.;
-    cut_second_pt = 40.;
-    cut_third_pt = 40.;
-    cut_W_pri_mass = 130.;
+    cut_first_pt = 45.;
+    cut_second_pt = 30.;
+    cut_third_pt = 20.;
+    cut_W_pri_mass = 120.;
+    cut_HN_mass = 40.;
+    cut_deltaR_OS_min = 0.4;
+    cut_gamma_star_mass = 0.;
     cut_PFMET = 0.;
   }
   else if(sig_mass == 30){
     cut_first_pt = 45.;
-    cut_second_pt = 40.;
-    cut_third_pt = 35.;
-    cut_W_pri_mass = 130.;
+    cut_second_pt = 30.;
+    cut_third_pt = 25.;
+    cut_W_pri_mass = 120.;
+    cut_HN_mass = 40.;
+    cut_deltaR_OS_min = 0;
+    cut_gamma_star_mass = 10.;
     cut_PFMET = 0.;
   }
   else if(sig_mass == 40){
-    cut_first_pt = 35.;
-    cut_second_pt = 30.;
-    cut_third_pt = 25.;
-    cut_W_pri_mass = 130.;
+    cut_first_pt = 60.;
+    cut_second_pt = 45.;
+    cut_third_pt = 35.;
+    cut_W_pri_mass = 105.;
+    cut_HN_mass = 50.;
+    cut_deltaR_OS_min = 0;
+    cut_gamma_star_mass = 15.;
     cut_PFMET = 0.;
   }
   else if(sig_mass == 50){
     cut_first_pt = 30.;
     cut_second_pt = 30.;
     cut_third_pt = 30.;
-    cut_W_pri_mass = 125.;
+    cut_W_pri_mass = 130.;
+    cut_HN_mass = 80.;
+    cut_deltaR_OS_min = 0;
+    cut_gamma_star_mass = 20.;
     cut_PFMET = 0.;
   }
   else if(sig_mass == 60){
     cut_first_pt = 30.;
-    cut_second_pt = 25.;
-    cut_third_pt = 25.;
-    cut_W_pri_mass = 130.;
+    cut_second_pt = 30.;
+    cut_third_pt = 30.;
+    cut_W_pri_mass = 100.;
+    cut_HN_mass = 80.;
+    cut_deltaR_OS_min = 0;
+    cut_gamma_star_mass = 20.;
     cut_PFMET = 0.;
   }
   else if(sig_mass == 70){
     cut_first_pt = 35.;
-    cut_second_pt = 30.;
-    cut_third_pt = 25.;
-    cut_W_pri_mass = 125.;
+    cut_second_pt = 35.;
+    cut_third_pt = 30.;
+    cut_W_pri_mass = 100.;
+    cut_HN_mass = 80.;
+    cut_deltaR_OS_min = 0;
+    cut_gamma_star_mass = 15.;
     cut_PFMET = 0.;
   }
   else if(sig_mass == 90){
@@ -3448,10 +3479,13 @@ bool AnalyzerCore::PassOptimizedCut(int sig_mass, double first_pt, double second
 
   bool pass = true;
   if(sig_mass < 80){
-    if( !(first_pt < cut_first_pt) ) pass = false;
-    if( !(second_pt < cut_second_pt) ) pass = false;
-    if( !(third_pt < cut_third_pt) ) pass = false;
-    if( !(W_pri_mass < cut_W_pri_mass) ) pass = false;
+    if( ! (first_pt < cut_first_pt) ) pass = false;
+    if( ! (second_pt < cut_second_pt) ) pass = false;
+    if( ! (third_pt < cut_third_pt) ) pass = false;
+    if( ! (W_pri_mass < cut_W_pri_mass) ) pass = false;
+    if( ! (HN_mass < cut_HN_mass ) ) pass = false;
+    if( ! (deltaR_OS_min > cut_deltaR_OS_min) ) pass = false;
+    if( ! (gamma_star_mass > cut_gamma_star_mass) ) pass = false;
   }
   else{
     if( !(first_pt > cut_first_pt) ) pass = false;

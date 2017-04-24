@@ -483,7 +483,20 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
       double this_W_pri_mass = W_pri_lowmass.M();
       if( signal_masses[i] > 80 ) this_W_pri_mass = W_pri_highmass.M();
 
-      if( PassOptimizedCut(signal_masses[i], muontriLooseColl.at(0).Pt(), muontriLooseColl.at(1).Pt(), muontriLooseColl.at(2).Pt(), this_W_pri_mass, MET) ){
+      double hnmass = -999.;
+      if(signal_masses[i] <= 50) hnmass = HN[0].M();
+      else if(signal_masses[i] <= 80) hnmass = HN[1].M();
+      else if(signal_masses[i] <= 1000) hnmass = HN[2].M();
+      else hnmass = HN[3].M();
+
+      bool pass_op = PassOptimizedCut(signal_masses[i],
+        muontriLooseColl.at(0).Pt(), muontriLooseColl.at(1).Pt(), muontriLooseColl.at(2).Pt(),
+        this_W_pri_mass, hnmass,
+        deltaR_OS_min, gamma_star.M(),
+        MET
+      );
+
+      if(pass_op){
         FillCLHist(hntrilephist, thiscut+"_up", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight+this_weight_err);
         FillCLHist(hntrilephist, thiscut+"_down", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight-this_weight_err);
         FillCLHist(hntrilephist, thiscut, eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight);

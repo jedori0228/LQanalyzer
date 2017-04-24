@@ -369,7 +369,12 @@ class AnalyzerCore : public LQCycleBase {
   void SetPlotHNTriBJet(int nbjet);
   std::vector<snu::KMuon> sort_muons_ptorder(std::vector<snu::KMuon> muons);
   std::vector<KLepton> sort_leptons_ptorder(std::vector<KLepton> leptons);
-  bool PassOptimizedCut(int sig_mass, double first_pt, double second_pt, double third_pt, double W_pri_mass, double PFMET);
+  bool PassOptimizedCut(
+    int sig_mass, double first_pt, double second_pt, double third_pt,
+    double W_pri_mass, double HN_mass,
+    double deltaR_OS_min, double gamma_star_mass,
+    double PFMET
+  );
   int find_genmatching(snu::KTruth gen, std::vector<KLepton> recos, std::vector<int>& used_index);
 
   

@@ -238,54 +238,63 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     std::vector<KLepton> leptontriLooseColl_genorder;
     if(loose_l_1_index!=-1){
       leptontriLooseColl_genorder.push_back( leptontriLooseColl_raw.at(loose_l_1_index) );
-/*
+
       if(leptontriLooseColl_raw.at(loose_l_1_index).LeptonFlavour() == KLepton::MUON){
         FillHist("TEST_gen_l_1_dXY", fabs(leptontriLooseColl_raw.at(loose_l_1_index).dXY()), 1., 0., 0.1, 1000);
         FillHist("TEST_gen_l_1_dXYSig", fabs(leptontriLooseColl_raw.at(loose_l_1_index).dXYSig()), 1., 0., 10., 100);
+        FillHist("TEST_gen_l_1_dZ", fabs(leptontriLooseColl_raw.at(loose_l_1_index).dZ()), 1., 0., 0.5, 500);
         if(fabs(leptontriLooseColl_raw.at(loose_l_1_index).Eta()) < 1.4442){
           FillHist("TEST_gen_l_1_dXY_Barrel", fabs(leptontriLooseColl_raw.at(loose_l_1_index).dXY()), 1., 0., 0.1, 1000);
           FillHist("TEST_gen_l_1_dXYSig_Barrel", fabs(leptontriLooseColl_raw.at(loose_l_1_index).dXYSig()), 1., 0., 10., 100);
+          FillHist("TEST_gen_l_1_dZ_Barrel", fabs(leptontriLooseColl_raw.at(loose_l_1_index).dZ()), 1., 0., 0.5, 500);
         }
         else{
           FillHist("TEST_gen_l_1_dXY_Endcap", fabs(leptontriLooseColl_raw.at(loose_l_1_index).dXY()), 1., 0., 0.1, 1000);
           FillHist("TEST_gen_l_1_dXYSig_Endcap", fabs(leptontriLooseColl_raw.at(loose_l_1_index).dXYSig()), 1., 0., 10., 100);
+          FillHist("TEST_gen_l_1_dZ_Endcap", fabs(leptontriLooseColl_raw.at(loose_l_1_index).dZ()), 1., 0., 0.5, 500);
         }
       }
-*/
+
     }
     if(loose_l_2_index!=-1){
       leptontriLooseColl_genorder.push_back( leptontriLooseColl_raw.at(loose_l_2_index) );
-/*
+
       if(leptontriLooseColl_raw.at(loose_l_2_index).LeptonFlavour() == KLepton::MUON){
         FillHist("TEST_gen_l_2_dXY", fabs(leptontriLooseColl_raw.at(loose_l_2_index).dXY()), 1., 0., 0.1, 1000);
         FillHist("TEST_gen_l_2_dXYSig", fabs(leptontriLooseColl_raw.at(loose_l_2_index).dXYSig()), 1., 0., 10., 100);
+        FillHist("TEST_gen_l_2_dZ", fabs(leptontriLooseColl_raw.at(loose_l_2_index).dZ()), 1., 0., 0.5, 500);
         if(fabs(leptontriLooseColl_raw.at(loose_l_2_index).Eta()) < 1.4442){
           FillHist("TEST_gen_l_2_dXY_Barrel", fabs(leptontriLooseColl_raw.at(loose_l_2_index).dXY()), 1., 0., 0.1, 1000);
           FillHist("TEST_gen_l_2_dXYSig_Barrel", fabs(leptontriLooseColl_raw.at(loose_l_2_index).dXYSig()), 1., 0., 10., 100);
+          FillHist("TEST_gen_l_2_dZ_Barrel", fabs(leptontriLooseColl_raw.at(loose_l_2_index).dZ()), 1., 0., 0.5, 500);
         }
         else{
           FillHist("TEST_gen_l_2_dXY_Endcap", fabs(leptontriLooseColl_raw.at(loose_l_2_index).dXY()), 1., 0., 0.1, 1000);
           FillHist("TEST_gen_l_2_dXYSig_Endcap", fabs(leptontriLooseColl_raw.at(loose_l_2_index).dXYSig()), 1., 0., 10., 100);
+          FillHist("TEST_gen_l_2_dZ_Endcap", fabs(leptontriLooseColl_raw.at(loose_l_2_index).dZ()), 1., 0., 0.5, 500);
         }
       }
-*/
+
     }
     if(loose_l_3_index!=-1){
       leptontriLooseColl_genorder.push_back( leptontriLooseColl_raw.at(loose_l_3_index) );
-/*
+
       if(leptontriLooseColl_raw.at(loose_l_3_index).LeptonFlavour() == KLepton::MUON){
         FillHist("TEST_gen_l_3_dXY", fabs(leptontriLooseColl_raw.at(loose_l_3_index).dXY()), 1., 0., 0.1, 1000);
         FillHist("TEST_gen_l_3_dXYSig", fabs(leptontriLooseColl_raw.at(loose_l_3_index).dXYSig()), 1., 0., 10., 100);
+        FillHist("TEST_gen_l_3_dZ", fabs(leptontriLooseColl_raw.at(loose_l_3_index).dZ()), 1., 0., 0.5, 500);
         if(fabs(leptontriLooseColl_raw.at(loose_l_3_index).Eta()) < 1.4442){
           FillHist("TEST_gen_l_3_dXY_Barrel", fabs(leptontriLooseColl_raw.at(loose_l_3_index).dXY()), 1., 0., 0.1, 1000);
           FillHist("TEST_gen_l_3_dXYSig_Barrel", fabs(leptontriLooseColl_raw.at(loose_l_3_index).dXYSig()), 1., 0., 10., 100);
+          FillHist("TEST_gen_l_3_dZ_Barrel", fabs(leptontriLooseColl_raw.at(loose_l_3_index).dZ()), 1., 0., 0.5, 500);
         }
         else{
           FillHist("TEST_gen_l_3_dXY_Endcap", fabs(leptontriLooseColl_raw.at(loose_l_3_index).dXY()), 1., 0., 0.1, 1000);
           FillHist("TEST_gen_l_3_dXYSig_Endcap", fabs(leptontriLooseColl_raw.at(loose_l_3_index).dXYSig()), 1., 0., 10., 100);
+          FillHist("TEST_gen_l_3_dZ_Endcap", fabs(leptontriLooseColl_raw.at(loose_l_3_index).dZ()), 1., 0., 0.5, 500);
         }
       }
-*/
+
     }
 
     //==== now sort leptontriLooseColl_genorder to ptorder, and replace
@@ -856,7 +865,22 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
       double this_W_pri_mass = W_pri_lowmass.M();
       if( signal_masses[i] > 80 ) this_W_pri_mass = W_pri_highmass.M();
 
-      if( PassOptimizedCut(signal_masses[i], muontriLooseColl.at(0).Pt(), muontriLooseColl.at(1).Pt(), muontriLooseColl.at(2).Pt(), this_W_pri_mass, MET) ){
+      double hnmass = -999.;
+      if(signal_masses[i] <= 50) hnmass = HN[0].M();
+      else if(signal_masses[i] <= 80) hnmass = HN[1].M();
+      else if(signal_masses[i] <= 1000) hnmass = HN[2].M();
+      else hnmass = HN[3].M();
+
+      cout << "Tring PassOptimizedCut" << endl;
+      bool pass_op = PassOptimizedCut(signal_masses[i],
+        muontriLooseColl.at(0).Pt(), muontriLooseColl.at(1).Pt(), muontriLooseColl.at(2).Pt(),
+        this_W_pri_mass, hnmass,
+        deltaR_OS_min, gamma_star.M(),
+        MET
+      );
+      cout << "==>Done" << endl;
+
+      if(pass_op){
         FillCLHist(hntrilephist, thiscut, eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, weight);
       }
 
