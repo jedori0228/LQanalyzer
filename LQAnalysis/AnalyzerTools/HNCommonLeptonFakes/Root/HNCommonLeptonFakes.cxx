@@ -156,13 +156,14 @@ void HNCommonLeptonFakes::InitialiseFake(){
   elID.push_back("ELECTRON16_FR_POG_TIGHT_DXYCC_dijet_pog");
   elID.push_back("ELECTRON16_FR_MVA_TIGHT_DXYCC_dijet_mva");
 
+/*
   elID.push_back("ELECTRON16_FR_POG_MEDIUM_CC_dijet_pog_d0");
   elID.push_back("ELECTRON16_FR_POG_TIGHT_CC_dijet_pog_d0");
   elID.push_back("ELECTRON16_FR_MVA_TIGHT_CC_dijet_mva_d0");
   elID.push_back("ELECTRON16_FR_POG_MEDIUM_DXYCC_dijet_pog_d0");
   elID.push_back("ELECTRON16_FR_POG_TIGHT_DXYCC_dijet_pog_d0");
   elID.push_back("ELECTRON16_FR_MVA_TIGHT_DXYCC_dijet_mva_d0");
-
+*/
 
   for(unsigned int fj = 0; fj < datajetcut.size() ; fj++){
     for(unsigned int fk = 0; fk < cut.size() ; fk++){
@@ -172,6 +173,7 @@ void HNCommonLeptonFakes::InitialiseFake(){
     }
   }
 
+/*
   for(unsigned int fl = 0; fl < opt.size() ; fl++){
     for(unsigned int fk = 0; fk < cut.size() ; fk++){
       _2DEfficiencyMap_Double["prompt_el_eff_" + cut.at(fk) +"_" + opt[fl]] = dynamic_cast<TH2D*>((file_prompt->Get("PromptRate_HNTight_" + opt[fl] +  "_" + cut.at(fk)))->Clone());
@@ -191,6 +193,7 @@ void HNCommonLeptonFakes::InitialiseFake(){
   for(unsigned int iid = 0; iid < elID.size() ; iid++){
     _2DEfficiencyMap_Double["prompt_el_eff_" +  elID[iid]]  = dynamic_cast<TH2D*>((file_prompt->Get("PromptRate_" +  elID[iid] +  "_pt_eta"))->Clone());
   }
+*/
 
   
   for(unsigned int fj = 0; fj < datajetcut.size() ; fj++){
@@ -202,6 +205,7 @@ void HNCommonLeptonFakes::InitialiseFake(){
       }
     }
   }
+/*
   for(unsigned int fj = 0; fj < datajetcut.size() ; fj++){
     for(unsigned int fk = 0; fk < cut.size() ; fk++){
       for(unsigned int fl = 0; fl < opt.size() ; fl++){
@@ -211,7 +215,7 @@ void HNCommonLeptonFakes::InitialiseFake(){
       }
     }
   }
-
+*/
   
   _2DEfficiencyMap_Double["fake_el_eff_ELECTRON_HN_HIGHDXY_TIGHT_dxy"] = dynamic_cast<TH2D*>((file_fake->Get("FakeRate_ELECTRON_HN_HIGHDXY_TIGHT_eldxy")));
   
