@@ -41,6 +41,10 @@ public:
   int find_mlmet_closest_to_W(snu::KParticle  lep[], snu::KParticle  MET, int n_lep=3);
   double MT(TLorentzVector a, TLorentzVector b);
   bool GenMatching(snu::KParticle gen, snu::KParticle reco, double maxDeltaR, double maxPtDiff);
+  //==== lepton but not neutrino
+  bool IsLepton(snu::KTruth ptl);
+  //==== only neutrino
+  bool IsNeutrino(snu::KTruth ptl);
 
   snu::KTruth gen_nu, gen_W_pri, gen_HN, gen_W_sec, gen_l_1, gen_l_2, gen_l_3;
   int n_gen_pass;
