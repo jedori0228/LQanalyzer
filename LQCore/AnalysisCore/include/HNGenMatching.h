@@ -22,6 +22,8 @@ public:
   HNGenMatching();
   ~HNGenMatching();
 
+  enum LowMassHNDecay{NOTSET=0, HNtoThree=1, ViaZ=2, ViaSecW=3};
+
   TDirectory* getTemporaryDirectory(void) const;
 
   void SetAllGenParticles(std::vector<snu::KTruth> g);
@@ -50,6 +52,7 @@ public:
   int n_gen_pass;
   double sol_sel_chi2_best, sol_sel_chi2_plus, sol_sel_chi2_minus, sol_sel_chi2_smaller, sol_sel_chi2_larger;
   bool allgenfound;
+  LowMassHNDecay lowdecay;
 
   //==== Histograms
   TH1D* GetHist(TString hname);

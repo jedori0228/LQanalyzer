@@ -34,6 +34,7 @@ HNGenMatching::HNGenMatching() :
 signalmass(-9999),
 n_gen_pass(0), sol_sel_chi2_best(0), sol_sel_chi2_plus(0), sol_sel_chi2_minus(0), sol_sel_chi2_smaller(0), sol_sel_chi2_larger(0),
 allgenfound(false),
+lowdecay(HNGenMatching::NOTSET),
 DrawHist(false)
 {
 
@@ -161,6 +162,9 @@ void HNGenMatching::FindGenParticles(bool debug){
     //============================
 
     if( (!LowMass_Wsec) && (!LowMass_Z) ){
+
+      lowdecay = HNGenMatching::HNtoThree;
+
       if(debug) cout << "[HNGenMatching::FindGenParticles]LowMass][1] This is a HN to three particle decay" << endl;
       //==== find nu at gen. level
       if(debug) cout << "[HNGenMatching::FindGenParticles]LowMass][1] Trying to find nu" << endl;
@@ -229,6 +233,9 @@ void HNGenMatching::FindGenParticles(bool debug){
     //=========================
 
     if( LowMass_Z ){
+
+      lowdecay = HNGenMatching::ViaZ;
+
       //==== find nu at gen. level
       for(int i=2;i<truthmax;i++){
         for(unsigned int j=0;j<gen_HN_indices.size();j++){
@@ -294,6 +301,9 @@ void HNGenMatching::FindGenParticles(bool debug){
     //====================================
 
     if(LowMass_Wsec){
+
+      lowdecay = HNGenMatching::ViaSecW;
+
       //==== find nu at gen. level
       for(int i=2;i<truthmax;i++){
         for(unsigned int j=0;j<gen_W_sec_indices.size();j++){
@@ -357,6 +367,25 @@ void HNGenMatching::FindGenParticles(bool debug){
     gen_l_2 = AllGenParticles.at( gen_l_2_indices.back() );
     gen_l_3 = AllGenParticles.at( gen_l_3_indices.back() );
     gen_nu = AllGenParticles.at( gen_nu_indices.back() );
+
+    if(HNGenMatching::HNtoThree){
+
+      if(gen_l_2.PdgId() != gen_l_3.PdgId()){
+
+        //==== if gen_l_2 and gen_l_3 are not same, we can distinguish them comparing with neutrino
+        //==== let's make gen_l_3 and gen_nu are from W*
+        if(gen_l_3.PdgId()*gen_nu.PdgId()>0){
+          snu::KTruth tmp = gen_l_2;
+          gen_l_2 = gen_l_3;
+          gen_l_3 = tmp;
+        }
+
+      }
+
+    }
+
+
+
     allgenfound = true;
 
   }
