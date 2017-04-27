@@ -73,6 +73,26 @@ void trilepton_mumumu::InitialiseAnalysis() throw( LQError ) {
 void trilepton_mumumu::ExecuteEvents()throw( LQError ){
 
 /*
+  //==== Mu3 test
+
+  if(PassTrigger("HLT_Mu3_PFJet40_v")){
+    cout << "HLT_Mu3_PFJet40_v fired" << endl;
+    std::vector<snu::KMuon> testmuon = GetMuons("MUON_PTETA");
+    std::vector<snu::KJet> testjet = GetJets("JET_HN");
+    for(unsigned int i=0; i<testmuon.size(); i++){
+      FillHist("Mu3Test_muon_pt", testmuon.at(i).Pt(), 1., 0., 50., 50);
+    }
+    for(unsigned int i=0; i<testjet.size(); i++){
+      FillHist("Mu3Test_jet_pt", testjet.at(i).Pt(), 1., 0., 200., 200);
+    }
+
+    std::vector<snu::KJet> testjet40 = GetJets("JET_HN",40);
+    FillHist("Mu3Test_jet40_size", testjet40.size(), 1, 0., 10., 10);
+  }
+  return;
+*/
+
+/*
 
   //==== Electron Charge flip
 
@@ -148,13 +168,143 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     m_HNgenmatch->SetSignalMass(GetSignalMass());
     m_HNgenmatch->SetHNpdgids(9900012);
     m_HNgenmatch->FindGenParticles();
-    
+
+    //==== check OS same-flavour mass
+    bool isOSSF4GeV=false;
+    if( m_HNgenmatch->gen_l_1.PdgId()+m_HNgenmatch->gen_l_2.PdgId() == 0 ){
+      if( (m_HNgenmatch->gen_l_1+m_HNgenmatch->gen_l_2).M() < 4 ) isOSSF4GeV = true;
+    }
+    if( m_HNgenmatch->gen_l_1.PdgId()+m_HNgenmatch->gen_l_3.PdgId() == 0 ){
+      if( (m_HNgenmatch->gen_l_1+m_HNgenmatch->gen_l_3).M() < 4 ) isOSSF4GeV = true;
+    }
+    if( m_HNgenmatch->gen_l_2.PdgId()+m_HNgenmatch->gen_l_3.PdgId() == 0 ){
+      if( (m_HNgenmatch->gen_l_2+m_HNgenmatch->gen_l_3).M() < 4 ) isOSSF4GeV = true;
+    }
+    FillHist("GEN_isOSSF4GeV", isOSSF4GeV, 1., 0., 2., 2); 
+
+    //==== snu::KTruth gen_nu, gen_W_pri, gen_HN, gen_W_sec, gen_l_1, gen_l_2, gen_l_3;
+    //==== gen_l_1 and gen_l_2 are always same sign
+
+    //==== mu mu mu
+    if( fabs(m_HNgenmatch->gen_l_1.PdgId())==13 &&
+        fabs(m_HNgenmatch->gen_l_2.PdgId())==13 &&
+        fabs(m_HNgenmatch->gen_l_3.PdgId())==13 ){
+
+      FillHist("SignalLeptonFlavour", 1., 1., 0., 40., 40);
+
+    }
+    //==== e mu mu
+    else if( fabs(m_HNgenmatch->gen_l_1.PdgId())==11 &&
+             fabs(m_HNgenmatch->gen_l_2.PdgId())==13 &&
+             fabs(m_HNgenmatch->gen_l_3.PdgId())==13 ){
+
+      //==== SS
+      if( m_HNgenmatch->gen_l_2.PdgId() == m_HNgenmatch->gen_l_3.PdgId() ){
+        FillHist("SignalLeptonFlavour", 2., 1., 0., 40., 40);
+      }
+      //==== OS
+      else{
+        FillHist("SignalLeptonFlavour", 3., 1., 0., 40., 40);
+      }
+
+    }
+    //==== mu e mu
+    else if( fabs(m_HNgenmatch->gen_l_1.PdgId())==13 &&
+             fabs(m_HNgenmatch->gen_l_2.PdgId())==11 &&
+             fabs(m_HNgenmatch->gen_l_3.PdgId())==13 ){
+
+      //==== SS
+      if( m_HNgenmatch->gen_l_1.PdgId() == m_HNgenmatch->gen_l_3.PdgId() ){
+        FillHist("SignalLeptonFlavour", 4., 1., 0., 40., 40);
+      }
+      //==== OS
+      else{
+        FillHist("SignalLeptonFlavour", 5., 1., 0., 40., 40);
+      }
+
+    }
+    //==== mu mu e
+    else if( fabs(m_HNgenmatch->gen_l_1.PdgId())==13 &&
+             fabs(m_HNgenmatch->gen_l_2.PdgId())==13 &&
+             fabs(m_HNgenmatch->gen_l_3.PdgId())==11 ){
+
+      //==== SS
+      if( m_HNgenmatch->gen_l_1.PdgId() == m_HNgenmatch->gen_l_2.PdgId() ){
+        FillHist("SignalLeptonFlavour", 6., 1., 0., 40., 40);
+      }
+      //==== OS
+      else{
+        FillHist("SignalLeptonFlavour", 7., 1., 0., 40., 40);
+      }
+
+    }
+    //==== e e mu
+    else if( fabs(m_HNgenmatch->gen_l_1.PdgId())==11 &&
+             fabs(m_HNgenmatch->gen_l_2.PdgId())==11 &&
+             fabs(m_HNgenmatch->gen_l_3.PdgId())==13 ){
+
+      //==== SS
+      if( m_HNgenmatch->gen_l_1.PdgId() == m_HNgenmatch->gen_l_2.PdgId() ){
+        FillHist("SignalLeptonFlavour", 8., 1., 0., 40., 40);
+      }
+      //==== OS
+      else{
+        FillHist("SignalLeptonFlavour", 9., 1., 0., 40., 40);
+      }
+
+    }
+    //==== e mu e
+    else if( fabs(m_HNgenmatch->gen_l_1.PdgId())==11 &&
+             fabs(m_HNgenmatch->gen_l_2.PdgId())==13 &&
+             fabs(m_HNgenmatch->gen_l_3.PdgId())==11 ){
+
+      //==== SS
+      if( m_HNgenmatch->gen_l_1.PdgId() == m_HNgenmatch->gen_l_3.PdgId() ){
+        FillHist("SignalLeptonFlavour", 10., 1., 0., 40., 40);
+      }
+      //==== OS
+      else{
+        FillHist("SignalLeptonFlavour", 11., 1., 0., 40., 40);
+      }
+
+    }
+    //==== mu e e
+    else if( fabs(m_HNgenmatch->gen_l_1.PdgId())==13 &&
+             fabs(m_HNgenmatch->gen_l_2.PdgId())==11 &&
+             fabs(m_HNgenmatch->gen_l_3.PdgId())==11 ){
+
+      //==== SS
+      if( m_HNgenmatch->gen_l_2.PdgId() == m_HNgenmatch->gen_l_3.PdgId() ){
+        FillHist("SignalLeptonFlavour", 12., 1., 0., 40., 40);
+      }
+      //==== OS
+      else{
+        FillHist("SignalLeptonFlavour", 13., 1., 0., 40., 40);
+      }
+
+    }
+    //==== e e e
+    else if( fabs(m_HNgenmatch->gen_l_1.PdgId())==11 &&
+             fabs(m_HNgenmatch->gen_l_2.PdgId())==11 &&
+             fabs(m_HNgenmatch->gen_l_3.PdgId())==11 ){
+
+      FillHist("SignalLeptonFlavour", 14., 1., 0., 40., 40);
+
+    }
+    else{
+      FillHist("SignalLeptonFlavour", 0., 1., 0., 40., 40);
+        //cout << m_HNgenmatch->gen_l_1.PdgId() << "\t" << m_HNgenmatch->gen_l_1.Pt() << "\t" << m_HNgenmatch->gen_l_1.Eta() << endl;
+        //cout << m_HNgenmatch->gen_l_2.PdgId() << "\t" << m_HNgenmatch->gen_l_2.Pt() << "\t" << m_HNgenmatch->gen_l_2.Eta() << endl;
+        //cout << m_HNgenmatch->gen_l_3.PdgId() << "\t" << m_HNgenmatch->gen_l_3.Pt() << "\t" << m_HNgenmatch->gen_l_3.Eta() << endl;
+    }
+
     if(m_HNgenmatch->allgenfound){
       FillHist("GenFound", 1., 1., 0., 2., 2);
     }
     else{
       FillHist("GenFound", 0., 1., 0., 2., 2);
     }
+
   }
 
   //======================
@@ -206,6 +356,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   //======================
 
   double this_RelIso = 0.4;
+
   std::vector<snu::KMuon> muontriLooseColl;
   std::vector<snu::KElectron> electrontriLooseColl;
 
