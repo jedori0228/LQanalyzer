@@ -174,6 +174,8 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
   //===============
 
   std::vector<snu::KJet> jetColl_hn = GetJets("JET_HN", 30., 2.4);
+  //std::vector<snu::KJet> jetColl_hn = GetJets("JET_NOLEPTONVETO", 25., 5.0);
+
   int n_jets = jetColl_hn.size();
   int n_bjets=0;
   for(int j=0; j<n_jets; j++){

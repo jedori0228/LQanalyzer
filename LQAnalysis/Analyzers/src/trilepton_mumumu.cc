@@ -191,6 +191,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
         fabs(m_HNgenmatch->gen_l_3.PdgId())==13 ){
 
       FillHist("SignalLeptonFlavour", 1., 1., 0., 40., 40);
+      FillHist("MuMuMu_nu_pdgid", m_HNgenmatch->gen_nu.PdgId(), 1., -20., 20., 40);
 
     }
     //==== e mu mu
@@ -462,6 +463,9 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   //==== non-prompt : keep fake
   else if( k_sample_name.Contains("DY") || k_sample_name.Contains("WJets") || k_sample_name.Contains("TTJets") || k_sample_name.Contains("QCD") ){
 
+    muontriLooseColl = GetHNTriMuonsByLooseRelIso(this_RelIso, true);
+    electrontriLooseColl = GetElectrons(false, true, "ELECTRON_HN_LOWDXY_FAKELOOSE");
+
 /*
     //==== below is for MC fake test
     for(unsigned int i=0; i<muontriLooseColl.size(); i++){
@@ -577,6 +581,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   //===============
 
   std::vector<snu::KJet> jetColl_hn = GetJets("JET_HN", 30., 2.4);
+  //std::vector<snu::KJet> jetColl_hn = GetJets("JET_NOLEPTONVETO", 25., 5.0);
   int n_jets = jetColl_hn.size();
   int n_bjets=0;
   for(int j=0; j<n_jets; j++){
@@ -788,6 +793,8 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   snu::KEvent Evt = eventbase->GetEvent();
   double MET = Evt.MET();
   double METphi = Evt.METPhi();
+  //MET = m_HNgenmatch->gen_nu.Pt();
+  //METphi = m_HNgenmatch->gen_nu.Phi();
   CorrectedMETRochester(muontriLooseColl, MET, METphi);
   m_HNgenmatch->SetMETInfo(MET, METphi);
   if(k_sample_name.Contains("HN") && m_HNgenmatch->allgenfound && isThreeMuon) m_HNgenmatch->solution_selection_study(muontriLooseColl);

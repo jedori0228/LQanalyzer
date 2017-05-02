@@ -30,7 +30,7 @@ declare -a QCD_FR=(
 ### FR MC Closure ###
 declare -a FR_MC_Closure=(
 'TTJets_aMC'
-'DYJets_10to50' 'DYJets' 'DYJets_MG_10to50'
+'DYJets_10to50' 'DYJets' 'DYJets_MG_10to50' 'DYJets_MG'
 'WJets' 'WJets_MG'
 'QCD_Pt-1000toInf_MuEnriched' 'QCD_Pt-120to170_MuEnriched' 'QCD_Pt-15to20_MuEnriched' 'QCD_Pt-170to300_MuEnriched' 'QCD_Pt-20to30_MuEnriched' 'QCD_Pt-300to470_MuEnriched' 'QCD_Pt-30to50_MuEnriched' 'QCD_Pt-470to600_MuEnriched' 'QCD_Pt-50to80_MuEnriched' 'QCD_Pt-600to800_MuEnriched' 'QCD_Pt-800to1000_MuEnriched' 'QCD_Pt-80to120_MuEnriched'
 )
@@ -122,3 +122,53 @@ declare -a VV_metphi=(
 declare -a ggZZ=(
 'ggZZto2e2mu' 'ggZZto2e2nu' 'ggZZto2e2tau' 'ggZZto2mu2nu' 'ggZZto2mu2tau' 'ggZZto4e' 'ggZZto4mu' 'ggZZto4tau'
 )
+
+declare -a ghent=(
+'Ghent_HN_MuMuMu_emu_mixing_1'
+'Ghent_HN_MuMuMu_emu_mixing_2'
+'Ghent_HN_MuMuMu_emu_mixing_5'
+'Ghent_HN_MuMuMu_emu_mixing_10'
+'Ghent_HN_MuMuMu_emu_mixing_20'
+'Ghent_HN_MuMuMu_emu_mixing_30'
+'Ghent_HN_MuMuMu_emu_mixing_40'
+'Ghent_HN_MuMuMu_emu_mixing_50'
+'Ghent_HN_MuMuMu_emu_mixing_60'
+'Ghent_HN_MuMuMu_emu_mixing_80'
+'Ghent_HN_MuMuMu_emu_mixing_100'
+'Ghent_HN_MuMuMu_emu_mixing_130'
+'Ghent_HN_MuMuMu_emu_mixing_150'
+'Ghent_HN_MuMuMu_emu_mixing_200'
+'Ghent_HN_MuMuMu_emu_mixing_400'
+'Ghent_HN_MuMuMu_emu_mixing_600'
+'Ghent_HN_MuMuMu_emu_mixing_800'
+'Ghent_HN_MuMuMu_emu_mixing_1000'
+'Ghent_HN_MuMuMu_mu_mixing_1'
+'Ghent_HN_MuMuMu_mu_mixing_2'
+'Ghent_HN_MuMuMu_mu_mixing_5'
+'Ghent_HN_MuMuMu_mu_mixing_10'
+'Ghent_HN_MuMuMu_mu_mixing_20'
+'Ghent_HN_MuMuMu_mu_mixing_30'
+'Ghent_HN_MuMuMu_mu_mixing_40'
+'Ghent_HN_MuMuMu_mu_mixing_50'
+'Ghent_HN_MuMuMu_mu_mixing_60'
+'Ghent_HN_MuMuMu_mu_mixing_80'
+'Ghent_HN_MuMuMu_mu_mixing_100'
+'Ghent_HN_MuMuMu_mu_mixing_130'
+'Ghent_HN_MuMuMu_mu_mixing_150'
+'Ghent_HN_MuMuMu_mu_mixing_200'
+'Ghent_HN_MuMuMu_mu_mixing_400'
+'Ghent_HN_MuMuMu_mu_mixing_600'
+'Ghent_HN_MuMuMu_mu_mixing_800'
+'Ghent_HN_MuMuMu_mu_mixing_1000'
+)
+
+
+
+
+
+
+
+
+
+
+

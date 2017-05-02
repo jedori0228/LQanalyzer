@@ -151,6 +151,7 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   //===============
 
   std::vector<snu::KJet> jetColl_hn = GetJets("JET_HN", 30., 2.4);
+  //std::vector<snu::KJet> jetColl_hn = GetJets("JET_NOLEPTONVETO", 25., 5.0);
   int n_jets = jetColl_hn.size();
   int n_bjets=0;
   for(int j=0; j<n_jets; j++){
@@ -259,12 +260,12 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   }
   else return;
 
-  FillHist("CutStudy_lowosllmass", ( lep[OppSign]+lep[SameSign[0]] ).M(), 1., 0., 20., 200);
-  FillHist("CutStudy_lowosllmass", ( lep[OppSign]+lep[SameSign[1]] ).M(), 1., 0., 20., 200);
-  FillHist("CutStudy_lowssllmass", ( lep[SameSign[0]]+lep[SameSign[1]] ).M(), 1., 0., 20., 200);
-  FillHist("CutStudy_lowllmass", ( lep[OppSign]+lep[SameSign[0]] ).M(), 1., 0., 20., 200);
-  FillHist("CutStudy_lowllmass", ( lep[OppSign]+lep[SameSign[1]] ).M(), 1., 0., 20., 200);
-  FillHist("CutStudy_lowllmass", ( lep[SameSign[0]]+lep[SameSign[1]] ).M(), 1., 0., 20., 200);
+  FillHist("CutStudy_lowosllmass", ( lep[OppSign]+lep[SameSign[0]] ).M(), this_weight, 0., 20., 200);
+  FillHist("CutStudy_lowosllmass", ( lep[OppSign]+lep[SameSign[1]] ).M(), this_weight, 0., 20., 200);
+  FillHist("CutStudy_lowssllmass", ( lep[SameSign[0]]+lep[SameSign[1]] ).M(), this_weight, 0., 20., 200);
+  FillHist("CutStudy_lowllmass", ( lep[OppSign]+lep[SameSign[0]] ).M(), this_weight, 0., 20., 200);
+  FillHist("CutStudy_lowllmass", ( lep[OppSign]+lep[SameSign[1]] ).M(), this_weight, 0., 20., 200);
+  FillHist("CutStudy_lowllmass", ( lep[SameSign[0]]+lep[SameSign[1]] ).M(), this_weight, 0., 20., 200);
 
   if(isThreeMuon){
     //==== MC samples has m(OS)_saveflavour > 4 GeV cut at gen level
@@ -382,18 +383,18 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   else return;
 
   if(isThreeMuon){
-    FillHist("CutStudy_m_Z_candidate", z_candidate.M(), this_weight, 0., 1000., 1000);
+    FillHist("CutStudy_m_Z_candidate", z_candidate.M(), this_weight, this_weight, 1000., 1000);
     bool VetoZResonance = fabs(z_candidate.M()-91.1876) > 15.;
     if(!VetoZResonance) return;
     FillCutFlow("ZVeto", 1.);
 
-    FillHist("CutStudy_mlll", (lep[0] + lep[1] + lep[2]).M(), this_weight, 0., 1000., 1000);
+    FillHist("CutStudy_mlll", (lep[0] + lep[1] + lep[2]).M(), this_weight, this_weight, 1000., 1000);
     bool mllloffZ = fabs( (lep[0] + lep[1] + lep[2]).M() - 91.1876 ) > 15.;
     if(!mllloffZ) return;
     FillCutFlow("mllloffZ", 1.);
   }
 
-  FillHist("CutStudy_nbjet", n_bjets, this_weight, 0., 10., 10);
+  FillHist("CutStudy_nbjet", n_bjets, this_weight, this_weight, 10., 10);
 
   if(n_bjets>0) return;
   FillCutFlow("bjetVeto", 1.);
