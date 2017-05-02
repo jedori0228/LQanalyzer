@@ -122,12 +122,12 @@ class HNCommonLeptonFakes {
   void SetNJet(int nj);
   void SetNBJet(int nbj);
   //==== get PR/FR
-  float getTrilepFakeRate_muon(bool geterr, float pt,  float eta, bool applysf=true);
+  float getTrilepFakeRate_muon(bool geterr, float pt,  float eta);
   float getTrilepPromptRate_muon(bool geterr, float pt, float eta);
   //==== get weight
   float get_dilepton_mm_eventweight(bool geterr, std::vector<TLorentzVector> muons, bool isT1, bool isT2);
   float get_trilepton_mmm_eventweight(bool geterr, std::vector<TLorentzVector> muons, bool isT1, bool isT2, bool isT3);
-  float get_eventweight(bool geterr, std::vector<TLorentzVector> muons, TString muid, std::vector<TLorentzVector> electrons, TString elid, std::vector<bool> isT);
+  float get_eventweight(bool geterr, std::vector<TLorentzVector> muons, TString muid, std::vector<TLorentzVector> electrons, TString elid, std::vector<bool> isT, int HalfSampleErrorDir=0.);
 
   //==== Large dXYSig working poins
   std::vector<double> GetdXYMins();
