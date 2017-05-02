@@ -1143,6 +1143,43 @@ float FakeRateCalculator_Mu::GetPrescale(std::vector<snu::KMuon> muon, bool pass
 
   if(muon.size() == 1){
 
+
+/*
+    snu::KMuon this_muon = muon.at(0);
+
+// 10-20  : HLT_Mu8_v
+// 20-25  : HLT_Mu17_v
+// 25-inf : HLT_Mu20_v
+
+    if(muon.at(0).Pt() > 25.){
+      if(pass20){
+        prescale_trigger = WeightByTrigger("HLT_Mu20_v", TargetLumi)
+      }
+      else prescale_trigger = 0.;
+    }
+    else if(muon.at(0).Pt() > 20.){
+      if(pass17){
+        prescale_trigger = WeightByTrigger("HLT_Mu17_v", TargetLumi)
+      }
+      else prescale_trigger = 0.;
+    }
+    else if(muon.at(0).Pt() > 10.){
+      if(pass8){
+        prescale_trigger = WeightByTrigger("HLT_Mu8_v", TargetLumi)
+      }
+      else prescale_trigger = 0.;
+    }
+    else{
+      //==== require PFJet
+      if(pfjet.size()==0) prescale_trigger = 0.;
+      else{
+        if(pass3){
+          prescale_trigger = WeightByTrigger("HLT_Mu3_PFJet40_v", TargetLumi)
+        }
+        else prescale_trigger = 0.;
+      }   
+    }
+
     if(muon.at(0).Pt() >= 20.){
       if(passhigh){
         prescale_trigger = WeightByTrigger("HLT_Mu17_v", TargetLumi) ; //// 20 + GeV bins
@@ -1155,6 +1192,9 @@ float FakeRateCalculator_Mu::GetPrescale(std::vector<snu::KMuon> muon, bool pass
       }
       else prescale_trigger = 0.;
     }
+*/
+
+
   }
 
   if(prescale_trigger == 0.) return 0.;
