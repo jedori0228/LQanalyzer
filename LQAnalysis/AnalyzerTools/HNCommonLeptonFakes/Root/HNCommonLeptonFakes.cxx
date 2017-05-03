@@ -156,13 +156,14 @@ void HNCommonLeptonFakes::InitialiseFake(){
   elID.push_back("ELECTRON16_FR_POG_TIGHT_DXYCC_dijet_pog");
   elID.push_back("ELECTRON16_FR_MVA_TIGHT_DXYCC_dijet_mva");
 
+/*
   elID.push_back("ELECTRON16_FR_POG_MEDIUM_CC_dijet_pog_d0");
   elID.push_back("ELECTRON16_FR_POG_TIGHT_CC_dijet_pog_d0");
   elID.push_back("ELECTRON16_FR_MVA_TIGHT_CC_dijet_mva_d0");
   elID.push_back("ELECTRON16_FR_POG_MEDIUM_DXYCC_dijet_pog_d0");
   elID.push_back("ELECTRON16_FR_POG_TIGHT_DXYCC_dijet_pog_d0");
   elID.push_back("ELECTRON16_FR_MVA_TIGHT_DXYCC_dijet_mva_d0");
-
+*/
 
   for(unsigned int fj = 0; fj < datajetcut.size() ; fj++){
     for(unsigned int fk = 0; fk < cut.size() ; fk++){
@@ -172,6 +173,7 @@ void HNCommonLeptonFakes::InitialiseFake(){
     }
   }
 
+/*
   for(unsigned int fl = 0; fl < opt.size() ; fl++){
     for(unsigned int fk = 0; fk < cut.size() ; fk++){
       _2DEfficiencyMap_Double["prompt_el_eff_" + cut.at(fk) +"_" + opt[fl]] = dynamic_cast<TH2D*>((file_prompt->Get("PromptRate_HNTight_" + opt[fl] +  "_" + cut.at(fk)))->Clone());
@@ -191,6 +193,7 @@ void HNCommonLeptonFakes::InitialiseFake(){
   for(unsigned int iid = 0; iid < elID.size() ; iid++){
     _2DEfficiencyMap_Double["prompt_el_eff_" +  elID[iid]]  = dynamic_cast<TH2D*>((file_prompt->Get("PromptRate_" +  elID[iid] +  "_pt_eta"))->Clone());
   }
+*/
 
   
   for(unsigned int fj = 0; fj < datajetcut.size() ; fj++){
@@ -202,6 +205,7 @@ void HNCommonLeptonFakes::InitialiseFake(){
       }
     }
   }
+/*
   for(unsigned int fj = 0; fj < datajetcut.size() ; fj++){
     for(unsigned int fk = 0; fk < cut.size() ; fk++){
       for(unsigned int fl = 0; fl < opt.size() ; fl++){
@@ -211,7 +215,7 @@ void HNCommonLeptonFakes::InitialiseFake(){
       }
     }
   }
-
+*/
   
   _2DEfficiencyMap_Double["fake_el_eff_ELECTRON_HN_HIGHDXY_TIGHT_dxy"] = dynamic_cast<TH2D*>((file_fake->Get("FakeRate_ELECTRON_HN_HIGHDXY_TIGHT_eldxy")));
   
@@ -490,7 +494,6 @@ float HNCommonLeptonFakes::getFakeRate_electronEta(int sys,float pt, float eta, 
   if(mapit!=_2DEfficiencyMap_Double.end()){
 
     int binx =  mapit->second->FindBin(pt,fabs(eta));
-
     eff_fake =  mapit->second->GetBinContent(binx);
     //cout << "eff_fake = " << eff_fake << endl;
     if(sys != 0) return mapit->second->GetBinError(binx); 
@@ -767,8 +770,8 @@ float HNCommonLeptonFakes::getTrilepFakeRate_muon(bool geterr, float pt,  float 
   if(fabs(eta) >= 2.5) eta = 2.4;
 
   TString wp = DoubleToTString(Current_dXYSig, Current_RelIso);
-  if(UseQCDFake) wp = "QCD_"+wp; 
-  
+  if(UseQCDFake) wp = "QCD_"+wp;
+
   bool UseJetConf = false;
   bool UseBjetConf = false;
 
@@ -841,7 +844,7 @@ float HNCommonLeptonFakes::getTrilepFakeRate_muon(bool geterr, float pt,  float 
       TH2D *hist_FR = (TH2D*)mapit_FR->second->Clone();
 
       origDir->cd();
-
+      
       int binx = hist_FR->FindBin(pt, abs(eta));
 
       //cout << "[HNCommonLeptonFakes::getTrilepFakeRate_muon] FR = " << hist_FR->GetBinContent(binx) << endl;
@@ -849,11 +852,11 @@ float HNCommonLeptonFakes::getTrilepFakeRate_muon(bool geterr, float pt,  float 
 
       if(geterr) return hist_FR->GetBinError(binx);
       else return hist_FR->GetBinContent(binx);
-    }
-
+    } 
+    
   }
   return 0.;
-
+  
 }
 
 float HNCommonLeptonFakes::getTrilepPromptRate_muon(bool geterr, float pt, float eta){
@@ -1122,7 +1125,7 @@ TDirectory* HNCommonLeptonFakes::getTemporaryDirectory(void) const
   return tempDir;
 }
 
-float HNCommonLeptonFakes::get_eventweight(bool geterr, std::vector<TLorentzVector> muons, TString muid, std::vector<TLorentzVector> electrons, TString elcut, std::vector<bool> isT){
+float HNCommonLeptonFakes::get_eventweight(bool geterr, std::vector<TLorentzVector> muons, TString muid, std::vector<TLorentzVector> electrons, TString elcut, std::vector<bool> isT, int HalfSampleErrorDir){
 
   unsigned int n_leptons = isT.size();
 
@@ -1165,6 +1168,22 @@ float HNCommonLeptonFakes::get_eventweight(bool geterr, std::vector<TLorentzVect
       pr.push_back( getEfficiency_electron(0, lep_pt.at(i), lep_eta.at(i)) );
       fr_err.push_back( getFakeRate_electronEta(1, lep_pt.at(i), lep_eta.at(i),  elcut));
       pr_err.push_back( getEfficiency_electron(1, lep_pt.at(i), lep_eta.at(i)) );
+    }
+  }
+
+  //==== if HalfSampleErrorDir!=0,
+  //==== assign "5 %" HalfSampleTest Systematic Uncertainty
+
+  if(HalfSampleErrorDir>0){
+    for(unsigned int i=0; i<fr.size(); i++){
+      fr.at(i)     = fr.at(i)    *(1.+0.05);
+      fr_err.at(i) = fr_err.at(i)*(1.+0.05);
+    }
+  }
+  else if(HalfSampleErrorDir<0){
+    for(unsigned int i=0; i<fr.size(); i++){
+      fr.at(i)     = fr.at(i)    *(1.-0.05);
+      fr_err.at(i) = fr_err.at(i)*(1.-0.05);
     }
   }
 
