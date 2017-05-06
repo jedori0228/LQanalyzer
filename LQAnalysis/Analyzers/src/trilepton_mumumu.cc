@@ -1029,14 +1029,14 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
       else if(signal_masses[i] <= 1000) hnmass = HN[2].M();
       else hnmass = HN[3].M();
 
-      cout << "Tring PassOptimizedCut" << endl;
+      //cout << "Tring PassOptimizedCut" << endl;
       bool pass_op = PassOptimizedCut(signal_masses[i],
         muontriLooseColl.at(0).Pt(), muontriLooseColl.at(1).Pt(), muontriLooseColl.at(2).Pt(),
         this_W_pri_mass, hnmass,
         deltaR_OS_min, gamma_star.M(),
         MET
       );
-      cout << "==>Done" << endl;
+      //cout << "==>Done" << endl;
 
       if(pass_op){
         FillCLHist(hntrilephist, thiscut, eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, weight);
