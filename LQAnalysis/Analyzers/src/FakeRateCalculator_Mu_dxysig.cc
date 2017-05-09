@@ -1,6 +1,6 @@
-// $Id: FakeRateCalculator_Mu.cc 1 2013-11-26 10:23:10Z jalmond $
+// $Id: FakeRateCalculator_Mu_dxysig.cc 1 2013-11-26 10:23:10Z jalmond $
 /***************************************************************************
- * @Project: LQFakeRateCalculator_Mu Frame - ROOT-based analysis framework for Korea SNU
+ * @Project: LQFakeRateCalculator_Mu_dxysig Frame - ROOT-based analysis framework for Korea SNU
  * @Package: LQCycles
  *
  * @author John Almond       <jalmond@cern.ch>           - SNU
@@ -8,7 +8,7 @@
  ***************************************************************************/
 
 /// Local includes
-#include "FakeRateCalculator_Mu.h"
+#include "FakeRateCalculator_Mu_dxysig.h"
 
 //Core includes
 #include "Reweight.h"
@@ -17,14 +17,14 @@
 
 
 //// Needed to allow inheritance for use in LQCore/core classes
-ClassImp (FakeRateCalculator_Mu);
+ClassImp (FakeRateCalculator_Mu_dxysig);
 
-FakeRateCalculator_Mu::FakeRateCalculator_Mu() :  AnalyzerCore(), out_muons(0) {
+FakeRateCalculator_Mu_dxysig::FakeRateCalculator_Mu_dxysig() :  AnalyzerCore(), out_muons(0) {
   
   // To have the correct name in the log:                                                                                                                            
-  SetLogName("FakeRateCalculator_Mu");
+  SetLogName("FakeRateCalculator_Mu_dxysig");
   
-  Message("In FakeRateCalculator_Mu constructor", INFO);
+  Message("In FakeRateCalculator_Mu_dxysig constructor", INFO);
   //
   // This function sets up Root files and histograms Needed in ExecuteEvents
   InitialiseAnalysis();
@@ -32,7 +32,7 @@ FakeRateCalculator_Mu::FakeRateCalculator_Mu() :  AnalyzerCore(), out_muons(0) {
 }
 
 
-void FakeRateCalculator_Mu::InitialiseAnalysis() throw( LQError ) {
+void FakeRateCalculator_Mu_dxysig::InitialiseAnalysis() throw( LQError ) {
   
   /// Initialise histograms
   MakeHistograms();  
@@ -82,7 +82,7 @@ void FakeRateCalculator_Mu::InitialiseAnalysis() throw( LQError ) {
 }
 
 
-void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
+void FakeRateCalculator_Mu_dxysig::ExecuteEvents()throw( LQError ){
 
   double thisdXYCut = 0.01;
 
@@ -781,14 +781,14 @@ void FakeRateCalculator_Mu::ExecuteEvents()throw( LQError ){
   
 
 
-void FakeRateCalculator_Mu::EndCycle()throw( LQError ){
+void FakeRateCalculator_Mu_dxysig::EndCycle()throw( LQError ){
   
   Message("In EndCycle" , INFO);
 
 }
 
 
-void FakeRateCalculator_Mu::BeginCycle() throw( LQError ){
+void FakeRateCalculator_Mu_dxysig::BeginCycle() throw( LQError ){
   
   Message("In begin Cycle", INFO);
   
@@ -805,14 +805,14 @@ void FakeRateCalculator_Mu::BeginCycle() throw( LQError ){
   
 }
 
-FakeRateCalculator_Mu::~FakeRateCalculator_Mu() {
+FakeRateCalculator_Mu_dxysig::~FakeRateCalculator_Mu_dxysig() {
   
-  Message("In FakeRateCalculator_Mu Destructor" , INFO);
+  Message("In FakeRateCalculator_Mu_dxysig Destructor" , INFO);
   
 }
 
 
-void FakeRateCalculator_Mu::FillCutFlow(TString cut, float weight){
+void FakeRateCalculator_Mu_dxysig::FillCutFlow(TString cut, float weight){
 
   
   if(GetHist("cutflow")) {
@@ -830,7 +830,7 @@ void FakeRateCalculator_Mu::FillCutFlow(TString cut, float weight){
 }
 
 
-void FakeRateCalculator_Mu::BeginEvent( )throw( LQError ){
+void FakeRateCalculator_Mu_dxysig::BeginEvent( )throw( LQError ){
 
   Message("In BeginEvent() " , DEBUG);
 
@@ -839,20 +839,20 @@ void FakeRateCalculator_Mu::BeginEvent( )throw( LQError ){
 
 
 
-void FakeRateCalculator_Mu::MakeHistograms(){
+void FakeRateCalculator_Mu_dxysig::MakeHistograms(){
   //// Additional plots to make
     
   maphist.clear();
   AnalyzerCore::MakeHistograms();
   Message("Made histograms", INFO);
   /**
-   *  Remove//Overide this FakeRateCalculator_MuCore::MakeHistograms() to make new hists for your analysis
+   *  Remove//Overide this FakeRateCalculator_Mu_dxysigCore::MakeHistograms() to make new hists for your analysis
    **/
   
 }
 
 
-void FakeRateCalculator_Mu::ClearOutputVectors() throw(LQError) {
+void FakeRateCalculator_Mu_dxysig::ClearOutputVectors() throw(LQError) {
 
   // This function is called before every execute event (NO need to call this yourself.
   
@@ -865,7 +865,7 @@ void FakeRateCalculator_Mu::ClearOutputVectors() throw(LQError) {
   out_electrons.clear();
 }
 
-float FakeRateCalculator_Mu::GetPrescale(std::vector<snu::KMuon> muon, bool passlow, bool passhigh){
+float FakeRateCalculator_Mu_dxysig::GetPrescale(std::vector<snu::KMuon> muon, bool passlow, bool passhigh){
   float prescale_trigger = 0.;
 
   if(muon.size() == 1){
@@ -929,7 +929,7 @@ float FakeRateCalculator_Mu::GetPrescale(std::vector<snu::KMuon> muon, bool pass
   return prescale_trigger;
 }
 
-double FakeRateCalculator_Mu::GetTriggerWeightByPtRange(TString hltname, vector<double> ptrange, std::vector<snu::KMuon> muons, int npfjet50){
+double FakeRateCalculator_Mu_dxysig::GetTriggerWeightByPtRange(TString hltname, vector<double> ptrange, std::vector<snu::KMuon> muons, int npfjet50){
 
   double prescale_trigger = 0.;
 
@@ -956,14 +956,14 @@ double FakeRateCalculator_Mu::GetTriggerWeightByPtRange(TString hltname, vector<
 
 }
 
-void FakeRateCalculator_Mu::FillHistByTrigger(TString histname, float value, std::map<TString, double> hltweight, float xmin, float xmax, int nbins){
+void FakeRateCalculator_Mu_dxysig::FillHistByTrigger(TString histname, float value, std::map<TString, double> hltweight, float xmin, float xmax, int nbins){
 
   for(std::map<TString, double>::iterator it=hltweight.begin(); it!=hltweight.end(); it++){
     FillHist(it->first+"_"+histname, value, it->second, xmin, xmax, nbins);
   }
 
 }
-void FakeRateCalculator_Mu::FillHistByTrigger(TString histname, float value1, float value2, std::map<TString, double> hltweight , float x[], int nbinsx, float y[], int nbinsy){
+void FakeRateCalculator_Mu_dxysig::FillHistByTrigger(TString histname, float value1, float value2, std::map<TString, double> hltweight , float x[], int nbinsx, float y[], int nbinsy){
 
   for(std::map<TString, double>::iterator it=hltweight.begin(); it!=hltweight.end(); it++){
     FillHist(it->first+"_"+histname, value1, value2, it->second, x, nbinsx, y, nbinsy);
@@ -971,7 +971,7 @@ void FakeRateCalculator_Mu::FillHistByTrigger(TString histname, float value1, fl
 
 }
 
-void FakeRateCalculator_Mu::FillDenAndNum(TString prefix, snu::KMuon muon, double thisweight, bool isTight){
+void FakeRateCalculator_Mu_dxysig::FillDenAndNum(TString prefix, snu::KMuon muon, double thisweight, bool isTight){
 
   float etaarray [] = {0.0, 0.8, 1.479, 2.0, 2.5};
   float ptarray [] = {0., 5., 10., 15., 20., 25., 30., 35., 45., 60., 80., 100.};
@@ -1004,7 +1004,7 @@ void FakeRateCalculator_Mu::FillDenAndNum(TString prefix, snu::KMuon muon, doubl
 
 }
 
-void FakeRateCalculator_Mu::FillDenAndNum(TString prefix, snu::KMuon muon, std::map<TString, double> hltweight, bool isTight){
+void FakeRateCalculator_Mu_dxysig::FillDenAndNum(TString prefix, snu::KMuon muon, std::map<TString, double> hltweight, bool isTight){
 
   for(std::map<TString, double>::iterator it=hltweight.begin(); it!=hltweight.end(); it++){
 

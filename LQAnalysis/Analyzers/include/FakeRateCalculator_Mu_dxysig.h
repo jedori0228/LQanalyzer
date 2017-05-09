@@ -1,15 +1,15 @@
-#ifndef FakeRateCalculator_Mu_h
-#define FakeRateCalculator_Mu_h
+#ifndef FakeRateCalculator_Mu_dxysig_h
+#define FakeRateCalculator_Mu_dxysig_h
 
 #include "AnalyzerCore.h"
 
 
-class FakeRateCalculator_Mu : public AnalyzerCore {
+class FakeRateCalculator_Mu_dxysig : public AnalyzerCore {
 
  public:
   //// constructors                                                                                                                                                             
-  FakeRateCalculator_Mu();
-  ~FakeRateCalculator_Mu();
+  FakeRateCalculator_Mu_dxysig();
+  ~FakeRateCalculator_Mu_dxysig();
 
   /// Functions from core
   virtual void BeginCycle() throw( LQError );
@@ -40,6 +40,6 @@ class FakeRateCalculator_Mu : public AnalyzerCore {
   TH2D *FR_sampleA;
 
 
-  ClassDef ( FakeRateCalculator_Mu, 1);
+  ClassDef ( FakeRateCalculator_Mu_dxysig, 1);
 };
 #endif

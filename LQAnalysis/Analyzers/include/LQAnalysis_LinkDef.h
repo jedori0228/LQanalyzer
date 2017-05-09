@@ -18,7 +18,7 @@
 #pragma link C++ class PileupValidation+;
 #pragma link C++ class trilepton_mumumu+;
 #pragma link C++ class trilepton_mumumu_FR_method+;
-#pragma link C++ class FakeRateCalculator_Mu+;
+#pragma link C++ class FakeRateCalculator_Mu_dxysig+;
 #pragma link C++ class FakeRateCalculator_El_dxysig+;
 #pragma link C++ class trilepton_mumumu_CR+;
 #pragma link C++ class trilepton_mumumu_CR_FR_method+;
