@@ -406,9 +406,9 @@ void FakeRateCalculator_Mu_dxysig::ExecuteEvents()throw( LQError ){
 
         std::map<TString, double> this_weight_Loose, this_weight_HighdXYLoose, this_weight_NodXYCutLoose;
         for(std::map< TString, std::vector<double> >::iterator it=HLT_ptrange.begin(); it!=HLT_ptrange.end(); it++){
-          this_weight_Loose[it->first]         = GetTriggerWeightByPtRange(it->first, it->second, muontriLooseColl, For_HLT_Mu3_PFJet40_v);
-          this_weight_HighdXYLoose[it->first]  = GetTriggerWeightByPtRange(it->first, it->second, muontriHighdXYLooseColl, For_HLT_Mu3_PFJet40_v);
-          this_weight_NodXYCutLoose[it->first] = GetTriggerWeightByPtRange(it->first, it->second, muontriNodXYCutLooseColl, For_HLT_Mu3_PFJet40_v);
+          this_weight_Loose[it->first]         = weight*GetTriggerWeightByPtRange(it->first, it->second, muontriLooseColl, For_HLT_Mu3_PFJet40_v);
+          this_weight_HighdXYLoose[it->first]  = weight*GetTriggerWeightByPtRange(it->first, it->second, muontriHighdXYLooseColl, For_HLT_Mu3_PFJet40_v);
+          this_weight_NodXYCutLoose[it->first] = weight*GetTriggerWeightByPtRange(it->first, it->second, muontriNodXYCutLooseColl, For_HLT_Mu3_PFJet40_v);
         }
 
         //Double_t this_weight_Loose = weight*GetPrescale(muontriLooseColl, PassTrigger("HLT_Mu8_v"), PassTrigger("HLT_Mu17_v"));
@@ -599,7 +599,7 @@ void FakeRateCalculator_Mu_dxysig::ExecuteEvents()throw( LQError ){
                 fabs( muon.dXYSig() ) < 3. ){
 
               //==== all jet
-              FillDenAndNum(str_dXYCut+"_MCTruth", muon, 1., isThisTight);
+              FillDenAndNum(str_dXYCut+"_MCTruth_alljet", muon, 1., isThisTight);
 
               //==== no jet
               if(n_jets==0){
