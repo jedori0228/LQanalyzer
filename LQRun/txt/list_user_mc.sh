@@ -45,7 +45,7 @@ declare -a trilep_bkg=(
 'ggZZto2e2mu' 'ggZZto2e2nu' 'ggZZto2e2tau' 'ggZZto2mu2nu' 'ggZZto2mu2tau' 'ggZZto4e' 'ggZZto4mu' 'ggZZto4tau'
 )
 declare -a trilep_nonprompt_bkg=(
-'DYJets_10to50' 'DYJets' 'WJets' 'TTJets_aMC'
+'DYJets_10to50' 'DYJets' 'WJets' 'TTJets_aMC' 'TTLL_powheg'
 )
 declare -a trilep_diboson_had=(
 'WZ' 'ZZ' 'WW'
