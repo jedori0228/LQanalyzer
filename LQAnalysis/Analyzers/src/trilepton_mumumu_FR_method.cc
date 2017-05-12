@@ -217,8 +217,8 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   }
 
   //==== fake method weighting
-  double this_weight =     m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON16_HN_TIGHT", electrontriLooseColl.size(), "ELECTRON16_HN_FAKELOOSE", "dijet_ajet40");
-  double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true,  muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON16_HN_TIGHT", electrontriLooseColl.size(), "ELECTRON16_HN_FAKELOOSE", "dijet_ajet40");
+  double this_weight =     m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_HN_TIGHT", electrontriLooseColl.size(), "ELECTRON_HN_FAKELOOSE", "dijet_ajet40");
+  double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true,  muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_HN_TIGHT", electrontriLooseColl.size(), "ELECTRON_HN_FAKELOOSE", "dijet_ajet40");
 
   int OppSign, SameSign[2]; // SameSign[0].Pt() > SameSign[1].Pt()
   if(isThreeMuon){
@@ -510,6 +510,33 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
     FillCLHist(hntrilephist, "MuMuE_up", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight+this_weight_err);
     FillCLHist(hntrilephist, "MuMuE_down", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight-this_weight_err);
     FillCLHist(hntrilephist, "MuMuE", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight);  
+
+    if(DoCutOp){
+      bool PassIsoMu24 = PassTrigger("HLT_IsoMu24_v") || PassTrigger("HLT_IsoTkMu24_v");
+
+      if(PassIsoMu24){
+        FillHist("TEST_MuMuE_IsoMu24", 0., this_weight, 0., 1., 1);
+      }
+      if(PassTriggerOR(triggerlist)){
+        FillHist("TEST_MuMuE_DiMu", 0., this_weight, 0., 1., 1);
+      }
+      if(PassIsoMu24 || PassTriggerOR(triggerlist)){
+        FillHist("TEST_MuMuE_IsoMu24_OR_DiMu", 0., this_weight, 0., 1., 1);
+      }
+      if(PassIsoMu24 && !PassTriggerOR(triggerlist)){
+        FillHist("TEST_MuMuE_IsoMu24_AND_NOT_DiMu", 0., this_weight, 0., 1., 1);
+
+        int n_IsoMu24_but_notTight=0;
+        for(unsigned int i=0; i<muontriLooseColl.size(); i++){
+          snu::KMuon thismuon = muontriLooseColl.at(i);
+          if(thismuon.TriggerMatched("HLT_IsoMu24_v") || thismuon.TriggerMatched("HLT_IsoTkMu24_v")){
+            FillHist("TEST_Mu24FiredMuon_RelIso", thismuon.RelIso04(), 1., 0., 1.0, 100);
+            if(thismuon.RelIso04()>0.1) n_IsoMu24_but_notTight++;
+          }
+        }
+        FillHist("TEST_n_Mu24FiredMuon", n_IsoMu24_but_notTight, 1., 0., 5., 5);
+      }
+    }
   }
 
   return;

@@ -330,7 +330,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   //==== let's not use trigger pass here.
   bool DoCutOp = std::find(k_flags.begin(), k_flags.end(), "cutop") != k_flags.end();
   if(!DoCutOp){
-    if(!PassTriggerOR(triggerlist)) return;
+    //if(!PassTriggerOR(triggerlist)) return;
     FillCutFlow("TriggerCut", 1.);
     FillHist("cutflow_MuMuE", 2., 1., 0., 10., 10);
     m_logger << DEBUG << "passedTrigger "<< LQLogger::endmsg;
@@ -461,7 +461,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
 
   }
   //==== non-prompt : keep fake
-  else if( k_sample_name.Contains("DY") || k_sample_name.Contains("WJets") || k_sample_name.Contains("TTJets") || k_sample_name.Contains("QCD") ){
+  else if( k_sample_name.Contains("DY") || k_sample_name.Contains("WJets") || k_sample_name.Contains("TTJets") || k_sample_name.Contains("QCD") || k_sample_name.Contains("TTLL_powheg") ){
 
     muontriLooseColl = GetHNTriMuonsByLooseRelIso(this_RelIso, true);
     electrontriLooseColl = GetElectrons(false, true, "ELECTRON_HN_LOWDXY_FAKELOOSE");
@@ -712,6 +712,11 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   bool isTwoMuonOneElectron = (n_triLoose_leptons == 3)
                               && (n_triLoose_muons == 2 && n_triTight_muons == 2)
                               && (n_triLoose_electrons == 1 && n_triTight_electrons == 1);
+  //FIXME TEST
+  isTwoMuonOneElectron = (n_triLoose_leptons == 3)
+                              && (n_triLoose_muons == 2)
+                              && (n_triLoose_electrons == 1)
+                              && (n_triTight_leptons != 3);
 
   if(!isThreeMuon && !isTwoMuonOneElectron) return;
 
@@ -990,8 +995,6 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
       FillHist("TriggerStudy_weighted", 4., weight, 0., 5., 5);
     }
 
-    return;
-
   }
 
   muontriLooseColl = sort_muons_ptorder(muontriLooseColl);
@@ -1048,6 +1051,32 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   else if(isTwoMuonOneElectron){
     FillHist("TEST_MuMuE_nevent", 0., weight, 0., 1., 1);
     FillCLHist(hntrilephist, "MuMuE", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, weight);
+
+    if(DoCutOp){
+      bool PassIsoMu24 = PassTrigger("HLT_IsoMu24_v") || PassTrigger("HLT_IsoTkMu24_v");
+      if(PassIsoMu24){
+        FillHist("TEST_MuMuE_IsoMu24", 0., weight, 0., 1., 1);
+      }
+      if(PassTriggerOR(triggerlist)){
+        FillHist("TEST_MuMuE_DiMu", 0., weight, 0., 1., 1);
+      }
+      if(PassIsoMu24 || PassTriggerOR(triggerlist)){
+        FillHist("TEST_MuMuE_IsoMu24_OR_DiMu", 0., weight, 0., 1., 1);
+      }
+      if(PassIsoMu24 && !PassTriggerOR(triggerlist)){
+        FillHist("TEST_MuMuE_IsoMu24_AND_NOT_DiMu", 0., weight, 0., 1., 1);
+
+        int n_IsoMu24_but_notTight=0;
+        for(unsigned int i=0; i<muontriLooseColl.size(); i++){
+          snu::KMuon thismuon = muontriLooseColl.at(i);
+          if(thismuon.TriggerMatched("HLT_IsoMu24_v") || thismuon.TriggerMatched("HLT_IsoTkMu24_v")){
+            FillHist("TEST_Mu24FiredMuon_RelIso", thismuon.RelIso04(), 1., 0., 1.0, 100);
+            if(thismuon.RelIso04()>0.1) n_IsoMu24_but_notTight++;
+          }
+        }
+        FillHist("TEST_n_Mu24FiredMuon", n_IsoMu24_but_notTight, 1., 0., 5., 5);
+      }
+    }
   }
  
 
