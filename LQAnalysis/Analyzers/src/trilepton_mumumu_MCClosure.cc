@@ -175,12 +175,12 @@ void trilepton_mumumu_MCClosure::ExecuteEvents()throw( LQError ){
   //==== Apply corrections
   //========================
 
-	weight*=muon_id_iso_sf;
-	weight*=trigger_sf;
-	weight*=MuTrkEffSF;
-	weight*=trigger_ps_weight;
-	weight*=pileup_reweight;
-	weight*=GetKFactor();
+  weight*=muon_id_iso_sf;
+  weight*=trigger_sf;
+  weight*=MuTrkEffSF;
+  weight*=trigger_ps_weight;
+  weight*=pileup_reweight;
+  weight*=GetKFactor();
 
   //==================================
   //==== Number of Loose/Tight Muons
@@ -404,6 +404,7 @@ void trilepton_mumumu_MCClosure::ExecuteEvents()throw( LQError ){
   }
   else return;
 
+/*
   if(isThreeMuon){
     bool VetoZResonance = fabs(z_candidate.M()-91.1876) > 15.;
     if(!VetoZResonance) return;
@@ -417,30 +418,47 @@ void trilepton_mumumu_MCClosure::ExecuteEvents()throw( LQError ){
 
   if(n_bjets>0) return;
   FillCutFlow("bjetVeto", 1.);
+*/
 
   //==== preselection is done
 
   
   if(isThreeMuon){
-    if(IsForMeasured){
-      FillHist("Measured_preselection", 0., weight, 0., 1., 1);
+
+    bool VetoZResonance = fabs(z_candidate.M()-91.1876) > 15.;
+    bool mllloffZ = fabs( (lep[0] + lep[1] + lep[2]).M() - 91.1876 ) > 15.;
+
+    std::map<TString, bool> map_to_AnalysisRegion;
+    map_to_AnalysisRegion.clear();
+    map_to_AnalysisRegion["ThreeMuon"] = true;
+    map_to_AnalysisRegion["ThreeMuon_ZVeto"] = map_to_AnalysisRegion["ThreeMuon"] && VetoZResonance;
+    map_to_AnalysisRegion["ThreeMuon_ZVeto_mllloffZ"] = map_to_AnalysisRegion["ThreeMuon_ZVeto"] && mllloffZ;
+    map_to_AnalysisRegion["Preselection"] = map_to_AnalysisRegion["ThreeMuon_ZVeto_mllloffZ"] && (n_bjets>0);
+
+
+    for(std::map<TString, bool>::iterator it=map_to_AnalysisRegion.begin(); it!=map_to_AnalysisRegion.end(); it++){
+
+      if(!(it->second)) continue;
+      TString this_Region = it->first;
+
+      if(IsForMeasured){
+        FillHist("Measured_"+this_Region, 0., weight, 0., 1., 1);
+      }
+      else if(IsForPredicted){
+        m_datadriven_bkg->GetFakeObj()->SetUseQCDFake(true);
+        double this_weight =     m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON16_HN_TIGHT", electrontriLooseColl.size(), "ELECTRON16_HN_FAKELOOSE", "dijet_ajet40");
+        double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true,  muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON16_HN_TIGHT", electrontriLooseColl.size(), "ELECTRON16_HN_FAKELOOSE", "dijet_ajet40");
+
+        this_weight *= weight;
+        this_weight_err *= weight;
+
+        FillHist("Predicted_"+this_Region, 0., this_weight, 0., 1., 1);
+        FillHist("Predicted_"+this_Region+"_up", 0., this_weight+this_weight_err, 0., 1., 1);
+        FillHist("Predicted_"+this_Region+"_down", 0., this_weight-this_weight_err, 0., 1., 1);
+      }
+
     }
-    else if(IsForPredicted){
 
-      m_datadriven_bkg->GetFakeObj()->SetUseQCDFake(true);
-      double this_weight =     m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON16_HN_TIGHT", electrontriLooseColl.size(), "ELECTRON16_HN_FAKELOOSE", "dijet_ajet40");
-      double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true,  muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON16_HN_TIGHT", electrontriLooseColl.size(), "ELECTRON16_HN_FAKELOOSE", "dijet_ajet40");
-
-      this_weight *= weight;
-      this_weight_err *= weight;
-
-      FillHist("Predicted_preselection", 0., this_weight, 0., 1., 1);
-      FillHist("Predicted_preselection_up", 0., this_weight+this_weight_err, 0., 1., 1);
-      FillHist("Predicted_preselection_down", 0., this_weight-this_weight_err, 0., 1., 1);
-
-    }
-    else{
-    }
   }
 
    return;
