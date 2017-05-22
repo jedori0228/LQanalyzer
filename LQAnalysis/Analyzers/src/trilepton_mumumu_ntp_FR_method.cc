@@ -753,8 +753,8 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     if(this_syst=="FR_HalfSample_down") Dir_HalfSample = -1;
     if(this_syst=="FR_HalfSample_up") Dir_HalfSample = +1;
 
-    double this_weight =     m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON16_HN_TIGHT", electrontriLooseColl.size(), "ELECTRON16_HN_FAKELOOSE", "dijet_ajet40", Dir_HalfSample);
-    double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true,  muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON16_HN_TIGHT", electrontriLooseColl.size(), "ELECTRON16_HN_FAKELOOSE", "dijet_ajet40", Dir_HalfSample);
+    double this_weight =     m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_HN_TIGHT", electrontriLooseColl.size(), "ELECTRON_HN_FAKELOOSE", "dijet_ajet40", Dir_HalfSample);
+    double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true,  muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_HN_TIGHT", electrontriLooseColl.size(), "ELECTRON_HN_FAKELOOSE", "dijet_ajet40", Dir_HalfSample);
 
     double cutop[100];
     cutop[0] = pt0;

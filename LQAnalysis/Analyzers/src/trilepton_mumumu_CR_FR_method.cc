@@ -307,8 +307,8 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
     map_whichCR_to_isCR["OS"+lepconfig+"_Z_10GeV"] = !isSS && ZResonance;
 
     //==== fake method weighting
-    double this_weight = m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON16_HN_TIGHT", electrontriLooseColl.size(), "ELECTRON16_HN_FAKELOOSE", "dijet_ajet40");
-    double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true, muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON16_HN_TIGHT", electrontriLooseColl.size(), "ELECTRON16_HN_FAKELOOSE", "dijet_ajet40");
+    double this_weight     = m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_HN_TIGHT", electrontriLooseColl.size(), "ELECTRON_HN_FAKELOOSE", "dijet_ajet40");
+    double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true,  muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_HN_TIGHT", electrontriLooseColl.size(), "ELECTRON_HN_FAKELOOSE", "dijet_ajet40");
 
     this_weight *= weight; // for aMCNLO, sign
 
@@ -362,8 +362,8 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
     }
 
     //==== fake method weighting
-    double this_weight     = m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON16_HN_TIGHT", electrontriLooseColl.size(), "ELECTRON16_HN_FAKELOOSE", "dijet_ajet40");
-    double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true,  muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON16_HN_TIGHT", electrontriLooseColl.size(), "ELECTRON16_HN_FAKELOOSE", "dijet_ajet40");
+    double this_weight     = m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_HN_TIGHT", electrontriLooseColl.size(), "ELECTRON_HN_FAKELOOSE", "dijet_ajet40");
+    double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true,  muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_HN_TIGHT", electrontriLooseColl.size(), "ELECTRON_HN_FAKELOOSE", "dijet_ajet40");
 
     bool AllSameCharge(false);
     //==== 3 Muon : ThreeLeptonConfig = 0;
@@ -818,8 +818,8 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
         map_whichCR_to_isCR["ZZ_2mu2el"] = map_whichCR_to_isCR["ZZ"] && (FourLeptonConfig==1);
         map_whichCR_to_isCR["ZZ_0mu4el"] = map_whichCR_to_isCR["ZZ"] && (FourLeptonConfig==2);
 
-        double this_weight     = m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON16_HN_TIGHT", electrontriLooseColl.size(), "ELECTRON16_HN_FAKELOOSE", "dijet_ajet40");
-        double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true,  muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON16_HN_TIGHT", electrontriLooseColl.size(), "ELECTRON16_HN_FAKELOOSE", "dijet_ajet40");
+        double this_weight     = m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_HN_TIGHT", electrontriLooseColl.size(), "ELECTRON_HN_FAKELOOSE", "dijet_ajet40");
+        double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true,  muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_HN_TIGHT", electrontriLooseColl.size(), "ELECTRON_HN_FAKELOOSE", "dijet_ajet40");
 
         for(std::map< TString, bool >::iterator it = map_whichCR_to_isCR.begin(); it != map_whichCR_to_isCR.end(); it++){
           TString this_suffix = it->first;
