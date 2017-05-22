@@ -1,5 +1,9 @@
 #!/bin/sh
 
+declare -a tmp=(
+'TTJets_aMC' 'DYJets_MG' 'TTLL_powheg'
+)
+
 ########################
 ### SAMPLE LIST ########## 
 #######################
@@ -29,7 +33,7 @@ declare -a QCD_FR=(
 
 ### FR MC Closure ###
 declare -a FR_MC_Closure=(
-'TTJets_aMC'
+'TTJets_aMC' 'TTLL_powheg'
 'DYJets_10to50' 'DYJets' 'DYJets_MG_10to50' 'DYJets_MG'
 'WJets' 'WJets_MG'
 'QCD_Pt-1000toInf_MuEnriched' 'QCD_Pt-120to170_MuEnriched' 'QCD_Pt-15to20_MuEnriched' 'QCD_Pt-170to300_MuEnriched' 'QCD_Pt-20to30_MuEnriched' 'QCD_Pt-300to470_MuEnriched' 'QCD_Pt-30to50_MuEnriched' 'QCD_Pt-470to600_MuEnriched' 'QCD_Pt-50to80_MuEnriched' 'QCD_Pt-600to800_MuEnriched' 'QCD_Pt-800to1000_MuEnriched' 'QCD_Pt-80to120_MuEnriched'
@@ -50,7 +54,7 @@ declare -a trilep_nonprompt_bkg=(
 declare -a trilep_diboson_had=(
 'WZ' 'ZZ' 'WW'
 )
-#declare -a trilep_signal=('HN40_mumumu_VmuN_0p1' 'HN60_mumumu_VmuN_0p1' 'HN150_mumumu_VmuN_0p1' 'HN700_mumumu_VmuN_0p1')
+
 declare -a trilep_signal=(
 'HN_MuMuMu_5'
 'HN_MuMuMu_10'
@@ -114,13 +118,6 @@ declare -a VGamma=(
 
 declare -a FourLep=(
 'WZZ' 'WWZ' 'ZZZ' 'ttZ' 'ttH_nonbb'
-)
-
-declare -a VV_metphi=(
-'WZTo3LNu_powheg_metphi' 'ZZTo4L_powheg_metphi'
-)
-declare -a ggZZ=(
-'ggZZto2e2mu' 'ggZZto2e2nu' 'ggZZto2e2tau' 'ggZZto2mu2nu' 'ggZZto2mu2tau' 'ggZZto4e' 'ggZZto4mu' 'ggZZto4tau'
 )
 
 declare -a ghent=(
