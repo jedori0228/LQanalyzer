@@ -865,7 +865,7 @@ void FakeRateCalculator_Mu_dxysig::ClearOutputVectors() throw(LQError) {
   out_electrons.clear();
 }
 
-float FakeRateCalculator_Mu::GetPrescale(std::vector<snu::KMuon> muon, bool passlow, bool passhigh){
+float FakeRateCalculator_Mu_dxysig::GetPrescale(std::vector<snu::KMuon> muon, bool passlow, bool passhigh){
   float prescale_trigger = 0.;
 
   if(muon.size() == 1){

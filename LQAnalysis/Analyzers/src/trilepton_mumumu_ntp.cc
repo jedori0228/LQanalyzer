@@ -173,10 +173,12 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
   //==== non-prompt : keep fake
   else if( k_sample_name.Contains("DY") || k_sample_name.Contains("WJets") || k_sample_name.Contains("TTJets") || k_sample_name.Contains("QCD") ){
     muontriVLooseColl_lowestPtCut = GetMuons("MUON_HN_TRI_VLOOSE_lowestPtCut", true);
+    electrontriLooseColl_lowestPtCut = GetElectrons(false, true, "ELECTRON_HN_LOWDXY_FAKELOOSE");
   }
   //==== otherwise
   else{
     muontriVLooseColl_lowestPtCut = GetMuons("MUON_HN_TRI_VLOOSE_lowestPtCut", false);
+    electrontriLooseColl_lowestPtCut = GetElectrons(false, false, "ELECTRON_HN_LOWDXY_FAKELOOSE");
   }
 
   //=================================================
@@ -194,7 +196,7 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
   //==== Get Electrons
   //====================
 
-  std::vector<snu::KElectron> electrontriLooseColl = GetElectrons(false, false, "ELECTRON_HN_LOWDXY_FAKELOOSE");
+  std::vector<snu::KElectron> electrontriLooseColl = electrontriLooseColl_lowestPtCut; //FIXME
 
   //===============================
   //==== Get Electron Corrections
@@ -686,6 +688,28 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
       bool mllloffZ = fabs( (lep[0] + lep[1] + lep[2]).M() - 91.1876 ) > 15.;
       if(isTwoMuonOneElectron) mllloffZ = true;
 
+      if(this_syst == "Central"){
+        if(LeadMuonPtCut){
+          FillCutFlow("3muon", 1.);
+          if(!AllSameCharge){
+            FillCutFlow("2SS1OS", 1.);
+            if(!mllsf4){
+              FillCutFlow("mllsf4", 1.);
+              if(VetoZResonance){
+                FillCutFlow("ZVeto", 1.);
+                if(mllloffZ){
+                  FillCutFlow("mllloffZ", 1.);
+                  if(n_bjets==0){
+                    FillCutFlow("bjetVeto", 1.);
+                  }
+                }
+              }
+            }
+          }
+        }
+
+      }
+
       //==== Finally, boolean for Preselection
       isPreselection = LeadMuonPtCut && (!AllSameCharge) && (!mllsf4) && bjetveto && VetoZResonance && mllloffZ;
 
@@ -949,13 +973,19 @@ void trilepton_mumumu_ntp::FillCutFlow(TString cut, float weight){
    
   }
   else{
-    AnalyzerCore::MakeHistograms("cutflow", 4,0.,4.);
+    AnalyzerCore::MakeHistograms("cutflow", 12,0.,12.);
 
     GetHist("cutflow")->GetXaxis()->SetBinLabel(1,"NoCut");
     GetHist("cutflow")->GetXaxis()->SetBinLabel(2,"EventCut");
     GetHist("cutflow")->GetXaxis()->SetBinLabel(3,"TriggerCut");
     GetHist("cutflow")->GetXaxis()->SetBinLabel(4,"VertexCut");
-    
+    GetHist("cutflow")->GetXaxis()->SetBinLabel(5,"3muon");
+    GetHist("cutflow")->GetXaxis()->SetBinLabel(6,"2SS1OS");
+    GetHist("cutflow")->GetXaxis()->SetBinLabel(7,"mllsf4");
+    GetHist("cutflow")->GetXaxis()->SetBinLabel(8,"ZVeto");
+    GetHist("cutflow")->GetXaxis()->SetBinLabel(9,"mllloffZ");
+    GetHist("cutflow")->GetXaxis()->SetBinLabel(10,"bjetVeto");
+ 
   }
 }
 

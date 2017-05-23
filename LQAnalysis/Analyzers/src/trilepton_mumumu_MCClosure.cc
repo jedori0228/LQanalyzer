@@ -433,7 +433,7 @@ void trilepton_mumumu_MCClosure::ExecuteEvents()throw( LQError ){
     map_to_AnalysisRegion["ThreeMuon"] = true;
     map_to_AnalysisRegion["ThreeMuon_ZVeto"] = map_to_AnalysisRegion["ThreeMuon"] && VetoZResonance;
     map_to_AnalysisRegion["ThreeMuon_ZVeto_mllloffZ"] = map_to_AnalysisRegion["ThreeMuon_ZVeto"] && mllloffZ;
-    map_to_AnalysisRegion["Preselection"] = map_to_AnalysisRegion["ThreeMuon_ZVeto_mllloffZ"] && (n_bjets==0);
+    map_to_AnalysisRegion["ThreeMuon_ZVeto_mllloffZ_bjetveto"] = map_to_AnalysisRegion["ThreeMuon_ZVeto_mllloffZ"] && (n_bjets==0);
 
 
     for(std::map<TString, bool>::iterator it=map_to_AnalysisRegion.begin(); it!=map_to_AnalysisRegion.end(); it++){
@@ -483,6 +483,64 @@ void trilepton_mumumu_MCClosure::ExecuteEvents()throw( LQError ){
       }
 
     }
+
+  }
+
+  if(isTwoMuonOneElectron){
+
+    std::map<TString, bool> map_to_AnalysisRegion;
+    map_to_AnalysisRegion.clear();
+    map_to_AnalysisRegion["TwoMuonOneElectron"] = true;
+    map_to_AnalysisRegion["TwoMuonOneElectron_bjetveto"] = map_to_AnalysisRegion["TwoMuonOneElectron"] && (n_bjets==0);
+
+    for(std::map<TString, bool>::iterator it=map_to_AnalysisRegion.begin(); it!=map_to_AnalysisRegion.end(); it++){
+
+      if(!(it->second)) continue;
+      TString this_Region = it->first;
+
+      if(IsForMeasured){
+        FillHist("Measured_"+this_Region, 0., weight, 0., 1., 1);
+        FillHist("Measured_"+this_Region+"_weight", weight, 1., -10., 10., 200);
+
+        FillHist("Measured_"+this_Region+"_nbjet_weighted", n_bjets, weight, 0., 10., 10);
+        FillHist("Measured_"+this_Region+"_nbjet_unweighted", n_bjets, 1., 0., 10., 10);
+
+        TString leporder[3] = {"leading", "second", "third"};
+        for(unsigned int i=0; i<3; i++){
+          FillHist("Measured_"+this_Region+"_"+leporder[i]+"Lepton_Pt", lep[i].Pt(), weight, 0., 1000., 1000);
+          FillHist("Measured_"+this_Region+"_"+leporder[i]+"Lepton_Eta", lep[i].Eta(), weight, -3., 3., 30);
+        }
+
+      }
+      else if(IsForPredicted){
+        m_datadriven_bkg->GetFakeObj()->SetUseQCDFake(true);
+        double this_weight =     m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_HN_TIGHT", electrontriLooseColl.size(), "ELECTRON_HN_FAKELOOSE", "dijet_ajet40");
+        double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true,  muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_HN_TIGHT", electrontriLooseColl.size(), "ELECTRON_HN_FAKELOOSE", "dijet_ajet40");
+
+        this_weight *= weight;
+        this_weight_err *= weight;
+
+        FillHist("Predicted_"+this_Region, 0., this_weight, 0., 1., 1);
+        FillHist("Predicted_"+this_Region+"_up", 0., this_weight+this_weight_err, 0., 1., 1);
+        FillHist("Predicted_"+this_Region+"_down", 0., this_weight-this_weight_err, 0., 1., 1);
+
+        FillHist("Predicted_"+this_Region+"_nbjet_weighted", n_bjets, this_weight, 0., 10., 10);
+        FillHist("Predicted_"+this_Region+"_nbjet_unweighted", n_bjets, 1., 0., 10., 10);
+
+        TString leporder[3] = {"leading", "second", "third"};
+        for(unsigned int i=0; i<3; i++){
+          FillHist("Predicted_"+this_Region+"_"+leporder[i]+"Lepton_Pt", lep[i].Pt(), this_weight, 0., 1000., 1000);
+          FillHist("Predicted_"+this_Region+"_"+leporder[i]+"Lepton_Eta", lep[i].Eta(), this_weight, -3., 3., 30);
+          FillHist("Predicted_"+this_Region+"_"+leporder[i]+"Lepton_Pt_up", lep[i].Pt(), this_weight+this_weight_err, 0., 1000., 1000);
+          FillHist("Predicted_"+this_Region+"_"+leporder[i]+"Lepton_Eta_up", lep[i].Eta(), this_weight+this_weight_err, -3., 3., 30);
+          FillHist("Predicted_"+this_Region+"_"+leporder[i]+"Lepton_Pt_down", lep[i].Pt(), this_weight-this_weight_err, 0., 1000., 1000);
+          FillHist("Predicted_"+this_Region+"_"+leporder[i]+"Lepton_Eta_down", lep[i].Eta(), this_weight-this_weight_err, -3., 3., 30);
+        }
+
+      }
+
+    }
+
 
   }
 
