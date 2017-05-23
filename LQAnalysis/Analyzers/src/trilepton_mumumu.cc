@@ -330,7 +330,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   //==== let's not use trigger pass here.
   bool DoCutOp = std::find(k_flags.begin(), k_flags.end(), "cutop") != k_flags.end();
   if(!DoCutOp){
-    //if(!PassTriggerOR(triggerlist)) return;
+    if(!PassTriggerOR(triggerlist)) return;
     FillCutFlow("TriggerCut", 1.);
     FillHist("cutflow_MuMuE", 2., 1., 0., 10., 10);
     m_logger << DEBUG << "passedTrigger "<< LQLogger::endmsg;
@@ -712,11 +712,6 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   bool isTwoMuonOneElectron = (n_triLoose_leptons == 3)
                               && (n_triLoose_muons == 2 && n_triTight_muons == 2)
                               && (n_triLoose_electrons == 1 && n_triTight_electrons == 1);
-  //FIXME TEST
-  isTwoMuonOneElectron = (n_triLoose_leptons == 3)
-                              && (n_triLoose_muons == 2)
-                              && (n_triLoose_electrons == 1)
-                              && (n_triTight_leptons != 3);
 
   if(!isThreeMuon && !isTwoMuonOneElectron) return;
 
