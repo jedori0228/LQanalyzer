@@ -33,10 +33,8 @@ declare -a QCD_FR=(
 
 ### FR MC Closure ###
 declare -a FR_MC_Closure=(
-'TTJets_aMC' 'TTLL_powheg'
 'DYJets_10to50' 'DYJets' 'DYJets_MG_10to50' 'DYJets_MG'
-'WJets' 'WJets_MG'
-'QCD_Pt-1000toInf_MuEnriched' 'QCD_Pt-120to170_MuEnriched' 'QCD_Pt-15to20_MuEnriched' 'QCD_Pt-170to300_MuEnriched' 'QCD_Pt-20to30_MuEnriched' 'QCD_Pt-300to470_MuEnriched' 'QCD_Pt-30to50_MuEnriched' 'QCD_Pt-470to600_MuEnriched' 'QCD_Pt-50to80_MuEnriched' 'QCD_Pt-600to800_MuEnriched' 'QCD_Pt-800to1000_MuEnriched' 'QCD_Pt-80to120_MuEnriched'
+'TTJets_aMC' 'TTLL_powheg' 'TTLJ_powheg'
 )
 
 ### SR ###
@@ -158,10 +156,6 @@ declare -a ghent=(
 )
 
 
-
-
-
 declare -a test=(
-'DYJets_10to50' 'DYJets' 'DYJets_MG_10to50' 'DYJets_MG'
-'TTJets_aMC' 'TTLL_powheg' 'TTLJ_powheg'
+'DYJets' 'TTJets_aMC'
 )

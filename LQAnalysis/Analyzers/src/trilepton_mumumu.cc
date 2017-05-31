@@ -134,6 +134,33 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
         }
       }
     }
+
+    if(muon.MCFromTau()){
+
+      FillHist("TEST_FromTau", 0., 1., 0., 2., 2);
+      if(muon.RelIso04()<0.1){
+        FillHist("TEST_FromTau", 1., 1., 0., 2., 2);
+      }
+
+    }
+
+
+    if(!TruthMatched(muon)){
+
+      FillHist("TEST_NotTruthMatched", 0., 1., 0., 2., 2);
+      FillHist("TEXT_NotTruthMatched_GetType_F0", muon.GetType(), 1., 0., 100., 100);
+      if(muon.RelIso04()<0.1){
+        FillHist("TEST_NotTruthMathced", 1., 1., 0., 2., 2);
+        FillHist("TEXT_NotTruthMatched_GetType_F", muon.GetType(), 1., 0., 100., 100);
+      }
+
+    }
+
+    FillHist("TEXT_GetType_F0", muon.GetType(), 1., 0., 100., 100);
+    if(muon.RelIso04()<0.1){
+      FillHist("TEXT_GetType_F", muon.GetType(), 1., 0., 100., 100);
+    }
+
   }
   return;
 */

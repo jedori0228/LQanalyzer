@@ -171,9 +171,6 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
     }
   }
 
-  //m_datadriven_bkg->GetFakeObj()->SetNJet(n_jets);
-  //m_datadriven_bkg->GetFakeObj()->SetNBJet(n_bjets);
-
   //=======================================================
   //==== For MC Closure test, let's not normalise to Lumi
   //=======================================================
@@ -307,6 +304,8 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
     map_whichCR_to_isCR["OS"+lepconfig+"_Z_10GeV"] = !isSS && ZResonance;
 
     //==== fake method weighting
+    bool UsePtCone = std::find(k_flags.begin(), k_flags.end(), "UsePtCone") != k_flags.end();
+    m_datadriven_bkg->SetUsePtCone(UsePtCone);
     double this_weight     = m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_MVA_TIGHT", electrontriLooseColl.size(), "ELECTRON_MVA_FAKELOOSE", "dijet_ajet40");
     double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true,  muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_MVA_TIGHT", electrontriLooseColl.size(), "ELECTRON_MVA_FAKELOOSE", "dijet_ajet40");
 
@@ -362,6 +361,8 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
     }
 
     //==== fake method weighting
+    bool UsePtCone = std::find(k_flags.begin(), k_flags.end(), "UsePtCone") != k_flags.end();
+    m_datadriven_bkg->SetUsePtCone(UsePtCone);
     double this_weight     = m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_MVA_TIGHT", electrontriLooseColl.size(), "ELECTRON_MVA_FAKELOOSE", "dijet_ajet40");
     double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true,  muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_MVA_TIGHT", electrontriLooseColl.size(), "ELECTRON_MVA_FAKELOOSE", "dijet_ajet40");
 
@@ -818,6 +819,8 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
         map_whichCR_to_isCR["ZZ_2mu2el"] = map_whichCR_to_isCR["ZZ"] && (FourLeptonConfig==1);
         map_whichCR_to_isCR["ZZ_0mu4el"] = map_whichCR_to_isCR["ZZ"] && (FourLeptonConfig==2);
 
+        bool UsePtCone = std::find(k_flags.begin(), k_flags.end(), "UsePtCone") != k_flags.end();
+        m_datadriven_bkg->SetUsePtCone(UsePtCone);
         double this_weight     = m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_MVA_TIGHT", electrontriLooseColl.size(), "ELECTRON_MVA_FAKELOOSE", "dijet_ajet40");
         double this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true,  muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_MVA_TIGHT", electrontriLooseColl.size(), "ELECTRON_MVA_FAKELOOSE", "dijet_ajet40");
 

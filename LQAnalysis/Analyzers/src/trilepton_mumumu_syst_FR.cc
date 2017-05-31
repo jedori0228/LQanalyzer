@@ -118,9 +118,6 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
     }
   }
 
-  //m_datadriven_bkg->GetFakeObj()->SetNJet(n_jets);
-  //m_datadriven_bkg->GetFakeObj()->SetNBJet(n_bjets);
-
   //====================
   //==== Get Electrons
   //====================
@@ -147,6 +144,9 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
   RelIsoMaxs.clear();
   dXYMins = m_datadriven_bkg->GetFakeObj()->GetdXYMins();
   RelIsoMaxs = m_datadriven_bkg->GetFakeObj()->GetRelIsoMaxs();
+
+  bool UsePtCone = std::find(k_flags.begin(), k_flags.end(), "UsePtCone") != k_flags.end();
+  m_datadriven_bkg->SetUsePtCone(UsePtCone);
 
   //===============================================
   //==== Large dXYSig muon definition loop starts
