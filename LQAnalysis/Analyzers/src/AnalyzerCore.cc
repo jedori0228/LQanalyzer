@@ -3682,4 +3682,135 @@ std::vector<snu::KMuon> AnalyzerCore::sort_muons_ptorder(std::vector<snu::KMuon>
 }
 
 
+void AnalyzerCore::SetHNTriCutOp(TString filepath){
+
+  string cutline;
+  ifstream in(filepath);
+  while(getline(in,cutline)){
+    std::istringstream is( cutline );
+    TString channel;
+    TString mass;
+    TString var;
+    double value;
+    is >> channel;
+    is >> mass;
+    is >> var;
+    is >> value;
+
+    TString thiskey = channel+"_"+mass+"_"+var;
+
+    map_HNTriChannl_cutop[thiskey] = value;
+  }
+
+}
+
+bool AnalyzerCore::PassOptimizedCut( 
+  TString channel, int sig_mass,
+  double first_pt, double second_pt, double third_pt,
+  double W_pri_mass, double HN_mass, 
+  double deltaR_OS_min, double gamma_star_mass,
+  double PFMET){
+
+  double cut_first_pt(0.), cut_second_pt(0.), cut_third_pt(0.),
+         cut_W_pri_mass(0.), cut_HN_mass(0.), 
+         cut_deltaR_OS_min(0.), cut_gamma_star_mass(0.),
+         cut_PFMET(0.);
+
+  TString thiskey_prefix = channel+"_"+TString::Itoa(sig_mass,10);
+
+  std::vector<TString> variables;
+
+  variables.push_back("first_pt");
+  variables.push_back("second_pt");
+  variables.push_back("third_pt");
+  variables.push_back("W_pri_mass");
+  variables.push_back("HN_mass");
+  variables.push_back("deltaR_OS_min");
+  variables.push_back("gamma_star_mass");
+  variables.push_back("PFMET");
+
+  std::map< TString, double > cut_variables;
+
+  for(unsigned int i=0; i<variables.size(); i++){
+    TString key = thiskey_prefix+"_"+variables.at(i);
+    //cout << "[filling] "<<key<<endl;
+
+    std::map< TString, double >::const_iterator mapit;
+    mapit = map_HNTriChannl_cutop.find(key);
+    bool valuefound = (mapit!=map_HNTriChannl_cutop.end());
+
+    if(valuefound){
+      cut_variables[variables.at(i)] = map_HNTriChannl_cutop[key];
+    }
+    else{
+      cerr << "Did not find optimized cut value for "<<key << endl;
+      exit(EXIT_FAILURE);
+    }
+  }
+
+  bool pass = true;
+
+//  for(int i=0; i<n_var; i++){
+//    cout << channel << "\t" << sig_mass << "\t" << variables[i] << "\t" << cut_variables[i] << endl;
+//  }
+
+  cut_first_pt =  cut_variables["first_pt"];
+  cut_second_pt = cut_variables["second_pt"];
+  cut_third_pt = cut_variables["third_pt"];
+  cut_W_pri_mass = cut_variables["W_pri_mass"];
+  cut_HN_mass = cut_variables["HN_mass"];
+  cut_deltaR_OS_min = cut_variables["deltaR_OS_min"];
+  cut_gamma_star_mass = cut_variables["gamma_star_mass"];
+  cut_PFMET = cut_variables["PFMET"];
+
+  if(channel == "MuMuMu"){
+    if(sig_mass < 80){
+      if( ! (first_pt < cut_first_pt) ) pass = false;
+      if( ! (second_pt < cut_second_pt) ) pass = false;
+      if( ! (third_pt < cut_third_pt) ) pass = false;
+      if( ! (W_pri_mass < cut_W_pri_mass) ) pass = false;
+      if( ! (HN_mass < cut_HN_mass ) ) pass = false;
+      if( ! (deltaR_OS_min > cut_deltaR_OS_min) ) pass = false;
+      if( ! (gamma_star_mass > cut_gamma_star_mass) ) pass = false;
+    }
+    else{
+      if( ! (first_pt > cut_first_pt) ) pass = false;
+      if( ! (second_pt > cut_second_pt) ) pass = false;
+      if( ! (third_pt > cut_third_pt) ) pass = false;
+      if( ! (W_pri_mass > cut_W_pri_mass) ) pass = false;
+      if( ! (PFMET > cut_PFMET) ) pass = false;
+      if( ! (deltaR_OS_min > cut_deltaR_OS_min) ) pass = false;
+    }
+  }
+
+  if(channel == "SSSF_MuMuE"){
+    if(sig_mass < 80){
+      if( ! (first_pt < cut_first_pt) ) pass = false;
+      if( ! (second_pt < cut_second_pt) ) pass = false;
+      if( ! (third_pt < cut_third_pt) ) pass = false;
+      if( ! (W_pri_mass < cut_W_pri_mass) ) pass = false;
+      //if( ! (HN_mass < cut_HN_mass ) ) pass = false;
+      if( ! (PFMET < cut_PFMET) ) pass = false;
+    }
+    else{
+      if( ! (first_pt > cut_first_pt) ) pass = false;
+      if( ! (second_pt > cut_second_pt) ) pass = false;
+      if( ! (third_pt > cut_third_pt) ) pass = false;
+      if( ! (W_pri_mass > cut_W_pri_mass) ) pass = false;
+      if( ! (PFMET > cut_PFMET) ) pass = false;
+    }
+  }
+
+  return pass;
+
+}
+
+
+
+
+
+
+
+
+
 

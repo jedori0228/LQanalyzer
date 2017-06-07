@@ -394,6 +394,16 @@ class AnalyzerCore : public LQCycleBase {
   void PrintTruth();
   std::vector<snu::KMuon> sort_muons_ptorder(std::vector<snu::KMuon> muons);
 
+  std::map< TString, double > map_HNTriChannl_cutop; // key : <channel>_<mass>_<var>
+  void SetHNTriCutOp(TString filepath);
+  bool PassOptimizedCut(
+    TString channel, int sig_mass,
+    double first_pt, double second_pt, double third_pt,
+    double W_pri_mass, double HN_mass,
+    double deltaR_OS_min, double gamma_star_mass,
+    double PFMET
+  );
+
   
 };
 #endif
