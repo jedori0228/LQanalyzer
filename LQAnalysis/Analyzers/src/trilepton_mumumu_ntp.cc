@@ -885,6 +885,7 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
 
     } // isFourLepton
 
+    lep = sort_leptons_ptorder(lep);
 
     double pt0(0.), pt1(0.), pt2(0.);
     if(isPreselection){
