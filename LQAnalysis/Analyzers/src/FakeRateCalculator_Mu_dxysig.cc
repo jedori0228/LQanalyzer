@@ -29,6 +29,9 @@ FakeRateCalculator_Mu_dxysig::FakeRateCalculator_Mu_dxysig() :  AnalyzerCore(), 
   // This function sets up Root files and histograms Needed in ExecuteEvents
   InitialiseAnalysis();
 
+  snu::KEvent Evt = eventbase->GetEvent();
+  METauto = Evt.MET();
+
 }
 
 
@@ -967,6 +970,7 @@ void FakeRateCalculator_Mu_dxysig::FillDenAndNum(TString prefix, snu::KMuon muon
   FillHist(prefix+"_onebin_F0", 0., thisweight, 0., 1., 1);
   FillHist(prefix+"_events_pt_vs_eta_F0", muon.Pt(), fabs(muon.Eta()), thisweight, ptarray, 11, etaarray, 4);
   FillHist(prefix+"_events_pt_cone_vs_eta_F0", conept, fabs(muon.Eta()), thisweight, ptarray, 11, etaarray, 4);
+  FillHist(prefix+"_PFMET_F0", METauto, thisweight, 0., 1000., 1000);
 
   if( isTight ){
     FillHist(prefix+"_eta_F", muon.Eta(), thisweight, -3., 3., 30);
@@ -980,6 +984,8 @@ void FakeRateCalculator_Mu_dxysig::FillDenAndNum(TString prefix, snu::KMuon muon
     FillHist(prefix+"_onebin_F", 0., thisweight, 0., 1., 1);
     FillHist(prefix+"_events_pt_vs_eta_F", muon.Pt(), fabs(muon.Eta()), thisweight, ptarray, 11, etaarray, 4);
     FillHist(prefix+"_events_pt_cone_vs_eta_F", conept, fabs(muon.Eta()), thisweight, ptarray, 11, etaarray, 4);
+    FillHist(prefix+"_PFMET_F", METauto, thisweight, 0., 1000., 1000);
+
   }
 
 

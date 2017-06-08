@@ -38,6 +38,7 @@ class FakeRateCalculator_Mu_dxysig : public AnalyzerCore {
   std::vector<snu::KMuon> out_muons;
   std::vector<snu::KElectron> out_electrons;
   TH2D *FR_sampleA;
+  double METauto;
 
 
   ClassDef ( FakeRateCalculator_Mu_dxysig, 1);
