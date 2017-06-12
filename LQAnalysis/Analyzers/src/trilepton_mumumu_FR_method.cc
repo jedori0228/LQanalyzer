@@ -29,19 +29,19 @@ trilepton_mumumu_FR_method::trilepton_mumumu_FR_method() :  AnalyzerCore(), out_
   // This function sets up Root files and histograms Needed in ExecuteEvents
   InitialiseAnalysis();
 
-  MakeCleverHistograms(hntrilephist, "cut0");
-  MakeCleverHistograms(hntrilephist, "cut0_up");
-  MakeCleverHistograms(hntrilephist, "cut0_down");
-  MakeCleverHistograms(hntrilephist, "cutWlow");
-  MakeCleverHistograms(hntrilephist, "cutWlow_up");
-  MakeCleverHistograms(hntrilephist, "cutWlow_down");
-  MakeCleverHistograms(hntrilephist, "cutWhigh");
-  MakeCleverHistograms(hntrilephist, "cutWhigh_up");
-  MakeCleverHistograms(hntrilephist, "cutWhigh_down");
+  MakeCleverHistograms(hntrilephist, "cut_MuMuMu_Presel");
+  MakeCleverHistograms(hntrilephist, "cut_MuMuMu_Presel_up");
+  MakeCleverHistograms(hntrilephist, "cut_MuMuMu_Presel_down");
+  MakeCleverHistograms(hntrilephist, "cut_MuMuMu_low");
+  MakeCleverHistograms(hntrilephist, "cut_MuMuMu_low_up");
+  MakeCleverHistograms(hntrilephist, "cut_MuMuMu_low_down");
+  MakeCleverHistograms(hntrilephist, "cut_MuMuMu_high");
+  MakeCleverHistograms(hntrilephist, "cut_MuMuMu_high_up");
+  MakeCleverHistograms(hntrilephist, "cut_MuMuMu_high_down");
 
   int signal_masses[] = {5, 10, 20, 30, 40, 50, 60, 70, 90, 100, 150, 200, 300, 400, 500, 700, 1000};
   for(int i=0; i<17; i++){
-    TString thiscut = "cutHN"+TString::Itoa(signal_masses[i],10);
+    TString thiscut = "cut_MuMuMu_HN"+TString::Itoa(signal_masses[i],10);
     MakeCleverHistograms(hntrilephist, thiscut);
     MakeCleverHistograms(hntrilephist, thiscut+"_up");
     MakeCleverHistograms(hntrilephist, thiscut+"_down");
@@ -50,6 +50,9 @@ trilepton_mumumu_FR_method::trilepton_mumumu_FR_method() :  AnalyzerCore(), out_
   MakeCleverHistograms(hntrilephist, "MuMuE");
   MakeCleverHistograms(hntrilephist, "MuMuE_up");
   MakeCleverHistograms(hntrilephist, "MuMuE_down");
+
+  TString lqdir =  getenv("LQANALYZER_DIR");
+  SetHNTriCutOp(lqdir+"/data/TXT/cutop.txt");
 
 
 }
@@ -204,14 +207,17 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   if( muontriLooseColl.at(0).Pt() < MinLeadingMuonPt ) return;
   FillCutFlow("3muon", 1.);
 
-  KLepton lep[3];
+  std::vector<KLepton> lep;
+  for(unsigned int i=0; i<muontriLooseColl.size(); i++){
+    KLepton this_lep( muontriLooseColl.at(i) );
+    lep.push_back( this_lep );
+  }
+  for(unsigned int i=0; i<electrontriLooseColl.size(); i++){
+    KLepton this_lep( electrontriLooseColl.at(i) );
+    lep.push_back( this_lep );
+  }
+
   snu::KParticle HN[4];
-  for(unsigned int i=0;i<n_triLoose_muons;i++){
-    lep[i] = muontriLooseColl.at(i);
-  }
-  for(unsigned int i=0;i<n_triLoose_electrons;i++){
-    lep[i+n_triLoose_muons] = electrontriLooseColl.at(i);
-  }
 
   //==== fake method weighting
   bool UsePtCone = std::find(k_flags.begin(), k_flags.end(), "UsePtCone") != k_flags.end();
@@ -458,28 +464,28 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
 
   if(isThreeMuon){
 
-    FillCLHist(hntrilephist, "cut0_up", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight+this_weight_err);
-    FillCLHist(hntrilephist, "cut0_down", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight-this_weight_err);
-    FillCLHist(hntrilephist, "cut0", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight);
+    FillCLHist(hntrilephist, "cut_MuMuMu_Presel_up", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight+this_weight_err);
+    FillCLHist(hntrilephist, "cut_MuMuMu_Presel_down", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight-this_weight_err);
+    FillCLHist(hntrilephist, "cut_MuMuMu_Presel", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight);
 
     if( isLowMass ){
-      FillCLHist(hntrilephist, "cutWlow_up", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight+this_weight_err);
-      FillCLHist(hntrilephist, "cutWlow_down", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight-this_weight_err);
-      FillCLHist(hntrilephist, "cutWlow", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight);
+      FillCLHist(hntrilephist, "cut_MuMuMu_low_up", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight+this_weight_err);
+      FillCLHist(hntrilephist, "cut_MuMuMu_low_down", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight-this_weight_err);
+      FillCLHist(hntrilephist, "cut_MuMuMu_low", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight);
       FillCutFlow("LowMass", 1.);
     }
 
     if( isHighMass ){
-      FillCLHist(hntrilephist, "cutWhigh_up", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight+this_weight_err);
-      FillCLHist(hntrilephist, "cutWhigh_down", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight-this_weight_err);
-      FillCLHist(hntrilephist, "cutWhigh", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight);
+      FillCLHist(hntrilephist, "cut_MuMuMu_high_up", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight+this_weight_err);
+      FillCLHist(hntrilephist, "cut_MuMuMu_high_down", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight-this_weight_err);
+      FillCLHist(hntrilephist, "cut_MuMuMu_high", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight);
       FillCutFlow("HighMass", 1.);
     }
 
     int signal_masses[] = {5, 10, 20, 30, 40, 50, 60, 70, 90, 100, 150, 200, 300, 400, 500, 700, 1000};
     for(int i=0; i<17; i++){
 
-      TString thiscut = "cutHN"+TString::Itoa(signal_masses[i],10);
+      TString thiscut = "cut_MuMuMu_HN"+TString::Itoa(signal_masses[i],10);
       double this_W_pri_mass = W_pri_lowmass.M();
       if( signal_masses[i] > 80 ) this_W_pri_mass = W_pri_highmass.M();
 
@@ -489,7 +495,8 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
       else if(signal_masses[i] <= 1000) hnmass = HN[2].M();
       else hnmass = HN[3].M();
 
-      bool pass_op = PassOptimizedCut(signal_masses[i],
+      bool pass_op = PassOptimizedCut(
+        "MuMuMu", signal_masses[i],
         muontriLooseColl.at(0).Pt(), muontriLooseColl.at(1).Pt(), muontriLooseColl.at(2).Pt(),
         this_W_pri_mass, hnmass,
         deltaR_OS_min, gamma_star.M(),
@@ -506,9 +513,42 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
 
   }
   else if(isTwoMuonOneElectron){
+
+    std::vector<KLepton> lep_order = sort_leptons_ptorder(lep);
+
     FillCLHist(hntrilephist, "MuMuE_up", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight+this_weight_err);
     FillCLHist(hntrilephist, "MuMuE_down", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight-this_weight_err);
     FillCLHist(hntrilephist, "MuMuE", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight);  
+
+    int signal_masses[] = {5, 10, 20, 30, 40, 50, 60, 70, 90, 100, 150, 200, 300, 400, 500, 700, 1000};
+    for(int i=0; i<17; i++){
+      TString thiscut = "cut_SSSF_MuMuE_HN"+TString::Itoa(signal_masses[i],10);
+      double this_W_pri_mass = W_pri_lowmass.M();
+      if( signal_masses[i] > 80 ) this_W_pri_mass = W_pri_highmass.M();
+
+      double hnmass = -999.;
+      if(signal_masses[i] <= 50) hnmass = HN[0].M();
+      else if(signal_masses[i] <= 80) hnmass = HN[1].M();
+      else if(signal_masses[i] <= 1000) hnmass = HN[2].M();
+      else hnmass = HN[3].M();
+
+      //cout << "Tring PassOptimizedCut" << endl;
+      bool pass_op = PassOptimizedCut(
+        "SSSF_MuMuE", signal_masses[i],
+        lep_order.at(0).Pt(), lep_order.at(1).Pt(), lep_order.at(2).Pt(),
+        this_W_pri_mass, hnmass,
+        deltaR_OS_min, gamma_star.M(),
+        MET
+      );
+      //cout << "==>Done" << endl;
+
+      if(pass_op){
+        FillCLHist(hntrilephist, thiscut, eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, weight);
+        FillCLHist(hntrilephist, thiscut+"_up", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, weight+this_weight_err);
+        FillCLHist(hntrilephist, thiscut+"_down", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, weight-this_weight_err);
+      }
+
+    }
 
     if(DoCutOp){
       bool PassIsoMu24 = PassTrigger("HLT_IsoMu24_v") || PassTrigger("HLT_IsoTkMu24_v");
