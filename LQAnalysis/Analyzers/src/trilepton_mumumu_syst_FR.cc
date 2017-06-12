@@ -229,10 +229,13 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
      
         if( muontriLooseColl.at(0).Pt() < 20. ) continue;
 
-        snu::KParticle lep[3], HN[4];;
-        lep[0] = muontriLooseColl.at(0);
-        lep[1] = muontriLooseColl.at(1);
-        lep[2] = muontriLooseColl.at(2);
+        std::vector<KLepton> lep;
+        for(unsigned int i=0; i<muontriLooseColl.size(); i++){
+          KLepton this_lep( muontriLooseColl.at(i) );
+          lep.push_back( this_lep );
+        }
+
+        snu::KParticle HN[4];;
 
         //==== fake method weighting
         m_datadriven_bkg->GetFakeObj()->SetTrilepWP(dXYMins.at(aaa), RelIsoMaxs.at(bbb));

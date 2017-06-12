@@ -25,7 +25,7 @@ class trilepton_mumumu_MCClosure : public AnalyzerCore {
     std::map<TString, bool> map_to_AnalysisRegion,
     bool IsForMeasured,
     bool IsForPredicted,
-    KLepton *lep,
+    std::vector<KLepton> lep,
     double lumi_weight,
     double this_weight,
     double this_weight_err,

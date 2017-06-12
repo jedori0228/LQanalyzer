@@ -305,10 +305,10 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
     else if(it_sys==14){
       this_syst = "TriggerSF_up";
     }
-    else if(it_sys==9){
+    else if(it_sys==15){
       this_syst = "ElectronIDSF_up";
     }
-    else if(it_sys==10){
+    else if(it_sys==16){
       this_syst = "ElectronIDSF_down";
     }
     else{
@@ -586,8 +586,8 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
       snu::KParticle nu_lowmass;
       nu_lowmass.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET);
       double pz_sol_lowmass[2];
-      pz_sol_lowmass[0] = solveqdeq(80.4, lep[0]+lep[1]+lep[2], MET, METphi, "m"); // 0 = minus
-      pz_sol_lowmass[1] = solveqdeq(80.4, lep[0]+lep[1]+lep[2], MET, METphi, "p"); // 1 = plus
+      pz_sol_lowmass[0] = solveqdeq(80.385, lep[0]+lep[1]+lep[2], MET, METphi, "m"); // 0 = minus
+      pz_sol_lowmass[1] = solveqdeq(80.385, lep[0]+lep[1]+lep[2], MET, METphi, "p"); // 1 = plus
 
       int solution_selection_lowmass = 0;
       if( pz_sol_lowmass[0] != pz_sol_lowmass[1] ){
@@ -618,8 +618,8 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
       if(isThreeMuon) l_3_index = find_mlmet_closest_to_W(lep, nu_highmass);
       else if(isTwoMuonOneElectron) l_3_index = 2;
       double pz_sol_highmass[2]; 
-      pz_sol_highmass[0] = solveqdeq(80.4, lep[l_3_index], MET, METphi, "m"); // 0 = minus
-      pz_sol_highmass[1] = solveqdeq(80.4, lep[l_3_index], MET, METphi, "p"); // 1 = plus
+      pz_sol_highmass[0] = solveqdeq(80.385, lep[l_3_index], MET, METphi, "m"); // 0 = minus
+      pz_sol_highmass[1] = solveqdeq(80.385, lep[l_3_index], MET, METphi, "p"); // 1 = plus
       int solution_selection_highmass = 0;
       if( pz_sol_highmass[0] != pz_sol_highmass[1] ){ 
         //==== take the one with smaller magnitude
@@ -1025,6 +1025,8 @@ void trilepton_mumumu_ntp::MakeHistograms(){
   MakeNtp("Ntp_PU_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
   MakeNtp("Ntp_TriggerSF_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
   MakeNtp("Ntp_TriggerSF_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
+  MakeNtp("Ntp_ElectronIDSF_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
+  MakeNtp("Ntp_ElectronIDSF_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
 }
 
 

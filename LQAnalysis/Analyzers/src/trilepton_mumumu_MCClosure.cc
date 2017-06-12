@@ -244,14 +244,17 @@ void trilepton_mumumu_MCClosure::ExecuteEvents()throw( LQError ){
   if( muontriLooseColl.at(0).Pt() < MinLeadingMuonPt ) return;
   FillCutFlow("3muon", 1.);
 
-  KLepton lep[3];
+  std::vector<KLepton> lep;
+  for(unsigned int i=0; i<muontriLooseColl.size(); i++){
+    KLepton this_lep( muontriLooseColl.at(i) );
+    lep.push_back( this_lep );
+  }
+  for(unsigned int i=0; i<electrontriLooseColl.size(); i++){
+    KLepton this_lep( electrontriLooseColl.at(i) );
+    lep.push_back( this_lep );
+  }
+
   snu::KParticle HN[4];
-  for(unsigned int i=0;i<n_triLoose_muons;i++){
-    lep[i] = muontriLooseColl.at(i);
-  }
-  for(unsigned int i=0;i<n_triLoose_electrons;i++){
-    lep[i+n_triLoose_muons] = electrontriLooseColl.at(i);
-  }
 
   int OppSign, SameSign[2]; // SameSign[0].Pt() > SameSign[1].Pt()
   if(isThreeMuon){
@@ -589,7 +592,7 @@ void trilepton_mumumu_MCClosure::FillMCClosurePlot(
     std::map<TString, bool> map_to_AnalysisRegion,
     bool IsForMeasured,
     bool IsForPredicted,
-    KLepton *lep,
+    std::vector<KLepton> lep,
     double lumi_weight,
     double this_weight,
     double this_weight_err,

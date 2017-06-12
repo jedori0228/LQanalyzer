@@ -462,8 +462,8 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
       snu::KParticle nu_lowmass;
       nu_lowmass.SetPxPyPzE(MET*TMath::Cos(METphi), MET*TMath::Sin(METphi), 0, MET);
       double pz_sol_lowmass[2];
-      pz_sol_lowmass[0] = solveqdeq(80.4, lep[0]+lep[1]+lep[2], MET, METphi, "m"); // 0 = minus
-      pz_sol_lowmass[1] = solveqdeq(80.4, lep[0]+lep[1]+lep[2], MET, METphi, "p"); // 1 = plus
+      pz_sol_lowmass[0] = solveqdeq(80.385, lep[0]+lep[1]+lep[2], MET, METphi, "m"); // 0 = minus
+      pz_sol_lowmass[1] = solveqdeq(80.385, lep[0]+lep[1]+lep[2], MET, METphi, "p"); // 1 = plus
 
       int solution_selection_lowmass = 0;
       if( pz_sol_lowmass[0] != pz_sol_lowmass[1] ){
@@ -494,8 +494,8 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
       if(isThreeMuon) l_3_index = find_mlmet_closest_to_W(lep, nu_highmass);
       else if(isTwoMuonOneElectron) l_3_index = 2;
       double pz_sol_highmass[2];
-      pz_sol_highmass[0] = solveqdeq(80.4, lep[l_3_index], MET, METphi, "m"); // 0 = minus
-      pz_sol_highmass[1] = solveqdeq(80.4, lep[l_3_index], MET, METphi, "p"); // 1 = plus
+      pz_sol_highmass[0] = solveqdeq(80.385, lep[l_3_index], MET, METphi, "m"); // 0 = minus
+      pz_sol_highmass[1] = solveqdeq(80.385, lep[l_3_index], MET, METphi, "p"); // 1 = plus
       int solution_selection_highmass = 0;
       if( pz_sol_highmass[0] != pz_sol_highmass[1] ){
         //==== take the one with smaller magnitude
