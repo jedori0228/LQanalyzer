@@ -55,6 +55,47 @@ void trilepton_mumumu_CR::InitialiseAnalysis() throw( LQError ) {
 
 void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
 
+/*
+  std::vector<snu::KMuon> testmuon         = GetHNTriMuonsByLooseRelIso(0.4, true);
+  std::vector<snu::KElectron> testelectron = GetElectrons(false, true, "ELECTRON_MVA_FAKELOOSE");
+
+  for(unsigned int i=0; i<testelectron.size(); i++){
+    FillHist("TEST_Electron_F0", testelectron.at(i).GetType(), 1., 0., 100., 100);
+    if(PassID(testelectron.at(i), "ELECTRON_MVA_TIGHT")){
+      FillHist("TEST_Electron_F", testelectron.at(i).GetType(), 1., 0., 100., 100);
+    }
+    if( ElectronMatchedToPhoton(testelectron.at(i)) ){
+      FillHist("ElMatchPhoton_FR", 0., 1., 0., 2., 2);
+      if(PassID(testelectron.at(i), "ELECTRON_MVA_TIGHT")){
+        FillHist("ElMatchPhoton_FR", 1., 1., 0., 2., 2);
+      }
+    }
+  }
+  return;
+
+  if(testmuon.size()==2 && testelectron.size()==1){
+    snu::KMuon test_mu[2];
+    test_mu[0] = testmuon.at(0);
+    test_mu[1] = testmuon.at(1);
+    snu::KElectron test_el = testelectron.at(0);
+    snu::KParticle Zcand = test_mu[0]+test_mu[1]+test_el;
+    if( fabs( 91.1876-Zcand.M() ) > 10. ) return;
+    if( testelectron.at(0).GetType() != 36 ) return;
+    cout << "RunNumber = " << eventbase->GetEvent().RunNumber() << endl;
+    cout << "EventNumber = " << eventbase->GetEvent().EventNumber() << endl;
+    PrintTruth();
+    cout << "#### Reco Muon ####" << endl;
+    for(unsigned int i=0;i<testmuon.size();i++){
+      cout << testmuon.at(i).Pt() << "\t" << testmuon.at(i).Eta() << "\t" << testmuon.at(i).GetType() << "\t" << TruthMatched(testmuon.at(i)) << endl;
+    }
+    cout << "#### Reco Electron ####" << endl;
+    for(unsigned int i=0;i<testelectron.size();i++){
+      cout << testelectron.at(i).Pt() << "\t" << testelectron.at(i).Eta() << "\t" << testelectron.at(i).GetType() << "\t" << testelectron.at(i).TestGetType() << "\t" << TruthMatched(testelectron.at(i),false) << endl;
+    }
+  }
+  return;
+*/
+
   //============================================
   //==== Apply the gen weight (for NLO, +1,-1)
   //============================================
@@ -608,6 +649,10 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
       map_whichCR_to_isCR["ZGamma_1mu2el"] = map_whichCR_to_isCR["ZGamma"] && (ThreeLeptonConfig==2);
       map_whichCR_to_isCR["ZGamma_3mu3el"] = map_whichCR_to_isCR["ZGamma"] && (ThreeLeptonConfig==3);
 
+      if(map_whichCR_to_isCR["ZGamma_2mu1el"]){
+        FillHist("TEST_ZGamma_2mu1el_Electron_GeyType", electrontriLooseColl.at(0).GetType(), 1., 0., 100., 100);
+      }
+
       for(std::map< TString, bool >::iterator it = map_whichCR_to_isCR.begin(); it != map_whichCR_to_isCR.end(); it++){
         TString this_suffix = it->first;
         if(it->second){
@@ -662,220 +707,6 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
 
         }
       }
-
-/*
-      if( ZLeptonPtCut && isZresonance && WLeptonPtCut && METCut && mlllCut && !mll4 && bjetveto ){
-        TString this_suffix = "WZ";
-
-        FillHist("n_events_"+this_suffix, 0, weight, 0., 1., 1);
-        FillHist("n_vertices_"+this_suffix, eventbase->GetEvent().nVertices(), weight, 0., 50., 50);
-        FillHist("n_jets_"+this_suffix, n_jets, weight, 0., 10., 10);
-        FillHist("n_bjets_"+this_suffix, n_bjets, weight, 0., 10., 10);
-        FillHist("PFMET_"+this_suffix, MET, weight, 0., 500., 500);
-        FillHist("PFMET_phi_"+this_suffix, METphi, weight, -3.2, 3.2, 64);
-        FillHist("osllmass_"+this_suffix, m_OSSF[0], weight, 0., 500., 500);
-        FillHist("osllmass_"+this_suffix, m_OSSF[1], weight, 0., 500., 500);
-        FillHist("m_Z_candidate_"+this_suffix, Z_candidate.M(), weight, 0., 150., 150);
-        FillHist("mt_W_candidate_"+this_suffix, MT(nu, WLepton), weight, 0., 300., 300);
-        FillHist("m_lll_"+this_suffix, mlll, weight, 0., 500., 500);
-        FillHist("Z_candidate_Pt_"+this_suffix, Z_candidate.Pt(), weight, 0., 400., 400);
-        FillHist("W_candidate_Pt_"+this_suffix, W_candidate.Pt(), weight, 0., 400., 400);
-        FillHist("n_electron_"+this_suffix, electrontriLooseColl.size(), weight, 0., 10., 10);
-        FillHist("dRZLeptonWLepton_"+this_suffix, ZLepton_leading.DeltaR(WLepton), weight, 0., 6., 60);
-        FillHist("dRZLeptonWLepton_"+this_suffix, ZLepton_subleading.DeltaR(WLepton), weight, 0., 6., 60);
-        FillHist("dRMETWLepton_"+this_suffix, nu.DeltaR(WLepton), weight, 0., 6., 60);
-
-        FillHist("leadingLepton_Pt_"+this_suffix, lep[0].Pt() , weight, 0., 200., 200);
-        FillHist("leadingLepton_Eta_"+this_suffix, lep[0].Eta() , weight, -3., 3., 60);
-        //FillHist("leadingLepton_RelIso_"+this_suffix, lep[0].RelIso04() , weight, 0., 1.0, 100);
-        //FillHist("leadingLepton_Chi2_"+this_suffix, lep[0].GlobalChi2() , weight, 0., 10., 100);
-        FillHist("secondLepton_Pt_"+this_suffix, lep[1].Pt() , weight, 0., 200., 200);
-        FillHist("secondLepton_Eta_"+this_suffix, lep[1].Eta() , weight, -3., 3., 60);
-        //FillHist("secondLepton_RelIso_"+this_suffix, lep[1].RelIso04() , weight, 0., 1.0, 100);
-        //FillHist("secondLepton_Chi2_"+this_suffix, lep[1].GlobalChi2() , weight, 0., 10., 100);
-        FillHist("thirdLepton_Pt_"+this_suffix, lep[2].Pt() , weight, 0., 200., 200);
-        FillHist("thirdLepton_Eta_"+this_suffix, lep[2].Eta() , weight, -3., 3., 60);
-        //FillHist("thirdLepton_RelIso_"+this_suffix, lep[2].RelIso04() , weight, 0., 1.0, 100);
-        //FillHist("thirdLepton_Chi2_"+this_suffix, lep[2].GlobalChi2() , weight, 0., 10., 100);
-
-        FillHist("ZLepton_leading_Pt_"+this_suffix, ZLepton_leading.Pt() , weight, 0., 200., 200);
-        FillHist("ZLepton_leading_Eta_"+this_suffix, ZLepton_leading.Eta() , weight, -3., 3., 60);
-        //FillHist("ZLepton_leading_RelIso_"+this_suffix, ZLepton_leading.RelIso04() , weight, 0., 1.0, 100);
-        //FillHist("ZLepton_leading_Chi2_"+this_suffix, ZLepton_leading.GlobalChi2() , weight, 0., 10., 100);
-        FillHist("ZLepton_leading_dXY_"+this_suffix, fabs(ZLepton_leading.dXY()) , weight, 0., 0.01, 100);
-        FillHist("ZLepton_subleading_Pt_"+this_suffix, ZLepton_subleading.Pt() , weight, 0., 200., 200);
-        FillHist("ZLepton_subleading_Eta_"+this_suffix, ZLepton_subleading.Eta() , weight, -3., 3., 60);
-        //FillHist("ZLepton_subleading_RelIso_"+this_suffix, ZLepton_subleading.RelIso04() , weight, 0., 1.0, 100);
-        //FillHist("ZLepton_subleading_Chi2_"+this_suffix, ZLepton_subleading.GlobalChi2() , weight, 0., 10., 100);
-        FillHist("ZLepton_subleading_dXY_"+this_suffix, fabs(ZLepton_subleading.dXY()) , weight, 0., 0.01, 100);
-        FillHist("WLepton_Pt_"+this_suffix, WLepton.Pt() , weight, 0., 200., 200);
-        FillHist("WLepton_Eta_"+this_suffix, WLepton.Eta() , weight, -3., 3., 60);
-        //FillHist("WLepton_RelIso_"+this_suffix, WLepton.RelIso04() , weight, 0., 1.0, 100);
-        //FillHist("WLepton_Chi2_"+this_suffix, WLepton.GlobalChi2() , weight, 0., 10., 100);
-        FillHist("WLepton_dXY_"+this_suffix, fabs(WLepton.dXY()) , weight, 0., 0.01, 100);
-
-      }
-
-      //==== Z+Jets selection
-      if( ZLeptonPtCut && isZresonance && (MET < 20.) && mlllCut && !mll4 && bjetveto && MT(nu, WLepton) < 30. ){
-        TString this_suffix = "ZJets";
-
-        FillHist("n_events_"+this_suffix, 0, weight, 0., 1., 1);
-        FillHist("n_vertices_"+this_suffix, eventbase->GetEvent().nVertices(), weight, 0., 50., 50);
-        FillHist("n_jets_"+this_suffix, n_jets, weight, 0., 10., 10);
-        FillHist("n_bjets_"+this_suffix, n_bjets, weight, 0., 10., 10);
-        FillHist("PFMET_"+this_suffix, MET, weight, 0., 500., 500);
-        FillHist("PFMET_phi_"+this_suffix, METphi, weight, -3.2, 3.2, 64);
-        FillHist("osllmass_"+this_suffix, m_OSSF[0], weight, 0., 500., 500);
-        FillHist("osllmass_"+this_suffix, m_OSSF[1], weight, 0., 500., 500);
-        FillHist("m_Z_candidate_"+this_suffix, Z_candidate.M(), weight, 0., 150., 150);
-        FillHist("mt_W_candidate_"+this_suffix, MT(nu, WLepton), weight, 0., 300., 300);
-        FillHist("m_lll_"+this_suffix, mlll, weight, 0., 500., 500);
-        FillHist("Z_candidate_Pt_"+this_suffix, Z_candidate.Pt(), weight, 0., 400., 400);
-        FillHist("W_candidate_Pt_"+this_suffix, W_candidate.Pt(), weight, 0., 400., 400);
-        FillHist("n_electron_"+this_suffix, electrontriLooseColl.size(), weight, 0., 10., 10);
-        FillHist("dRZLeptonWLepton_"+this_suffix, ZLepton_leading.DeltaR(WLepton), weight, 0., 6., 60);
-        FillHist("dRZLeptonWLepton_"+this_suffix, ZLepton_subleading.DeltaR(WLepton), weight, 0., 6., 60);
-        FillHist("dRMETWLepton_"+this_suffix, nu.DeltaR(WLepton), weight, 0., 6., 60);
-
-        FillHist("leadingLepton_Pt_"+this_suffix, lep[0].Pt() , weight, 0., 200., 200);
-        FillHist("leadingLepton_Eta_"+this_suffix, lep[0].Eta() , weight, -3., 3., 60);
-        //FillHist("leadingLepton_RelIso_"+this_suffix, lep[0].RelIso04() , weight, 0., 1.0, 100);
-        //FillHist("leadingLepton_Chi2_"+this_suffix, lep[0].GlobalChi2() , weight, 0., 10., 100);
-        FillHist("secondLepton_Pt_"+this_suffix, lep[1].Pt() , weight, 0., 200., 200);
-        FillHist("secondLepton_Eta_"+this_suffix, lep[1].Eta() , weight, -3., 3., 60);
-        //FillHist("secondLepton_RelIso_"+this_suffix, lep[1].RelIso04() , weight, 0., 1.0, 100);
-        //FillHist("secondLepton_Chi2_"+this_suffix, lep[1].GlobalChi2() , weight, 0., 10., 100);
-        FillHist("thirdLepton_Pt_"+this_suffix, lep[2].Pt() , weight, 0., 200., 200);
-        FillHist("thirdLepton_Eta_"+this_suffix, lep[2].Eta() , weight, -3., 3., 60);
-        //FillHist("thirdLepton_RelIso_"+this_suffix, lep[2].RelIso04() , weight, 0., 1.0, 100);
-        //FillHist("thirdLepton_Chi2_"+this_suffix, lep[2].GlobalChi2() , weight, 0., 10., 100);
-
-        FillHist("ZLepton_leading_Pt_"+this_suffix, ZLepton_leading.Pt() , weight, 0., 200., 200);
-        FillHist("ZLepton_leading_Eta_"+this_suffix, ZLepton_leading.Eta() , weight, -3., 3., 60);
-        //FillHist("ZLepton_leading_RelIso_"+this_suffix, ZLepton_leading.RelIso04() , weight, 0., 1.0, 100);
-        //FillHist("ZLepton_leading_Chi2_"+this_suffix, ZLepton_leading.GlobalChi2() , weight, 0., 10., 100);
-        FillHist("ZLepton_leading_dXY_"+this_suffix, fabs(ZLepton_leading.dXY()) , weight, 0., 0.01, 100);
-        FillHist("ZLepton_subleading_Pt_"+this_suffix, ZLepton_subleading.Pt() , weight, 0., 200., 200);
-        FillHist("ZLepton_subleading_Eta_"+this_suffix, ZLepton_subleading.Eta() , weight, -3., 3., 60);
-        //FillHist("ZLepton_subleading_RelIso_"+this_suffix, ZLepton_subleading.RelIso04() , weight, 0., 1.0, 100);
-        //FillHist("ZLepton_subleading_Chi2_"+this_suffix, ZLepton_subleading.GlobalChi2() , weight, 0., 10., 100);
-        FillHist("ZLepton_subleading_dXY_"+this_suffix, fabs(ZLepton_subleading.dXY()) , weight, 0., 0.01, 100);
-        FillHist("WLepton_Pt_"+this_suffix, WLepton.Pt() , weight, 0., 200., 200);
-        FillHist("WLepton_Eta_"+this_suffix, WLepton.Eta() , weight, -3., 3., 60);
-        //FillHist("WLepton_RelIso_"+this_suffix, WLepton.RelIso04() , weight, 0., 1.0, 100);
-        //FillHist("WLepton_Chi2_"+this_suffix, WLepton.GlobalChi2() , weight, 0., 10., 100);
-        FillHist("WLepton_dXY_"+this_suffix, fabs(WLepton.dXY()) , weight, 0., 0.01, 100);
-
-      }
-
-      //==== Z+mu
-      if( ZLeptonPtCut && isZresonance && mlllCut && !mll4 && bjetveto ){
-        TString this_suffix = "ZMu";
-
-        FillHist("n_events_"+this_suffix, 0, weight, 0., 1., 1);
-        FillHist("n_vertices_"+this_suffix, eventbase->GetEvent().nVertices(), weight, 0., 50., 50);
-        FillHist("n_jets_"+this_suffix, n_jets, weight, 0., 10., 10);
-        FillHist("n_bjets_"+this_suffix, n_bjets, weight, 0., 10., 10);
-        FillHist("PFMET_"+this_suffix, MET, weight, 0., 500., 500);
-        FillHist("PFMET_phi_"+this_suffix, METphi, weight, -3.2, 3.2, 64);
-        FillHist("osllmass_"+this_suffix, m_OSSF[0], weight, 0., 500., 500);
-        FillHist("osllmass_"+this_suffix, m_OSSF[1], weight, 0., 500., 500);
-        FillHist("m_Z_candidate_"+this_suffix, Z_candidate.M(), weight, 0., 150., 150);
-        FillHist("mt_W_candidate_"+this_suffix, MT(nu, WLepton), weight, 0., 300., 300);
-        FillHist("m_lll_"+this_suffix, mlll, weight, 0., 500., 500);
-        FillHist("Z_candidate_Pt_"+this_suffix, Z_candidate.Pt(), weight, 0., 400., 400);
-        FillHist("W_candidate_Pt_"+this_suffix, W_candidate.Pt(), weight, 0., 400., 400);
-        FillHist("n_electron_"+this_suffix, electrontriLooseColl.size(), weight, 0., 10., 10);
-        FillHist("dRZLeptonWLepton_"+this_suffix, ZLepton_leading.DeltaR(WLepton), weight, 0., 6., 60);
-        FillHist("dRZLeptonWLepton_"+this_suffix, ZLepton_subleading.DeltaR(WLepton), weight, 0., 6., 60);
-        FillHist("dRMETWLepton_"+this_suffix, nu.DeltaR(WLepton), weight, 0., 6., 60);
-
-        FillHist("leadingLepton_Pt_"+this_suffix, lep[0].Pt() , weight, 0., 200., 200);
-        FillHist("leadingLepton_Eta_"+this_suffix, lep[0].Eta() , weight, -3., 3., 60);
-        //FillHist("leadingLepton_RelIso_"+this_suffix, lep[0].RelIso04() , weight, 0., 1.0, 100);
-        //FillHist("leadingLepton_Chi2_"+this_suffix, lep[0].GlobalChi2() , weight, 0., 10., 100);
-        FillHist("secondLepton_Pt_"+this_suffix, lep[1].Pt() , weight, 0., 200., 200);
-        FillHist("secondLepton_Eta_"+this_suffix, lep[1].Eta() , weight, -3., 3., 60);
-        //FillHist("secondLepton_RelIso_"+this_suffix, lep[1].RelIso04() , weight, 0., 1.0, 100);
-        //FillHist("secondLepton_Chi2_"+this_suffix, lep[1].GlobalChi2() , weight, 0., 10., 100);
-        FillHist("thirdLepton_Pt_"+this_suffix, lep[2].Pt() , weight, 0., 200., 200);
-        FillHist("thirdLepton_Eta_"+this_suffix, lep[2].Eta() , weight, -3., 3., 60);
-        //FillHist("thirdLepton_RelIso_"+this_suffix, lep[2].RelIso04() , weight, 0., 1.0, 100);
-        //FillHist("thirdLepton_Chi2_"+this_suffix, lep[2].GlobalChi2() , weight, 0., 10., 100);
-
-        FillHist("ZLepton_leading_Pt_"+this_suffix, ZLepton_leading.Pt() , weight, 0., 200., 200);
-        FillHist("ZLepton_leading_Eta_"+this_suffix, ZLepton_leading.Eta() , weight, -3., 3., 60);
-        //FillHist("ZLepton_leading_RelIso_"+this_suffix, ZLepton_leading.RelIso04() , weight, 0., 1.0, 100);
-        //FillHist("ZLepton_leading_Chi2_"+this_suffix, ZLepton_leading.GlobalChi2() , weight, 0., 10., 100);
-        FillHist("ZLepton_leading_dXY_"+this_suffix, fabs(ZLepton_leading.dXY()) , weight, 0., 0.01, 100);
-        FillHist("ZLepton_subleading_Pt_"+this_suffix, ZLepton_subleading.Pt() , weight, 0., 200., 200);
-        FillHist("ZLepton_subleading_Eta_"+this_suffix, ZLepton_subleading.Eta() , weight, -3., 3., 60);
-        //FillHist("ZLepton_subleading_RelIso_"+this_suffix, ZLepton_subleading.RelIso04() , weight, 0., 1.0, 100);
-        //FillHist("ZLepton_subleading_Chi2_"+this_suffix, ZLepton_subleading.GlobalChi2() , weight, 0., 10., 100);
-        FillHist("ZLepton_subleading_dXY_"+this_suffix, fabs(ZLepton_subleading.dXY()) , weight, 0., 0.01, 100);
-        FillHist("WLepton_Pt_"+this_suffix, WLepton.Pt() , weight, 0., 200., 200);
-        FillHist("WLepton_Eta_"+this_suffix, WLepton.Eta() , weight, -3., 3., 60);
-        //FillHist("WLepton_RelIso_"+this_suffix, WLepton.RelIso04() , weight, 0., 1.0, 100);
-        //FillHist("WLepton_Chi2_"+this_suffix, WLepton.GlobalChi2() , weight, 0., 10., 100);
-        FillHist("WLepton_dXY_"+this_suffix, fabs(WLepton.dXY()) , weight, 0., 0.01, 100);
-
-      }
-
-      //==== ZGamma selection
-      bool mlllonZ = ((SS[0]+SS[1]+OS).M() < m_Z+10.) && ((SS[0]+SS[1]+OS).M() > m_Z-10.);
-      bool leadPt20 = muontriLooseColl.at(0).Pt() > 20.;
-      if( leadPt20 && isZresonance && (MET < 50.) && mlllonZ && bjetveto ){
-        TString this_suffix = "ZGamma";
-
-        FillHist("n_events_"+this_suffix, 0, weight, 0., 1., 1);
-        FillHist("n_vertices_"+this_suffix, eventbase->GetEvent().nVertices(), weight, 0., 50., 50);
-        FillHist("n_jets_"+this_suffix, n_jets, weight, 0., 10., 10);
-        FillHist("n_bjets_"+this_suffix, n_bjets, weight, 0., 10., 10);
-        FillHist("PFMET_"+this_suffix, MET, weight, 0., 500., 500);
-        FillHist("PFMET_phi_"+this_suffix, METphi, weight, -3.2, 3.2, 64);
-        FillHist("osllmass_"+this_suffix, m_OSSF[0], weight, 0., 500., 500);
-        FillHist("osllmass_"+this_suffix, m_OSSF[1], weight, 0., 500., 500);
-        FillHist("m_Z_candidate_"+this_suffix, Z_candidate.M(), weight, 0., 150., 150);
-        FillHist("mt_W_candidate_"+this_suffix, MT(nu, WLepton), weight, 0., 300., 300);
-        FillHist("m_lll_"+this_suffix, mlll, weight, 0., 500., 500);
-        FillHist("Z_candidate_Pt_"+this_suffix, Z_candidate.Pt(), weight, 0., 400., 400);
-        FillHist("W_candidate_Pt_"+this_suffix, W_candidate.Pt(), weight, 0., 400., 400);
-        FillHist("n_electron_"+this_suffix, electrontriLooseColl.size(), weight, 0., 10., 10);
-        FillHist("dRZLeptonWLepton_"+this_suffix, ZLepton_leading.DeltaR(WLepton), weight, 0., 6., 60);
-        FillHist("dRZLeptonWLepton_"+this_suffix, ZLepton_subleading.DeltaR(WLepton), weight, 0., 6., 60);
-        FillHist("dRMETWLepton_"+this_suffix, nu.DeltaR(WLepton), weight, 0., 6., 60);
-
-        FillHist("leadingLepton_Pt_"+this_suffix, lep[0].Pt() , weight, 0., 200., 200);
-        FillHist("leadingLepton_Eta_"+this_suffix, lep[0].Eta() , weight, -3., 3., 60);
-        FillHist("leadingLepton_RelIso_"+this_suffix, lep[0].RelIso04() , weight, 0., 1.0, 100);
-        FillHist("leadingLepton_Chi2_"+this_suffix, lep[0].GlobalChi2() , weight, 0., 10., 100);
-        FillHist("secondLepton_Pt_"+this_suffix, lep[1].Pt() , weight, 0., 200., 200);
-        FillHist("secondLepton_Eta_"+this_suffix, lep[1].Eta() , weight, -3., 3., 60);
-        FillHist("secondLepton_RelIso_"+this_suffix, lep[1].RelIso04() , weight, 0., 1.0, 100);
-        FillHist("secondLepton_Chi2_"+this_suffix, lep[1].GlobalChi2() , weight, 0., 10., 100);
-        FillHist("thirdLepton_Pt_"+this_suffix, lep[2].Pt() , weight, 0., 200., 200);
-        FillHist("thirdLepton_Eta_"+this_suffix, lep[2].Eta() , weight, -3., 3., 60);
-        FillHist("thirdLepton_RelIso_"+this_suffix, lep[2].RelIso04() , weight, 0., 1.0, 100);
-        FillHist("thirdLepton_Chi2_"+this_suffix, lep[2].GlobalChi2() , weight, 0., 10., 100);
-
-        FillHist("ZLepton_leading_Pt_"+this_suffix, ZLepton_leading.Pt() , weight, 0., 200., 200);
-        FillHist("ZLepton_leading_Eta_"+this_suffix, ZLepton_leading.Eta() , weight, -3., 3., 60);
-        FillHist("ZLepton_leading_RelIso_"+this_suffix, ZLepton_leading.RelIso04() , weight, 0., 1.0, 100);
-        FillHist("ZLepton_leading_Chi2_"+this_suffix, ZLepton_leading.GlobalChi2() , weight, 0., 10., 100);
-        FillHist("ZLepton_leading_dXY_"+this_suffix, fabs(ZLepton_leading.dXY()) , weight, 0., 0.01, 100);
-        FillHist("ZLepton_subleading_Pt_"+this_suffix, ZLepton_subleading.Pt() , weight, 0., 200., 200);
-        FillHist("ZLepton_subleading_Eta_"+this_suffix, ZLepton_subleading.Eta() , weight, -3., 3., 60);
-        FillHist("ZLepton_subleading_RelIso_"+this_suffix, ZLepton_subleading.RelIso04() , weight, 0., 1.0, 100);
-        FillHist("ZLepton_subleading_Chi2_"+this_suffix, ZLepton_subleading.GlobalChi2() , weight, 0., 10., 100);
-        FillHist("ZLepton_subleading_dXY_"+this_suffix, fabs(ZLepton_subleading.dXY()) , weight, 0., 0.01, 100);
-        FillHist("WLepton_Pt_"+this_suffix, WLepton.Pt() , weight, 0., 200., 200);
-        FillHist("WLepton_Eta_"+this_suffix, WLepton.Eta() , weight, -3., 3., 60);
-        FillHist("WLepton_RelIso_"+this_suffix, WLepton.RelIso04() , weight, 0., 1.0, 100);
-        FillHist("WLepton_Chi2_"+this_suffix, WLepton.GlobalChi2() , weight, 0., 10., 100);
-        FillHist("WLepton_dXY_"+this_suffix, fabs(WLepton.dXY()) , weight, 0., 0.01, 100);
-      }
-*/ 
 
     } // Not All Same Charge
 
