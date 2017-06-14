@@ -411,6 +411,28 @@ float AnalyzerCore::CorrectedMETRochester( std::vector<snu::KMuon> muall,bool up
 }   
 
 
+void AnalyzerCore::CorrectedMETRochester(std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi){
+
+  float met_x = OrignialMET*TMath::Cos(OriginalMETPhi);
+  float met_y = OrignialMET*TMath::Sin(OriginalMETPhi);
+
+  float px_orig(0.), py_orig(0.),px_corrected(0.), py_corrected(0.);
+  for(unsigned int im=0; im < muall.size() ; im++){
+
+      px_orig+= muall.at(im).MiniAODPt()*TMath::Cos(muall.at(im).Phi());
+      py_orig+= muall.at(im).MiniAODPt()*TMath::Sin(muall.at(im).Phi());
+
+      px_corrected += muall.at(im).Px();
+      py_corrected += muall.at(im).Py();
+
+  }
+  met_x = met_x + px_orig - px_corrected;
+  met_y = met_y + py_orig - py_corrected;
+
+  OrignialMET =  sqrt(met_x*met_x + met_y*met_y);
+  OriginalMETPhi = TMath::ATan2(met_x,met_y);
+
+}
 
 
 
@@ -465,6 +487,31 @@ float AnalyzerCore::CorrectedMETMuon( std::vector<snu::KMuon> muall, int sys){
   
   return sqrt(met_x*met_x + met_y*met_y);
   
+}
+
+void AnalyzerCore::CorrectedMETMuon(int sys, std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi){
+
+  float met_x = OrignialMET*TMath::Cos(OriginalMETPhi);
+  float met_y = OrignialMET*TMath::Sin(OriginalMETPhi);
+
+  float px_orig(0.), py_orig(0.),px_shifted(0.), py_shifted(0.);
+  for(unsigned int imu=0; imu < muall.size() ; imu++){
+
+    px_orig+= muall.at(imu).Px();
+    py_orig+= muall.at(imu).Py();
+    if(sys==1){
+      px_shifted += muall.at(imu).Px()*muall.at(imu).PtShiftedUp();
+    }
+    if(sys==-1){
+      px_shifted += muall.at(imu).Px()*muall.at(imu).PtShiftedDown();
+    }
+  }
+  met_x = met_x + px_orig - px_shifted;
+  met_y = met_y + py_orig - py_shifted;
+
+  OrignialMET =  sqrt(met_x*met_x + met_y*met_y);
+  OriginalMETPhi = TMath::ATan2(met_x,met_y);
+
 }
 
 snu::KJet AnalyzerCore::GetCorrectedJetCloseToLepton(snu::KElectron el, snu::KJet jet, bool usem){
@@ -2556,6 +2603,26 @@ int AnalyzerCore::find_mlmet_closest_to_W(snu::KParticle lep[], snu::KParticle M
   
 }
 
+int AnalyzerCore::find_mlmet_closest_to_W(std::vector<KLepton> lep, snu::KParticle  MET){
+
+  int n_lep = lep.size();
+
+  double m_diff[n_lep];
+  double m_diff_min = 999999999.;
+  int outindex = 0;
+  for(int i=0; i<n_lep; i++){
+    double dphi = lep[i].DeltaPhi(MET);
+    double mt2 = 2.*lep[i].Pt()*MET.Pt()*(1.-TMath::Cos(dphi));
+    m_diff[i] = fabs( sqrt(mt2) - 80.385 );
+    if( m_diff[i] < m_diff_min ){
+      m_diff_min = m_diff[i];
+      outindex = i;
+    }
+  }
+  return outindex;
+
+}
+
 double AnalyzerCore::MT(TLorentzVector a, TLorentzVector b){
   double dphi = a.DeltaPhi(b);
   return TMath::Sqrt( 2.*a.Pt()*b.Pt()*(1.- TMath::Cos(dphi) ) );
@@ -2592,9 +2659,9 @@ void AnalyzerCore::PrintTruth(){
   
   cout << "=========================================================" << endl;
   cout << "truth size = " << truthColl.size() << endl;
-  cout << "index" << '\t' << "pdgid" << '\t' << "mother" << '\t' << "mother pid" << endl;
+  cout << "index" << '\t' << "pdgid" << '\t' << "status" << '\t' << "mother" << '\t' << "mother pid" << "\t" << "pt" << "\t" << "eta" << "\t" << "mass" << endl;
   for(int i=2; i<truthColl.size(); i++){
-    cout << i << '\t' << truthColl.at(i).PdgId() << '\t' << truthColl.at(i).IndexMother() << '\t' << truthColl.at( truthColl.at(i).IndexMother() ).PdgId() << endl;
+    cout << i << '\t' << truthColl.at(i).PdgId() << '\t' << truthColl.at(i).GenStatus() << '\t' << truthColl.at(i).IndexMother() << '\t' << truthColl.at( truthColl.at(i).IndexMother() ).PdgId() << "\t" << truthColl.at(i).Pt() << "\t" << truthColl.at(i).Eta() << "\t" << truthColl.at(i).M() << endl;
   }
 
 }
@@ -2823,6 +2890,14 @@ void AnalyzerCore::FillHist(TString histname, float value, float w , TString lab
   
   
   return;
+}
+
+void AnalyzerCore::FillUpDownHist(TString histname, float value, float w, float w_err, float xmin, float xmax, int nbins , TString label){
+
+  FillHist(histname+"_up", value, w+w_err, xmin, xmax, nbins, label);
+  FillHist(histname+"_down", value, w-w_err, xmin, xmax, nbins, label);
+  FillHist(histname, value, w, xmin, xmax, nbins, label);
+
 }
 
 void AnalyzerCore::FillCLHist(histtype type, TString hist, vector<snu::KMuon> muons, double w){
@@ -3716,6 +3791,123 @@ TNtupleD* AnalyzerCore::GetNtp(TString hname){
   return n;
 }
 
+void AnalyzerCore::FillLeptonKinematicPlot(std::vector<KLepton> lep, TString suffix, double w){
+
+  //==== prefix : "ZLepton"
+  //==== suffix : "WZ"
+
+  TString OrderStr[5] = {"leading", "second", "third", "fourth", "fifth"};
+
+  int counter_muon(0), counter_electron(0);
+
+  for(unsigned int i=0; i<lep.size(); i++){
+
+    //==== return more than 5 leptons
+    if(i>=5) break;
+
+    //==== if lepton flavour is not set, return
+    if(lep.at(i).LeptonFlavour()==KLepton::NOTSET){
+      m_logger << INFO << "lepton flavour not set" << LQLogger::endmsg;
+      continue;
+    }
+
+
+    //==== Lepton plot
+
+    TString this_order = OrderStr[i];
+
+    FillHist(this_order+"Lepton_Pt_"+suffix, lep.at(i).Pt(), w, 0., 200., 200);
+    FillHist(this_order+"Lepton_Eta_"+suffix, lep.at(i).Eta(), w, -3., 3., 60);
+    FillHist(this_order+"Lepton_RelIso_"+suffix, lep.at(i).RelIso(), w, 0., 1.0, 100);
+    FillHist(this_order+"Lepton_dXY_"+suffix, fabs(lep.at(i).dXY()), w, 0., 0.01, 100);
+    FillHist(this_order+"Lepton_dXYSig_"+suffix, fabs(lep.at(i).dXYSig()), w, 0., 8., 80);
+    FillHist(this_order+"Lepton_dZ_"+suffix, fabs(lep.at(i).dZ()), w, 0., 0.5, 500);
+
+    //==== Muon plot
+
+    if(lep.at(i).LeptonFlavour()==KLepton::MUON){
+
+      const snu::KMuon* this_muon = lep.at(i).GetMuonPtr();
+      TString this_muon_order = OrderStr[counter_muon];
+
+      FillHist(this_muon_order+"Muon_Pt_"+suffix, this_muon->Pt(), w, 0., 200., 200);
+      FillHist(this_muon_order+"Muon_Eta_"+suffix, this_muon->Eta(), w, -3., 3., 60);
+      FillHist(this_muon_order+"Muon_RelIso_"+suffix, this_muon->RelIso04(), w, 0., 1.0, 100);
+      FillHist(this_muon_order+"Muon_dXY_"+suffix, fabs(this_muon->dXY()), w, 0., 0.01, 100);
+      FillHist(this_muon_order+"Muon_dXYSig_"+suffix, fabs(this_muon->dXYSig()), w, 0., 8., 80);
+      FillHist(this_muon_order+"Muon_dZ_"+suffix, fabs(this_muon->dZ()), w, 0., 0.5, 500);
+      FillHist(this_muon_order+"Muon_GlobalChi2_"+suffix, this_muon->GlobalChi2(), w, 0., 100., 100);
+
+      counter_muon++;
+    }
+
+    //==== Electron plot
+
+    else if(lep.at(i).LeptonFlavour()==KLepton::ELECTRON){
+
+      const snu::KElectron* this_electron = lep.at(i).GetElectronPtr();
+      TString this_electron_order = OrderStr[counter_electron];
+
+      FillHist(this_electron_order+"Electron_Pt_"+suffix, this_electron->Pt(), w, 0., 200., 200);
+      FillHist(this_electron_order+"Electron_Eta_"+suffix, this_electron->Eta(), w, -3., 3., 60);
+      FillHist(this_electron_order+"Electron_RelIso_"+suffix, this_electron->PFRelIso(0.3), w, 0., 1.0, 100);
+      FillHist(this_electron_order+"Electron_dXY_"+suffix, fabs(this_electron->dxy()), w, 0., 0.01, 100);
+      FillHist(this_electron_order+"Electron_dXYSig_"+suffix, fabs(this_electron->dxySig()), w, 0., 8., 80);
+      FillHist(this_electron_order+"Electron_dZ_"+suffix, fabs(this_electron->dz()), w, 0., 0.5, 500);
+
+      counter_electron++;
+
+    }
+
+    else{
+
+    }
+
+  }
+
+}
+
+void AnalyzerCore::FillUpDownLeptonKinematicPlot(std::vector<KLepton> lep, TString suffix, double w, double w_err){
+
+  FillLeptonKinematicPlot(lep, suffix+"_up", w+w_err);
+  FillLeptonKinematicPlot(lep, suffix+"_down", w-w_err);
+  FillLeptonKinematicPlot(lep, suffix, w);
+
+}
+
+
+void AnalyzerCore::SetPlotHNTriLepMetInfo(double met, double metphi){
+
+  for(map<TString, HNTriLeptonPlots*>::iterator it = mapCLhistHNTriLep.begin(); it != mapCLhistHNTriLep.end(); it++){
+    it->second->SetMetInfo(met,metphi);
+  }
+
+}
+
+void AnalyzerCore::SetPlotHNTriLepParticleInfo(snu::KParticle *hn, snu::KParticle w_pri_lowmass, snu::KParticle w_pri_highmass, snu::KParticle w_sec){
+
+  for(map<TString, HNTriLeptonPlots*>::iterator it = mapCLhistHNTriLep.begin(); it != mapCLhistHNTriLep.end(); it++){
+    it->second->SetParticleInfo(hn, w_pri_lowmass, w_pri_highmass, w_sec);
+  }
+
+}
+
+void AnalyzerCore::SetPlotHNTriLepChargeSign(double os, double ss0, double ss1){
+
+  for(map<TString, HNTriLeptonPlots*>::iterator it = mapCLhistHNTriLep.begin(); it != mapCLhistHNTriLep.end(); it++){
+    it->second->SetChargeSign(os, ss0, ss1);
+  }
+
+}
+
+void AnalyzerCore::SetPlotHNTriBJet(int nbjet){
+
+  for(map<TString, HNTriLeptonPlots*>::iterator it = mapCLhistHNTriLep.begin(); it != mapCLhistHNTriLep.end(); it++){
+    it->second->SetBJet(nbjet);
+  }
+
+}
+
 std::vector<snu::KMuon> AnalyzerCore::sort_muons_ptorder(std::vector<snu::KMuon> muons){
 
   std::vector<snu::KMuon> outmuon;
@@ -3736,6 +3928,418 @@ std::vector<snu::KMuon> AnalyzerCore::sort_muons_ptorder(std::vector<snu::KMuon>
  
 
 }
+
+std::vector<KLepton> AnalyzerCore::sort_leptons_ptorder(std::vector<KLepton> leptons){
+
+  std::vector<KLepton> outlepton;
+  while(outlepton.size() != leptons.size()){
+    double this_maxpt = 0.;
+    int index(0);
+    for(unsigned int i=0; i<leptons.size(); i++){
+      bool isthisused = std::find( outlepton.begin(), outlepton.end(), leptons.at(i) ) != outlepton.end();
+      if(isthisused) continue;
+      if( leptons.at(i).Pt() > this_maxpt ){
+        index = i;
+        this_maxpt = leptons.at(i).Pt();
+      }
+    }
+    outlepton.push_back( leptons.at(index) );
+  }
+  return outlepton;
+
+
+}
+
+bool AnalyzerCore::PassOptimizedCut(
+  int sig_mass, double first_pt, double second_pt, double third_pt,
+  double W_pri_mass, double HN_mass, 
+  double deltaR_OS_min, double gamma_star_mass,
+  double PFMET){
+
+  double cut_first_pt(0.), cut_second_pt(0.), cut_third_pt(0.),
+         cut_W_pri_mass(0.), cut_HN_mass(0.), 
+         cut_deltaR_OS_min(0.), cut_gamma_star_mass(0.),
+         cut_PFMET(0.);
+
+  if(sig_mass == 5){
+    cut_first_pt = 40.;
+    cut_second_pt = 35.;
+    cut_third_pt = 25.;
+    cut_W_pri_mass = 110.;
+    cut_HN_mass = 35.;
+    cut_deltaR_OS_min = 0;
+    cut_gamma_star_mass = 0.;
+    cut_PFMET = 0.;
+  }
+  else if(sig_mass == 10){
+    cut_first_pt = 40.;
+    cut_second_pt = 30.;
+    cut_third_pt = 25.;
+    cut_W_pri_mass = 135.;
+    cut_HN_mass = 40.;
+    cut_deltaR_OS_min = 0;
+    cut_gamma_star_mass = 0.;
+    cut_PFMET = 0.;
+  }
+  else if(sig_mass == 20){
+    cut_first_pt = 40.;
+    cut_second_pt = 35.;
+    cut_third_pt = 20.;
+    cut_W_pri_mass = 130.;
+    cut_HN_mass = 40.;
+    cut_deltaR_OS_min = 0.4;
+    cut_gamma_star_mass = 0.;
+    cut_PFMET = 0.;
+  }
+  else if(sig_mass == 30){
+    cut_first_pt = 40.;
+    cut_second_pt = 40.;
+    cut_third_pt = 25.;
+    cut_W_pri_mass = 115.;
+    cut_HN_mass = 40.;
+    cut_deltaR_OS_min = 0.5;
+    cut_gamma_star_mass = 10.;
+    cut_PFMET = 0.;
+  }
+  else if(sig_mass == 40){
+    cut_first_pt = 40.;
+    cut_second_pt = 35.;
+    cut_third_pt = 25.;
+    cut_W_pri_mass = 100.;
+    cut_HN_mass = 50.;
+    cut_deltaR_OS_min = 0.7;
+    cut_gamma_star_mass = 10.;
+    cut_PFMET = 0.;
+  }
+  else if(sig_mass == 50){
+    cut_first_pt = 30.;
+    cut_second_pt = 30.;
+    cut_third_pt = 30.;
+    cut_W_pri_mass = 125.;
+    cut_HN_mass = 80.;
+    cut_deltaR_OS_min = 0;
+    cut_gamma_star_mass = 20.;
+    cut_PFMET = 0.;
+  }
+  else if(sig_mass == 60){
+    cut_first_pt = 30.;
+    cut_second_pt = 30.;
+    cut_third_pt = 30.;
+    cut_W_pri_mass = 100.;
+    cut_HN_mass = 80.;
+    cut_deltaR_OS_min = 0;
+    cut_gamma_star_mass = 20.;
+    cut_PFMET = 0.;
+  }
+  else if(sig_mass == 70){
+    cut_first_pt = 35.;
+    cut_second_pt = 35.;
+    cut_third_pt = 30.;
+    cut_W_pri_mass = 100.;
+    cut_HN_mass = 80.;
+    cut_deltaR_OS_min = 0;
+    cut_gamma_star_mass = 15.;
+    cut_PFMET = 0.;
+  }
+  else if(sig_mass == 90){
+    cut_first_pt = 45.;
+    cut_second_pt = 40.;
+    cut_third_pt = 10.;
+    cut_W_pri_mass = 80.;
+    cut_HN_mass = 9999999.;
+    cut_deltaR_OS_min = 0;
+    cut_gamma_star_mass = 0.;
+    cut_PFMET = 20.;
+  }
+  else if(sig_mass == 100){
+    cut_first_pt = 25.;
+    cut_second_pt = 15.;
+    cut_third_pt = 15.;
+    cut_W_pri_mass = 110.;
+    cut_HN_mass = 9999999.;
+    cut_deltaR_OS_min = 0;
+    cut_gamma_star_mass = 0.;
+    cut_PFMET = 20.;
+  }
+  else if(sig_mass == 150){
+    cut_first_pt = 45.;
+    cut_second_pt = 40.;
+    cut_third_pt = 20.;
+    cut_W_pri_mass = 160.;
+    cut_HN_mass = 9999999.;
+    cut_deltaR_OS_min = 0;
+    cut_gamma_star_mass = 0.;
+    cut_PFMET = 20.;
+  }
+  else if(sig_mass == 200){
+    cut_first_pt = 65.;
+    cut_second_pt = 50.;
+    cut_third_pt = 25.;
+    cut_W_pri_mass = 250.;
+    cut_HN_mass = 9999999.;
+    cut_deltaR_OS_min = 0.7;
+    cut_gamma_star_mass = 0.;
+    cut_PFMET = 20.;
+  }
+  else if(sig_mass == 300){
+    cut_first_pt = 100.;
+    cut_second_pt = 55.;
+    cut_third_pt = 35.;
+    cut_W_pri_mass = 330.;
+    cut_HN_mass = 9999999.;
+    cut_deltaR_OS_min = 1.4;
+    cut_gamma_star_mass = 0.;
+    cut_PFMET = 20.;
+  }
+  else if(sig_mass == 400){
+    cut_first_pt = 120.;
+    cut_second_pt = 65.;
+    cut_third_pt = 50.;
+    cut_W_pri_mass = 480.;
+    cut_HN_mass = 9999999.;
+    cut_deltaR_OS_min = 1.4;
+    cut_gamma_star_mass = 0.;
+    cut_PFMET = 20.;
+  }
+  else if(sig_mass == 500){
+    cut_first_pt = 130.;
+    cut_second_pt = 80.;
+    cut_third_pt = 40.;
+    cut_W_pri_mass = 550.;
+    cut_HN_mass = 9999999.;
+    cut_deltaR_OS_min = 1.4;
+    cut_gamma_star_mass = 0.;
+    cut_PFMET = 40.;
+  }
+  else if(sig_mass == 700){
+    cut_first_pt = 200.;
+    cut_second_pt = 80.;
+    cut_third_pt = 45.;
+    cut_W_pri_mass = 760.;
+    cut_HN_mass = 9999999.;
+    cut_deltaR_OS_min = 1.4;
+    cut_gamma_star_mass = 0.;
+    cut_PFMET = 20.;
+  }
+  else if(sig_mass == 1000){
+    cut_first_pt = 290.;
+    cut_second_pt = 180.;
+    cut_third_pt = 50.;
+    cut_W_pri_mass = 900.;
+    cut_HN_mass = 9999999.;
+    cut_deltaR_OS_min = 0.7;
+    cut_gamma_star_mass = 0.;
+    cut_PFMET = 50.;
+  }
+  else{
+    cout << "[trilepton_mumumu::PassOptimizedCut] Signal mass wrong" << endl;
+  }
+
+  bool pass = true;
+  if(sig_mass < 80){
+    if( ! (first_pt < cut_first_pt) ) pass = false;
+    if( ! (second_pt < cut_second_pt) ) pass = false;
+    if( ! (third_pt < cut_third_pt) ) pass = false;
+    if( ! (W_pri_mass < cut_W_pri_mass) ) pass = false;
+    if( ! (HN_mass < cut_HN_mass ) ) pass = false;
+    if( ! (deltaR_OS_min > cut_deltaR_OS_min) ) pass = false;
+    if( ! (gamma_star_mass > cut_gamma_star_mass) ) pass = false;
+  }
+  else{
+    if( ! (first_pt > cut_first_pt) ) pass = false;
+    if( ! (second_pt > cut_second_pt) ) pass = false;
+    if( ! (third_pt > cut_third_pt) ) pass = false;
+    if( ! (PFMET > cut_PFMET) ) pass = false;
+    if( ! (W_pri_mass > cut_W_pri_mass) ) pass = false;
+    if( ! (deltaR_OS_min > cut_deltaR_OS_min) ) pass = false;
+  }
+
+  return pass;
+
+}
+
+int AnalyzerCore::find_genmatching(snu::KTruth gen, std::vector<KLepton> recos, std::vector<int>& used_index){
+
+  double mindr = 0.1;
+  double maxPtDiff = 9999.;
+  int found=-1;
+  for(unsigned int i=0; i<recos.size(); i++){
+    if(abs(gen.PdgId())==13){
+      if(recos.at(i).LeptonFlavour() != KLepton::MUON) continue;
+    }
+    else if(abs(gen.PdgId())==11){
+      if(recos.at(i).LeptonFlavour() != KLepton::ELECTRON) continue;
+    }
+    else{
+      cout << "HNGenMatched lepton is not lepton?!" << endl;
+      cout << "  gen.PdgId() = " << gen.PdgId() << endl;
+    }
+    
+    //cout << "["<<i<<"th reco] : pt = " << recos.at(i).Pt() << ", eta = " << recos.at(i).Eta() << endl;
+    double dr = gen.DeltaR(recos.at(i));
+    bool ptmatched(true);
+    //if( fabs(gen.Pt() - recos.at(i).Pt()) / TMath::Min( gen.Pt(), recos.at(i).Pt() ) >= maxPtDiff ) ptmatched = false;
+    bool isthisused = std::find(used_index.begin(), used_index.end(), i) != used_index.end();
+    if(dr < mindr && ptmatched && !isthisused){
+      mindr = dr;
+      found = i;
+    }
+  }
+  used_index.push_back(found);
+  return found;
+}
+
+
+double AnalyzerCore::MuonConePt(snu::KMuon muon, double tightiso){
+
+  double mu_pt_corr = muon.Pt()*(1+max(0.,(muon.RelIso04()-tightiso))) ;
+
+  return mu_pt_corr;
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void AnalyzerCore::SetHNTriCutOp(TString filepath){
+
+  string cutline;
+  ifstream in(filepath);
+  while(getline(in,cutline)){
+    std::istringstream is( cutline );
+    TString channel;
+    TString mass;
+    TString var;
+    double value;
+    is >> channel;
+    is >> mass;
+    is >> var;
+    is >> value;
+
+    TString thiskey = channel+"_"+mass+"_"+var;
+
+    map_HNTriChannl_cutop[thiskey] = value;
+  }
+
+}
+
+bool AnalyzerCore::PassOptimizedCut( 
+  TString channel, int sig_mass,
+  double first_pt, double second_pt, double third_pt,
+  double W_pri_mass, double HN_mass, 
+  double deltaR_OS_min, double gamma_star_mass,
+  double PFMET){
+
+  double cut_first_pt(0.), cut_second_pt(0.), cut_third_pt(0.),
+         cut_W_pri_mass(0.), cut_HN_mass(0.), 
+         cut_deltaR_OS_min(0.), cut_gamma_star_mass(0.),
+         cut_PFMET(0.);
+
+  TString thiskey_prefix = channel+"_"+TString::Itoa(sig_mass,10);
+
+  std::vector<TString> variables;
+
+  variables.push_back("first_pt");
+  variables.push_back("second_pt");
+  variables.push_back("third_pt");
+  variables.push_back("W_pri_mass");
+  variables.push_back("HN_mass");
+  variables.push_back("deltaR_OS_min");
+  variables.push_back("gamma_star_mass");
+  variables.push_back("PFMET");
+
+  std::map< TString, double > cut_variables;
+
+  for(unsigned int i=0; i<variables.size(); i++){
+    TString key = thiskey_prefix+"_"+variables.at(i);
+    //cout << "[filling] "<<key<<endl;
+
+    std::map< TString, double >::const_iterator mapit;
+    mapit = map_HNTriChannl_cutop.find(key);
+    bool valuefound = (mapit!=map_HNTriChannl_cutop.end());
+
+    if(valuefound){
+      cut_variables[variables.at(i)] = map_HNTriChannl_cutop[key];
+    }
+    else{
+      cerr << "Did not find optimized cut value for "<<key << endl;
+      exit(EXIT_FAILURE);
+    }
+  }
+
+  bool pass = true;
+
+//  for(int i=0; i<n_var; i++){
+//    cout << channel << "\t" << sig_mass << "\t" << variables[i] << "\t" << cut_variables[i] << endl;
+//  }
+
+  cut_first_pt =  cut_variables["first_pt"];
+  cut_second_pt = cut_variables["second_pt"];
+  cut_third_pt = cut_variables["third_pt"];
+  cut_W_pri_mass = cut_variables["W_pri_mass"];
+  cut_HN_mass = cut_variables["HN_mass"];
+  cut_deltaR_OS_min = cut_variables["deltaR_OS_min"];
+  cut_gamma_star_mass = cut_variables["gamma_star_mass"];
+  cut_PFMET = cut_variables["PFMET"];
+
+  if(channel == "MuMuMu"){
+    if(sig_mass < 80){
+      if( ! (first_pt < cut_first_pt) ) pass = false;
+      if( ! (second_pt < cut_second_pt) ) pass = false;
+      if( ! (third_pt < cut_third_pt) ) pass = false;
+      if( ! (W_pri_mass < cut_W_pri_mass) ) pass = false;
+      if( ! (HN_mass < cut_HN_mass ) ) pass = false;
+      if( ! (deltaR_OS_min > cut_deltaR_OS_min) ) pass = false;
+      if( ! (gamma_star_mass > cut_gamma_star_mass) ) pass = false;
+    }
+    else{
+      if( ! (first_pt > cut_first_pt) ) pass = false;
+      if( ! (second_pt > cut_second_pt) ) pass = false;
+      if( ! (third_pt > cut_third_pt) ) pass = false;
+      if( ! (W_pri_mass > cut_W_pri_mass) ) pass = false;
+      if( ! (PFMET > cut_PFMET) ) pass = false;
+      if( ! (deltaR_OS_min > cut_deltaR_OS_min) ) pass = false;
+    }
+  }
+
+  if(channel == "SSSF_MuMuE"){
+    if(sig_mass < 80){
+      if( ! (first_pt < cut_first_pt) ) pass = false;
+      if( ! (second_pt < cut_second_pt) ) pass = false;
+      if( ! (third_pt < cut_third_pt) ) pass = false;
+      if( ! (W_pri_mass < cut_W_pri_mass) ) pass = false;
+      //if( ! (HN_mass < cut_HN_mass ) ) pass = false;
+      if( ! (PFMET < cut_PFMET) ) pass = false;
+    }
+    else{
+      if( ! (first_pt > cut_first_pt) ) pass = false;
+      if( ! (second_pt > cut_second_pt) ) pass = false;
+      if( ! (third_pt > cut_third_pt) ) pass = false;
+      if( ! (W_pri_mass > cut_W_pri_mass) ) pass = false;
+      if( ! (PFMET > cut_PFMET) ) pass = false;
+    }
+  }
+
+  return pass;
+
+}
+
+
+
+
+
+
+
 
 
 
