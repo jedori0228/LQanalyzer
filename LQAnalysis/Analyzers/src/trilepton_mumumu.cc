@@ -47,7 +47,7 @@ trilepton_mumumu::trilepton_mumumu() :  AnalyzerCore(), out_muons(0)
   MakeCleverHistograms(hntrilephist, "cut_SSSF_MuMuE_Presel");
 
   TString lqdir =  getenv("LQANALYZER_DIR");
-  SetHNTriCutOp(lqdir+"/data/TXT/cutop.txt");
+  SetHNTriCutOp(lqdir+"/JskimData/txtfiles/cutop.txt");
 
 }
 
@@ -117,64 +117,43 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
 
   for(unsigned int i=0;i<testmuon.size();i++){
     snu::KMuon muon = testmuon.at(i);
-    if(!muon.MCMatched() && muon.MCFromTau()){
-      FillHist("TEST_FromTauNotMCMatched", 0., 1., 0., 2., 2);
-      if(muon.RelIso04()<0.1){
-        FillHist("TEST_FromTauNotMCMatched", 1., 1., 0., 2., 2);
-      }
-
-      int mpdgid = muon.MotherPdgId();
-      if(mpdgid<50){
-        FillHist("TEST_FromTauNotMCMatched_mpdgidless50", 0., 1., 0., 2., 2);
-        if(muon.RelIso04()<0.1){
-          FillHist("TEST_FromTauNotMCMatched_mpdgidless50", 1., 1., 0., 2., 2);
-        }
-      }
-      else{
-        FillHist("TEST_FromTauNotMCMatched_mpdgidgreater50", 0., 1., 0., 2., 2);
-        if(muon.RelIso04()<0.1){
-          FillHist("TEST_FromTauNotMCMatched_mpdgidgreater50", 1., 1., 0., 2., 2);
-        }
-      }
-    }
-
-    if(muon.MCFromTau()){
-
-      FillHist("TEST_FromTau", 0., 1., 0., 2., 2);
-      if(muon.RelIso04()<0.1){
-        FillHist("TEST_FromTau", 1., 1., 0., 2., 2);
-      }
-
-    }
-
-
-    if(!TruthMatched(muon)){
-
-      FillHist("TEST_NotTruthMatched", 0., 1., 0., 2., 2);
-      FillHist("TEXT_NotTruthMatched_GetType_F0", muon.GetType(), 1., 0., 100., 100);
-      if(muon.RelIso04()<0.1){
-        FillHist("TEST_NotTruthMathced", 1., 1., 0., 2., 2);
-        FillHist("TEXT_NotTruthMatched_GetType_F", muon.GetType(), 1., 0., 100., 100);
-      }
-
-    }
 
     FillHist("TEST_Muon_GetType_F0", muon.GetType(), 1., 0., 100., 100);
     if(muon.RelIso04()<0.1){
       FillHist("TEST_Muon_GetType_F", muon.GetType(), 1., 0., 100., 100);
     }
 
+    //==== NOT TruthMatched
+    if(!TruthMatched(muon)){
+
+      FillHist("TEST_Muon_NotTruthMatched", 0., 1., 0., 2., 2);
+      FillHist("TEST_Muon_NotTruthMatched_GetType_F0", muon.GetType(), 1., 0., 100., 100);
+      if(muon.RelIso04()<0.1){
+        FillHist("TEST_Muon_NotTruthMathced", 1., 1., 0., 2., 2);
+        FillHist("TEST_Muon_NotTruthMatched_GetType_F", muon.GetType(), 1., 0., 100., 100);
+      }
+
+    }
+
   }
 
   for(unsigned int i=0; i<testelectron.size(); i++){
+
+    snu::KElectron el = testelectron.at(i);
+
     FillHist("TEST_Electron_GetType_F0", testelectron.at(i).GetType(), 1., 0., 100., 100);
     if(PassID(testelectron.at(i), "ELECTRON_MVA_TIGHT")){
       FillHist("TEST_Electron_GetType_F", testelectron.at(i).GetType(), 1., 0., 100., 100);
     }
-    if( testelectron.at(i).MCIsExternalConversion() && testelectron.at(i).MCMatched() ){
-      FillHist("Conv_FR", 0., 1., 0., 2., 2);
+
+    //==== NOT TruthMatched
+
+    if( !TruthMatched(el, false) ){
+      FillHist("TEST_Electron_NotTruthMatched", 0., 1., 0., 2., 2);
+      FillHist("TEST_Electron_NotTruthMatched_GetType_F0", el.GetType(), 1., 0., 100., 100);
       if(PassID(testelectron.at(i), "ELECTRON_MVA_TIGHT")){
-        FillHist("Conv_FR", 1., 1., 0., 2., 2);
+        FillHist("TEST_Electron_NotTruthMathced", 1., 1., 0., 2., 2);
+        FillHist("TEST_Electron_NotTruthMatched_GetType_F", el.GetType(), 1., 0., 100., 100);
       }
     }
   }
@@ -248,7 +227,6 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
 
   return;
 */
-
 
   //============================================
   //==== Apply the gen weight (for NLO, +1,-1)

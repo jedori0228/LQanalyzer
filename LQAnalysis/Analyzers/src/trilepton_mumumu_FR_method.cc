@@ -52,7 +52,7 @@ trilepton_mumumu_FR_method::trilepton_mumumu_FR_method() :  AnalyzerCore(), out_
   MakeCleverHistograms(hntrilephist, "MuMuE_down");
 
   TString lqdir =  getenv("LQANALYZER_DIR");
-  SetHNTriCutOp(lqdir+"/data/TXT/cutop.txt");
+  SetHNTriCutOp(lqdir+"/JskimData/txtfiles/cutop.txt");
 
 
 }
