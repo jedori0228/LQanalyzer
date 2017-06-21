@@ -37,7 +37,9 @@ trilepton_mumumu::trilepton_mumumu() :  AnalyzerCore(), out_muons(0)
 
   int signal_masses[] = {5, 10, 20, 30, 40, 50, 60, 70, 90, 100, 150, 200, 300, 400, 500, 700, 1000};
   for(int i=0; i<17; i++){
-    TString thiscut = "cut_MuMuMu_HN"+TString::Itoa(signal_masses[i],10);
+    TString thiscut = "";
+
+    thiscut = "cut_MuMuMu_HN"+TString::Itoa(signal_masses[i],10);
     MakeCleverHistograms(hntrilephist, thiscut);
 
     thiscut = "cut_SSSF_MuMuE_HN"+TString::Itoa(signal_masses[i],10);
@@ -110,6 +112,10 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   }
   return;
 
+*/
+
+
+/*
   //==== Muon from tau prompt check
 
   std::vector<snu::KMuon> testmuon = GetHNTriMuonsByLooseRelIso(0.4, true);
@@ -140,6 +146,10 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   for(unsigned int i=0; i<testelectron.size(); i++){
 
     snu::KElectron el = testelectron.at(i);
+    if(el.GetType()==0){
+      //PrintTruth();
+      //cout << "==> Reco el : " << el.Pt() << "\t" << el.Eta() << endl;
+    }
 
     FillHist("TEST_Electron_GetType_F0", testelectron.at(i).GetType(), 1., 0., 100., 100);
     if(PassID(testelectron.at(i), "ELECTRON_MVA_TIGHT")){
@@ -157,7 +167,9 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
       }
     }
   }
-
+  return;
+*/
+/*
   //==== ZGamma
   if(testmuon.size()==2 && testelectron.size()==1){
     snu::KMuon mu1 = testmuon.at(0);

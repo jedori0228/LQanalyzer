@@ -41,16 +41,24 @@ trilepton_mumumu_FR_method::trilepton_mumumu_FR_method() :  AnalyzerCore(), out_
 
   int signal_masses[] = {5, 10, 20, 30, 40, 50, 60, 70, 90, 100, 150, 200, 300, 400, 500, 700, 1000};
   for(int i=0; i<17; i++){
-    TString thiscut = "cut_MuMuMu_HN"+TString::Itoa(signal_masses[i],10);
+    TString thiscut = "";
+    
+    thiscut = "cut_MuMuMu_HN"+TString::Itoa(signal_masses[i],10);
+    MakeCleverHistograms(hntrilephist, thiscut);
+    MakeCleverHistograms(hntrilephist, thiscut+"_up");
+    MakeCleverHistograms(hntrilephist, thiscut+"_down");
+
+    thiscut = "cut_SSSF_MuMuE_HN"+TString::Itoa(signal_masses[i],10);
     MakeCleverHistograms(hntrilephist, thiscut);
     MakeCleverHistograms(hntrilephist, thiscut+"_up");
     MakeCleverHistograms(hntrilephist, thiscut+"_down");
   }
 
-  MakeCleverHistograms(hntrilephist, "MuMuE");
-  MakeCleverHistograms(hntrilephist, "MuMuE_up");
-  MakeCleverHistograms(hntrilephist, "MuMuE_down");
 
+  MakeCleverHistograms(hntrilephist, "cut_SSSF_MuMuE_Presel");
+  MakeCleverHistograms(hntrilephist, "cut_SSSF_MuMuE_Presel_up");
+  MakeCleverHistograms(hntrilephist, "cut_SSSF_MuMuE_Presel_down");
+  
   TString lqdir =  getenv("LQANALYZER_DIR");
   SetHNTriCutOp(lqdir+"/JskimData/txtfiles/cutop.txt");
 
@@ -516,9 +524,9 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
 
     std::vector<KLepton> lep_order = sort_leptons_ptorder(lep);
 
-    FillCLHist(hntrilephist, "MuMuE_up", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight+this_weight_err);
-    FillCLHist(hntrilephist, "MuMuE_down", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight-this_weight_err);
-    FillCLHist(hntrilephist, "MuMuE", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight);  
+    FillCLHist(hntrilephist, "cut_SSSF_MuMuE_Presel_up", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight+this_weight_err);
+    FillCLHist(hntrilephist, "cut_SSSF_MuMuE_Presel_down", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight-this_weight_err);
+    FillCLHist(hntrilephist, "cut_SSSF_MuMuE_Presel", eventbase->GetEvent(), muontriLooseColl, electrontriLooseColl, jetColl_hn, this_weight);  
 
     int signal_masses[] = {5, 10, 20, 30, 40, 50, 60, 70, 90, 100, 150, 200, 300, 400, 500, 700, 1000};
     for(int i=0; i<17; i++){
