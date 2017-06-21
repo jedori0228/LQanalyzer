@@ -398,7 +398,7 @@ class AnalyzerCore : public LQCycleBase {
   int find_mlmet_closest_to_W(std::vector<KLepton> lep, snu::KParticle  MET);
   double MT(TLorentzVector a, TLorentzVector b);
   bool GenMatching(snu::KParticle a, snu::KParticle b, double maxDeltaR, double maxPtDiff);
-  std::vector<snu::KMuon> GetHNTriMuonsByLooseRelIso(double LooseRelIsoMax, bool keepfake);
+  std::vector<snu::KMuon> GetHNTriMuonsByLooseRelIso(double LooseRelIsoMax, bool keepfake, float ptcut=-999., float etacut = -999.);
   void PrintTruth();
   void FillLeptonKinematicPlot(std::vector<KLepton> lep, TString suffix, double w);
   void FillUpDownLeptonKinematicPlot(std::vector<KLepton> lep, TString suffix, double w, double w_err);

@@ -2641,9 +2641,9 @@ bool AnalyzerCore::GenMatching(snu::KParticle gen, snu::KParticle reco, double m
   
 }
 
-std::vector<snu::KMuon> AnalyzerCore::GetHNTriMuonsByLooseRelIso(double LooseRelIsoMax, bool keepfake){
+std::vector<snu::KMuon> AnalyzerCore::GetHNTriMuonsByLooseRelIso(double LooseRelIsoMax, bool keepfake, float ptcut, float etacut){
  
-  std::vector<snu::KMuon> muontriLooseColl_raw = GetMuons("MUON_HN_TRI_VLOOSE", keepfake);
+  std::vector<snu::KMuon> muontriLooseColl_raw = GetMuons("MUON_HN_TRI_VLOOSE", keepfake, ptcut, etacut);
   std::vector<snu::KMuon> muontriLooseColl;
   muontriLooseColl.clear();
   for(unsigned int j=0; j<muontriLooseColl_raw.size(); j++){
