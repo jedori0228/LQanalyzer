@@ -48,6 +48,8 @@ declare -a trilep_bkg=(
 )
 declare -a trilep_nonprompt_bkg=(
 'DYJets_10to50' 'DYJets' 'WJets' 'TTJets_aMC' 'TTLL_powheg'
+'ttW' 'ttZ'
+'ttH_nonbb' 'ttH_bb'
 )
 declare -a trilep_diboson_had=(
 'WZ' 'ZZ' 'WW'
@@ -161,4 +163,9 @@ declare -a test=(
 'DYJets_MG' 'TTLL_powheg'
 'WJets' 'WGtoLNuG'
 'WZTo3LNu_powheg' 'ZZTo4L_powheg'
+)
+
+declare -a test2=(
+'ttW' 'ttZ'
+'ttH_nonbb'
 )
