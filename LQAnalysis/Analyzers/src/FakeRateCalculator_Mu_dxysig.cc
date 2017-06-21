@@ -262,12 +262,13 @@ void FakeRateCalculator_Mu_dxysig::ExecuteEvents()throw( LQError ){
   const int n_RelIsoMaxs = 6;
   double RelIsoMaxs[n_RelIsoMaxs] = {0.2, 0.3, 0.4, 0.6, 0.8, 1.0};
 
+/*
   //==== Central values only for test
-  //const int n_dXYMins = 1;
-  //double dXYMins[n_dXYMins] = {4.0};
-  //const int n_RelIsoMaxs = 1;
-  //double RelIsoMaxs[n_RelIsoMaxs] = {0.4};
-
+  const int n_dXYMins = 1;
+  double dXYMins[n_dXYMins] = {4.0};
+  const int n_RelIsoMaxs = 1;
+  double RelIsoMaxs[n_RelIsoMaxs] = {0.4};
+*/
   //=================
   //==== Start Loop
   //=================
@@ -484,46 +485,52 @@ void FakeRateCalculator_Mu_dxysig::ExecuteEvents()throw( LQError ){
             if(pt_for_FR>=60.) pt_for_FR=59.;
             if(eta_for_FR>=2.5) eta_for_FR=2.2;
 
-            int this_FR_bin = FR_sampleA->FindBin(pt_for_FR,eta_for_FR);
-            double this_FR_sampleA = FR_sampleA->GetBinContent(this_FR_bin);
-
-            std::map<TString, double> this_weight_HighdXYLoose_FRweighted;
-            for(std::map< TString, double >::iterator it=this_weight_HighdXYLoose.begin(); it!=this_weight_HighdXYLoose.end(); it++){
-              this_weight_HighdXYLoose_FRweighted[it->first] = (it->second)*this_FR_sampleA;
-            }
-
             snu::KEvent Evt = eventbase->GetEvent();
             double MET = Evt.MET();
 
             //==== sample A
+            //==== obtain FR_A(pt, eta)
             if(abs(EventNumber%2==0)){
               FillHist("TEST_HalfSample", 0., 1., 0., 2., 2);
               TString HalfSampleIndex = "SampleA";
-              FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_events_F0", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 11, etaarray, 4);
+              FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_events_F0", 
+                                HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 11, etaarray, 4);
+              if( LeptonRelIso < 0.1 ){
+                FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_events_F",
+                                  HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 11, etaarray, 4);
+              }
+
+            }
+            //==== sample B
+            //==== 1) obtain FR_measured(MET)
+            //==== 2-1) obtain MET distribution := MET_F0
+            //==== 2-2) obtain MET weighted by FR_A(pt_B, eta_B) := MET_F_predicted
+            //==== 2-3) MET_F_predicted / MET_F0 := FR_predicted(MET)
+            else{
+              FillHist("TEST_HalfSample", 1., 1., 0., 2., 2);
+              TString HalfSampleIndex = "SampleB";
+              FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_events_F0",
+                                HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 11, etaarray, 4);
               FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_PFMET_F0", MET, this_weight_HighdXYLoose, 0., 500., 500);
               FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_njets_F0", n_jets, this_weight_HighdXYLoose, 0., 10., 10);
-
               if( LeptonRelIso < 0.1 ){
-                FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_events_F", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 11, etaarray, 4);
+                FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_events_F",
+                                  HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 11, etaarray, 4);
+                FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_PFMET_F", MET, this_weight_HighdXYLoose, 0., 500., 500);
+                FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_njets_F", n_jets, this_weight_HighdXYLoose, 0., 10., 10);
+              }
+
+              int this_FR_bin = FR_sampleA->FindBin(pt_for_FR,eta_for_FR);
+              double this_FR_sampleA = FR_sampleA->GetBinContent(this_FR_bin);
+
+              std::map<TString, double> this_weight_HighdXYLoose_FRweighted;
+              for(std::map< TString, double >::iterator it=this_weight_HighdXYLoose.begin(); it!=this_weight_HighdXYLoose.end(); it++){
+                this_weight_HighdXYLoose_FRweighted[it->first] = (it->second)*this_FR_sampleA;
               }
 
               FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_PFMET_Predicted", MET, this_weight_HighdXYLoose_FRweighted, 0., 500., 500);
               FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_njets_Predicted", n_jets, this_weight_HighdXYLoose_FRweighted, 0., 10., 10);
 
-
-            }
-            //==== sample B
-            else{
-              FillHist("TEST_HalfSample", 1., 1., 0., 2., 2);
-              TString HalfSampleIndex = "SampleB";
-              FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_events_F0", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 11, etaarray, 4);
-              FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_PFMET_F0", MET, this_weight_HighdXYLoose, 0., 500., 500);
-              FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_njets_F0", n_jets, this_weight_HighdXYLoose, 0., 10., 10);
-              if( LeptonRelIso < 0.1 ){
-                FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_events_F", HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 11, etaarray, 4);
-                FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_PFMET_F", MET, this_weight_HighdXYLoose, 0., 500., 500);
-                FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_njets_F", n_jets, this_weight_HighdXYLoose, 0., 10., 10);
-              }
             }
 
           }
