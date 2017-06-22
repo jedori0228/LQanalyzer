@@ -363,6 +363,8 @@ void HNGenMatching::FindGenParticles(bool debug){
 
     }
 
+    FillHist("GEN_LowMass_DecayMode", lowdecay, 1., 0., 10., 10);
+
     gen_l_1 = AllGenParticles.at( gen_l_1_indices.back() );
     gen_l_2 = AllGenParticles.at( gen_l_2_indices.back() );
     gen_l_3 = AllGenParticles.at( gen_l_3_indices.back() );
