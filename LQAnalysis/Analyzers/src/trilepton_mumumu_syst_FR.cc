@@ -122,7 +122,7 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
   //==== Get Electrons
   //====================
 
-  std::vector<snu::KElectron> electrontriLooseColl = GetElectrons(false, false, "ELECTRON_MVA_FAKELOOSE");
+  std::vector<snu::KElectron> electrontriLooseColl = GetElectrons(false, false, "ELECTRON_MVA_FAKELOOSE", 15., 2.5);
 
   int n_triLoose_electrons = electrontriLooseColl.size();
   int n_triTight_electrons(0);

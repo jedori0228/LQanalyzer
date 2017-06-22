@@ -176,7 +176,7 @@ void trilepton_mumumu_FR_method::ExecuteEvents()throw( LQError ){
   //==== Get Electrons
   //====================
 
-  std::vector<snu::KElectron> electrontriLooseColl = GetElectrons(false, false, "ELECTRON_MVA_FAKELOOSE");
+  std::vector<snu::KElectron> electrontriLooseColl = GetElectrons(false, false, "ELECTRON_MVA_FAKELOOSE", 15., 2.5);
 
   //==================================
   //==== Number of Loose/Tight Muons

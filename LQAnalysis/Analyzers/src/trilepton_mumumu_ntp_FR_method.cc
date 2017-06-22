@@ -129,8 +129,8 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
   //====================
   //==== Get Electrons
   //====================
-  
-  std::vector<snu::KElectron> electrontriLooseColl = GetElectrons(false, false, "ELECTRON_MVA_FAKELOOSE");
+
+  std::vector<snu::KElectron> electrontriVLooseColl_lowestPtCut = GetElectrons(false, false, "ELECTRON_MVA_FAKELOOSE");
 
   //====================================
   //==== Systematic source loop starts
@@ -141,11 +141,12 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
   //==== 5) Muon ID Scale Factor
   //==== 6) Pileup
   //==== 7) Fake Rate HalfSampleTest Error
+  //==== 8) Electron Energy Scale
   //====================================
 
   double m_Z = 91.1876;
 
-  int N_sys = 2*7+1;
+  int N_sys = 2*8+1;
   for(int it_sys=0; it_sys<N_sys; it_sys++){
 
     //==== MET
@@ -206,6 +207,12 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     }
     else if(it_sys==14){
       this_syst = "FR_HalfSample_up";
+    }
+    else if(it_sys==15){
+      this_syst = "ElectronEn_up";
+    }
+    else if(it_sys==16){
+      this_syst = "ElectronEn_down";
     }
     else{
       Message("it_sys out of range!" , INFO);
@@ -276,6 +283,41 @@ void trilepton_mumumu_ntp_FR_method::ExecuteEvents()throw( LQError ){
     }
 
     muontriLooseColl = sort_muons_ptorder(muontriLooseColl);
+
+    //==== Electron
+    std::vector<snu::KElectron> electrontriLooseColl;
+    int ElEnDir = 0;
+    if(this_syst == "ElectronEn_up"){
+      ElEnDir = 1;
+      for(unsigned int i=0; i<electrontriVLooseColl_lowestPtCut.size(); i++){
+        snu::KElectron this_electron = electrontriVLooseColl_lowestPtCut.at(i);
+        this_electron.SetPtEtaPhiM( this_electron.Pt()*this_electron.PtShiftedUp(), this_electron.Eta(), this_electron.Phi(), this_electron.M() );
+        double new_RelIso = this_electron.PFRelIso(0.3)/this_electron.PtShiftedUp();
+        this_electron.SetPFRelIso(0.3, new_RelIso);
+        if( this_electron.Pt() >= 15. && PassID(this_electron, "ELECTRON_MVA_FAKELOOSE") ) electrontriLooseColl.push_back( this_electron );
+      }
+    }
+    else if(this_syst == "ElectronEn_down"){
+      ElEnDir = -1;
+      for(unsigned int i=0; i<electrontriVLooseColl_lowestPtCut.size(); i++){
+        snu::KElectron this_electron = electrontriVLooseColl_lowestPtCut.at(i);
+        this_electron.SetPtEtaPhiM( this_electron.Pt()*this_electron.PtShiftedDown(), this_electron.Eta(), this_electron.Phi(), this_electron.M() );
+        double new_RelIso = this_electron.PFRelIso(0.3)/this_electron.PtShiftedDown();
+        this_electron.SetPFRelIso(0.3, new_RelIso);
+        if( this_electron.Pt() >= 15. && PassID(this_electron, "ELECTRON_MVA_FAKELOOSE") ) electrontriLooseColl.push_back( this_electron );
+      }
+    }
+    //==== normal electrons
+    else{
+      for(unsigned int i=0; i<electrontriVLooseColl_lowestPtCut.size(); i++){
+        snu::KElectron this_electron = electrontriVLooseColl_lowestPtCut.at(i);
+        if( this_electron.Pt() >= 15. && PassID(this_electron, "ELECTRON_MVA_FAKELOOSE") ) electrontriLooseColl.push_back( this_electron );
+      }
+    }
+
+    CorrectedMETElectron(ElEnDir, electrontriLooseColl, MET, METphi);
+
+    electrontriLooseColl = sort_electrons_ptorder(electrontriLooseColl);
 
     //==== MET is calculated with No-Rochestor-Corrected Muons
     //==== In this step, muons are 
@@ -878,6 +920,8 @@ MakeNtp("Ntp_PU_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:
 MakeNtp("Ntp_PU_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
 MakeNtp("Ntp_FR_HalfSample_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
 MakeNtp("Ntp_FR_HalfSample_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
+MakeNtp("Ntp_ElectronEn_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
+MakeNtp("Ntp_ElectronEn_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
 
 
 }

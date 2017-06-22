@@ -113,8 +113,8 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
   //==================================
 
   std::vector<snu::KMuon> muontriVLooseColl_lowestPtCut;
-  std::vector<snu::KElectron> electrontriLooseColl_lowestPtCut;
-  double this_RelIso = 0.4;
+  std::vector<snu::KElectron> electrontriVLooseColl_lowestPtCut;
+  double this_RelIso = 0.4; // for LOOSE muon
   //==== signal
   if( k_sample_name.Contains("HN") ){
 
@@ -132,11 +132,11 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
     snu::KTruth gen_l_3 = m_HNgenmatch->gen_l_3;
 
     std::vector<snu::KMuon> muontriLooseColl_lowestPtCut_raw = GetMuons("MUON_HN_TRI_VLOOSE_lowestPtCut", true);
-    std::vector<snu::KElectron> electrontriLooseColl_lowestPtCut_raw = GetElectrons(false, true, "ELECTRON_MVA_FAKELOOSE"); //FIXME change to lowest pt electron
+    std::vector<snu::KElectron> electrontriVLooseColl_lowestPtCut_raw = GetElectrons(false, true, "ELECTRON_MVA_FAKELOOSE"); //FIXME change to lowest pt electron
 
     std::vector<KLepton> leptontriLooseColl_lowestPtCut_raw;
     for(unsigned int i=0; i<muontriLooseColl_lowestPtCut_raw.size(); i++) leptontriLooseColl_lowestPtCut_raw.push_back( muontriLooseColl_lowestPtCut_raw.at(i) );
-    for(unsigned int i=0; i<electrontriLooseColl_lowestPtCut_raw.size(); i++) leptontriLooseColl_lowestPtCut_raw.push_back( electrontriLooseColl_lowestPtCut_raw.at(i) );
+    for(unsigned int i=0; i<electrontriVLooseColl_lowestPtCut_raw.size(); i++) leptontriLooseColl_lowestPtCut_raw.push_back( electrontriVLooseColl_lowestPtCut_raw.at(i) );
 
     //==== find gen_l_1
     //cout << "[gen_l_1] : pt = " << gen_l_1.Pt() << ", eta = " << gen_l_1.Eta() << endl;
@@ -163,7 +163,7 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
     leptontriLooseColl_genorder = sort_leptons_ptorder( leptontriLooseColl_genorder );
     for(unsigned int i=0; i<leptontriLooseColl_genorder.size(); i++){
       if(leptontriLooseColl_genorder.at(i).LeptonFlavour() == KLepton::MUON) muontriVLooseColl_lowestPtCut.push_back( *leptontriLooseColl_genorder.at(i).GetMuonPtr() );
-      else if(leptontriLooseColl_genorder.at(i).LeptonFlavour() == KLepton::ELECTRON) electrontriLooseColl_lowestPtCut.push_back( *leptontriLooseColl_genorder.at(i).GetElectronPtr() );
+      else if(leptontriLooseColl_genorder.at(i).LeptonFlavour() == KLepton::ELECTRON) electrontriVLooseColl_lowestPtCut.push_back( *leptontriLooseColl_genorder.at(i).GetElectronPtr() );
       else{
         cout << "LeptonFlavour is wrong" << endl;
       }
@@ -173,12 +173,12 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
   //==== non-prompt : keep fake
   else if( k_sample_name.Contains("DY") || k_sample_name.Contains("WJets") || k_sample_name.Contains("TTJets") || k_sample_name.Contains("QCD") ){
     muontriVLooseColl_lowestPtCut = GetMuons("MUON_HN_TRI_VLOOSE_lowestPtCut", true);
-    electrontriLooseColl_lowestPtCut = GetElectrons(false, true, "ELECTRON_MVA_FAKELOOSE");
+    electrontriVLooseColl_lowestPtCut = GetElectrons(false, true, "ELECTRON_MVA_FAKELOOSE");
   }
   //==== otherwise
   else{
     muontriVLooseColl_lowestPtCut = GetMuons("MUON_HN_TRI_VLOOSE_lowestPtCut", false);
-    electrontriLooseColl_lowestPtCut = GetElectrons(false, false, "ELECTRON_MVA_FAKELOOSE");
+    electrontriVLooseColl_lowestPtCut = GetElectrons(false, false, "ELECTRON_MVA_FAKELOOSE");
   }
 
   //=================================================
@@ -196,14 +196,14 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
   //==== Get Electrons
   //====================
 
-  std::vector<snu::KElectron> electrontriLooseColl = electrontriLooseColl_lowestPtCut; //FIXME
+  //std::vector<snu::KElectron> electrontriLooseColl = electrontriVLooseColl_lowestPtCut; //FIXME
 
   //===============================
   //==== Get Electron Corrections
   //===============================
 
-  double electron_sf = mcdata_correction->ElectronScaleFactor("ELECTRON_MVA_90", electrontriLooseColl, 0);
-  double electron_RecoSF =  mcdata_correction->ElectronRecoScaleFactor(electrontriLooseColl);
+  //double electron_sf = mcdata_correction->ElectronScaleFactor("ELECTRON_MVA_90", electrontriLooseColl, 0);
+  //double electron_RecoSF =  mcdata_correction->ElectronRecoScaleFactor(electrontriLooseColl);
 
   //======================
   //==== Pileup Reweight
@@ -226,8 +226,8 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
   if(!k_isdata){
     weight*=trigger_ps_weight;
     //weight*=pileup_reweight;
-    weight*=electron_sf;
-    weight*=electron_RecoSF;
+    //weight*=electron_sf;
+    //weight*=electron_RecoSF;
   }
 
   //====================================
@@ -239,11 +239,13 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
   //==== 5) Muon ID Scale Factor
   //==== 6) Pileup
   //==== 7) Trigger SF
+  //==== 8) Electron ID Scale Factor
+  //==== 9) Electron Energy Scale
   //====================================
 
   double m_Z = 91.1876;
 
-  int N_sys = 2*8+1;
+  int N_sys = 2*9+1;
   for(int it_sys=0; it_sys<N_sys; it_sys++){
 
     //==== MET
@@ -311,6 +313,12 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
     else if(it_sys==16){
       this_syst = "ElectronIDSF_down";
     }
+    else if(it_sys==17){
+      this_syst = "ElectronEn_up";
+    }
+    else if(it_sys==18){
+      this_syst = "ElectronEn_down";
+    }
     else{
       Message("it_sys out of range!" , INFO);
       return;
@@ -356,6 +364,7 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
         snu::KMuon this_muon = muontriVLooseColl_lowestPtCut.at(i);
         this_muon.SetPtEtaPhiM( this_muon.Pt()*this_muon.PtShiftedUp(), this_muon.Eta(), this_muon.Phi(), this_muon.M() );
         double new_RelIso = this_muon.RelIso04()/this_muon.PtShiftedUp();
+        this_muon.SetRelIso(0.4, new_RelIso);
         if( this_muon.Pt() >= 10. && new_RelIso < this_RelIso ) muontriLooseColl.push_back( this_muon );
       }
     }
@@ -364,6 +373,7 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
         snu::KMuon this_muon = muontriVLooseColl_lowestPtCut.at(i);
         this_muon.SetPtEtaPhiM( this_muon.Pt()*this_muon.PtShiftedDown(), this_muon.Eta(), this_muon.Phi(), this_muon.M() );
         double new_RelIso = this_muon.RelIso04()/this_muon.PtShiftedDown();
+        this_muon.SetRelIso(0.4, new_RelIso);
         if( this_muon.Pt() >= 10. && new_RelIso < this_RelIso ) muontriLooseColl.push_back( this_muon );
       }
     }
@@ -376,6 +386,41 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
     }
 
     muontriLooseColl = sort_muons_ptorder(muontriLooseColl); 
+
+    //==== Electron
+    std::vector<snu::KElectron> electrontriLooseColl;
+    int ElEnDir = 0;
+    if(this_syst == "ElectronEn_up"){
+      ElEnDir = 1;
+      for(unsigned int i=0; i<electrontriVLooseColl_lowestPtCut.size(); i++){
+        snu::KElectron this_electron = electrontriVLooseColl_lowestPtCut.at(i);
+        this_electron.SetPtEtaPhiM( this_electron.Pt()*this_electron.PtShiftedUp(), this_electron.Eta(), this_electron.Phi(), this_electron.M() );
+        double new_RelIso = this_electron.PFRelIso(0.3)/this_electron.PtShiftedUp();
+        this_electron.SetPFRelIso(0.3, new_RelIso);
+        if( this_electron.Pt() >= 15. && PassID(this_electron, "ELECTRON_MVA_FAKELOOSE") ) electrontriLooseColl.push_back( this_electron );
+      }
+    }
+    else if(this_syst == "ElectronEn_down"){
+      ElEnDir = -1;
+      for(unsigned int i=0; i<electrontriVLooseColl_lowestPtCut.size(); i++){
+        snu::KElectron this_electron = electrontriVLooseColl_lowestPtCut.at(i);
+        this_electron.SetPtEtaPhiM( this_electron.Pt()*this_electron.PtShiftedDown(), this_electron.Eta(), this_electron.Phi(), this_electron.M() );
+        double new_RelIso = this_electron.PFRelIso(0.3)/this_electron.PtShiftedDown();
+        this_electron.SetPFRelIso(0.3, new_RelIso);
+        if( this_electron.Pt() >= 15. && PassID(this_electron, "ELECTRON_MVA_FAKELOOSE") ) electrontriLooseColl.push_back( this_electron );
+      }
+    }
+    //==== normal electrons
+    else{
+      for(unsigned int i=0; i<electrontriVLooseColl_lowestPtCut.size(); i++){
+        snu::KElectron this_electron = electrontriVLooseColl_lowestPtCut.at(i);
+        if( this_electron.Pt() >= 15. && PassID(this_electron, "ELECTRON_MVA_FAKELOOSE") ) electrontriLooseColl.push_back( this_electron );
+      }
+    }
+
+    CorrectedMETElectron(ElEnDir, electrontriLooseColl, MET, METphi);
+
+    electrontriLooseColl = sort_electrons_ptorder(electrontriLooseColl);
 
     //==== MET is calculated with No-Rochestor-Corrected Muons
     //==== In this step, muons are 
@@ -397,11 +442,25 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
       muon_id_iso_sf = mcdata_correction->MuonScaleFactor("MUON_HN_TRI_TIGHT", muontriLooseColl, 0);
     }
 
+    //==== Electron ID SF
+    double electron_sf;
+    if(this_syst=="ElectronIDSF_up"){
+      electron_sf = mcdata_correction->ElectronScaleFactor("ELECTRON_MVA_90", electrontriLooseColl, 1.);
+    }
+    else if(this_syst=="ElectronIDSF_down"){
+      electron_sf = mcdata_correction->ElectronScaleFactor("ELECTRON_MVA_90", electrontriLooseColl, -1.);
+    }
+    else{
+      electron_sf = mcdata_correction->ElectronScaleFactor("ELECTRON_MVA_90", electrontriLooseColl, 0);
+    }
+
+    double electron_RecoSF =  mcdata_correction->ElectronRecoScaleFactor(electrontriLooseColl);
+
     //==== Muon TrackEff SF
     double MuTrkEffSF =  mcdata_correction->MuonTrackingEffScaleFactor(muontriLooseColl); //FIXME should add syst for this
 
     //==== this weight
-    double this_weight = weight*muon_id_iso_sf*MuTrkEffSF;
+    double this_weight = weight*muon_id_iso_sf*MuTrkEffSF*electron_RecoSF*electron_sf;
 
     //==== now apply pileup reweight
     if(!k_isdata){
@@ -1027,6 +1086,9 @@ void trilepton_mumumu_ntp::MakeHistograms(){
   MakeNtp("Ntp_TriggerSF_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
   MakeNtp("Ntp_ElectronIDSF_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
   MakeNtp("Ntp_ElectronIDSF_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
+  MakeNtp("Ntp_ElectronEn_up", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
+  MakeNtp("Ntp_ElectronEn_down", "first_pt:second_pt:third_pt:HN_1_mass:HN_2_mass:HN_3_mass:HN_4_mass:W_pri_lowmass_mass:W_pri_highmass_mass:weight:W_sec_highmass_mass:PFMET:weight_err:isPreselection:isWZ:isZJets:isZLep:isZGamma:isZZ:ThreeLeptonConfig:FourLeptonConfig:nbjets:deltaR_OS_min:gamma_star_mass");
+
 }
 
 
@@ -1073,7 +1135,25 @@ int trilepton_mumumu_ntp::GetSignalMass(){
     if(k_sample_name.Contains("HN_MuMuMu_500_")) return 500;
     if(k_sample_name.Contains("HN_MuMuMu_700_")) return 700;
     if(k_sample_name.Contains("HN_MuMuMu_1000_")) return 1000;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_5_")) return 5;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_10_")) return 10;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_20_")) return 20;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_30_")) return 30;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_40_")) return 40;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_50_")) return 50;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_60_")) return 60;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_70_")) return 70;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_90_")) return 90;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_100_")) return 100;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_150_")) return 150;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_200_")) return 200;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_300_")) return 300;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_400_")) return 400;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_500_")) return 500;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_700_")) return 700;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_1000_")) return 1000;
   }
+
   return 0;
 
 

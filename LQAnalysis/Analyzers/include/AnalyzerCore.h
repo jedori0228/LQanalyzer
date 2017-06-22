@@ -182,6 +182,7 @@ class AnalyzerCore : public LQCycleBase {
   float CorrectedMETMuon(std::vector<snu::KMuon> muons ,int syst=0);
   void CorrectedMETRochester(std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi);
   void CorrectedMETMuon(int sys, std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi);
+  void CorrectedMETElectron(int sys, std::vector<snu::KElectron> elall, double& OrignialMET, double& OriginalMETPhi);
 
   void CorrectMuonMomentum(vector<snu::KMuon>& k_muons);
   void SetCorrectedMomentum(vector<snu::KMuon>& k_muons);
@@ -407,6 +408,7 @@ class AnalyzerCore : public LQCycleBase {
   void SetPlotHNTriLepChargeSign(double os, double ss0, double ss1);
   void SetPlotHNTriBJet(int nbjet);
   std::vector<snu::KMuon> sort_muons_ptorder(std::vector<snu::KMuon> muons);
+  std::vector<snu::KElectron> sort_electrons_ptorder(std::vector<snu::KElectron> electrons);
   std::vector<KLepton> sort_leptons_ptorder(std::vector<KLepton> leptons);
   bool PassOptimizedCut(
     int sig_mass, double first_pt, double second_pt, double third_pt,

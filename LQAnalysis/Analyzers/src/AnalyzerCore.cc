@@ -490,6 +490,8 @@ float AnalyzerCore::CorrectedMETMuon( std::vector<snu::KMuon> muall, int sys){
 
 void AnalyzerCore::CorrectedMETMuon(int sys, std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi){
 
+  if(sys==0) return;
+
   float met_x = OrignialMET*TMath::Cos(OriginalMETPhi);
   float met_y = OrignialMET*TMath::Sin(OriginalMETPhi);
 
@@ -503,6 +505,33 @@ void AnalyzerCore::CorrectedMETMuon(int sys, std::vector<snu::KMuon> muall, doub
     }
     if(sys==-1){
       px_shifted += muall.at(imu).Px()*muall.at(imu).PtShiftedDown();
+    }
+  }
+  met_x = met_x + px_orig - px_shifted;
+  met_y = met_y + py_orig - py_shifted;
+
+  OrignialMET =  sqrt(met_x*met_x + met_y*met_y);
+  OriginalMETPhi = TMath::ATan2(met_x,met_y);
+
+}
+
+void AnalyzerCore::CorrectedMETElectron(int sys, std::vector<snu::KElectron> elall, double& OrignialMET, double& OriginalMETPhi){
+
+  if(sys==0) return;
+
+  float met_x = OrignialMET*TMath::Cos(OriginalMETPhi);
+  float met_y = OrignialMET*TMath::Sin(OriginalMETPhi);
+
+  float px_orig(0.), py_orig(0.),px_shifted(0.), py_shifted(0.);
+  for(unsigned int imu=0; imu < elall.size() ; imu++){
+
+    px_orig+= elall.at(imu).Px();
+    py_orig+= elall.at(imu).Py();
+    if(sys==1){
+      px_shifted += elall.at(imu).Px()*elall.at(imu).PtShiftedUp();
+    }
+    if(sys==-1){
+      px_shifted += elall.at(imu).Px()*elall.at(imu).PtShiftedDown();
     }
   }
   met_x = met_x + px_orig - px_shifted;
@@ -3927,6 +3956,28 @@ std::vector<snu::KMuon> AnalyzerCore::sort_muons_ptorder(std::vector<snu::KMuon>
   }
   return outmuon;
  
+
+}
+
+std::vector<snu::KElectron> AnalyzerCore::sort_electrons_ptorder(std::vector<snu::KElectron> electrons){
+
+  std::vector<snu::KElectron> outelectron;
+  while(outelectron.size() != electrons.size()){
+    double this_maxpt = 0.;
+    int index(0);
+    for(unsigned int i=0; i<electrons.size(); i++){
+      bool isthisused = std::find( outelectron.begin(), outelectron.end(), electrons.at(i) ) != outelectron.end();
+      if(isthisused) continue;
+      if( electrons.at(i).Pt() > this_maxpt ){
+        index = i;
+        this_maxpt = electrons.at(i).Pt();
+      }
+    }
+    outelectron.push_back( electrons.at(index) );
+  }
+  return outelectron;
+
+
 
 }
 

@@ -472,7 +472,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     snu::KTruth gen_l_3 = m_HNgenmatch->gen_l_3;
 
     std::vector<snu::KMuon> muontriLooseColl_raw = GetHNTriMuonsByLooseRelIso(this_RelIso, true);
-    std::vector<snu::KElectron> electrontriLooseColl_raw = GetElectrons(false, true, "ELECTRON_MVA_FAKELOOSE");
+    std::vector<snu::KElectron> electrontriLooseColl_raw = GetElectrons(false, true, "ELECTRON_MVA_FAKELOOSE", 15., 2.5);
 
     std::vector<KLepton> leptontriLooseColl_raw;
     for(unsigned int i=0; i<muontriLooseColl_raw.size(); i++) leptontriLooseColl_raw.push_back( muontriLooseColl_raw.at(i) );
@@ -566,7 +566,7 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   else if( k_sample_name.Contains("DY") || k_sample_name.Contains("WJets") || k_sample_name.Contains("TTJets") || k_sample_name.Contains("QCD") || k_sample_name.Contains("TTLL_powheg") ){
 
     muontriLooseColl = GetHNTriMuonsByLooseRelIso(this_RelIso, true);
-    electrontriLooseColl = GetElectrons(false, true, "ELECTRON_MVA_FAKELOOSE");
+    electrontriLooseColl = GetElectrons(false, true, "ELECTRON_MVA_FAKELOOSE", 15., 2.5);
 
 /*
     //==== below is for MC fake test
@@ -670,8 +670,6 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
   }
 
   muontriLooseColl = sort_muons_ptorder(muontriLooseColl);
-
-  electrontriLooseColl = GetElectrons(false, false, "ELECTRON_HN_LOWDXY_FAKELOOSE");
 
   //=========================== 
   //==== Get Muon Corrections
@@ -1376,6 +1374,23 @@ int trilepton_mumumu::GetSignalMass(){
     if(k_sample_name.Contains("HN_MuMuMu_500_")) return 500;
     if(k_sample_name.Contains("HN_MuMuMu_700_")) return 700;
     if(k_sample_name.Contains("HN_MuMuMu_1000_")) return 1000;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_5_")) return 5;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_10_")) return 10;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_20_")) return 20;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_30_")) return 30;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_40_")) return 40;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_50_")) return 50;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_60_")) return 60;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_70_")) return 70;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_90_")) return 90;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_100_")) return 100;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_150_")) return 150;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_200_")) return 200;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_300_")) return 300;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_400_")) return 400;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_500_")) return 500;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_700_")) return 700;
+    if(k_sample_name.Contains("HN_SSSF_MuMuE_1000_")) return 1000;
   }
   return 0;
   

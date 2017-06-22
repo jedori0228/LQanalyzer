@@ -112,10 +112,10 @@ void trilepton_mumumu_MCClosure::ExecuteEvents()throw( LQError ){
   double this_RelIso = 0.4;
 
   std::vector<snu::KMuon> muontriLooseColl= GetHNTriMuonsByLooseRelIso(this_RelIso, true);;
-  std::vector<snu::KElectron>  electrontriLooseColl = GetElectrons(false, true, "ELECTRON_MVA_FAKELOOSE");
+  std::vector<snu::KElectron>  electrontriLooseColl = GetElectrons(false, true, "ELECTRON_MVA_FAKELOOSE", 15., 2.5);
 
   std::vector<snu::KMuon> muontriLooseColl_prompt = GetHNTriMuonsByLooseRelIso(this_RelIso, false);
-  std::vector<snu::KElectron> electrontriLooseColl_prompt = GetElectrons(false, false, "ELECTRON_MVA_FAKELOOSE");
+  std::vector<snu::KElectron> electrontriLooseColl_prompt = GetElectrons(false, false, "ELECTRON_MVA_FAKELOOSE", 15., 2.5);
 
   muontriLooseColl = sort_muons_ptorder(muontriLooseColl);
 
