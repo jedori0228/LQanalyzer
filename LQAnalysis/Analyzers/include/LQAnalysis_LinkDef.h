@@ -32,5 +32,6 @@
 #pragma link C++ class trilepton_mumumu_ntp+;
 #pragma link C++ class trilepton_mumumu_ntp_FR_method+;
 #pragma link C++ class trilepton_mumumu_MCClosure+;
+#pragma link C++ class ChargeFlipRateCalculator+;
 
 #endif // __CINT__

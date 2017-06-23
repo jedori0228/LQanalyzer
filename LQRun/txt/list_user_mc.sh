@@ -165,7 +165,10 @@ declare -a test=(
 'WZTo3LNu_powheg' 'ZZTo4L_powheg'
 )
 
-declare -a test2=(
-'ttW' 'ttZ'
-'ttH_nonbb'
+declare -a ChargeFlip=(
+'DYJets' 'TTJets_aMC' 'ZGto2LG'
+'DYJets_MG' 'TTLL_powheg'
+'WJets' 'WGtoLNuG'
+'WZTo3LNu_powheg' 'ZZTo4L_powheg'
+'DYtoEE'
 )
