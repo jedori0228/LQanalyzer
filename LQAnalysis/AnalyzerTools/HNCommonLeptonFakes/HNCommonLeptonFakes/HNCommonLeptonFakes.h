@@ -139,6 +139,8 @@ class HNCommonLeptonFakes {
 
   void SetUsePtCone(bool b);
 
+  double k_weight, k_weight_err;
+
  private:
   /// vector for storing FakeCR strings
   std::vector<TString> regions;

@@ -931,6 +931,10 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     if( fabs( pz_sol_lowmass[0] ) > fabs( pz_sol_lowmass[1] ) ){
       solution_selection_lowmass = 1;
     }
+    FillHist("TEST_is_Pz_Solution_Real_lowmass", 1., 1., 0., 2., 2);
+  }
+  else{
+    FillHist("TEST_is_Pz_Solution_Real_lowmass", 0., 1., 0., 2., 2);
   }
   
   // reconstruct HN and W_real 4-vec with selected Pz solution
@@ -983,6 +987,10 @@ void trilepton_mumumu::ExecuteEvents()throw( LQError ){
     if( fabs( pz_sol_highmass[0] ) > fabs( pz_sol_highmass[1] ) ){
       solution_selection_highmass = 1;
     }
+    FillHist("TEST_is_Pz_Solution_Real_highmass", 1., 1., 0., 2., 2);
+  }
+  else{
+    FillHist("TEST_is_Pz_Solution_Real_highmass", 0., 1., 0., 2., 2);
   }
   PutNuPz( &nu_highmass, pz_sol_highmass[solution_selection_highmass] );
 

@@ -89,7 +89,25 @@ declare -a trilep_signal=(
 'HN_SSSF_MuMuE_400'
 'HN_SSSF_MuMuE_500'
 'HN_SSSF_MuMuE_700'
-'HN_SSSF_MuMuE_1000')
+'HN_SSSF_MuMuE_1000'
+'HN_SSSF_MuEMu_5'
+'HN_SSSF_MuEMu_10'
+'HN_SSSF_MuEMu_20'
+'HN_SSSF_MuEMu_30'
+'HN_SSSF_MuEMu_40'
+'HN_SSSF_MuEMu_50'
+'HN_SSSF_MuEMu_60'
+'HN_SSSF_MuEMu_70'
+'HN_SSSF_MuEMu_90'
+'HN_SSSF_MuEMu_100'
+'HN_SSSF_MuEMu_150'
+'HN_SSSF_MuEMu_200'
+'HN_SSSF_MuEMu_300'
+'HN_SSSF_MuEMu_400'
+'HN_SSSF_MuEMu_500'
+'HN_SSSF_MuEMu_700'
+'HN_SSSF_MuEMu_1000'
+)
 
 ### CR ###
 declare -a trilep_CR_bkg=(
@@ -166,6 +184,62 @@ declare -a test=(
 )
 
 declare -a test2=(
-'ttW' 'ttZ'
-'ttH_nonbb'
+'WWTo2L2Nu'
+'ggZZto2e2mu' 'ggZZto2e2nu' 'ggZZto2e2tau' 'ggZZto2mu2nu' 'ggZZto2mu2tau' 'ggZZto4e' 'ggZZto4mu' 'ggZZto4tau'
+)
+
+declare dilepbkg=(
+'DYJets_10to50' 'DYJets'
+'WWTo2L2Nu_DS' 'ww_ds'
+'WWTo2L2Nu' 'ggWWto2L2Nu'
+'WZTo3LNu_powheg' 'WZto2L2Q_amcatnlo' 'WZTo3LNu_amcatnlo'
+'ZZTo4L_powheg' 'ggZZto2e2mu' 'ggZZto2e2nu' 'ggZZto2e2tau' 'ggZZto2mu2nu' 'ggZZto2mu2tau' 'ggZZto4e' 'ggZZto4mu' 'ggZZto4tau'
+'ZZTo2L2Nu_Powheg'
+'ZZTo2L2Q_Powheg'
+'vbhHtoZZ' 'ggHtoZZ'
+'ZGto2LG'
+'WGtoLNuG' 'WgstarToLNuEE' 'WgstarToLNuMuMu'
+'ttWToLNu'
+'TTLL_powheg'
+'ttZToLL_M-1to10'
+'WWW' 'WWZ' 'WZZ' 'ZZZ'
+)
+
+declare -a DiMuSig=(
+'HNMoriondLLMumMum_100'
+'HNMoriondLLMupMup_100'
+'HNMoriondLLMumMum_50'
+'HNMoriondLLMupMup_50'
+'HNMoriondLL_Tchannel_MumMum_100'
+'HNMoriondLL_Tchannel_MumMum_500'
+'HNMoriondLL_Tchannel_MupMup_100'
+'HNMoriondLL_Tchannel_MupMup_500'
+'HNMoriondLLEmEm_100'
+'HNMoriondLLEpEp_100'
+'HNMoriondLLEmEm_50'
+'HNMoriondLLEpEp_50'
+'HNMoriondLL_Tchannel_EmEm_100'
+'HNMoriondLL_Tchannel_EmEm_500'
+'HNMoriondLL_Tchannel_EpEp_100'
+'HNMoriondLL_Tchannel_EpEp_500'
+)
+
+declare -a trilep_signal_mme=(
+'HN_SSSF_MuEMu_5'
+'HN_SSSF_MuEMu_10'
+'HN_SSSF_MuEMu_20'
+'HN_SSSF_MuEMu_30'
+'HN_SSSF_MuEMu_40'
+'HN_SSSF_MuEMu_50'
+'HN_SSSF_MuEMu_60'
+'HN_SSSF_MuEMu_70'
+'HN_SSSF_MuEMu_90'
+'HN_SSSF_MuEMu_100'
+'HN_SSSF_MuEMu_150'
+'HN_SSSF_MuEMu_200'
+'HN_SSSF_MuEMu_300'
+'HN_SSSF_MuEMu_400'
+'HN_SSSF_MuEMu_500'
+'HN_SSSF_MuEMu_700'
+'HN_SSSF_MuEMu_1000'
 )

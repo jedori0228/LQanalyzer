@@ -631,6 +631,7 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
       map_whichCR_to_isCR["ZJets"] = ZLeptonPtCut && isZresonance                 && (MET < 20.) && mlllCut   && !mll4 && bjetveto && MT(nu, WLepton) < 30.;
       map_whichCR_to_isCR["ZLep"]  = ZLeptonPtCut && isZresonance                                && mlllCut   && !mll4 && bjetveto;
       map_whichCR_to_isCR["ZGamma"]= ZLeptonPtCut && (fabs(Z_candidate.M()-m_Z) > 15.) && (MET < 50.) && (fabs(mlll-m_Z) < 10.) && !mll4 && bjetveto;
+      map_whichCR_to_isCR["LowMassResonance"]= ZLeptonPtCut && (fabs(Z_candidate.M()-m_Z) > 15.) && (MET < 50.) && !mll4 && bjetveto;
 
       map_whichCR_to_isCR["WZ_3mu0el"] = map_whichCR_to_isCR["WZ"] && (ThreeLeptonConfig==0);
       map_whichCR_to_isCR["WZ_2mu1el"] = map_whichCR_to_isCR["WZ"] && (ThreeLeptonConfig==1);
@@ -648,6 +649,10 @@ void trilepton_mumumu_CR::ExecuteEvents()throw( LQError ){
       map_whichCR_to_isCR["ZGamma_2mu1el"] = map_whichCR_to_isCR["ZGamma"] && (ThreeLeptonConfig==1);
       map_whichCR_to_isCR["ZGamma_1mu2el"] = map_whichCR_to_isCR["ZGamma"] && (ThreeLeptonConfig==2);
       map_whichCR_to_isCR["ZGamma_3mu3el"] = map_whichCR_to_isCR["ZGamma"] && (ThreeLeptonConfig==3);
+      map_whichCR_to_isCR["LowMassResonance_3mu0el"] = map_whichCR_to_isCR["LowMassResonance"] && (ThreeLeptonConfig==0);
+      map_whichCR_to_isCR["LowMassResonance_2mu1el"] = map_whichCR_to_isCR["LowMassResonance"] && (ThreeLeptonConfig==1);
+      map_whichCR_to_isCR["LowMassResonance_1mu2el"] = map_whichCR_to_isCR["LowMassResonance"] && (ThreeLeptonConfig==2);
+      map_whichCR_to_isCR["LowMassResonance_3mu3el"] = map_whichCR_to_isCR["LowMassResonance"] && (ThreeLeptonConfig==3);
 
       if(map_whichCR_to_isCR["ZGamma_2mu1el"]){
         FillHist("TEST_ZGamma_2mu1el_Electron_GeyType", electrontriLooseColl.at(0).GetType(), 1., 0., 100., 100);
