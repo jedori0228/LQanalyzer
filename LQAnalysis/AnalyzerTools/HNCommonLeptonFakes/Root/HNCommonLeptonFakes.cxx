@@ -36,7 +36,7 @@ void HNCommonLeptonFakes::InitialiseFake(){
 
   /// MUON FILES  POG + HN
   
-  bool opt=true;
+  bool opt=false;
   if(!opt){
     TFile* file_fake_muon  = TFile::Open( (lqdir + "/data/Fake/"+getenv("yeartag")+"/Total_FRcorr40_1.root").c_str());
     CheckFile(file_fake_muon);
@@ -471,6 +471,9 @@ HNCommonLeptonFakes::HNCommonLeptonFakes(std::string path,bool usegev){
   n_jet = -999;
   n_bjet = -999;
   UsePtCone = false;
+
+  k_weight = -999.;
+  k_weight_err = -999.;
 }
 
 
@@ -1511,6 +1514,9 @@ float HNCommonLeptonFakes::get_eventweight(bool geterr, std::vector<TLorentzVect
 
   this_weight_err = sqrt(this_weight_err);
   this_weight_err = this_weight_err*fabs(this_weight);
+
+  k_weight     = this_weight;
+  k_weight_err = this_weight_err;
 
   return this_weight_err;
 
