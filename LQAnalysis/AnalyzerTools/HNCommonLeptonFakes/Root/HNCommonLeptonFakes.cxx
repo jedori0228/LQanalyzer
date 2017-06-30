@@ -36,7 +36,7 @@ void HNCommonLeptonFakes::InitialiseFake(){
 
   /// MUON FILES  POG + HN
   
-  bool opt=true;
+  bool opt=false;
   if(!opt){
     TFile* file_fake_muon  = TFile::Open( (lqdir + "/data/Fake/"+getenv("yeartag")+"/Total_FRcorr40_1.root").c_str());
     CheckFile(file_fake_muon);
