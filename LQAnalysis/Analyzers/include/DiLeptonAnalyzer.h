@@ -20,7 +20,7 @@ class DiLeptonAnalyzer : public AnalyzerCore {
   void InitialiseAnalysis() throw( LQError );
   void MakeHistograms();
   void FillCutFlow(TString cut, float w);
-  void FillCutFlow(TString histname, TString cut, float w);
+  void FillCutFlowByName(TString histname, TString cut, float w, bool IsDATA);
 
   void FillDiLeptonPlot(
     TString histprefix,
@@ -42,11 +42,6 @@ class DiLeptonAnalyzer : public AnalyzerCore {
   int n_vtx;
 
   double GetDijetMassClosest(std::vector<snu::KJet> js, double mass);
-
-  //==== for cutflow
-  std::map< TString, double > w_cutflow;
-  std::vector<TString> triggerlist_DiMuon, triggerlist_DiElectron, triggerlist_EMu;
-
 
  private:
   

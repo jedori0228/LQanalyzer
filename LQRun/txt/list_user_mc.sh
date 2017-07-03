@@ -184,8 +184,14 @@ declare -a test=(
 )
 
 declare -a test2=(
-'WWTo2L2Nu'
-'ggZZto2e2mu' 'ggZZto2e2nu' 'ggZZto2e2tau' 'ggZZto2mu2nu' 'ggZZto2mu2tau' 'ggZZto4e' 'ggZZto4mu' 'ggZZto4tau'
+'HNMoriondLLMumMum_200'
+'HNMoriondLLMupMup_200'
+'HNMoriondLLEmEm_200'
+'HNMoriondLLEpEp_200'
+'HNMoriondLL_Tchannel_MumMum_200'
+'HNMoriondLL_Tchannel_MupMup_200'
+'HNMoriondLL_Tchannel_EmEm_200'
+'HNMoriondLL_Tchannel_EpEp_200'
 )
 
 declare dilepbkg=(
@@ -242,4 +248,14 @@ declare -a trilep_signal_mme=(
 'HN_SSSF_MuEMu_500'
 'HN_SSSF_MuEMu_700'
 'HN_SSSF_MuEMu_1000'
+'HNMoriondLLMumMum_200'
+'HNMoriondLLMupMup_200'
+'HNMoriondLLEmEm_200'
+'HNMoriondLLEpEp_200'
+'HNMoriondLL_Tchannel_MumMum_200'
+'HNMoriondLL_Tchannel_MupMup_200'
+'HNMoriondLL_Tchannel_EmEm_200'
+'HNMoriondLL_Tchannel_EpEp_200'
 )
+
+
