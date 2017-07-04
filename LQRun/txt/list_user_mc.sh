@@ -207,7 +207,7 @@ declare dilepbkg=(
 'WGtoLNuG' 'WgstarToLNuEE' 'WgstarToLNuMuMu'
 'ttWToLNu'
 'TTLL_powheg'
-'ttZToLL_M-1to10'
+'ttH_nonbb' 'ttZ' 'ttW' 'ttZToLL_M-1to10'
 'WWW' 'WWZ' 'WZZ' 'ZZZ'
 )
 

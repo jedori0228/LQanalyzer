@@ -32,6 +32,16 @@ class DiLeptonAnalyzer : public AnalyzerCore {
     double thieweighterr
   );
 
+  //==== FR
+  double weight_fr, weight_err_fr;
+  TH2D *hist_Muon_FR, *hist_Muon_PR, *hist_Electron_FR, *hist_Electron_PR;
+  double GetMuonFR(bool geterr, float pt,  float eta);
+  double GetMuonPR(bool geterr, float pt,  float eta);
+  double GetElectronFR(bool geterr, float pt,  float eta);
+  double GetElectronPR(bool geterr, float pt,  float eta);
+  void get_eventweight(std::vector<TLorentzVector> muons, TString muid, std::vector<TLorentzVector> electrons, vector<TString> elcut, std::vector<bool> isT, int HalfSampleErrorDir);
+
+  //==== CF
   TH2D *hist_CF;
   void GetCFWeight(KLepton lep1, KLepton lep2);
   double GetCF(KLepton lep, bool geterr);

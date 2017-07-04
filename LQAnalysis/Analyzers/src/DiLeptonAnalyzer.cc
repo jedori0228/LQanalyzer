@@ -19,7 +19,7 @@
 //// Needed to allow inheritance for use in LQCore/core classes
 ClassImp (DiLeptonAnalyzer);
 
-DiLeptonAnalyzer::DiLeptonAnalyzer() :  AnalyzerCore(), weight_cf(-999), weight_err_cf(-999), MET(-999), METphi(-999), nbjets(-999), nbjets_fwd(-999), nbjets_nolepveto(-999), n_vtx(-999)
+DiLeptonAnalyzer::DiLeptonAnalyzer() :  AnalyzerCore(), weight_cf(-999), weight_err_cf(-999), weight_fr(-999), weight_err_fr(-999), MET(-999), METphi(-999), nbjets(-999), nbjets_fwd(-999), nbjets_nolepveto(-999), n_vtx(-999)
 {
   
   // To have the correct name in the log:                                                                                                                            
@@ -54,14 +54,6 @@ void DiLeptonAnalyzer::InitialiseAnalysis() throw( LQError ) {
 
   string lqdir = getenv("LQANALYZER_DIR");
 
-  if(gSystem->AccessPathName((lqdir+"/JskimData/CF/ChargeFlip_HNTIGHT_PU_powheg_powheg_v807.root").c_str())){
-    cout << "######################### NO CF File at : " << endl;
-    cout << (lqdir+"/Jskim/CF/CF.root").c_str() << endl;
-    return;
-  }
-
-  TFile *file_tmp = new TFile( (lqdir+"/JskimData/CF/ChargeFlip_HNTIGHT_PU_powheg_powheg_v807.root").c_str(), "");
-
   gROOT->cd();
   TDirectory* tempDir = 0;
   int counter = 0;
@@ -79,10 +71,27 @@ void DiLeptonAnalyzer::InitialiseAnalysis() throw( LQError ) {
   }
   tempDir->cd();
 
-  hist_CF = (TH2D*)file_tmp->Get("Pt_eta_global_CF_HNTIGHT_PU_powheg")->Clone();
+  //==== Get Fake
 
-  file_tmp->Close();
-  delete file_tmp;
+  TFile *file_Muon_FR = new TFile( (lqdir+"/data/Fake/80X/FakeRate13TeV_muon_2016_opt_all.root").c_str(), "");
+  hist_Muon_FR = (TH2D*)file_Muon_FR->Get("FakeRate_40_pt_etaSNUTightisodijet_0.07_0.005_3_0.04");
+
+  TFile *file_Electron_FR = new TFile( (lqdir+"/data/Fake/80X/.root").c_str(), "");
+  hist_Muon_FR = (TH2D*)file_Muon_FR->Get("");
+
+  file_Muon_FR->Close();
+  file_Electron_FR->Close();
+
+  delete file_Muon_FR;
+  delete file_Electron_FR;
+
+  //==== Get CF
+
+  TFile *file_CF = new TFile( (lqdir+"/JskimData/CF/ChargeFlip_HNTIGHT_PU_powheg_powheg_v807.root").c_str(), "");
+  hist_CF = (TH2D*)file_CF->Get("Pt_eta_global_CF_HNTIGHT_PU_powheg")->Clone();
+
+  file_CF->Close();
+  delete file_CF;
 
   origDir->cd();
 
@@ -165,13 +174,17 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   FillCutFlow("VertexCut", 1.);
 
   //==== Muons
-  std::vector< snu::KMuon > muons = GetMuons("MUON_HN_TRI_LOOSE", false);
-  double muon_id_iso_sf = mcdata_correction->MuonScaleFactor("MUON_HN_TRI_TIGHT", muons, 0);
+  std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSE", false);
+
+  double muon_id_iso_sf = 1.; //FIXME
+  //double muon_id_iso_sf = mcdata_correction->MuonScaleFactor("MUON_HN_TIGHT", muons, 0); //FIXME
+
   double MuTrkEffSF =  mcdata_correction->MuonTrackingEffScaleFactor(muons);
 
   //==== Electrons
   std::vector< snu::KElectron > electrons = GetElectrons(false, false, "ELECTRON_HN_FAKELOOSE");
-  double electron_sf = mcdata_correction->ElectronScaleFactor("ELECTRON_MVA_90", electrons, 0);
+  double electron_sf = 1.; //FIXME
+  //double electron_sf = mcdata_correction->ElectronScaleFactor("ELECTRON_MVA_90", electrons, 0); //FIXME
   double electron_RecoSF =  mcdata_correction->ElectronRecoScaleFactor(electrons);
 
   //==== Jets
@@ -213,14 +226,14 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   int n_triLoose_muons = muons.size();
   int n_triTight_muons(0);
   for(unsigned int i=0; i<muons.size(); i++){
-    if(PassID(muons.at(i), "MUON_HN_TRI_TIGHT")) n_triTight_muons++;
+    if(PassID(muons.at(i), "MUON_HN_TIGHT")) n_triTight_muons++;
   }
 
   int n_veto_electrons = electrons_veto.size();
   int n_triLoose_electrons = electrons.size();
   int n_triTight_electrons(0);
   for(unsigned int i=0; i<electrons.size(); i++){
-    if(PassID(electrons.at(i), "ELECTRON_HN_TIGHT")) n_triTight_electrons++;
+    if(PassID(electrons.at(i), "ELECTRON_HN_TIGHTv4")) n_triTight_electrons++;
   }
 
   int n_triLoose_leptons = n_triLoose_muons+n_triLoose_electrons;
@@ -260,7 +273,9 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   //if(n_triLoose_leptons < 2) return;
   //if(jets.size() <2) return;
 
-  if(!isData && !k_running_nonprompt){
+  bool NonPromptRun = k_running_nonprompt;
+
+  if(!isData && !NonPromptRun){
     weight*=muon_id_iso_sf;
     weight*=MuTrkEffSF;
     weight*=pileup_reweight;
@@ -282,7 +297,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   std::vector< std::vector<TString> > Triggers;
   std::vector< bool > isTTs, isLOOSEs, isNoExtra, isNoExtraOtherFlavour;
 
-  bool RunningNonPromptData = k_running_nonprompt && isData;
+  bool RunningNonPromptData = NonPromptRun && isData;
   bool RunningChargeFlipData = k_running_chargeflip && isData;
 
   Suffixs.push_back("DiMuon");
@@ -344,11 +359,11 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
     FillCutFlowByName(Suffix, "TwoLeptons", w_cutflow[Suffix], isData);
 
     //==== No Extra lepton
-    if(!isNoExtra.at(i)) continue;//FIXME
+    if(!isNoExtra.at(i)) continue;
     FillCutFlowByName(Suffix, "NoExtraLepton", w_cutflow[Suffix], isData);
 
     //==== No Extra different flavour lepton
-    if(!isNoExtraOtherFlavour.at(i)) continue;//FIXME
+    if(!isNoExtraOtherFlavour.at(i)) continue;
     FillCutFlowByName(Suffix, "NoExtraFlavourLepton", w_cutflow[Suffix], isData);
 
     //==== If Loose event, we only consider Data
@@ -371,11 +386,13 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
     double this_weight = weight*trigger_ps_weight;
 
     double trigger_sf = 1.;
+/*
     if(!isData && Suffix=="DiMuon"){
       double trigger_eff_Data = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, muons, 0, 0, 0);
       double trigger_eff_MC = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, muons, 0, 1, 0);
       trigger_sf = trigger_eff_Data/trigger_eff_MC;
-    }
+    } //FIXME NOT YET
+*/
     this_weight *= trigger_sf;
 
     std::vector<KLepton> lep;
@@ -401,9 +418,9 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
     double this_weight_err(0.);
     if( isLOOSEs.at(i) ){
-      //this_weight = m_datadriven_bkg->Get_DataDrivenWeight(false, muons, "MUON_HN_TRI_TIGHT", muons.size(), electrons, "ELECTRON_HN_TIGHT", electrons.size(), "ELECTRON_HN_FAKELOOSE", "mva");
-      //this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true,  muons, "MUON_HN_TRI_TIGHT", muons.size(), electrons, "ELECTRON_HN_TIGHT", electrons.size(), "ELECTRON_HN_FAKELOOSE", "mva");
-      m_datadriven_bkg->Get_DataDrivenWeight(true,  muons, "MUON_HN_TRI_TIGHT", muons.size(), electrons, "ELECTRON_HN_TIGHT", electrons.size(), "ELECTRON_HN_FAKELOOSE", "mva");
+      //this_weight = m_datadriven_bkg->Get_DataDrivenWeight(false, muons, "MUON_HN_TIGHT", muons.size(), electrons, "ELECTRON_HN_TIGHTv4", electrons.size(), "ELECTRON_HN_FAKELOOSE", "mva");
+      //this_weight_err = m_datadriven_bkg->Get_DataDrivenWeight(true,  muons, "MUON_HN_TIGHT", muons.size(), electrons, "ELECTRON_HN_TIGHTv4", electrons.size(), "ELECTRON_HN_FAKELOOSE", "mva");
+      m_datadriven_bkg->Get_DataDrivenWeight(true,  muons, "MUON_HN_TIGHT", muons.size(), electrons, "ELECTRON_HN_TIGHTv4", electrons.size(), "ELECTRON_HN_FAKELOOSE", "mva");
 
       this_weight = m_datadriven_bkg->GetFakeObj()->k_weight;
       this_weight_err = m_datadriven_bkg->GetFakeObj()->k_weight_err;
@@ -509,7 +526,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
               tmp_lep.SetPxPyPzE(shift_*tmp_lep.Px(), shift_*tmp_lep.Py(), shift_*tmp_lep.Pz(), shift_*tmp_lep.E());
               shifted_lep.push_back(tmp_lep);
             }
-            if(k_running_nonprompt){
+            if(NonPromptRun){
               weight_cf     *= -1.;
               weight_err_cf *= -1.;
             }
@@ -771,6 +788,142 @@ double DiLeptonAnalyzer::GetDijetMassClosest(std::vector<snu::KJet> js, double m
 
 
 
+double DiLeptonAnalyzer::GetMuonFR(bool geterr, float pt,  float eta){
+
+  if(pt < 10.) pt = 11.;
+  if(pt >= 60.) pt = 59.;
+  if(fabs(eta) >= 2.4) eta = 2.3;
+
+  int binx = hist_Muon_FR->FindBin(pt, abs(eta));
+  if(geterr) return hist_Muon_FR->GetBinError(binx);
+  else return hist_Muon_FR->GetBinContent(binx);
+
+}
+
+double DiLeptonAnalyzer::GetMuonPR(bool geterr, float pt,  float eta){
+/*
+  if(pt < 10.) pt = 11.;
+  if(pt >= 60.) pt = 59.;
+  if(fabs(eta) >= 2.5) eta = 2.4;
+
+  int binx = hist_Muon_PR->FindBin(pt, abs(eta));
+  if(geterr) return hist_Muon_PR->GetBinError(binx);
+  else return hist_Muon_PR->GetBinContent(binx);
+*/
+  return 1.;
+}
+
+double DiLeptonAnalyzer::GetElectronFR(bool geterr, float pt,  float eta){
+
+  if(pt < 10.) pt = 11.;
+  if(pt >= 60.) pt = 59.;
+  if(fabs(eta) >= 2.5) eta = 2.4;
+
+  int binx = hist_Electron_FR->FindBin(pt, abs(eta));
+  if(geterr) return hist_Electron_FR->GetBinError(binx);
+  else return hist_Electron_FR->GetBinContent(binx);
+
+}
+
+double DiLeptonAnalyzer::GetElectronPR(bool geterr, float pt,  float eta){
+/*
+  if(pt < 10.) pt = 11.;
+  if(pt >= 60.) pt = 59.;
+  if(fabs(eta) >= 2.5) eta = 2.4;
+
+  int binx = hist_Electron_PR->FindBin(pt, abs(eta));
+  if(geterr) return hist_Electron_PR->GetBinError(binx);
+  else return hist_Electron_PR->GetBinContent(binx);
+*/
+  return 1.;
+}
+
+
+void DiLeptonAnalyzer::get_eventweight(std::vector<TLorentzVector> muons, TString muid, std::vector<TLorentzVector> electrons, vector<TString> elcut, std::vector<bool> isT, int HalfSampleErrorDir){
+
+  unsigned int n_leptons = isT.size();
+
+  vector<float> lep_pt, lep_eta;
+  vector<bool> ismuon;
+  for(unsigned int i=0; i<muons.size(); i++){
+    lep_pt.push_back(muons.at(i).Pt());
+    lep_eta.push_back(muons.at(i).Eta());
+    ismuon.push_back(true);
+  }
+  for(unsigned int i=0; i<electrons.size(); i++){
+    lep_pt.push_back(electrons.at(i).Pt());
+    lep_eta.push_back(electrons.at(i).Eta());
+    ismuon.push_back(false);
+
+  }
+
+  vector<float> fr, pr, fr_err, pr_err;
+
+  for(unsigned int i=0; i<n_leptons; i++){
+    //==== Muon
+    if(ismuon.at(i)){
+      fr.push_back( GetMuonFR(false, lep_pt.at(i), lep_eta.at(i)));
+      pr.push_back( GetMuonPR(false, lep_pt.at(i), lep_eta.at(i)));
+      fr_err.push_back( GetMuonFR(true, lep_pt.at(i), lep_eta.at(i)));
+      pr_err.push_back( GetMuonPR(true, lep_pt.at(i), lep_eta.at(i)));
+    }
+    //==== If not, it's an electron
+    else{
+      fr.push_back( GetElectronFR(0, lep_pt.at(i), lep_eta.at(i)));
+      pr.push_back( GetElectronPR(0, lep_pt.at(i), lep_eta.at(i)));
+      fr_err.push_back( GetElectronFR(1, lep_pt.at(i), lep_eta.at(i)));
+      pr_err.push_back( GetElectronPR(1, lep_pt.at(i), lep_eta.at(i)));
+    }
+  }
+
+  //==== if HalfSampleErrorDir!=0,
+  //==== assign "5 %" HalfSampleTest Systematic Uncertainty
+
+  if(HalfSampleErrorDir>0){
+    for(unsigned int i=0; i<fr.size(); i++){
+      fr.at(i)     = fr.at(i)    *(1.+0.05);
+      fr_err.at(i) = fr_err.at(i)*(1.+0.05);
+    }
+  }
+  else if(HalfSampleErrorDir<0){
+    for(unsigned int i=0; i<fr.size(); i++){
+      fr.at(i)     = fr.at(i)    *(1.-0.05);
+      fr_err.at(i) = fr_err.at(i)*(1.-0.05);
+    }
+  }
+
+  //==== let a == f/(1-f)
+
+  vector<float> a, fr_onlyLoose;
+
+  for(unsigned int i=0; i<n_leptons; i++) a.push_back( fr.at(i)/(1.-fr.at(i)) );
+  for(unsigned int i=0; i<n_leptons; i++){
+    if(!isT.at(i)) fr_onlyLoose.push_back( a.at(i) );
+  }
+
+  //==== Initialise weight
+  float this_weight=-1.;
+
+  for(unsigned int i=0; i<fr_onlyLoose.size(); i++){
+    this_weight *= -fr_onlyLoose.at(i);
+  }
+
+  //==== d(a)/a = d(f)/f(1-f)
+  //==== so, if w = a1*a2,
+  //==== d(w)/w = d(a1)/a1 + d(a2)/a2
+
+  vector<float> da_over_a;
+  for(unsigned int i=0; i<n_leptons; i++) da_over_a.push_back( fr_err.at(i) / ( fr.at(i)*(1.-fr.at(i)) ) );
+  float this_weight_err = 0.;
+  for(unsigned int i=0; i<n_leptons; i++){
+    if(!isT.at(i)) this_weight_err += da_over_a.at(i)*da_over_a.at(i);
+  }
+
+  weight_fr = sqrt(this_weight_err);
+  weight_err_fr = this_weight_err*fabs(this_weight);
+
+
+}
 
 
 
