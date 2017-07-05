@@ -837,7 +837,6 @@ double DiLeptonAnalyzer::GetCF(KLepton lep, bool geterr){
     }
   }
 
-
   double sf(1.);
   if(el_eta < 1.4442) sf = 0.75362822;
   else sf = 0.821682654;

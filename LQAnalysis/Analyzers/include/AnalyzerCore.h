@@ -415,12 +415,6 @@ class AnalyzerCore : public LQCycleBase {
   std::vector<snu::KMuon> sort_muons_ptorder(std::vector<snu::KMuon> muons);
   std::vector<snu::KElectron> sort_electrons_ptorder(std::vector<snu::KElectron> electrons);
   std::vector<KLepton> sort_leptons_ptorder(std::vector<KLepton> leptons);
-  bool PassOptimizedCut(
-    int sig_mass, double first_pt, double second_pt, double third_pt,
-    double W_pri_mass, double HN_mass,
-    double deltaR_OS_min, double gamma_star_mass,
-    double PFMET
-  );
   int find_genmatching(snu::KTruth gen, std::vector<KLepton> recos, std::vector<int>& used_index);
   double MuonConePt(snu::KMuon muon, double tightiso);
 
