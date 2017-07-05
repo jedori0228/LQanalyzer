@@ -325,15 +325,15 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
   Suffixs.push_back("DiMuon");
   Triggers.push_back(triggerlist_DiMuon);
-  isTTs.push_back( isTwoMuon_TT && (!RunningNonPromptData||RunningChargeFlipData) );
-  isLOOSEs.push_back( isTwoMuon_Loose && (RunningNonPromptData||RunningChargeFlipData) );
+  isTTs.push_back( isTwoMuon_TT && !RunningNonPromptData );
+  isLOOSEs.push_back( isTwoMuon_Loose && RunningNonPromptData );
   isNoExtra.push_back( n_veto_muons == 2 );
   isNoExtraOtherFlavour.push_back( n_veto_electrons == 0 );
 
   Suffixs.push_back("DiElectron");
   Triggers.push_back(triggerlist_DiElectron);
-  isTTs.push_back( isTwoElectron_TT && (!RunningNonPromptData||RunningChargeFlipData) );
-  isLOOSEs.push_back( isTwoElectron_Loose && (RunningNonPromptData||RunningChargeFlipData) );
+  isTTs.push_back( isTwoElectron_TT && !RunningNonPromptData );
+  isLOOSEs.push_back( isTwoElectron_Loose && RunningNonPromptData );
   isNoExtra.push_back( n_veto_electrons == 2 );
   isNoExtraOtherFlavour.push_back( n_veto_muons == 0 );
 
@@ -558,19 +558,19 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         else{
           //==== using OS event, weight CF and estimate SS
           if(Suffix=="DiElectron" && !isSS){
+
+            //==== Fill weight_cf weight_err_cf
             GetCFWeight(lep.at(0), lep.at(1));
-            //double weight_cf, weight_err_cf;
+
+            //==== Make Shifted Electron
             std::vector<KLepton> shifted_lep;
             for(unsigned int i=0; i<lep.size(); i++){
               KLepton tmp_lep = lep.at(i);
-              double shift_ = 1.-0.009; //FIXME
+              double shift_ = 1.-0.015;
               tmp_lep.SetPxPyPzE(shift_*tmp_lep.Px(), shift_*tmp_lep.Py(), shift_*tmp_lep.Pz(), shift_*tmp_lep.E());
               shifted_lep.push_back(tmp_lep);
             }
-            if( isLOOSEs.at(i) ){
-              weight_cf     *= -1.;
-              weight_err_cf *= -1.;
-            }
+
             FillDiLeptonPlot(this_suffix+"_SS", shifted_lep, jets, jets_fwd, jets_nolepveto, this_weight*weight_cf, this_weight*weight_err_cf);
             if(isOffZ){
               FillDiLeptonPlot(this_suffix+"_OffZ_SS", shifted_lep, jets, jets_fwd, jets_nolepveto, this_weight*weight_cf, this_weight*weight_err_cf);
