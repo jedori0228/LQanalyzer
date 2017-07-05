@@ -23,6 +23,7 @@ class EventBase;
 #include "MCDataCorrections.h"
 #include "DataDrivenBackgrounds.h"
 #include "HNGenMatching.h"
+#include "KLepton.h"
 
 
 class AnalyzerCore : public LQCycleBase {
@@ -182,7 +183,9 @@ class AnalyzerCore : public LQCycleBase {
   float CorrectedMETRochester(std::vector<snu::KMuon> muons , bool updatemet);
   float CorrectedMETElectron(std::vector<snu::KElectron> electrons,  int syst=0);
   float CorrectedMETMuon(std::vector<snu::KMuon> muons ,int syst=0);
-
+  void CorrectedMETRochester(std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi);
+  void CorrectedMETMuon(int sys, std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi);
+  void CorrectedMETElectron(int sys, std::vector<snu::KElectron> elall, double& OrignialMET, double& OriginalMETPhi);
 
   void CorrectMuonMomentum(vector<snu::KMuon>& k_muons);
   void SetCorrectedMomentum(vector<snu::KMuon>& k_muons);
@@ -351,6 +354,7 @@ class AnalyzerCore : public LQCycleBase {
   void FillHist(TString histname, float value1, float value2, float w , float x[], int nbinsx, float y[], int nbinsy , TString label="");
   void FillHist(TString histname, float value1,  float value2, float w , float xmin, float xmax, int nbinsx,  float ymin, float ymax, int nbinsy , TString label="");
   void FillHist(TString histname, float value1,  float value2, float value3, float w , float xmin, float xmax, int nbinsx,  float ymin, float ymax, int nbinsy , float zmin, float zmax, int nbinz,TString label="");
+  void FillUpDownHist(TString histname, float value, float w , float w_err, float xmin, float xmax, int nbins=0, TString label="");
 
   /// Fills clever hists
   void FillCLHist(histtype type, TString hist, snu::KEvent ev,vector<snu::KMuon> muons, vector<snu::KElectron> electrons, vector<snu::KJet> jets,double weight);
@@ -397,11 +401,38 @@ class AnalyzerCore : public LQCycleBase {
   void PutNuPz(snu::KParticle *nu, double Pz);
   double solveqdeq(double W_mass, TLorentzVector l1l2l3, double MET, double METphi, TString pm);
   int find_mlmet_closest_to_W(snu::KParticle  lep[], snu::KParticle  MET, int n_lep=3);
+  int find_mlmet_closest_to_W(std::vector<KLepton> lep, snu::KParticle  MET);
   double MT(TLorentzVector a, TLorentzVector b);
   bool GenMatching(snu::KParticle a, snu::KParticle b, double maxDeltaR, double maxPtDiff);
-  std::vector<snu::KMuon> GetHNTriMuonsByLooseRelIso(double LooseRelIsoMax, bool keepfake);
+  std::vector<snu::KMuon> GetHNTriMuonsByLooseRelIso(double LooseRelIsoMax, bool keepfake, float ptcut=-999., float etacut = -999.);
   void PrintTruth();
+  void FillLeptonKinematicPlot(std::vector<KLepton> lep, TString suffix, double w);
+  void FillUpDownLeptonKinematicPlot(std::vector<KLepton> lep, TString suffix, double w, double w_err);
+  void SetPlotHNTriLepMetInfo(double met, double metphi);
+  void SetPlotHNTriLepParticleInfo(snu::KParticle* hn, snu::KParticle w_pri_lowmass, snu::KParticle w_pri_highmass, snu::KParticle w_sec);
+  void SetPlotHNTriLepChargeSign(double os, double ss0, double ss1);
+  void SetPlotHNTriBJet(int nbjet);
   std::vector<snu::KMuon> sort_muons_ptorder(std::vector<snu::KMuon> muons);
+  std::vector<snu::KElectron> sort_electrons_ptorder(std::vector<snu::KElectron> electrons);
+  std::vector<KLepton> sort_leptons_ptorder(std::vector<KLepton> leptons);
+  bool PassOptimizedCut(
+    int sig_mass, double first_pt, double second_pt, double third_pt,
+    double W_pri_mass, double HN_mass,
+    double deltaR_OS_min, double gamma_star_mass,
+    double PFMET
+  );
+  int find_genmatching(snu::KTruth gen, std::vector<KLepton> recos, std::vector<int>& used_index);
+  double MuonConePt(snu::KMuon muon, double tightiso);
+
+  std::map< TString, double > map_HNTriChannl_cutop; // key : <channel>_<mass>_<var>
+  void SetHNTriCutOp(TString filepath);
+  bool PassOptimizedCut(
+    TString channel, int sig_mass,
+    double first_pt, double second_pt, double third_pt,
+    double W_pri_mass, double HN_mass,
+    double deltaR_OS_min, double gamma_star_mass,
+    double PFMET
+  );
 
 
   //==== (Trilepton) H+->WA stuffs
