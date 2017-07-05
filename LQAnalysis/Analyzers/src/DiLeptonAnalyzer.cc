@@ -430,7 +430,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
     bool isSS = lep.at(0).Charge() == lep.at(1).Charge();
     double m_Z = 91.1876;
-    bool isOffZ = fabs( (lep.at(0)+lep.at(1)).M() - m_Z ) > 15.;
+    bool isOffZ = fabs( (lep.at(0)+lep.at(1)).M() - m_Z ) > 10.;
 
     //==== mll Cut Study
     FillHist("CutStudy_m_ll_"+Suffix, ( lep.at(0)+lep.at(1) ).M(), 1., 0., 20., 200);
@@ -536,6 +536,22 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
             }
 
           } // Off-Z
+          else{
+
+            //==== SS+OS
+            FillDiLeptonPlot(this_suffix+"_OnZ_AllCharge", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+
+            //==== SS
+            if(isSS){
+              FillDiLeptonPlot(this_suffix+"_OnZ_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+            }
+            //==== OS
+            else{
+              FillDiLeptonPlot(this_suffix+"_OnZ_OS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+            }
+
+          }
+
 
         }
         //==== ChargeFlip
@@ -558,6 +574,9 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
             FillDiLeptonPlot(this_suffix+"_SS", shifted_lep, jets, jets_fwd, jets_nolepveto, this_weight*weight_cf, this_weight*weight_err_cf);
             if(isOffZ){
               FillDiLeptonPlot(this_suffix+"_OffZ_SS", shifted_lep, jets, jets_fwd, jets_nolepveto, this_weight*weight_cf, this_weight*weight_err_cf);
+            }
+            else{
+              FillDiLeptonPlot(this_suffix+"_OnZ_SS", shifted_lep, jets, jets_fwd, jets_nolepveto, this_weight*weight_cf, this_weight*weight_err_cf);
             }
             
           }
@@ -779,48 +798,52 @@ double DiLeptonAnalyzer::GetCF(KLepton lep, bool geterr){
 
   double invPt = 1./lep.Pt();
   double a = 999., b= 999.;
-  double da = 999., db = 999.;
   if(el_eta < 0.9){
-    if(invPt< 0.020){
-      a=(-0.00491547);
-      b=(0.000104226);
+    if(invPt< 0.023){
+      a=(-0.00138635);
+      b=(4.35054e-05);
     }
     else{
-      a=(0.00153024); 
-      b=(-2.49125e-05);
+      a=(0.00114356);
+      b=(-1.55941e-05);
     }
   }
   else if(el_eta < 1.4442){
-    if(invPt < 0.018){
-      a=(-0.0343995);
-      b=(0.000744026);
+    if(invPt < 0.016){
+      a=(-0.0369937);
+      b=(0.000797434);
+    }
+    else if(invPt < 0.024){
+      a=(-0.0159017);
+      b=(0.00046038);
     }
     else{
-      a=(-0.00147912); 
-      b=(0.000120935);
+      a=(-0.00214657);
+      b=(0.000147245);
     }
   }
   else{
     if(invPt< 0.012){
-      a=(-0.464338);
-      b=(0.00664122);
+      a=(-0.4293);
+      b=(0.00641511);
     }
     else if(invPt< 0.020){
-      a=(-0.0767459);
-      b=(0.00189473);
+      a=(-0.104796);
+      b=(0.00256146);
     }
     else{
-      a=(-0.0156547);
-      b=(0.000699689); 
+      a=(-0.0161499);
+      b=(0.00076872);
     }
   }
 
+
   double sf(1.);
-  if(el_eta < 1.4442) sf = 0.823;
-  else sf = 0.916;
+  if(el_eta < 1.4442) sf = 0.75362822;
+  else sf = 0.821682654;
 
   double sys=0.;
-  double rate = (a+sys*da)*invPt + (b+sys*db);
+  double rate = (a)*invPt + (b);
   if(rate < 0) rate = 0.;
 
   rate *= sf;
