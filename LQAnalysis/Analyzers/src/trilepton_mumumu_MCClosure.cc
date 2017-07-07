@@ -154,8 +154,8 @@ void trilepton_mumumu_MCClosure::ExecuteEvents()throw( LQError ){
 
   double trigger_sf = 1.;
   if(!k_isdata){
-    double trigger_eff_Data = mcdata_correction->TriggerEfficiencyLegByLeg(electrontriLooseColl, muontriLooseColl, 0, 0, 0);
-    double trigger_eff_MC = mcdata_correction->TriggerEfficiencyLegByLeg(electrontriLooseColl, muontriLooseColl, 0, 1, 0);
+    double trigger_eff_Data = mcdata_correction->TriggerEfficiencyLegByLeg(electrontriLooseColl, "ELECTRON_HN_TIGHTv4", muontriLooseColl, "MUON_HN_TRI_TIGHT", 0, 0, 0);
+    double trigger_eff_MC = mcdata_correction->TriggerEfficiencyLegByLeg(electrontriLooseColl, "ELECTRON_HN_TIGHTv4", muontriLooseColl, "MUON_HN_TRI_TIGHT", 0, 1, 0);
     trigger_sf = trigger_eff_Data/trigger_eff_MC;
   }
 

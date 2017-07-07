@@ -134,11 +134,11 @@ AnalyzerSkeleton::~AnalyzerSkeleton() {
 }
 
 
-void AnalyzerSkeleton::FillCutFlow(TString cut, float weight){
+void AnalyzerSkeleton::FillCutFlow(TString cut, float w){
 
   
   if(GetHist("cutflow")) {
-    GetHist("cutflow")->Fill(cut,weight);
+    GetHist("cutflow")->Fill(cut,w);
    
   }
   else{

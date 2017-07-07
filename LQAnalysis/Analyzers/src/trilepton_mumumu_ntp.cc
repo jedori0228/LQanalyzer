@@ -482,8 +482,8 @@ void trilepton_mumumu_ntp::ExecuteEvents()throw( LQError ){
     if(this_syst == "TriggerSF_up") trigger_sf_dir = +1;
 
     if(!k_isdata){
-      double trigger_eff_Data = mcdata_correction->TriggerEfficiencyLegByLeg(electrontriLooseColl, muontriLooseColl, 0, 0, trigger_sf_dir);
-      double trigger_eff_MC = mcdata_correction->TriggerEfficiencyLegByLeg(electrontriLooseColl, muontriLooseColl, 0, 1, trigger_sf_dir);
+      double trigger_eff_Data = mcdata_correction->TriggerEfficiencyLegByLeg(electrontriLooseColl, "", muontriLooseColl, "MUON_HN_TRI_TIGHT", 0, 0, trigger_sf_dir);
+      double trigger_eff_MC = mcdata_correction->TriggerEfficiencyLegByLeg(electrontriLooseColl, "", muontriLooseColl, "MUON_HN_TRI_TIGHT", 0, 1, trigger_sf_dir);
       trigger_sf = trigger_eff_Data/trigger_eff_MC;
     }
     this_weight *= trigger_sf;

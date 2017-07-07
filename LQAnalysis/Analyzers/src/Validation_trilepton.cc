@@ -209,8 +209,8 @@ void Validation_trilepton::ExecuteEvents()throw( LQError ){
       double trigger_sf = 1.;
       if(!k_isdata && muonid=="MUON_HN_TRI_TIGHT"){
         std::vector<snu::KElectron> empty_el;
-        double trigger_eff_Data = mcdata_correction->TriggerEfficiencyLegByLeg(empty_el, muoncoll, 0, 0, 0);
-        double trigger_eff_MC = mcdata_correction->TriggerEfficiencyLegByLeg(empty_el, muoncoll, 0, 1, 0);
+        double trigger_eff_Data = mcdata_correction->TriggerEfficiencyLegByLeg(empty_el, "ELECTRON_HN_TIGHTv4", muoncoll, "MUON_HN_TRI_TIGHT", 0, 0, 0);
+        double trigger_eff_MC = mcdata_correction->TriggerEfficiencyLegByLeg(empty_el, "ELECTRON_HN_TIGHTv4", muoncoll, "MUON_HN_TRI_TIGHT", 0, 1, 0);
         trigger_sf = trigger_eff_Data/trigger_eff_MC;
       }
 

@@ -50,11 +50,12 @@ class DiLeptonAnalyzer : public AnalyzerCore {
   double GetCF(KLepton lep, bool geterr);
   double weight_cf, weight_err_cf;
 
-  double MET, METphi;
+  double MET, METphi, ST, HT, LT, contramass;
   int nbjets, nbjets_fwd, nbjets_nolepveto;
   int n_vtx;
+  int index_j1, index_j2;
 
-  double GetDijetMassClosest(std::vector<snu::KJet> js, double mass);
+  double GetDijetMassClosest(std::vector<snu::KJet> js, double mass, int& m, int& n);
 
  private:
   
