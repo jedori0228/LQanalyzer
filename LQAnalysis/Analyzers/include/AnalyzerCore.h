@@ -183,9 +183,6 @@ class AnalyzerCore : public LQCycleBase {
   float CorrectedMETRochester(std::vector<snu::KMuon> muons , bool updatemet);
   float CorrectedMETElectron(std::vector<snu::KElectron> electrons,  int syst=0);
   float CorrectedMETMuon(std::vector<snu::KMuon> muons ,int syst=0);
-  void CorrectedMETRochester(std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi);
-  void CorrectedMETMuon(int sys, std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi);
-  void CorrectedMETElectron(int sys, std::vector<snu::KElectron> elall, double& OrignialMET, double& OriginalMETPhi);
 
   void CorrectMuonMomentum(vector<snu::KMuon>& k_muons);
   void SetCorrectedMomentum(vector<snu::KMuon>& k_muons);
@@ -407,6 +404,9 @@ class AnalyzerCore : public LQCycleBase {
   std::vector<snu::KMuon> GetHNTriMuonsByLooseRelIso(double LooseRelIsoMax, bool keepfake, float ptcut=-999., float etacut = -999.);
   void PrintTruth();
   void FillLeptonKinematicPlot(std::vector<KLepton> lep, TString suffix, double w);
+  void CorrectedMETRochester(std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi);
+  void CorrectedMETMuon(int sys, std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi);
+  void CorrectedMETElectron(int sys, std::vector<snu::KElectron> elall, double& OrignialMET, double& OriginalMETPhi);
   void FillUpDownLeptonKinematicPlot(std::vector<KLepton> lep, TString suffix, double w, double w_err);
   void SetPlotHNTriLepMetInfo(double met, double metphi);
   void SetPlotHNTriLepParticleInfo(snu::KParticle* hn, snu::KParticle w_pri_lowmass, snu::KParticle w_pri_highmass, snu::KParticle w_sec);
