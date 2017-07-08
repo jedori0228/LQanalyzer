@@ -1,0 +1,272 @@
+MuMuMu	5	first_pt	60
+MuMuMu	5	second_pt	35
+MuMuMu	5	third_pt	25
+MuMuMu	5	W_pri_mass	110
+MuMuMu	5	HN_mass	35
+MuMuMu	5	deltaR_OS_min	0
+MuMuMu	5	gamma_star_mass	0
+MuMuMu	5	PFMET	0
+MuMuMu	10	first_pt	60
+MuMuMu	10	second_pt	30
+MuMuMu	10	third_pt	30
+MuMuMu	10	W_pri_mass	135
+MuMuMu	10	HN_mass	40
+MuMuMu	10	deltaR_OS_min	0
+MuMuMu	10	gamma_star_mass	0
+MuMuMu	10	PFMET	0
+MuMuMu	20	first_pt	45
+MuMuMu	20	second_pt	35
+MuMuMu	20	third_pt	20
+MuMuMu	20	W_pri_mass	130
+MuMuMu	20	HN_mass	40
+MuMuMu	20	deltaR_OS_min	0.4
+MuMuMu	20	gamma_star_mass	0
+MuMuMu	20	PFMET	0
+MuMuMu	30	first_pt	60
+MuMuMu	30	second_pt	45
+MuMuMu	30	third_pt	25
+MuMuMu	30	W_pri_mass	115
+MuMuMu	30	HN_mass	40
+MuMuMu	30	deltaR_OS_min	0.5
+MuMuMu	30	gamma_star_mass	10
+MuMuMu	30	PFMET	0
+MuMuMu	40	first_pt	60
+MuMuMu	40	second_pt	45
+MuMuMu	40	third_pt	35
+MuMuMu	40	W_pri_mass	100
+MuMuMu	40	HN_mass	50
+MuMuMu	40	deltaR_OS_min	0.7
+MuMuMu	40	gamma_star_mass	10
+MuMuMu	40	PFMET	0
+MuMuMu	50	first_pt	30
+MuMuMu	50	second_pt	30
+MuMuMu	50	third_pt	30
+MuMuMu	50	W_pri_mass	125
+MuMuMu	50	HN_mass	80
+MuMuMu	50	deltaR_OS_min	0
+MuMuMu	50	gamma_star_mass	20
+MuMuMu	50	PFMET	0
+MuMuMu	60	first_pt	30
+MuMuMu	60	second_pt	30
+MuMuMu	60	third_pt	30
+MuMuMu	60	W_pri_mass	100
+MuMuMu	60	HN_mass	80
+MuMuMu	60	deltaR_OS_min	0
+MuMuMu	60	gamma_star_mass	20
+MuMuMu	60	PFMET	0
+MuMuMu	70	first_pt	60
+MuMuMu	70	second_pt	45
+MuMuMu	70	third_pt	25
+MuMuMu	70	W_pri_mass	100
+MuMuMu	70	HN_mass	80
+MuMuMu	70	deltaR_OS_min	0.7
+MuMuMu	70	gamma_star_mass	0
+MuMuMu	70	PFMET	0
+MuMuMu	90	first_pt	45
+MuMuMu	90	second_pt	40
+MuMuMu	90	third_pt	10
+MuMuMu	90	W_pri_mass	80
+MuMuMu	90	HN_mass	9999999
+MuMuMu	90	deltaR_OS_min	0
+MuMuMu	90	gamma_star_mass	0
+MuMuMu	90	PFMET	20
+MuMuMu	100	first_pt	25
+MuMuMu	100	second_pt	15
+MuMuMu	100	third_pt	15
+MuMuMu	100	W_pri_mass	110
+MuMuMu	100	HN_mass	9999999
+MuMuMu	100	deltaR_OS_min	0
+MuMuMu	100	gamma_star_mass	0
+MuMuMu	100	PFMET	20
+MuMuMu	150	first_pt	45
+MuMuMu	150	second_pt	40
+MuMuMu	150	third_pt	20
+MuMuMu	150	W_pri_mass	160
+MuMuMu	150	HN_mass	9999999
+MuMuMu	150	deltaR_OS_min	0
+MuMuMu	150	gamma_star_mass	0
+MuMuMu	150	PFMET	20
+MuMuMu	200	first_pt	65
+MuMuMu	200	second_pt	50
+MuMuMu	200	third_pt	25
+MuMuMu	200	W_pri_mass	250
+MuMuMu	200	HN_mass	9999999
+MuMuMu	200	deltaR_OS_min	0.7
+MuMuMu	200	gamma_star_mass	0
+MuMuMu	200	PFMET	20
+MuMuMu	300	first_pt	100
+MuMuMu	300	second_pt	55
+MuMuMu	300	third_pt	35
+MuMuMu	300	W_pri_mass	330
+MuMuMu	300	HN_mass	9999999
+MuMuMu	300	deltaR_OS_min	1.4
+MuMuMu	300	gamma_star_mass	0
+MuMuMu	300	PFMET	20
+MuMuMu	400	first_pt	120
+MuMuMu	400	second_pt	65
+MuMuMu	400	third_pt	50
+MuMuMu	400	W_pri_mass	480
+MuMuMu	400	HN_mass	9999999
+MuMuMu	400	deltaR_OS_min	1.4
+MuMuMu	400	gamma_star_mass	0
+MuMuMu	400	PFMET	20
+MuMuMu	500	first_pt	130
+MuMuMu	500	second_pt	80
+MuMuMu	500	third_pt	40
+MuMuMu	500	W_pri_mass	550
+MuMuMu	500	HN_mass	9999999
+MuMuMu	500	deltaR_OS_min	1.4
+MuMuMu	500	gamma_star_mass	0
+MuMuMu	500	PFMET	40
+MuMuMu	700	first_pt	200
+MuMuMu	700	second_pt	80
+MuMuMu	700	third_pt	45
+MuMuMu	700	W_pri_mass	760
+MuMuMu	700	HN_mass	9999999
+MuMuMu	700	deltaR_OS_min	1.4
+MuMuMu	700	gamma_star_mass	0
+MuMuMu	700	PFMET	20
+MuMuMu	1000	first_pt	290
+MuMuMu	1000	second_pt	180
+MuMuMu	1000	third_pt	50
+MuMuMu	1000	W_pri_mass	900
+MuMuMu	1000	HN_mass	9999999
+MuMuMu	1000	deltaR_OS_min	0.7
+MuMuMu	1000	gamma_star_mass	0
+MuMuMu	1000	PFMET	50
+SSSF_MuMuE	5	first_pt	55
+SSSF_MuMuE	5	second_pt	35
+SSSF_MuMuE	5	third_pt	25
+SSSF_MuMuE	5	W_pri_mass	120
+SSSF_MuMuE	5	HN_mass	
+SSSF_MuMuE	5	deltaR_OS_min	
+SSSF_MuMuE	5	gamma_star_mass	
+SSSF_MuMuE	5	PFMET	50
+SSSF_MuMuE	10	first_pt	60
+SSSF_MuMuE	10	second_pt	35
+SSSF_MuMuE	10	third_pt	25
+SSSF_MuMuE	10	W_pri_mass	120
+SSSF_MuMuE	10	HN_mass	
+SSSF_MuMuE	10	deltaR_OS_min	
+SSSF_MuMuE	10	gamma_star_mass	
+SSSF_MuMuE	10	PFMET	50
+SSSF_MuMuE	20	first_pt	55
+SSSF_MuMuE	20	second_pt	45
+SSSF_MuMuE	20	third_pt	25
+SSSF_MuMuE	20	W_pri_mass	120
+SSSF_MuMuE	20	HN_mass	
+SSSF_MuMuE	20	deltaR_OS_min	
+SSSF_MuMuE	20	gamma_star_mass	
+SSSF_MuMuE	20	PFMET	50
+SSSF_MuMuE	30	first_pt	60
+SSSF_MuMuE	30	second_pt	35
+SSSF_MuMuE	30	third_pt	25
+SSSF_MuMuE	30	W_pri_mass	120
+SSSF_MuMuE	30	HN_mass	
+SSSF_MuMuE	30	deltaR_OS_min	
+SSSF_MuMuE	30	gamma_star_mass	
+SSSF_MuMuE	30	PFMET	50
+SSSF_MuMuE	40	first_pt	60
+SSSF_MuMuE	40	second_pt	35
+SSSF_MuMuE	40	third_pt	25
+SSSF_MuMuE	40	W_pri_mass	120
+SSSF_MuMuE	40	HN_mass	
+SSSF_MuMuE	40	deltaR_OS_min	
+SSSF_MuMuE	40	gamma_star_mass	
+SSSF_MuMuE	40	PFMET	50
+SSSF_MuMuE	50	first_pt	60
+SSSF_MuMuE	50	second_pt	50
+SSSF_MuMuE	50	third_pt	25
+SSSF_MuMuE	50	W_pri_mass	120
+SSSF_MuMuE	50	HN_mass	
+SSSF_MuMuE	50	deltaR_OS_min	
+SSSF_MuMuE	50	gamma_star_mass	
+SSSF_MuMuE	50	PFMET	50
+SSSF_MuMuE	60	first_pt	55
+SSSF_MuMuE	60	second_pt	50
+SSSF_MuMuE	60	third_pt	25
+SSSF_MuMuE	60	W_pri_mass	120
+SSSF_MuMuE	60	HN_mass	
+SSSF_MuMuE	60	deltaR_OS_min	
+SSSF_MuMuE	60	gamma_star_mass	
+SSSF_MuMuE	60	PFMET	50
+SSSF_MuMuE	70	first_pt	60
+SSSF_MuMuE	70	second_pt	50
+SSSF_MuMuE	70	third_pt	25
+SSSF_MuMuE	70	W_pri_mass	120
+SSSF_MuMuE	70	HN_mass	
+SSSF_MuMuE	70	deltaR_OS_min	
+SSSF_MuMuE	70	gamma_star_mass	
+SSSF_MuMuE	70	PFMET	50
+SSSF_MuMuE	90	first_pt	90
+SSSF_MuMuE	90	second_pt	30
+SSSF_MuMuE	90	third_pt	20
+SSSF_MuMuE	90	W_pri_mass	80
+SSSF_MuMuE	90	HN_mass	9999999
+SSSF_MuMuE	90	deltaR_OS_min	
+SSSF_MuMuE	90	gamma_star_mass	0
+SSSF_MuMuE	90	PFMET	0
+SSSF_MuMuE	100	first_pt	50
+SSSF_MuMuE	100	second_pt	20
+SSSF_MuMuE	100	third_pt	20
+SSSF_MuMuE	100	W_pri_mass	80
+SSSF_MuMuE	100	HN_mass	9999999
+SSSF_MuMuE	100	deltaR_OS_min	
+SSSF_MuMuE	100	gamma_star_mass	0
+SSSF_MuMuE	100	PFMET	0
+SSSF_MuMuE	150	first_pt	55
+SSSF_MuMuE	150	second_pt	40
+SSSF_MuMuE	150	third_pt	25
+SSSF_MuMuE	150	W_pri_mass	80
+SSSF_MuMuE	150	HN_mass	9999999
+SSSF_MuMuE	150	deltaR_OS_min	
+SSSF_MuMuE	150	gamma_star_mass	0
+SSSF_MuMuE	150	PFMET	5
+SSSF_MuMuE	200	first_pt	64
+SSSF_MuMuE	200	second_pt	55
+SSSF_MuMuE	200	third_pt	25
+SSSF_MuMuE	200	W_pri_mass	80
+SSSF_MuMuE	200	HN_mass	9999999
+SSSF_MuMuE	200	deltaR_OS_min	
+SSSF_MuMuE	200	gamma_star_mass	0
+SSSF_MuMuE	200	PFMET	0
+SSSF_MuMuE	300	first_pt	94
+SSSF_MuMuE	300	second_pt	55
+SSSF_MuMuE	300	third_pt	40
+SSSF_MuMuE	300	W_pri_mass	80
+SSSF_MuMuE	300	HN_mass	9999999
+SSSF_MuMuE	300	deltaR_OS_min	
+SSSF_MuMuE	300	gamma_star_mass	0
+SSSF_MuMuE	300	PFMET	0
+SSSF_MuMuE	400	first_pt	80
+SSSF_MuMuE	400	second_pt	40
+SSSF_MuMuE	400	third_pt	40
+SSSF_MuMuE	400	W_pri_mass	480
+SSSF_MuMuE	400	HN_mass	9999999
+SSSF_MuMuE	400	deltaR_OS_min	
+SSSF_MuMuE	400	gamma_star_mass	0
+SSSF_MuMuE	400	PFMET	0
+SSSF_MuMuE	500	first_pt	80
+SSSF_MuMuE	500	second_pt	40
+SSSF_MuMuE	500	third_pt	40
+SSSF_MuMuE	500	W_pri_mass	500
+SSSF_MuMuE	500	HN_mass	9999999
+SSSF_MuMuE	500	deltaR_OS_min	
+SSSF_MuMuE	500	gamma_star_mass	0
+SSSF_MuMuE	500	PFMET	0
+SSSF_MuMuE	700	first_pt	95
+SSSF_MuMuE	700	second_pt	30
+SSSF_MuMuE	700	third_pt	20
+SSSF_MuMuE	700	W_pri_mass	540
+SSSF_MuMuE	700	HN_mass	9999999
+SSSF_MuMuE	700	deltaR_OS_min	
+SSSF_MuMuE	700	gamma_star_mass	0
+SSSF_MuMuE	700	PFMET	0
+SSSF_MuMuE	1000	first_pt	95
+SSSF_MuMuE	1000	second_pt	30
+SSSF_MuMuE	1000	third_pt	20
+SSSF_MuMuE	1000	W_pri_mass	540
+SSSF_MuMuE	1000	HN_mass	9999999
+SSSF_MuMuE	1000	deltaR_OS_min	
+SSSF_MuMuE	1000	gamma_star_mass	0
+SSSF_MuMuE	1000	PFMET	0
