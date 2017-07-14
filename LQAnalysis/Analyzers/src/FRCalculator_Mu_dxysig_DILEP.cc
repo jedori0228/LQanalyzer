@@ -1,6 +1,6 @@
-// $Id: FakeRateCalculator_Mu_dxysig_DILEP.cc 1 2013-11-26 10:23:10Z jalmond $
+// $Id: FRCalculator_Mu_dxysig_DILEP.cc 1 2013-11-26 10:23:10Z jalmond $
 /***************************************************************************
- * @Project: LQFakeRateCalculator_Mu_dxysig_DILEP Frame - ROOT-based analysis framework for Korea SNU
+ * @Project: LQFRCalculator_Mu_dxysig_DILEP Frame - ROOT-based analysis framework for Korea SNU
  * @Package: LQCycles
  *
  * @author John Almond       <jalmond@cern.ch>           - SNU
@@ -8,7 +8,7 @@
  ***************************************************************************/
 
 /// Local includes
-#include "FakeRateCalculator_Mu_dxysig_DILEP.h"
+#include "FRCalculator_Mu_dxysig_DILEP.h"
 
 //Core includes
 #include "Reweight.h"
@@ -17,14 +17,14 @@
 
 
 //// Needed to allow inheritance for use in LQCore/core classes
-ClassImp (FakeRateCalculator_Mu_dxysig_DILEP);
+ClassImp (FRCalculator_Mu_dxysig_DILEP);
 
-FakeRateCalculator_Mu_dxysig_DILEP::FakeRateCalculator_Mu_dxysig_DILEP() :  AnalyzerCore(), out_muons(0) {
+FRCalculator_Mu_dxysig_DILEP::FRCalculator_Mu_dxysig_DILEP() :  AnalyzerCore(), out_muons(0) {
   
   // To have the correct name in the log:                                                                                                                            
-  SetLogName("FakeRateCalculator_Mu_dxysig_DILEP");
+  SetLogName("FRCalculator_Mu_dxysig_DILEP");
   
-  Message("In FakeRateCalculator_Mu_dxysig_DILEP constructor", INFO);
+  Message("In FRCalculator_Mu_dxysig_DILEP constructor", INFO);
   //
   // This function sets up Root files and histograms Needed in ExecuteEvents
   InitialiseAnalysis();
@@ -32,7 +32,7 @@ FakeRateCalculator_Mu_dxysig_DILEP::FakeRateCalculator_Mu_dxysig_DILEP() :  Anal
 }
 
 
-void FakeRateCalculator_Mu_dxysig_DILEP::InitialiseAnalysis() throw( LQError ) {
+void FRCalculator_Mu_dxysig_DILEP::InitialiseAnalysis() throw( LQError ) {
   
   /// Initialise histograms
   MakeHistograms();  
@@ -82,7 +82,7 @@ void FakeRateCalculator_Mu_dxysig_DILEP::InitialiseAnalysis() throw( LQError ) {
 }
 
 
-void FakeRateCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
+void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
   double thisdXYCut = 0.005;
   double TightISO = 0.07;
@@ -179,7 +179,7 @@ void FakeRateCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //==================
 
   float etaarray [] = {0.0, 0.8, 1.479, 2.0, 2.5};
-  float ptarray [] = {0., 5., 10., 15., 20., 25., 30., 35., 45., 60., 80., 100.};
+  float ptarray [] = {0., 5., 12., 15., 20., 25., 30., 35., 45., 60., 100., 200.};
 
   float etaarray_2 [] = {0.0, 1.479, 2.5};
   float ptarray_2 [] = {10.,15.,40.,200.};
@@ -190,19 +190,19 @@ void FakeRateCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
   std::map< TString, std::vector<double> > HLT_ptrange;
   HLT_ptrange["HLT_Mu3_PFJet40_v"].push_back(5.);
-  HLT_ptrange["HLT_Mu3_PFJet40_v"].push_back(10.);
-  HLT_ptrange["HLT_Mu8_v"].push_back(10.);
-  HLT_ptrange["HLT_Mu8_v"].push_back(20.);
-  HLT_ptrange["HLT_Mu8_TrkIsoVVL_v"].push_back(10.);
-  HLT_ptrange["HLT_Mu8_TrkIsoVVL_v"].push_back(20.);
-  HLT_ptrange["HLT_Mu17_v"].push_back(20.);
-  HLT_ptrange["HLT_Mu17_v"].push_back(25.);
-  HLT_ptrange["HLT_Mu17_TrkIsoVVL_v"].push_back(20.);
+  HLT_ptrange["HLT_Mu3_PFJet40_v"].push_back(12.);
+  //HLT_ptrange["HLT_Mu8_v"].push_back(10.);
+  //HLT_ptrange["HLT_Mu8_v"].push_back(20.);
+  HLT_ptrange["HLT_Mu8_TrkIsoVVL_v"].push_back(12.);
+  HLT_ptrange["HLT_Mu8_TrkIsoVVL_v"].push_back(25.);
+  //HLT_ptrange["HLT_Mu17_v"].push_back(20.);
+  //HLT_ptrange["HLT_Mu17_v"].push_back(25.);
   HLT_ptrange["HLT_Mu17_TrkIsoVVL_v"].push_back(25.);
-  HLT_ptrange["HLT_Mu20_v"].push_back(25.);
-  HLT_ptrange["HLT_Mu20_v"].push_back(9999.);
-  HLT_ptrange["HLT_IsoMu24_v"].push_back(25.);
-  HLT_ptrange["HLT_IsoMu24_v"].push_back(9999.);
+  HLT_ptrange["HLT_Mu17_TrkIsoVVL_v"].push_back(9999.);
+  //HLT_ptrange["HLT_Mu20_v"].push_back(25.);
+  //HLT_ptrange["HLT_Mu20_v"].push_back(9999.);
+  //HLT_ptrange["HLT_IsoMu24_v"].push_back(25.);
+  //HLT_ptrange["HLT_IsoMu24_v"].push_back(9999.);
 
   std::vector<TString> AllHLTs;
   for(std::map< TString, std::vector<double> >::iterator it=HLT_ptrange.begin(); it!=HLT_ptrange.end(); it++){
@@ -775,14 +775,14 @@ void FakeRateCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   
 
 
-void FakeRateCalculator_Mu_dxysig_DILEP::EndCycle()throw( LQError ){
+void FRCalculator_Mu_dxysig_DILEP::EndCycle()throw( LQError ){
   
   Message("In EndCycle" , INFO);
 
 }
 
 
-void FakeRateCalculator_Mu_dxysig_DILEP::BeginCycle() throw( LQError ){
+void FRCalculator_Mu_dxysig_DILEP::BeginCycle() throw( LQError ){
   
   Message("In begin Cycle", INFO);
   
@@ -799,14 +799,14 @@ void FakeRateCalculator_Mu_dxysig_DILEP::BeginCycle() throw( LQError ){
   
 }
 
-FakeRateCalculator_Mu_dxysig_DILEP::~FakeRateCalculator_Mu_dxysig_DILEP() {
+FRCalculator_Mu_dxysig_DILEP::~FRCalculator_Mu_dxysig_DILEP() {
   
-  Message("In FakeRateCalculator_Mu_dxysig_DILEP Destructor" , INFO);
+  Message("In FRCalculator_Mu_dxysig_DILEP Destructor" , INFO);
   
 }
 
 
-void FakeRateCalculator_Mu_dxysig_DILEP::FillCutFlow(TString cut, float weight){
+void FRCalculator_Mu_dxysig_DILEP::FillCutFlow(TString cut, float weight){
 
   
   if(GetHist("cutflow")) {
@@ -824,7 +824,7 @@ void FakeRateCalculator_Mu_dxysig_DILEP::FillCutFlow(TString cut, float weight){
 }
 
 
-void FakeRateCalculator_Mu_dxysig_DILEP::BeginEvent( )throw( LQError ){
+void FRCalculator_Mu_dxysig_DILEP::BeginEvent( )throw( LQError ){
 
   Message("In BeginEvent() " , DEBUG);
 
@@ -833,20 +833,20 @@ void FakeRateCalculator_Mu_dxysig_DILEP::BeginEvent( )throw( LQError ){
 
 
 
-void FakeRateCalculator_Mu_dxysig_DILEP::MakeHistograms(){
+void FRCalculator_Mu_dxysig_DILEP::MakeHistograms(){
   //// Additional plots to make
     
   maphist.clear();
   AnalyzerCore::MakeHistograms();
   Message("Made histograms", INFO);
   /**
-   *  Remove//Overide this FakeRateCalculator_Mu_dxysig_DILEPCore::MakeHistograms() to make new hists for your analysis
+   *  Remove//Overide this FRCalculator_Mu_dxysig_DILEPCore::MakeHistograms() to make new hists for your analysis
    **/
   
 }
 
 
-void FakeRateCalculator_Mu_dxysig_DILEP::ClearOutputVectors() throw(LQError) {
+void FRCalculator_Mu_dxysig_DILEP::ClearOutputVectors() throw(LQError) {
 
   // This function is called before every execute event (NO need to call this yourself.
   
@@ -859,7 +859,7 @@ void FakeRateCalculator_Mu_dxysig_DILEP::ClearOutputVectors() throw(LQError) {
   out_electrons.clear();
 }
 
-float FakeRateCalculator_Mu_dxysig_DILEP::GetPrescale(std::vector<snu::KMuon> muon, bool passlow, bool passhigh){
+float FRCalculator_Mu_dxysig_DILEP::GetPrescale(std::vector<snu::KMuon> muon, bool passlow, bool passhigh){
   float prescale_trigger = 0.;
 
   if(muon.size() == 1){
@@ -883,7 +883,7 @@ float FakeRateCalculator_Mu_dxysig_DILEP::GetPrescale(std::vector<snu::KMuon> mu
   return prescale_trigger;
 }
 
-double FakeRateCalculator_Mu_dxysig_DILEP::GetTriggerWeightByPtRange(TString hltname, vector<double> ptrange, std::vector<snu::KMuon> muons, int npfjet50){
+double FRCalculator_Mu_dxysig_DILEP::GetTriggerWeightByPtRange(TString hltname, vector<double> ptrange, std::vector<snu::KMuon> muons, int npfjet50){
 
   double prescale_trigger = 0.;
 
@@ -910,14 +910,14 @@ double FakeRateCalculator_Mu_dxysig_DILEP::GetTriggerWeightByPtRange(TString hlt
 
 }
 
-void FakeRateCalculator_Mu_dxysig_DILEP::FillHistByTrigger(TString histname, float value, std::map<TString, double> hltweight, float xmin, float xmax, int nbins){
+void FRCalculator_Mu_dxysig_DILEP::FillHistByTrigger(TString histname, float value, std::map<TString, double> hltweight, float xmin, float xmax, int nbins){
 
   for(std::map<TString, double>::iterator it=hltweight.begin(); it!=hltweight.end(); it++){
     FillHist(it->first+"_"+histname, value, it->second, xmin, xmax, nbins);
   }
 
 }
-void FakeRateCalculator_Mu_dxysig_DILEP::FillHistByTrigger(TString histname, float value1, float value2, std::map<TString, double> hltweight , float x[], int nbinsx, float y[], int nbinsy){
+void FRCalculator_Mu_dxysig_DILEP::FillHistByTrigger(TString histname, float value1, float value2, std::map<TString, double> hltweight , float x[], int nbinsx, float y[], int nbinsy){
 
   for(std::map<TString, double>::iterator it=hltweight.begin(); it!=hltweight.end(); it++){
     FillHist(it->first+"_"+histname, value1, value2, it->second, x, nbinsx, y, nbinsy);
@@ -925,10 +925,10 @@ void FakeRateCalculator_Mu_dxysig_DILEP::FillHistByTrigger(TString histname, flo
 
 }
 
-void FakeRateCalculator_Mu_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KMuon muon, double thisweight, bool isTight){
+void FRCalculator_Mu_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KMuon muon, double thisweight, bool isTight){
 
   float etaarray [] = {0.0, 0.8, 1.479, 2.0, 2.5};
-  float ptarray [] = {0., 5., 10., 15., 20., 25., 30., 35., 45., 60., 80., 100.};
+  float ptarray [] = {0., 5., 12., 15., 20., 25., 30., 35., 45., 60., 100., 200.};
 
   float etaarray_2 [] = {0.0, 1.479, 2.5};
   float ptarray_2 [] = {10.,15.,40.,200.};
@@ -968,7 +968,7 @@ void FakeRateCalculator_Mu_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KMuo
 
 }
 
-void FakeRateCalculator_Mu_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KMuon muon, std::map<TString, double> hltweight, bool isTight){
+void FRCalculator_Mu_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KMuon muon, std::map<TString, double> hltweight, bool isTight){
 
   for(std::map<TString, double>::iterator it=hltweight.begin(); it!=hltweight.end(); it++){
 

@@ -1,15 +1,15 @@
-#ifndef FakeRateCalculator_Mu_dxysig_DILEP_h
-#define FakeRateCalculator_Mu_dxysig_DILEP_h
+#ifndef FRCalculator_Mu_dxysig_DILEP_h
+#define FRCalculator_Mu_dxysig_DILEP_h
 
 #include "AnalyzerCore.h"
 
 
-class FakeRateCalculator_Mu_dxysig_DILEP : public AnalyzerCore {
+class FRCalculator_Mu_dxysig_DILEP : public AnalyzerCore {
 
  public:
   //// constructors                                                                                                                                                             
-  FakeRateCalculator_Mu_dxysig_DILEP();
-  ~FakeRateCalculator_Mu_dxysig_DILEP();
+  FRCalculator_Mu_dxysig_DILEP();
+  ~FRCalculator_Mu_dxysig_DILEP();
 
   /// Functions from core
   virtual void BeginCycle() throw( LQError );
@@ -41,6 +41,6 @@ class FakeRateCalculator_Mu_dxysig_DILEP : public AnalyzerCore {
   double METauto;
 
 
-  ClassDef ( FakeRateCalculator_Mu_dxysig_DILEP, 1);
+  ClassDef ( FRCalculator_Mu_dxysig_DILEP, 1);
 };
 #endif

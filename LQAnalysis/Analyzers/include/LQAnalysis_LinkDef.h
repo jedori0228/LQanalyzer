@@ -25,8 +25,8 @@
 #pragma link C++ class trilepton_mumumu+;
 #pragma link C++ class trilepton_mumumu_FR_method+;
 #pragma link C++ class FakeRateCalculator_Mu_dxysig+;
-#pragma link C++ class FakeRateCalculator_Mu_dxysig_DILEP+;
-#pragma link C++ class FakeRateCalculator_El_dxysig_DILEP+;
+#pragma link C++ class FRCalculator_Mu_dxysig_DILEP+;
+#pragma link C++ class FRCalculator_El_dxysig_DILEP+;
 #pragma link C++ class trilepton_mumumu_CR+;
 #pragma link C++ class trilepton_mumumu_CR_FR_method+;
 #pragma link C++ class Validation_trilepton+;

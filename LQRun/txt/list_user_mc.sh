@@ -31,6 +31,10 @@ declare -a QCD_FR=(
 'QCD_Pt-1000toInf_MuEnriched' 'QCD_Pt-120to170_MuEnriched' 'QCD_Pt-15to20_MuEnriched' 'QCD_Pt-170to300_MuEnriched' 'QCD_Pt-20to30_MuEnriched' 'QCD_Pt-300to470_MuEnriched' 'QCD_Pt-30to50_MuEnriched' 'QCD_Pt-470to600_MuEnriched' 'QCD_Pt-50to80_MuEnriched' 'QCD_Pt-600to800_MuEnriched' 'QCD_Pt-800to1000_MuEnriched' 'QCD_Pt-80to120_MuEnriched'
 )
 
+declare -a QCD_FR_EM=(
+'QCD_Pt-20to30_EMEnriched' 'QCD_Pt-30to50_EMEnriched' 'QCD_Pt-50to80_EMEnriched' 'QCD_Pt-80to120_EMEnriched' 'QCD_Pt-120to170_EMEnriched' 'QCD_Pt-170to300_EMEnriched' 'QCD_Pt-300toInf_EMEnriched'
+)
+
 ### FR MC Closure ###
 declare -a FR_MC_Closure=(
 'DYJets_10to50' 'DYJets' 'DYJets_MG_10to50' 'DYJets_MG'
@@ -268,6 +272,11 @@ declare -a DiMuSig_all=(
 'HNMumMum_Tchannel_300'  'HNMumMum_Tchannel_400'  'HNMumMum_Tchannel_600'  'HNMumMum_Tchannel_700'  'HNMumMum_Tchannel_800'  'HNMumMum_Tchannel_900'  'HNMumMum_Tchannel_1000'  'HNMumMum_Tchannel_1200'  'HNMumMum_Tchannel_1300'  'HNMumMum_Tchannel_1400'  'HNMumMum_Tchannel_1500' 'HNMoriondLL_Tchannel_MumMum_100'  'HNMoriondLL_Tchannel_MumMum_200'  'HNMoriondLL_Tchannel_MumMum_500'  'HNMoriondLL_Tchannel_MumMum_1100'
 'HNEpEp_Tchannel_300'  'HNEpEp_Tchannel_400'  'HNEpEp_Tchannel_600'  'HNEpEp_Tchannel_700'  'HNEpEp_Tchannel_800'  'HNEpEp_Tchannel_900'  'HNEpEp_Tchannel_1000'  'HNEpEp_Tchannel_1200'  'HNEpEp_Tchannel_1300'  'HNEpEp_Tchannel_1400'  'HNEpEp_Tchannel_1500' 'HNMoriondLL_Tchannel_EpEp_100'  'HNMoriondLL_Tchannel_EpEp_200'  'HNMoriondLL_Tchannel_EpEp_500'  'HNMoriondLL_Tchannel_EpEp_1100'
 'HNEmEm_Tchannel_300'  'HNEmEm_Tchannel_400'  'HNEmEm_Tchannel_600'  'HNEmEm_Tchannel_700'  'HNEmEm_Tchannel_800'  'HNEmEm_Tchannel_900'  'HNEmEm_Tchannel_1000'  'HNEmEm_Tchannel_1200'  'HNEmEm_Tchannel_1300'  'HNEmEm_Tchannel_1400'  'HNEmEm_Tchannel_1500' 'HNMoriondLL_Tchannel_EmEm_100'  'HNMoriondLL_Tchannel_EmEm_200'  'HNMoriondLL_Tchannel_EmEm_500'  'HNMoriondLL_Tchannel_EmEm_1100'
+)
+
+declare -a DiMuSig_OS=(
+'HNEpEm_40'  'HNEpEm_50'  'HNEpEm_60'  'HNEpEm_70'  'HNEpEm_80'  'HNEpEm_90'  'HNEpEm_100'  'HNEpEm_125'  'HNEpEm_150'  'HNEpEm_200'  'HNEpEm_250'  'HNEpEm_300'  'HNEpEm_400'  'HNEpEm_500'  'HNEpEm_600'  'HNEpEm_700'  'HNEpEm_800'  'HNEpEm_900'  'HNEpEm_1000'  'HNEpEm_1100'  'HNEpEm_1200'  'HNEpEm_1300'  'HNEpEm_1400'  'HNEpEm_1500' 
+'HNEmEp_40'  'HNEmEp_50'  'HNEmEp_60'  'HNEmEp_70'  'HNEmEp_80'  'HNEmEp_90'  'HNEmEp_100'  'HNEmEp_125'  'HNEmEp_150'  'HNEmEp_200'  'HNEmEp_250'  'HNEmEp_300'  'HNEmEp_400'  'HNEmEp_500'  'HNEmEp_600'  'HNEmEp_700'  'HNEmEp_800'  'HNEmEp_900'  'HNEmEp_1000'  'HNEmEp_1100'  'HNEmEp_1200'  'HNEmEp_1300'  'HNEmEp_1400'  'HNEmEp_1500'
 )
 
 declare -a trilep_signal_mme=(
