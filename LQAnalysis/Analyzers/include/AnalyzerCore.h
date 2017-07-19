@@ -417,10 +417,12 @@ class AnalyzerCore : public LQCycleBase {
   void SetPlotHNTriBJet(int nbjet);
   std::vector<snu::KMuon> sort_muons_ptorder(std::vector<snu::KMuon> muons);
   std::vector<snu::KElectron> sort_electrons_ptorder(std::vector<snu::KElectron> electrons);
+  inline static bool MuonPtComparing(const snu::KMuon& m1, const snu::KMuon& m2){ return (m1.Pt() > m2.Pt()); }
   std::vector<KLepton> sort_leptons_ptorder(std::vector<KLepton> leptons);
   int find_genmatching(snu::KTruth gen, std::vector<KLepton> recos, std::vector<int>& used_index);
   double MuonConePt(snu::KMuon muon, double tightiso);
   double ElectronConePt(snu::KElectron electron, double tightiso);
+  bool LeptonInsideFatJet(snu::KFatJet fj, double dr, std::vector<KLepton> lep);
 
   std::map< TString, double > map_HNTriChannl_cutop; // key : <channel>_<mass>_<var>
   void SetHNTriCutOp(TString filepath);

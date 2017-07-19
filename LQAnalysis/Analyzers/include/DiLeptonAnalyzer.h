@@ -28,6 +28,7 @@ class DiLeptonAnalyzer : public AnalyzerCore {
     std::vector< snu::KJet > jets,
     std::vector< snu::KJet > jets_fwd,
     std::vector< snu::KJet > jets_nolepveto,
+    std::vector< snu::KFatJet > fatjets,
     double thisweight,
     double thieweighterr
   );
@@ -53,9 +54,15 @@ class DiLeptonAnalyzer : public AnalyzerCore {
   double MET, METphi, ST, HT, LT, contramass;
   int nbjets, nbjets_fwd, nbjets_nolepveto;
   int n_vtx;
-  int index_j1, index_j2;
+  int index_jjW_j1, index_jjW_j2;
+  int index_lljjW_j1, index_lljjW_j2;
+  int index_fjW;
+
+  bool RunNtp;
 
   double GetDijetMassClosest(std::vector<snu::KJet> js, double mass, int& m, int& n);
+  double GetDileptonDijetMassClosest(std::vector<KLepton> leps, std::vector<snu::KJet> js, double mass, int& m, int& n);
+  double GetFatjetMassClosest(std::vector<snu::KFatJet> fjs, double mass, int& m);
 
  private:
   
