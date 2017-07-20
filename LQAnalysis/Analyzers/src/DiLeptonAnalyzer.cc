@@ -28,7 +28,6 @@ ST(-999), HT(-999), LT(-999), contramass(-999),
 nbjets(-999), nbjets_fwd(-999), nbjets_nolepveto(-999), n_vtx(-999),
 index_jjW_j1(-999), index_jjW_j2(-999),
 index_lljjW_j1(-999), index_lljjW_j2(-999),
-index_fjW(-999),
 RunNtp(false)
 {
   
@@ -250,12 +249,11 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 */
 
   //==== Jets
-  std::vector<snu::KFatJet> fatjets = GetFatJets("FATJET_HN");
-  std::vector<snu::KJet> jets = GetJetsWFT("JET_HN_eta5", "FATJET_HN", 20., 2.5);
-  std::vector<snu::KJet> jets_nolepveto = GetJetsWFT("JET_HN_eta5_nolepveto", "FATJET_HN", 20., 2.5);
+  std::vector<snu::KJet> jets = GetJets("JET_HN_eta5", 20., 2.5);
+  std::vector<snu::KJet> jets_nolepveto = GetJets("JET_HN_eta5_nolepveto", 20., 2.5);
 
   //==== Call eta5 jets, and make forward jets
-  std::vector<snu::KJet> jets_eta5 = GetJetsWFT("JET_HN_eta5", "FATJET_HN", 20., 5.);
+  std::vector<snu::KJet> jets_eta5 = GetJets("JET_HN_eta5", 20., 5.);
   std::vector<snu::KJet> jets_fwd;
 
   for(unsigned int i=0; i<jets_eta5.size(); i++){
@@ -481,8 +479,6 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
     if(isSS) FillHist("CutStudy_m_ll_SS_"+Suffix, ( lep.at(0)+lep.at(1) ).M(), 1., 0., 40., 400);
     else FillHist("CutStudy_m_ll_OS_"+Suffix, ( lep.at(0)+lep.at(1) ).M(), 1., 0., 40., 400);
     bool mll10GeV = ( lep.at(0)+lep.at(1) ).M() < 10.;
-    bool mll12GeV = ( lep.at(0)+lep.at(1) ).M() < 12.;
-    //if(!isSS && !isOffZ) continue;
     if(mll10GeV) continue;
     FillCutFlowByName(Suffix, "LowDileptonMass", w_cutflow[Suffix], isData);
 
@@ -521,46 +517,24 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
     map_Region_to_Bool[Suffix+"_0jets"] = (jets.size()==0);
     map_Region_to_Bool[Suffix+"_1jets"] = (jets.size()==1);
     map_Region_to_Bool[Suffix+"_2jets"] = (jets.size()==2); // SR
-    //map_Region_to_Bool[Suffix+"_3jets"] = (jets.size()==3);
-    //map_Region_to_Bool[Suffix+"_4jets"] = (jets.size()==4);
     map_Region_to_Bool[Suffix+"_Inclusive2jets"] = (jets.size()>=2); // SR
-
-    //==== # of (normal) b jet
-    //map_Region_to_Bool[Suffix+"_0bjets"] = (nbjets==0);
-    //map_Region_to_Bool[Suffix+"_Inclusive1bjets"] = (nbjets>=1);
-    //map_Region_to_Bool[Suffix+"_Inclusive1bjets_METge50"] = (nbjets>=1) && (MET>50.); // control region
-    //map_Region_to_Bool[Suffix+"_Inclusive2bjets"] = (nbjets>=2);
-    //map_Region_to_Bool[Suffix+"_Inclusive3bjets"] = (nbjets>=3);
 
     //==== # of forward b jet
     map_Region_to_Bool[Suffix+"_0nlbjets"] = (nbjets_nolepveto==0);
     map_Region_to_Bool[Suffix+"_Inclusive1nlbjets"] = (nbjets_nolepveto>=1);
     map_Region_to_Bool[Suffix+"_Inclusive1nlbjets_METge50"] = (nbjets_nolepveto>=1) && (MET>50.); // control region
     map_Region_to_Bool[Suffix+"_Inclusive2nlbjets"] = (nbjets_nolepveto>=2);
-    //map_Region_to_Bool[Suffix+"_Inclusive3nlbjets"] = (nbjets_nolepveto>=3);
-
-    //==== fatjet
-    map_Region_to_Bool[Suffix+"_0fatjets"] = (fatjets.size()==0);
-    map_Region_to_Bool[Suffix+"_1fatjets"] = (fatjets.size()==1); // together with onZ, we can get a W(->jj)Z(->ll) control region
-    map_Region_to_Bool[Suffix+"_Inclusive1fatjets"] = (fatjets.size()>=1);
-    map_Region_to_Bool[Suffix+"_Inclusive1fatjets_METlt50"] = (fatjets.size()>=1) && (MET<50.);
 
     //==== ST = lepton + jet + MET
     ST = lep.at(0).Pt() + lep.at(1).Pt() + MET;
     for(unsigned int ij=0; ij <jets.size(); ij++){
       ST += jets.at(ij).Pt();
     }
-    for(unsigned int ij=0; ij <fatjets.size(); ij++){
-      ST += fatjets.at(ij).Pt();
-    }
 
     //==== HT = jet
     HT = 0.;
     for(unsigned int ij=0; ij <jets.size(); ij++){
       HT += jets.at(ij).Pt();
-    }
-    for(unsigned int ij=0; ij <fatjets.size(); ij++){
-      HT += fatjets.at(ij).Pt();
     }
 
     //==== LT = lepton
@@ -616,35 +590,10 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
                                            ( (lep.at(0).Pt() > 50.) && (lep.at(1).Pt() > 25.) );
 */
     }
-    if(fatjets.size() >= 1){
-      GetFatjetMassClosest(fatjets, 80.4, index_fjW);
-    }
-
-    //==== If OS, we should veto m(OS) < 12 GeV..
-    //if(!isSS && mll12GeV) continue; //FIXME just for now. I will use this
 
     map_Region_to_Bool[Suffix+"_Preselection"] = isOffZ &&
                                                  (nbjets_nolepveto==0) &&
-                                                 ( (jets.size()>=1) || (fatjets.size()>=1) );
-
-    map_Region_to_Bool[Suffix+"_Preselection_Inclusive2jets"] = isOffZ &&
-                                                                (nbjets_nolepveto==0) &&
-                                                                ( (jets.size()>=2) );
-
-    map_Region_to_Bool[Suffix+"_Preselection_1jets"] = isOffZ &&
-                                                       (nbjets_nolepveto==0) &&
-                                                       ( (jets.size()==1) );
-
-    if( map_Region_to_Bool[Suffix+"_Preselection_Inclusive2jets"] ){
-      map_Region_to_Bool[Suffix+"_Preselection_Inclusive2jets_mjj50to110"] = isOffZ &&
-                                                                             (nbjets_nolepveto==0) &&
-                                                                             ( (jets.size()>=2) ) &&
-                                                                             ( (jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M() > 50. ) &&
-                                                                             ( (jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M() < 110. );
-    }
-    map_Region_to_Bool[Suffix+"_Preselection_Inclusive1fatjets"] = isOffZ &&
-                                                                   (nbjets_nolepveto==0) &&
-                                                                   ( (fatjets.size()>=1) );
+                                                 ( jets.size()>=2 );
 
     bool NtupleSkim = map_Region_to_Bool[Suffix+"_Preselection"] && isSSForCF;
     if(RunNtp && NtupleSkim){
@@ -701,25 +650,6 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         cutop[39] = lep.at(0).DeltaR( lep.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2) );
         cutop[40] = lep.at(1).DeltaR( lep.at(0)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2) );
 
-
-      }
-      else if(jets.size() == 1){
-
-        for(int i=12; i<=29; i++) cutop[i] = -999.;
-
-        //==== m(lljj)~W (low mass)
-        cutop[30] = jets.at(0).Pt(); //jets.at(index_lljjW_j1).Pt();
-        cutop[31] = -999.;           //jets.at(index_lljjW_j2).Pt();
-        cutop[32] = jets.at(0).M();  //(jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M();
-        cutop[33] = (lep.at(0)+jets.at(0)).M();           //(lep.at(0)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M();
-        cutop[34] = (lep.at(1)+jets.at(0)).M();           //(lep.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M();
-        cutop[35] = (lep.at(0)+lep.at(1)+jets.at(0)).M(); //(lep.at(0)+lep.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M();
-        cutop[36] = -999.; //jets.at(index_lljjW_j1).DeltaR(jets.at(index_lljjW_j2));
-        cutop[37] = lep.at(0).DeltaR( jets.at(0) );           //lep.at(0).DeltaR( jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2) );
-        cutop[38] = lep.at(1).DeltaR( jets.at(0) );           //lep.at(1).DeltaR( jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2) );
-        cutop[39] = lep.at(0).DeltaR( lep.at(1)+jets.at(0) ); //lep.at(0).DeltaR( lep.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2) );
-        cutop[40] = lep.at(1).DeltaR( lep.at(0)+jets.at(0) ); //lep.at(1).DeltaR( lep.at(0)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2) );
-
       }
       else{
         for(int i=12;i<=40;i++) cutop[i] = -999.;
@@ -741,45 +671,6 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
       cutop[46] = this_weight;
       cutop[47] = this_weight_err;
-      cutop[48] = fatjets.size();
-
-      if(fatjets.size() >= 1){
-
-        snu::KFatJet fatjet = fatjets.at(0);
-        snu::KFatJet fatjet_W = fatjets.at(index_fjW);
-
-        cutop[49] = fatjet.Pt();
-        cutop[50] = fatjet.M();
-        cutop[51] = fatjet.PrunedMass();
-        cutop[52] = fatjet.SoftDropMass();
-        cutop[53] = fatjet.Tau2()/fatjet.Tau1();
-        cutop[54] = fatjet.Tau3()/fatjet.Tau2();
-        cutop[55] = (lep.at(0)+fatjet).M();
-        cutop[56] = (lep.at(1)+fatjet).M();
-        cutop[57] = (lep.at(0)+lep.at(1)+fatjet).M();
-        cutop[58] = lep.at(0).DeltaR( fatjet );
-        cutop[59] = lep.at(1).DeltaR( fatjet );
-        cutop[60] = lep.at(0).DeltaR( lep.at(1)+fatjet );
-        cutop[61] = lep.at(1).DeltaR( lep.at(0)+fatjet );
-
-        cutop[62] = fatjet_W.Pt();
-        cutop[63] = fatjet_W.M();
-        cutop[64] = fatjet_W.PrunedMass();
-        cutop[65] = fatjet_W.SoftDropMass();
-        cutop[66] = fatjet_W.Tau2()/fatjet_W.Tau1();
-        cutop[67] = fatjet_W.Tau3()/fatjet_W.Tau2();
-        cutop[68] = (lep.at(0)+fatjet_W).M();
-        cutop[69] = (lep.at(1)+fatjet_W).M();
-        cutop[70] = (lep.at(0)+lep.at(1)+fatjet_W).M();
-        cutop[71] = lep.at(0).DeltaR( fatjet_W );
-        cutop[72] = lep.at(1).DeltaR( fatjet_W );
-        cutop[73] = lep.at(0).DeltaR( lep.at(1)+fatjet_W );
-        cutop[74] = lep.at(1).DeltaR( lep.at(0)+fatjet_W );
-
-      }
-      else{
-        for(int i=49;i<=74;i++) cutop[i] = -999.;
-      }
 
       FillNtp("Ntp_"+Suffix+"_Preselection_SS",cutop);
 
@@ -801,46 +692,46 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
           //=========================
 
           //==== SS+OS
-          FillDiLeptonPlot(this_suffix+"_AllCharge", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
+          FillDiLeptonPlot(this_suffix+"_AllCharge", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
           //==== SS
           if(isSS){
-            FillDiLeptonPlot(this_suffix+"_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
+            FillDiLeptonPlot(this_suffix+"_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
             FillHist("LeptonType_"+this_suffix+"_SS", lep.at(0).GetType(), 1., 0., 50., 50);
             FillHist("LeptonType_"+this_suffix+"_SS", lep.at(1).GetType(), 1., 0., 50., 50);
           }
           //==== OS
           else{
-            FillDiLeptonPlot(this_suffix+"_OS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
+            FillDiLeptonPlot(this_suffix+"_OS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
           }
 
           //==== OffZ
           if(isOffZ){
 
             //==== SS+OS
-            FillDiLeptonPlot(this_suffix+"_OffZ_AllCharge", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
+            FillDiLeptonPlot(this_suffix+"_OffZ_AllCharge", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
 
             //==== SS
             if(isSS){
-              FillDiLeptonPlot(this_suffix+"_OffZ_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
+              FillDiLeptonPlot(this_suffix+"_OffZ_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
             }
             //==== OS
             else{
-              FillDiLeptonPlot(this_suffix+"_OffZ_OS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
+              FillDiLeptonPlot(this_suffix+"_OffZ_OS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
             }
 
           } // Off-Z
           else{
 
             //==== SS+OS
-            FillDiLeptonPlot(this_suffix+"_OnZ_AllCharge", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
+            FillDiLeptonPlot(this_suffix+"_OnZ_AllCharge", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
 
             //==== SS
             if(isSS){
-              FillDiLeptonPlot(this_suffix+"_OnZ_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
+              FillDiLeptonPlot(this_suffix+"_OnZ_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
             }
             //==== OS
             else{
-              FillDiLeptonPlot(this_suffix+"_OnZ_OS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
+              FillDiLeptonPlot(this_suffix+"_OnZ_OS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
             }
 
           }
@@ -863,12 +754,12 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
             //==== Filling Histograms
             //=========================
 
-            FillDiLeptonPlot(this_suffix+"_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
+            FillDiLeptonPlot(this_suffix+"_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
             if(isOffZ){
-              FillDiLeptonPlot(this_suffix+"_OffZ_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
+              FillDiLeptonPlot(this_suffix+"_OffZ_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
             }
             else{
-              FillDiLeptonPlot(this_suffix+"_OnZ_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
+              FillDiLeptonPlot(this_suffix+"_OnZ_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
             }
             
           } // END fill chargeflip only for DiElectron OS
@@ -954,7 +845,7 @@ void DiLeptonAnalyzer::MakeHistograms(){
   AnalyzerCore::MakeHistograms();
   Message("Made histograms", INFO);
 
-  MakeNtp("Ntp_DiElectron_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:Nfatjets:FatJet_Pt:m_fatjet:FatJet_PrunedMass:FatJet_SoftDropMass:FatJet_Tau21:FatJet_Tau32:m_Leadlfatjet:m_SubLeadlfatjet:m_llfatjet:DeltaRLeadl_fatjet:DeltaRSubLeadl_fatjet:DeltaRLeadl_SubLeadlfatjet:DeltaRSubLeadl_Leadlfatjet:FatJet_Wclosest_Pt:m_fatjet_Wclosest:FatJet_Wclosest_PrunedMass:FatJet_Wclosest_SoftDropMass:FatJet_Wclosest_Tau21:FatJet_Wclosest_Tau32:m_Leadlfatjet_Wclosest:m_SubLeadlfatjet_Wclosest:m_llfatjet_Wclosest:DeltaRLeadl_fatjet_Wclosest:DeltaRSubLeadl_fatjet_Wclosest:DeltaRLeadl_SubLeadlfatjet_Wclosest:DeltaRSubLeadl_Leadlfatjet_Wclosest");
+  MakeNtp("Ntp_DiElectron_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err");
 
 
 
@@ -984,7 +875,6 @@ void DiLeptonAnalyzer::FillDiLeptonPlot(
   std::vector< snu::KJet > jets,
   std::vector< snu::KJet > jets_fwd,
   std::vector< snu::KJet > jets_nolepveto,
-  std::vector< snu::KFatJet > fatjets,
   double thisweight,
   double thieweighterr
   ){
@@ -1000,7 +890,6 @@ void DiLeptonAnalyzer::FillDiLeptonPlot(
   FillHist("Nbjets_"+histsuffix, nbjets, thisweight, 0., 10., 10);
   FillHist("Nbjets_nolepveto_"+histsuffix, nbjets_nolepveto, thisweight, 0., 10., 10);
   FillHist("Nbfwdjets_"+histsuffix, nbjets_fwd, thisweight, 0., 10., 10);
-  FillHist("Nfatjets_"+histsuffix, fatjets.size(), thisweight, 0., 10., 10);
   FillHist("Nvtx_"+histsuffix, n_vtx, thisweight, 0., 100., 100);
 
   FillHist("HT_"+histsuffix, HT, thisweight, 0., 2000., 2000);
@@ -1063,59 +952,9 @@ void DiLeptonAnalyzer::FillDiLeptonPlot(
     FillHist("m_lljjptorder_"+histsuffix, (leptons.at(0)+leptons.at(1)+jets.at(0)+jets.at(1)).M(), thisweight, 0., 2000., 2000);
   }
 
-  if(jets.size() == 1){
-    FillHist("m_j_"+histsuffix, jets.at(0).M(), thisweight, 0., 2000., 2000);
-    FillHist("m_Leadlj_"+histsuffix, (leptons.at(0)+jets.at(0)).M(), thisweight, 0., 2000., 2000);
-    FillHist("m_SubLeadlj_"+histsuffix, (leptons.at(1)+jets.at(0)).M(), thisweight, 0., 2000., 2000);
-    FillHist("m_llj_"+histsuffix, (leptons.at(0)+leptons.at(1)+jets.at(0)).M(), thisweight, 0., 2000., 2000);
-    FillHist("DeltaRLeadl_j_"+histsuffix, leptons.at(0).DeltaR( jets.at(0) ), thisweight, 0., 10., 100);
-    FillHist("DeltaRSubLeadl_j_"+histsuffix, leptons.at(1).DeltaR( jets.at(0) ), thisweight, 0., 10., 100);
-    FillHist("DeltaRLeadl_SubLeadlj_"+histsuffix, leptons.at(0).DeltaR( leptons.at(1)+jets.at(0) ), thisweight, 0., 10., 100);
-    FillHist("DeltaRSubLeadl_Leadlj_"+histsuffix, leptons.at(1).DeltaR( leptons.at(0)+jets.at(0) ), thisweight, 0., 10., 100);
-  }
-
-  if(fatjets.size() >= 1){
-    snu::KFatJet fatjet = fatjets.at(0);
-    snu::KFatJet fatjet_W = fatjets.at(index_fjW);
-
-    //==== Leading FatJet
-    FillHist("m_fatjet_"+histsuffix, fatjet.M(), thisweight, 0., 2000., 2000);
-    FillHist("FatJet_Pt_"+histsuffix, fatjet.Pt(), thisweight, 0., 2000., 2000);
-    FillHist("FatJet_Eta_"+histsuffix, fatjet.Eta(), thisweight, -3., 3., 60);
-    FillHist("FatJet_PrunedMass_"+histsuffix, fatjet.PrunedMass(), thisweight, 0., 2000., 2000);
-    FillHist("FatJet_SoftDropMass_"+histsuffix, fatjet.SoftDropMass(), thisweight, 0., 2000., 2000);
-    FillHist("FatJet_Tau21_"+histsuffix, fatjet.Tau2()/fatjet.Tau1(), thisweight, 0., 2., 200);
-    FillHist("FatJet_Tau32_"+histsuffix, fatjet.Tau3()/fatjet.Tau2(), thisweight, 0., 2., 200);
-    FillHist("m_Leadlfatjet_"+histsuffix, (leptons.at(0)+fatjet).M(), thisweight, 0., 2000., 2000);
-    FillHist("m_SubLeadlfatjet_"+histsuffix, (leptons.at(1)+fatjet).M(), thisweight, 0., 2000., 2000);
-    FillHist("m_llfatjet_"+histsuffix, (leptons.at(0)+leptons.at(1)+fatjet).M(), thisweight, 0., 2000., 2000);
-    FillHist("DeltaRLeadl_fatjet_"+histsuffix, leptons.at(0).DeltaR( fatjet ), thisweight, 0., 10., 100);
-    FillHist("DeltaRSubLeadl_fatjet_"+histsuffix, leptons.at(1).DeltaR( fatjet ), thisweight, 0., 10., 100);
-    FillHist("DeltaRLeadl_SubLeadlfatjet_"+histsuffix, leptons.at(0).DeltaR( leptons.at(1)+fatjet ), thisweight, 0., 10., 100);
-    FillHist("DeltaRSubLeadl_Leadlfatjet_"+histsuffix, leptons.at(1).DeltaR( leptons.at(0)+fatjet ), thisweight, 0., 10., 100);
-
-    //==== W closest FatJet
-    FillHist("m_fatjet_Wclosest_"+histsuffix, fatjet_W.M(), thisweight, 0., 2000., 2000);
-    FillHist("FatJet_Wclosest_Pt_"+histsuffix, fatjet_W.Eta(), thisweight, 0., 2000., 2000);
-    FillHist("FatJet_Wclosest_Eta_"+histsuffix, fatjet_W.Eta(), thisweight, -3., 3., 60);
-    FillHist("FatJet_Wclosest_PrunedMass_"+histsuffix, fatjet_W.PrunedMass(), thisweight, 0., 2000., 2000);
-    FillHist("FatJet_Wclosest_SoftDropMass_"+histsuffix, fatjet_W.SoftDropMass(), thisweight, 0., 2000., 2000);
-    FillHist("FatJet_Wclosest_Tau21_"+histsuffix, fatjet_W.Tau2()/fatjet_W.Tau1(), thisweight, 0., 2., 200);
-    FillHist("FatJet_Wclosest_Tau32_"+histsuffix, fatjet_W.Tau3()/fatjet_W.Tau2(), thisweight, 0., 2., 200);
-    FillHist("m_Leadlfatjet_Wclosest_"+histsuffix, (leptons.at(0)+fatjet_W).M(), thisweight, 0., 2000., 2000);
-    FillHist("m_SubLeadlfatjet_Wclosest_"+histsuffix, (leptons.at(1)+fatjet_W).M(), thisweight, 0., 2000., 2000);
-    FillHist("m_llfatjet_Wclosest_"+histsuffix, (leptons.at(0)+leptons.at(1)+fatjet_W).M(), thisweight, 0., 2000., 2000);
-    FillHist("DeltaRLeadl_fatjet_Wclosest_"+histsuffix, leptons.at(0).DeltaR( fatjet_W ), thisweight, 0., 10., 100);
-    FillHist("DeltaRSubLeadl_fatjet_Wclosest_"+histsuffix, leptons.at(1).DeltaR( fatjet_W ), thisweight, 0., 10., 100);
-    FillHist("DeltaRLeadl_SubLeadlfatjet_Wclosest_"+histsuffix, leptons.at(0).DeltaR( leptons.at(1)+fatjet_W ), thisweight, 0., 10., 100);
-    FillHist("DeltaRSubLeadl_Leadlfatjet_Wclosest_"+histsuffix, leptons.at(1).DeltaR( leptons.at(0)+fatjet_W ), thisweight, 0., 10., 100);
-
-
-  }
-
   if(thieweighterr!=0.){
-    FillDiLeptonPlot(histsuffix+"_up",   leptons, jets, jets_fwd, jets_nolepveto, fatjets, thisweight + thieweighterr, 0.);
-    FillDiLeptonPlot(histsuffix+"_down", leptons, jets, jets_fwd, jets_nolepveto, fatjets, thisweight - thieweighterr, 0.);
+    FillDiLeptonPlot(histsuffix+"_up",   leptons, jets, jets_fwd, jets_nolepveto, thisweight + thieweighterr, 0.);
+    FillDiLeptonPlot(histsuffix+"_down", leptons, jets, jets_fwd, jets_nolepveto, thisweight - thieweighterr, 0.);
   }
 
 }
@@ -1434,66 +1273,24 @@ void DiLeptonAnalyzer::get_eventweight(std::vector<snu::KMuon> muons, std::vecto
 
 }
 
-/*
 
-    double cutop[100];
-    cutop[] = lep.at(0).Pt();
-    cutop[] = lep.at(1).Pt();
-    cutop[] = lep.at(0).DeltaR( lep.at(1) );
-    cutop[] = (lep.at(0)+lep.at(1)).M();
-    cutop[] = isSS ? 0 : 1;
-    cutop[] = isOffZ ? 0 : 1;
 
-    cutop[] = jets.size();
-    cutop[] = nbjets;
-    cutop[] = jets_nolepveto.size();
-    cutop[] = nbjets_nolepveto;
-    cutop[] = jets_fwd.size();
-    cutop[] = nbjets_fwd;
 
-    //==== Two Jets
-    if(jets.size() >= 2){
 
-      cutop[] = jets.at(0).Pt();
-      cutop[] = jets.at(1).Pt();
-      cutop[] = jets.at(0).DeltaR( jets.at(1) );
-      cutop[] = (jets.at(0)+jets.at(1)).M();
-      cutop[] = (lep.at(0)+jets.at(0)+jets.at(1)).M();
-      cutop[] = (lep.at(1)+jets.at(0)+jets.at(1)).M();
-      cutop[] = (lep.at(0)+lep.at(1)+jets.at(0)+jets.at(1)).M();
 
-      cutop[] = jets.at(index_jjW_j1).Pt();
-      cutop[] = jets.at(index_jjW_j2).Pt();
-      cutop[] = jets.at(index_jjW_j1).DeltaR( jets.at(index_jjW_j2) );
-      cutop[] = (jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M();
-      cutop[] = (lep.at(0)+jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M();
-      cutop[] = (lep.at(1)+jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M();
-      cutop[] = (lep.at(0)+lep.at(1)+jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M();
 
-      cutop[] = jets.at(index_lljjW_j1).Pt();
-      cutop[] = jets.at(index_lljjW_j2).Pt();
-      cutop[] = jets.at(index_lljjW_j1).DeltaR( jets.at(index_lljjW_j2) );
-      cutop[] = (jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M();
-      cutop[] = (lep.at(0)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M();
-      cutop[] = (lep.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M();
-      cutop[] = (lep.at(0)+lep.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M();
 
-    }
-    else{
 
-    }
 
-    //==== Two Forward Jets
-    if(jets_fwd.size() >= 2){
-      cutop[] = jets_fwd.at(0).DeltaR( jets_fwd.at(1) );
-    }
 
-    //==== Transverse Energies
-    cutop[] = MET;
-    cutop[] = ST;
-    cutop[] = HT;
-    cutop[] = LT;
 
-*/
+
+
+
+
+
+
+
+
 
 
