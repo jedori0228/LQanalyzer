@@ -34,7 +34,13 @@ class DiLeptonAnalyzer : public AnalyzerCore {
 
   //==== FR
   double weight_fr, weight_err_fr;
+  //==== central
   TH2D *hist_Muon_FR, *hist_Muon_PR, *hist_Electron_FR, *hist_Electron_PR;
+  //==== awaypt change
+  TString MuFR_key, ElFR_key;
+  std::map< TString, TH2D* > hist_Muon_FR_syst;
+  std::map< TString, TH2D* > hist_Electron_FR_syst;
+
   double CorrPt(TLorentzVector lep, double T_iso);
   double CorrPt(KLepton lep, double T_iso);
   double CorrPt(snu::KMuon lep, double T_iso);

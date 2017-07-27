@@ -32,13 +32,13 @@ declare -a QCD_FR=(
 )
 
 declare -a QCD_FR_EM=(
-'QCD_Pt-20to30_EMEnriched' 'QCD_Pt-30to50_EMEnriched' 'QCD_Pt-50to80_EMEnriched' 'QCD_Pt-80to120_EMEnriched' 'QCD_Pt-120to170_EMEnriched' 'QCD_Pt-170to300_EMEnriched' 'QCD_Pt-300toInf_EMEnriched'
+'QCD_Pt-20to30_EMEnriched' 'QCD_Pt-30to50_EMEnriched' 'QCD_Pt-50to80_EMEnriched' 'QCD_Pt-80to120_EMEnriched' 'QCD_Pt-120to170_EMEnriched' 'QCD_Pt-170to300_EMEnriched' 'QCD_Pt-300toInf_EMEnriched' 'qcd_15to20_bctoe' 'qcd_170to250_bctoe' 'qcd_20to30_bctoe' 'qcd_250toinf_bctoe' 'qcd_30to80_bctoe' 'qcd_80to170_bctoe'
 )
+
 
 ### FR MC Closure ###
 declare -a FR_MC_Closure=(
-'DYJets_10to50' 'DYJets' 'DYJets_MG_10to50' 'DYJets_MG'
-'TTJets_aMC' 'TTLL_powheg' 'TTLJ_powheg'
+'TT_powheg' 'DYJets' 'WJets' 'WJets_MG' 'DYtoEE' 'DYJets_MG'
 )
 
 ### SR ###
@@ -181,10 +181,7 @@ declare -a ghent=(
 
 
 declare -a test=(
-'DYJets' 'TTJets_aMC' 'ZGto2LG'
-'DYJets_MG' 'TTLL_powheg'
-'WJets' 'WGtoLNuG'
-'WZTo3LNu_powheg' 'ZZTo4L_powheg'
+'qcd_15to20_bctoe' 'qcd_170to250_bctoe' 'qcd_20to30_bctoe' 'qcd_250toinf_bctoe' 'qcd_30to80_bctoe' 'qcd_80to170_bctoe'
 )
 
 declare -a test2=(

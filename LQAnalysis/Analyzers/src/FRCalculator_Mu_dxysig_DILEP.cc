@@ -89,6 +89,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
   snu::KEvent Evt = eventbase->GetEvent();
   METauto = Evt.MET();
+  METphiauto = Evt.METPhi();
 
   //============================================
   //==== Apply the gen weight (for NLO, +1,-1)
@@ -211,46 +212,90 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
   //==== 2) back-to-back dijet topology
 
+  bool DijetFake = std::find(k_flags.begin(), k_flags.end(), "DijetFake") != k_flags.end();
+  bool DijetPrompt= std::find(k_flags.begin(), k_flags.end(), "DijetPrompt") != k_flags.end();
+
   //==== tag jet collections
   //==== pt > 40 GeV
-  //==== |eta| > 2.4
   //==== LeptonVeto
-  std::vector<snu::KJet> jetColl_tag = GetJets("JET_HN", 40., 2.4);
-  std::vector<snu::KMuon> TEST_tight = GetMuons("MUON_HN_TIGHT", false);
-  std::vector<snu::KMuon> TEST_loose = GetMuons("MUON_HN_LOOSE", false);
+  std::vector<snu::KJet> jetColl_tag = GetJets("JET_NOLEPTONVETO");
+  std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSE", true);
 
-  if( PassTrigger("HLT_Mu17_v") || PassTrigger("HLT_Mu8_v") ){
+  std::vector<snu::KMuon> hnloose;
+  hnloose.clear();
+  for(unsigned int i=0; i<hnloose_raw.size(); i++){
+    if(DijetFake){
+      if( !TruthMatched( hnloose_raw.at(i)) ){
+        hnloose.push_back( hnloose_raw.at(i) );
+      }
+    }
+    else if(DijetPrompt){
+      if( TruthMatched( hnloose_raw.at(i)) ){
+        hnloose.push_back( hnloose_raw.at(i) );
+      }
+    }
+    else{
+      return;
+    }
 
-    //==== dijet event seletion
-    if(jetColl_tag.size() != 0){
-      if(TEST_loose.size() == 1){
+  }
 
-        Double_t this_weight_Loose = weight*GetPrescale(TEST_loose, PassTrigger("HLT_Mu8_v"), PassTrigger("HLT_Mu17_v"));
+  double AwayjetPts[] = {20, 30, 40, 60};;
 
-        snu::KMuon muon = TEST_loose.at(0);
+  if( PassTriggerOR(AllHLTs) ){
 
-        float dR=999.9, dPhi=999.9, ptmu_ptjet=999.9;
-        bool histfilled = false;
+    if( (jetColl_tag.size() != 0) && (hnloose.size() == 1) ){
+
+      snu::KMuon muon = hnloose.at(0);
+
+      double weight_by_pt(0.);
+      for(std::map< TString, std::vector<double> >::iterator it=HLT_ptrange.begin(); it!=HLT_ptrange.end(); it++){
+        double tmp = GetTriggerWeightByPtRange(it->first, it->second, hnloose, For_HLT_Mu3_PFJet40_v);
+        if(tmp!=0.){
+          weight_by_pt = tmp;
+          break;
+        }
+      }
+
+      double this_weight = weight_by_pt*weight;
+
+      bool IsThisTight = PassID( muon, "MUON_HN_TIGHT" );
+
+      TLorentzVector metvec;
+      metvec.SetPtEtaPhiE( METauto, 0, METphiauto, METauto );
+      double MTval = AnalyzerCore::MT( muon, metvec );
+
+      for(int j=0; j<4; j++){
+
+        double AwayjetPt = AwayjetPts[j];
+
+        bool histfilled = false; //Fill only one event at most
         for(unsigned int i=0; i<jetColl_tag.size(); i++){
 
           if(histfilled) break;
-          dR = jetColl_tag.at(i).DeltaR(muon);
-          dPhi = fabs(jetColl_tag.at(i).DeltaPhi(muon));
-          ptmu_ptjet = muon.Pt() / jetColl_tag.at(i).Pt();
-          FillHist("SingleMuonTrigger_Dijet_dR", dR, this_weight_Loose, 0., 10., 100);
+          snu::KJet jet = jetColl_tag.at(i);
+          if( jet.Pt() < AwayjetPt ) continue;
 
-          if( dR > 1.0 && ptmu_ptjet < 1. && dPhi > 2.5 ){
-            FillDenAndNum("SingleMuonTrigger_Dijet", muon, this_weight_Loose, (TEST_tight.size() == 1) );
-            if(TEST_tight.size() == 1){
-              histfilled=true;
-            }
+          double dPhi = muon.DeltaPhi( jet );
+
+          if( (dPhi > 2.5) && (jet.Pt()/muon.Pt() > 1.) ){ //&& (METauto < 20.) && (MTval < 25.) ){
+
+            FillDenAndNum("SingleMuonTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10), muon, this_weight, IsThisTight);
+
+            histfilled = true;
+
           }
 
-        } // tag jet for loop
 
-      } // only one muon
-    } // tag jet exist
-  } // trigger
+        } // END Tag jet loop
+
+      }
+
+    } // Tag Jet and muon exist
+
+  } // END PassTriggerOR
+
+  if(DijetFake || DijetPrompt) return;
 
   //=========================================================
   //==== Large dXYSig Muon definitions for systematic study

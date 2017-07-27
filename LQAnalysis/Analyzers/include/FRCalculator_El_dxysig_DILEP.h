@@ -36,7 +36,7 @@ class FRCalculator_El_dxysig_DILEP : public AnalyzerCore {
   //
   /// Vectors for output objetcs
   TH2D *FR_sampleA;
-  double METauto;
+  double METauto, METphiauto;
 
 
   ClassDef ( FRCalculator_El_dxysig_DILEP, 1);

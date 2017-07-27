@@ -89,6 +89,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
   snu::KEvent Evt = eventbase->GetEvent();
   METauto = Evt.MET();
+  METphiauto = Evt.METPhi();
 
   //============================================
   //==== Apply the gen weight (for NLO, +1,-1)
@@ -210,46 +211,85 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
   //==== 2) back-to-back dijet topology
 
+  bool DijetFake = std::find(k_flags.begin(), k_flags.end(), "DijetFake") != k_flags.end();
+  bool DijetPrompt= std::find(k_flags.begin(), k_flags.end(), "DijetPrompt") != k_flags.end();
+
   //==== tag jet collections
   //==== pt > 40 GeV
-  //==== |eta| > 2.4
   //==== LeptonVeto
-  std::vector<snu::KJet> jetColl_tag = GetJets("JET_HN", 40., 2.4);
-  std::vector<snu::KElectron> TEST_tight = GetElectrons(false, false, "ELECTRON_HN_TIGHTv4");
-  std::vector<snu::KElectron> TEST_loose = GetElectrons(false, false, "ELECTRON_HN_FAKELOOSE");
+  std::vector<snu::KJet> jetColl_tag = GetJets("JET_NOLEPTONVETO");
+  std::vector<snu::KElectron> mvaloose_raw = GetElectrons(false, true, "ELECTRON_MVA_FAKELOOSE");
 
-  if( PassTrigger("HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v") || PassTrigger("HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v") ){
+  std::vector<snu::KElectron> mvaloose;
+  mvaloose.clear();
+  for(unsigned int i=0; i<mvaloose_raw.size(); i++){
+    if(DijetFake){
+      if( !TruthMatched( mvaloose_raw.at(i), false ) ){
+        mvaloose.push_back( mvaloose_raw.at(i) );
+      }
+    }
+    else if(DijetPrompt){
+      if( TruthMatched( mvaloose_raw.at(i), false ) ){
+        mvaloose.push_back( mvaloose_raw.at(i) );
+      }
+    }
+    else{
+      return;
+    }
+    
+  }
 
-    //==== dijet event seletion
-    if(jetColl_tag.size() != 0){
-      if(TEST_loose.size() == 1){
+  double AwayjetPt = 40.;
 
-        Double_t this_weight_Loose = weight*GetPrescale(TEST_loose, PassTrigger("HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v"), PassTrigger("HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v"));
+  if( PassTriggerOR(AllHLTs) ){
 
-        snu::KElectron electron = TEST_loose.at(0);
+    if( (jetColl_tag.size() != 0) && (mvaloose.size() == 1) ){
 
-        float dR=999.9, dPhi=999.9, ptmu_ptjet=999.9;
-        bool histfilled = false;
-        for(unsigned int i=0; i<jetColl_tag.size(); i++){
+      snu::KElectron electron = mvaloose.at(0);
 
-          if(histfilled) break;
-          dR = jetColl_tag.at(i).DeltaR(electron);
-          dPhi = fabs(jetColl_tag.at(i).DeltaPhi(electron));
-          ptmu_ptjet = electron.Pt() / jetColl_tag.at(i).Pt();
-          FillHist("SingleElectronTrigger_Dijet_dR", dR, this_weight_Loose, 0., 10., 100);
+      double weight_by_pt(0.);
+      for(std::map< TString, std::vector<double> >::iterator it=HLT_ptrange.begin(); it!=HLT_ptrange.end(); it++){
+        double tmp = GetTriggerWeightByPtRange(it->first, it->second, mvaloose, For_HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v);
+        if(tmp!=0.){
+          weight_by_pt = tmp;
+          break;
+        }
+      }
 
-          if( dR > 1.0 && ptmu_ptjet < 1. && dPhi > 2.5 ){
-            FillDenAndNum("SingleElectronTrigger_Dijet", electron, this_weight_Loose, (TEST_tight.size() == 1) );
-            if(TEST_tight.size() == 1){
-              histfilled=true;
-            }
-          }
+      double this_weight = weight_by_pt*weight;
 
-        } // tag jet for loop
+      bool IsThisTight = PassID( electron, "ELECTRON_HN_TIGHTv4" );
 
-      } // only one electron
-    } // tag jet exist
-  } // trigger
+      TLorentzVector metvec;
+      metvec.SetPtEtaPhiE( METauto, 0, METphiauto, METauto );
+      double MTval = AnalyzerCore::MT( electron, metvec );
+
+      bool histfilled = false; //Fill only one event at most
+      for(unsigned int i=0; i<jetColl_tag.size(); i++){
+
+        if(histfilled) break;
+        snu::KJet jet = jetColl_tag.at(i);
+        if( jet.Pt() < AwayjetPt ) continue;
+
+        double dPhi = electron.DeltaPhi( jet );
+
+        if( (dPhi > 2.5) && (jet.ChargedEMEnergyFraction() < 0.65) ){ //&& (METauto < 20.) && (MTval < 25.) ){
+
+          FillDenAndNum("SingleElectronTrigger_Dijet", electron, this_weight, IsThisTight);
+
+          histfilled = true;
+
+        }
+        
+
+      } // END Tag jet loop
+  
+
+    } // Tag Jet and electron exist
+
+  } // END PassTriggerOR
+
+  if(DijetFake || DijetPrompt) return;
 
   //=========================================================
   //==== Large dXYSig Electron definitions for systematic study
@@ -920,8 +960,12 @@ void FRCalculator_El_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KElectron 
   float etaarray_2 [] = {0.0, 1.479, 2.5};
   float ptarray_2 [] = {10.,15.,40.,200.};
 
-  double TightISO = 0.07;
+  double TightISO = 0.08;
   double conept = ElectronConePt(electron,TightISO);
+
+  TLorentzVector METvec;
+  METvec.SetPtEtaPhiE(METauto, 0, METphiauto, METauto);
+  double this_mt = MT(electron, METvec);
 
   FillHist(prefix+"_eta_F0", electron.Eta(), thisweight, -3., 3., 30);
   FillHist(prefix+"_pt_F0", electron.Pt(), thisweight, 0., 200., 200);
@@ -934,6 +978,8 @@ void FRCalculator_El_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KElectron 
   FillHist(prefix+"_events_pt_vs_eta_F0", electron.Pt(), fabs(electron.Eta()), thisweight, ptarray, 11, etaarray, 4);
   FillHist(prefix+"_events_pt_cone_vs_eta_F0", conept, fabs(electron.Eta()), thisweight, ptarray, 11, etaarray, 4);
   FillHist(prefix+"_PFMET_F0", METauto, thisweight, 0., 1000., 1000);
+  FillHist(prefix+"_MT_F0", this_mt, thisweight, 0., 1000., 1000);
+  FillHist(prefix+"_MET_vs_MT_F0", METauto, this_mt, thisweight, 0., 1000., 1000, 0., 1000., 1000);
 
   if( isTight ){
     FillHist(prefix+"_eta_F", electron.Eta(), thisweight, -3., 3., 30);
@@ -947,6 +993,8 @@ void FRCalculator_El_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KElectron 
     FillHist(prefix+"_events_pt_vs_eta_F", electron.Pt(), fabs(electron.Eta()), thisweight, ptarray, 11, etaarray, 4);
     FillHist(prefix+"_events_pt_cone_vs_eta_F", conept, fabs(electron.Eta()), thisweight, ptarray, 11, etaarray, 4);
     FillHist(prefix+"_PFMET_F", METauto, thisweight, 0., 1000., 1000);
+    FillHist(prefix+"_MT_F", this_mt, thisweight, 0., 1000., 1000);
+    FillHist(prefix+"_MET_vs_MT_F", METauto, this_mt, thisweight, 0., 1000., 1000, 0., 1000., 1000);
 
   }
 

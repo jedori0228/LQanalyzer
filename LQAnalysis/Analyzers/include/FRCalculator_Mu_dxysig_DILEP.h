@@ -38,7 +38,7 @@ class FRCalculator_Mu_dxysig_DILEP : public AnalyzerCore {
   std::vector<snu::KMuon> out_muons;
   std::vector<snu::KElectron> out_electrons;
   TH2D *FR_sampleA;
-  double METauto;
+  double METauto, METphiauto;
 
 
   ClassDef ( FRCalculator_Mu_dxysig_DILEP, 1);
