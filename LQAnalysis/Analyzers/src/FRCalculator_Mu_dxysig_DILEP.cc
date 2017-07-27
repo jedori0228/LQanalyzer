@@ -944,7 +944,7 @@ double FRCalculator_Mu_dxysig_DILEP::GetTriggerWeightByPtRange(TString hltname, 
     double maxpt = ptrange.at(1);
 
     if(PassTrigger(hltname)){
-      if(muon.Pt() >= minpt && muon.Pt() < maxpt){
+      if(muon.MiniAODPt() >= minpt && muon.MiniAODPt() < maxpt){
         prescale_trigger = WeightByTrigger(hltname, TargetLumi) ;
       }
 
