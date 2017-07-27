@@ -278,7 +278,13 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
           double dPhi = muon.DeltaPhi( jet );
 
-          if( (dPhi > 2.5) && (jet.Pt()/muon.Pt() > 1.) ){ //&& (METauto < 20.) && (MTval < 25.) ){
+          bool UseEvent = false;
+          //==== If QCD, don't have to require MET/MT
+          if( DijetFake )        UseEvent = (dPhi > 2.5) && (jet.Pt()/muon.Pt() > 1.);
+          //==== If not, use it to remove W events
+          else if( DijetPrompt ) UseEvent = (dPhi > 2.5) && (jet.Pt()/muon.Pt() > 1.) && (METauto < 20.) && (MTval < 25.);
+
+          if( UseEvent ){
 
             FillDenAndNum("SingleMuonTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10), muon, this_weight, IsThisTight);
 
