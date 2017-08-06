@@ -65,10 +65,10 @@ void DiLeptonAnalyzer::InitialiseAnalysis() throw( LQError ) {
 
   //==== Get Fake
 
-  TFile *file_Muon_FR = new TFile( lqdir+"/data/Fake/80X/FakeRate13TeV_muon_2016_opt_all.root");
-  TFile *file_Muon_FR_QCD = new TFile(lqdir+"/JskimData/FR/Muon_QCD_FR.root"); 
-  TFile *file_Electron_FR = new TFile( lqdir+"/data/Fake/80X/FakeRate13TeV_2016_hnid.root");
-  TFile *file_Electron_FR_QCD = new TFile(lqdir+"/JskimData/FR/Electron_QCD_FR.root");
+  TFile *file_Muon_FR         = new TFile( lqdir+"/JskimData/FR/Muon_Data_FR.root");
+  TFile *file_Muon_FR_QCD     = new TFile( lqdir+"/JskimData/FR/Muon_QCD_FR.root"); 
+  TFile *file_Electron_FR     = new TFile( lqdir+"/JskimData/FR/Electron_Data_FR.root");
+  TFile *file_Electron_FR_QCD = new TFile( lqdir+"/JskimData/FR/Electron_QCD_FR.root");
 
   gROOT->cd();
   TDirectory* tempDir = 0;
@@ -87,19 +87,20 @@ void DiLeptonAnalyzer::InitialiseAnalysis() throw( LQError ) {
   }
   tempDir->cd();
 
-  hist_Electron_FR = (TH2D*)file_Electron_FR->Get("FakeRate_ptcorr_eta40")->Clone();
-  hist_Muon_FR = (TH2D*)file_Muon_FR->Get("FakeRate_40_ptcorr_etaSNUTightdijet_0.07_0.005_3_0.04")->Clone();
+  hist_Muon_FR = (TH2D*)file_Muon_FR->Get("SingleMuonTrigger_Dijet_Awayjet_40_events_pt_cone_vs_eta_F")->Clone();
+  hist_Electron_FR = (TH2D*)file_Electron_FR->Get("SingleElectronTrigger_Dijet_Awayjet_40_events_pt_cone_vs_eta_F")->Clone();
 
   //==== away pt
-  TString histname_Electron_FR_syst[] = {"FakeRate_ptcorr_eta20", "FakeRate_ptcorr_eta30", "FakeRate_ptcorr_eta60"};
-  for(int i=0; i<3; i++) hist_Electron_FR_syst[ histname_Electron_FR_syst[i] ] = (TH2D*)file_Electron_FR->Get(histname_Electron_FR_syst[i])->Clone();
+  TString awayjetpt[3] = {"20", "30", "60"};
+  for(int i=0; i<3; i++){
+    hist_Muon_FR_syst["Awatjet_"+awayjetpt[i]]     = (TH2D*)file_Muon_FR->Get("SingleMuonTrigger_Dijet_Awayjet_"+awayjetpt[i]+"_events_pt_cone_vs_eta_F")->Clone();
+    hist_Electron_FR_syst["Awatjet_"+awayjetpt[i]] = (TH2D*)file_Electron_FR->Get("SingleElectronTrigger_Dijet_Awayjet_"+awayjetpt[i]+"_events_pt_cone_vs_eta_F")->Clone();
+  }
 
   //==== QCD
   hist_Muon_FR_syst["QCD"] = (TH2D*)file_Muon_FR_QCD->Get("Muon_QCD_FR")->Clone();
   hist_Electron_FR_syst["QCD"] = (TH2D*)file_Electron_FR_QCD->Get("Electron_QCD_FR")->Clone();
-  hist_Electron_FR_syst["QCD_AllOneElectron"] = (TH2D*)file_Electron_FR_QCD->Get("Electron_QCD_FR")->Clone();
   
-
   file_Muon_FR->Close();
   file_Muon_FR_QCD->Close();
   file_Electron_FR->Close();
@@ -662,17 +663,20 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         FRweights.push_back(weight_fr);
         FRweights_name.push_back("FakeRate_ptcorr_eta40");
 
-        ElFR_key = "FakeRate_ptcorr_eta20";
+        ElFR_key = "Awatjet_20";
+        MuFR_key = "Awatjet_20";
         get_eventweight(muons, electrons, isT, 0);
         FRweights.push_back(weight_fr);
         FRweights_name.push_back("FakeRate_ptcorr_eta20");
 
-        ElFR_key = "FakeRate_ptcorr_eta30";
+        ElFR_key = "Awatjet_30";
+        MuFR_key = "Awatjet_30";
         get_eventweight(muons, electrons, isT, 0);
         FRweights.push_back(weight_fr);
         FRweights_name.push_back("FakeRate_ptcorr_eta30");
 
-        ElFR_key = "FakeRate_ptcorr_eta60";
+        ElFR_key = "Awatjet_60";
+        MuFR_key = "Awatjet_60";
         get_eventweight(muons, electrons, isT, 0);
         FRweights.push_back(weight_fr);
         FRweights_name.push_back("FakeRate_ptcorr_eta60");
@@ -680,6 +684,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
         //==== reset
         ElFR_key = "";
+        MuFR_key = "";
       }
 
 
