@@ -128,7 +128,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //==== Get Jets
   //===============
 
-  std::vector<snu::KJet> jetColl_hn = GetJets("JET_NOLEPTONVETO", 30., 5.);
+  std::vector<snu::KJet> jetColl_hn = GetJets("JET_HN");
 
   int n_jets = jetColl_hn.size();
   int n_bjets=0;
@@ -173,6 +173,11 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //==== Call Loosest Electron
   //==========================
 
+  std::vector<snu::KMuon> muons_veto = GetMuons("MUON_HN_VETO");
+  std::vector<snu::KElectron> electrons_veto = GetElectrons("ELECTRON_HN_VETO");
+
+  if(muons_veto.size()!=0) return;
+
   std::vector<snu::KElectron> electrontriNodXYCutVLooseColl_raw = GetElectrons(false, true, "ELECTRON_HN_NODXYCUT_VLOOSE_lowestPtCut");
 
   //==================
@@ -194,14 +199,16 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   // HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v 30.397
   // HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v 16.43
 
+  //   float ptarray [] = {0., 10., 15., 25., 35., 50., 70.};
+
   std::map< TString, std::vector<double> > HLT_ptrange;
-  HLT_ptrange["HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v"].push_back(10.);
-  HLT_ptrange["HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v"].push_back(15.);
-  HLT_ptrange["HLT_Ele12_CaloIdL_TrackIdL_IsoVL_v"].push_back(15.);
+  HLT_ptrange["HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v"].push_back(10.); // 6.992
+  HLT_ptrange["HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v"].push_back(16.);
+  HLT_ptrange["HLT_Ele12_CaloIdL_TrackIdL_IsoVL_v"].push_back(16.); // 6.162
   HLT_ptrange["HLT_Ele12_CaloIdL_TrackIdL_IsoVL_v"].push_back(20.);
-  HLT_ptrange["HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v"].push_back(20.);
-  HLT_ptrange["HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v"].push_back(25.);
-  HLT_ptrange["HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v"].push_back(25.);
+  HLT_ptrange["HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v"].push_back(20.); // 30.397
+  HLT_ptrange["HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v"].push_back(27.);
+  HLT_ptrange["HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v"].push_back(27.); // 16.43
   HLT_ptrange["HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v"].push_back(9999.);
 
   std::vector<TString> AllHLTs;
@@ -217,39 +224,161 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //==== tag jet collections
   //==== pt > 40 GeV
   //==== LeptonVeto
-  std::vector<snu::KJet> jetColl_tag = GetJets("JET_NOLEPTONVETO");
-  std::vector<snu::KElectron> mvaloose_raw = GetElectrons(false, true, "ELECTRON_MVA_FAKELOOSE");
+  std::vector<snu::KJet> jetColl_tag = GetJets("JET_HN");
+  std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv2");
 
-  std::vector<snu::KElectron> mvaloose;
-  mvaloose.clear();
-  for(unsigned int i=0; i<mvaloose_raw.size(); i++){
-    if(DijetFake){
-      if( !TruthMatched( mvaloose_raw.at(i), false ) ){
-        mvaloose.push_back( mvaloose_raw.at(i) );
-      }
+  std::vector<snu::KElectron> hnloose;
+  hnloose.clear();
+  for(unsigned int i=0; i<hnloose_raw.size(); i++){
+
+    if(k_isdata){
+      hnloose.push_back( hnloose_raw.at(i) );
     }
-    else if(DijetPrompt){
-      if( TruthMatched( mvaloose_raw.at(i), false ) ){
-        mvaloose.push_back( mvaloose_raw.at(i) );
-      }
-    }
+
     else{
-      return;
+      if(DijetFake){
+        if( !TruthMatched( hnloose_raw.at(i), false ) ){
+          hnloose.push_back( hnloose_raw.at(i) );
+        }
+      }
+      else if(DijetPrompt){
+        if( TruthMatched( hnloose_raw.at(i), false ) ){
+          hnloose.push_back( hnloose_raw.at(i) );
+        }
+      }
+      else{
+        return;
+      }
     }
     
   }
 
-  double AwayjetPt = 40.;
+/*
+  //==== 2-0) Loose Scan
+
+  std::vector<snu::KElectron> nocutel_raw = GetElectrons(false, true, "ELECTRON_HN_NOCUT");
+  std::vector<snu::KElectron> nocutel;
+  nocutel.clear();
+
+  for(unsigned int i=0; i<nocutel_raw.size(); i++){
+    if( !TruthMatched( nocutel_raw.at(i), false ) ){
+      nocutel.push_back( nocutel_raw.at(i) );
+      FillHist("TEST_Iso", nocutel_raw.at(i).PFRelIso(0.3), 1., 0., 1., 100);
+    }
+  }
+  std::vector<snu::KJet> jetColl_nolepveto = GetJets("JET_NOLEPTONVETO");
+
+  //==== Make x:iso, y:mva 2D one-binned FR
+
+  double MaxIso = 0.1;
+  for(int a=0; a<10; a++){
+
+    double MinMVA = -1.;
+    for(int b=0; b<200; b++){
+
+      //cout << "####" << endl;
+      //cout << "MaxIso = " << MaxIso << endl;
+      //cout << "MinMVA = " << MinMVA << endl;
+
+      int N_thisel(0);
+      snu::KElectron electron;
+      for(unsigned int i=0; i<nocutel.size(); i++){
+        //cout << i<<"th" << endl;
+        //cout << "  iso = " <<nocutel.at(i).PFRelIso(0.3) << endl;
+        //cout << "  mva = " <<nocutel.at(i).MVA() << endl;
+        if( (nocutel.at(i).PFRelIso(0.3) < MaxIso) && (nocutel.at(i).MVA() > MinMVA) ){
+          //cout << "  => Pass" << endl;
+          N_thisel++;
+          electron = nocutel.at(i);
+        }
+      } 
+
+      if(N_thisel==1){
+
+        //==== find closeset jet
+        double dr = 0.4;
+        bool jetfound=false;
+        snu::KJet cljet;
+        for(unsigned int j=0; j<jetColl_nolepveto.size(); j++){
+
+          snu::KJet jet = jetColl_nolepveto.at(j);
+          if( electron.DeltaR( jet ) < dr ){
+            dr = electron.DeltaR( jet );
+            jetfound = true;
+            cljet = jet;
+          }
+
+        }
+        if(jetfound){
+
+          bool IsThisTight = PassID( electron, "ELECTRON_HN_TIGHTv4" );
+          int hf = cljet.HadronFlavour();
+
+          std::vector<snu::KElectron> oneel;
+          oneel.push_back(electron);
+          double weight_by_pt(0.);
+          for(std::map< TString, std::vector<double> >::iterator it=HLT_ptrange.begin(); it!=HLT_ptrange.end(); it++){
+            double tmp = GetTriggerWeightByPtRange(it->first, it->second, nocutel, For_HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v);
+            if(tmp!=0.){
+              weight_by_pt = tmp;
+              break;
+            }
+          }
+          double this_weight = weight_by_pt*weight;
+
+          TString EtaRegion = "InnerBarrel";
+          if(fabs(electron.SCEta()) > 1.479) EtaRegion = "EndCap";
+          else if(fabs(electron.SCEta()) > 0.8) EtaRegion = "OuterBarrel";
+          else EtaRegion = "InnerBarrel";;
+
+          //cout << "###" << endl;
+          //cout << "MaxIso = " << MaxIso << " > " << electron.PFRelIso(0.3) << endl;
+          //cout << "MinMVA = " << MinMVA << " < " << electron.MVA() << endl;
+          //cout << "=> IsThisTight = " << IsThisTight << endl;
+
+          //==== MaxIso = 0.4
+          //==== => Fill [0.4,0.5] bin
+          //==== MinMVA = -0.15
+          //==== -> Fill [-0.15, -0.20] bin
+
+          double bin_MaxIso = MaxIso + 0.1/2.;
+          double bin_MinMVA = MinMVA + 0.01/2.;
+
+          if( hf >= 4 ){
+            FillHist("HeavyFlavour_"+EtaRegion+"_F0", bin_MaxIso, bin_MinMVA, this_weight, 0., 1.5, 15, -1.5, 1.5, 300);
+            if(IsThisTight){
+              FillHist("HeavyFlavour_"+EtaRegion+"_F", bin_MaxIso, bin_MinMVA, this_weight, 0., 1.5, 15, -1.5, 1.5, 300);
+            }
+          }
+          else{
+            FillHist("LightFlavour_"+EtaRegion+"_F0", bin_MaxIso, bin_MinMVA, this_weight, 0., 1.5, 15, -1.5, 1.5, 300);
+            if(IsThisTight){
+              FillHist("LightFlavour_"+EtaRegion+"_F", bin_MaxIso, bin_MinMVA, this_weight, 0., 1.5, 15, -1.5, 1.5, 300);
+            }
+          }
+
+        } // closest jet found
+      } // only one electron
+
+      MinMVA += 0.01;
+    } // mva loop
+
+    MaxIso += 0.1;
+  } // iso loop
+  return;
+*/
+
+  double AwayjetPts[] = {20, 30, 40, 60};
 
   if( PassTriggerOR(AllHLTs) ){
 
-    if( (jetColl_tag.size() != 0) && (mvaloose.size() == 1) ){
+    if( (jetColl_tag.size() != 0) && (hnloose.size() == 1) ){
 
-      snu::KElectron electron = mvaloose.at(0);
+      snu::KElectron electron = hnloose.at(0);
 
       double weight_by_pt(0.);
       for(std::map< TString, std::vector<double> >::iterator it=HLT_ptrange.begin(); it!=HLT_ptrange.end(); it++){
-        double tmp = GetTriggerWeightByPtRange(it->first, it->second, mvaloose, For_HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v);
+        double tmp = GetTriggerWeightByPtRange(it->first, it->second, hnloose, For_HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v);
         if(tmp!=0.){
           weight_by_pt = tmp;
           break;
@@ -264,27 +393,37 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
       metvec.SetPtEtaPhiE( METauto, 0, METphiauto, METauto );
       double MTval = AnalyzerCore::MT( electron, metvec );
 
-      bool histfilled = false; //Fill only one event at most
-      for(unsigned int i=0; i<jetColl_tag.size(); i++){
+      for(int j=0; j<4; j++){
 
-        if(histfilled) break;
-        snu::KJet jet = jetColl_tag.at(i);
-        if( jet.Pt() < AwayjetPt ) continue;
+        double AwayjetPt = AwayjetPts[j];
 
-        double dPhi = electron.DeltaPhi( jet );
+        bool histfilled = false; //Fill only one event at most
+        for(unsigned int i=0; i<jetColl_tag.size(); i++){
 
-        if( (dPhi > 2.5) && (jet.ChargedEMEnergyFraction() < 0.65) ){ //&& (METauto < 20.) && (MTval < 25.) ){
+          if(histfilled) break;
+          snu::KJet jet = jetColl_tag.at(i);
+          if( jet.Pt() < AwayjetPt ) continue;
 
-          FillDenAndNum("SingleElectronTrigger_Dijet", electron, this_weight, IsThisTight);
+          double dPhi = electron.DeltaPhi( jet );
 
-          histfilled = true;
+          bool UseEvent = false;
+          //==== If QCD, don't have to require MET/MT
+          if( DijetFake )        UseEvent = (dPhi > 2.5) && (jet.ChargedEMEnergyFraction() < 0.65);
+          //==== If not, use it to remove W events
+          else if( DijetPrompt ) UseEvent = (dPhi > 2.5) && (jet.ChargedEMEnergyFraction() < 0.65) && (METauto < 20.) && (MTval < 25.);
 
-        }
+          if( UseEvent ){
+
+            FillDenAndNum("SingleElectronTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10), electron, this_weight, IsThisTight);
+
+            histfilled = true;
+
+          }
         
-
-      } // END Tag jet loop
+        } // END Tag jet loop
+ 
+      }
   
-
     } // Tag Jet and electron exist
 
   } // END PassTriggerOR
@@ -954,8 +1093,8 @@ void FRCalculator_El_dxysig_DILEP::FillHistByTrigger(TString histname, float val
 
 void FRCalculator_El_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KElectron electron, double thisweight, bool isTight){
 
-  float etaarray [] = {0.0, 0.8, 1.479, 2.0, 2.5};
-  float ptarray [] = {0., 5., 10., 15., 20., 25., 30., 40., 45., 50., 70., 100.};
+  float etaarray [] = {0.0, 0.8, 1.479, 2.5};
+  float ptarray [] = {0., 10., 15., 25., 35., 50., 70.};
 
   float etaarray_2 [] = {0.0, 1.479, 2.5};
   float ptarray_2 [] = {10.,15.,40.,200.};
@@ -970,13 +1109,16 @@ void FRCalculator_El_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KElectron 
   FillHist(prefix+"_eta_F0", electron.Eta(), thisweight, -3., 3., 30);
   FillHist(prefix+"_pt_F0", electron.Pt(), thisweight, 0., 200., 200);
   FillHist(prefix+"_pt_cone_F0", conept, thisweight, 0., 200., 200);
+  FillHist(prefix+"_pt_cone_FRbinned_F0", conept, thisweight, ptarray, 6);
+  FillHist(prefix+"_pt_cone_FRbinned_w1_F0", conept, 1., ptarray, 6);
   FillHist(prefix+"_RelIso_F0", electron.PFRelIso(0.3), thisweight, 0., 1., 100);
   FillHist(prefix+"_dXY_F0", fabs(electron.dXY()), thisweight, 0., 1., 1000);
   FillHist(prefix+"_dXYSig_F0", fabs(electron.dXYSig()), thisweight, 0., 15., 150);
   FillHist(prefix+"_dZ_F0", fabs(electron.dZ()), thisweight, 0., 0.5, 50);
+  FillHist(prefix+"_Type_F0", electron.GetType(), thisweight, 0., 50., 50);
   FillHist(prefix+"_onebin_F0", 0., thisweight, 0., 1., 1);
-  FillHist(prefix+"_events_pt_vs_eta_F0", electron.Pt(), fabs(electron.Eta()), thisweight, ptarray, 11, etaarray, 4);
-  FillHist(prefix+"_events_pt_cone_vs_eta_F0", conept, fabs(electron.Eta()), thisweight, ptarray, 11, etaarray, 4);
+  FillHist(prefix+"_events_pt_vs_eta_F0", electron.Pt(), fabs(electron.Eta()), thisweight, ptarray, 6, etaarray, 3);
+  FillHist(prefix+"_events_pt_cone_vs_eta_F0", conept, fabs(electron.Eta()), thisweight, ptarray, 6, etaarray, 3);
   FillHist(prefix+"_PFMET_F0", METauto, thisweight, 0., 1000., 1000);
   FillHist(prefix+"_MT_F0", this_mt, thisweight, 0., 1000., 1000);
   FillHist(prefix+"_MET_vs_MT_F0", METauto, this_mt, thisweight, 0., 1000., 1000, 0., 1000., 1000);
@@ -985,13 +1127,16 @@ void FRCalculator_El_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KElectron 
     FillHist(prefix+"_eta_F", electron.Eta(), thisweight, -3., 3., 30);
     FillHist(prefix+"_pt_F", electron.Pt(), thisweight, 0., 200., 200);
     FillHist(prefix+"_pt_cone_F", conept, thisweight, 0., 200., 200);
+    FillHist(prefix+"_pt_cone_FRbinned_F", conept, thisweight, ptarray, 6);
+    FillHist(prefix+"_pt_cone_FRbinned_w1_F", conept, 1., ptarray, 6);
     FillHist(prefix+"_RelIso_F", electron.PFRelIso(0.3), thisweight, 0., 1., 100);
     FillHist(prefix+"_dXY_F", fabs(electron.dXY()), thisweight, 0., 1., 1000);
     FillHist(prefix+"_dXYSig_F", fabs(electron.dXYSig()), thisweight, 0., 15., 150);
     FillHist(prefix+"_dZ_F", fabs(electron.dZ()), thisweight, 0., 0.5, 50);
+    FillHist(prefix+"_Type_F", electron.GetType(), thisweight, 0., 50., 50);
     FillHist(prefix+"_onebin_F", 0., thisweight, 0., 1., 1);
-    FillHist(prefix+"_events_pt_vs_eta_F", electron.Pt(), fabs(electron.Eta()), thisweight, ptarray, 11, etaarray, 4);
-    FillHist(prefix+"_events_pt_cone_vs_eta_F", conept, fabs(electron.Eta()), thisweight, ptarray, 11, etaarray, 4);
+    FillHist(prefix+"_events_pt_vs_eta_F", electron.Pt(), fabs(electron.Eta()), thisweight, ptarray, 6, etaarray, 3);
+    FillHist(prefix+"_events_pt_cone_vs_eta_F", conept, fabs(electron.Eta()), thisweight, ptarray, 6, etaarray, 3);
     FillHist(prefix+"_PFMET_F", METauto, thisweight, 0., 1000., 1000);
     FillHist(prefix+"_MT_F", this_mt, thisweight, 0., 1000., 1000);
     FillHist(prefix+"_MET_vs_MT_F", METauto, this_mt, thisweight, 0., 1000., 1000, 0., 1000., 1000);

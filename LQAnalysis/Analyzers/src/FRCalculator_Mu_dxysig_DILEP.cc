@@ -128,7 +128,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //==== Get Jets
   //===============
 
-  std::vector<snu::KJet> jetColl_hn = GetJets("JET_NOLEPTONVETO", 30., 5.);
+  std::vector<snu::KJet> jetColl_hn = GetJets("JET_HN");
 
   int n_jets = jetColl_hn.size();
   int n_bjets=0;
@@ -173,6 +173,11 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //==== Call Loosest Muon
   //==========================
 
+  std::vector<snu::KMuon> muons_veto = GetMuons("MUON_HN_VETO");
+  std::vector<snu::KElectron> electrons_veto = GetElectrons("ELECTRON_HN_VETO");
+
+  if(electrons_veto.size()!=0) return;
+
   std::vector<snu::KMuon> muontriNodXYCutVLooseColl_raw = GetMuons("MUON_HN_NODXYCUT_VLOOSE_lowestPtCut", true);
 
   //==================
@@ -190,20 +195,20 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //===========
 
   std::map< TString, std::vector<double> > HLT_ptrange;
+  HLT_ptrange.clear();
+
   HLT_ptrange["HLT_Mu3_PFJet40_v"].push_back(5.);
   HLT_ptrange["HLT_Mu3_PFJet40_v"].push_back(12.);
-  //HLT_ptrange["HLT_Mu8_v"].push_back(10.);
-  //HLT_ptrange["HLT_Mu8_v"].push_back(20.);
-  HLT_ptrange["HLT_Mu8_TrkIsoVVL_v"].push_back(12.);
-  HLT_ptrange["HLT_Mu8_TrkIsoVVL_v"].push_back(25.);
-  //HLT_ptrange["HLT_Mu17_v"].push_back(20.);
-  //HLT_ptrange["HLT_Mu17_v"].push_back(25.);
-  HLT_ptrange["HLT_Mu17_TrkIsoVVL_v"].push_back(25.);
-  HLT_ptrange["HLT_Mu17_TrkIsoVVL_v"].push_back(9999.);
-  //HLT_ptrange["HLT_Mu20_v"].push_back(25.);
-  //HLT_ptrange["HLT_Mu20_v"].push_back(9999.);
-  //HLT_ptrange["HLT_IsoMu24_v"].push_back(25.);
-  //HLT_ptrange["HLT_IsoMu24_v"].push_back(9999.);
+
+  //HLT_ptrange["HLT_Mu8_TrkIsoVVL_v"].push_back(12.);
+  //HLT_ptrange["HLT_Mu8_TrkIsoVVL_v"].push_back(25.);
+  HLT_ptrange["HLT_Mu8_v"].push_back(12.);
+  HLT_ptrange["HLT_Mu8_v"].push_back(26);
+
+  //HLT_ptrange["HLT_Mu17_TrkIsoVVL_v"].push_back(25.);
+  //HLT_ptrange["HLT_Mu17_TrkIsoVVL_v"].push_back(9999.);
+  HLT_ptrange["HLT_Mu17_v"].push_back(26);
+  HLT_ptrange["HLT_Mu17_v"].push_back(9999.);
 
   std::vector<TString> AllHLTs;
   for(std::map< TString, std::vector<double> >::iterator it=HLT_ptrange.begin(); it!=HLT_ptrange.end(); it++){
@@ -218,33 +223,135 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //==== tag jet collections
   //==== pt > 40 GeV
   //==== LeptonVeto
-  std::vector<snu::KJet> jetColl_tag = GetJets("JET_NOLEPTONVETO");
-  std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSE", true);
+  std::vector<snu::KJet> jetColl_tag = GetJets("JET_HN");
+  std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2", true);
 
   std::vector<snu::KMuon> hnloose;
   hnloose.clear();
   for(unsigned int i=0; i<hnloose_raw.size(); i++){
-    if(DijetFake){
-      if( !TruthMatched( hnloose_raw.at(i)) ){
-        hnloose.push_back( hnloose_raw.at(i) );
-      }
+
+    if(k_isdata){
+      hnloose.push_back( hnloose_raw.at(i) );
     }
-    else if(DijetPrompt){
-      if( TruthMatched( hnloose_raw.at(i)) ){
-        hnloose.push_back( hnloose_raw.at(i) );
-      }
-    }
+
     else{
-      return;
+      if(DijetFake){
+        if( !TruthMatched( hnloose_raw.at(i)) ){
+          hnloose.push_back( hnloose_raw.at(i) );
+        }
+      }
+      else if(DijetPrompt){
+        if( TruthMatched( hnloose_raw.at(i)) ){
+          hnloose.push_back( hnloose_raw.at(i) );
+        }
+      }
+      else{
+        return;
+      }
     }
 
   }
 
-  double AwayjetPts[] = {20, 30, 40, 60};;
+/*
+  //==== 2-0) Loose Scaen
+
+  std::vector<snu::KMuon> nocutmu_raw = GetMuons("MUON_HN_NOCUT", true);
+  std::vector<snu::KMuon> nocutmu;
+  nocutmu.clear();
+
+  for(unsigned int i=0; i<nocutmu_raw.size(); i++){
+    if( !TruthMatched( nocutmu_raw.at(i) ) ){
+      nocutmu.push_back( nocutmu_raw.at(i) );
+      FillHist("TEST_Iso", nocutmu_raw.at(i).RelIso04(), 1., 0., 1., 100);
+      FillHist("TEST_dXY", fabs(nocutmu_raw.at(i).dXY()), 1., 0., 1., 1000);
+    }
+  }
+  std::vector<snu::KJet> jetColl_nolepveto = GetJets("JET_NOLEPTONVETO");
+
+  //==== Make x:iso, y:mva 2D one-binned FR
+
+  double MaxIso = 0.1;
+
+  for(int a=0; a<20; a++){
+    int N_thismu(0);
+
+    snu::KMuon muon;
+    for(unsigned int i=0; i<nocutmu.size(); i++){
+      //cout << i<<"th" << endl;
+      //cout << "  iso = " <<nocutmu.at(i).RelIso04() << endl;
+      if( (nocutmu.at(i).RelIso04() < MaxIso) ){
+        //cout << "  => Pass" << endl;
+        N_thismu++;
+        muon = nocutmu.at(i);
+      }
+    } 
+
+    if(N_thismu==1){
+
+      //==== find closeset jet
+      double dr = 0.4;
+      bool jetfound=false;
+      snu::KJet cljet;
+      for(unsigned int j=0; j<jetColl_nolepveto.size(); j++){
+
+        snu::KJet jet = jetColl_nolepveto.at(j);
+        if( muon.DeltaR( jet ) < dr ){
+          dr = muon.DeltaR( jet );
+          jetfound = true;
+          cljet = jet;
+        }
+
+      }
+      if(jetfound){
+
+        bool IsThisTight = PassID( muon, "MUON_HN_TIGHT" );
+        int hf = cljet.HadronFlavour();
+
+        std::vector<snu::KMuon> onemu;
+        onemu.push_back(muon);
+        double weight_by_pt(0.);
+        for(std::map< TString, std::vector<double> >::iterator it=HLT_ptrange.begin(); it!=HLT_ptrange.end(); it++){
+          double tmp = GetTriggerWeightByPtRange(it->first, it->second, onemu, For_HLT_Mu3_PFJet40_v);
+          if(tmp!=0.){
+            weight_by_pt = tmp;
+            break;
+          }
+        }
+        double this_weight = weight_by_pt*weight;
+
+        double bin_MaxIso = MaxIso + 0.05/2.;
+
+        if( hf >= 4 ){
+          FillHist("HeavyFlavour_F0", bin_MaxIso, this_weight, 0., 1.5, 30);
+          if(IsThisTight){
+           FillHist("HeavyFlavour_F", bin_MaxIso, this_weight, 0., 1.5, 30);
+          }
+        }
+        else{
+          FillHist("LightFlavour_F0", bin_MaxIso, this_weight, 0., 1.5, 30);
+          if(IsThisTight){
+            FillHist("LightFlavour_F", bin_MaxIso, this_weight, 0., 1.5, 30);
+          }
+        }
+
+      } // closest jet found
+
+    } // only one muon
+
+
+    MaxIso += 0.05;
+
+  } // iso loop
+  return;
+*/
+
+  double AwayjetPts[] = {20, 30, 40, 60};
 
   if( PassTriggerOR(AllHLTs) ){
 
     if( (jetColl_tag.size() != 0) && (hnloose.size() == 1) ){
+
+      FillHist("CutFlow1", 0., 1., 0., 1., 1);
 
       snu::KMuon muon = hnloose.at(0);
 
@@ -291,7 +398,6 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
             histfilled = true;
 
           }
-
 
         } // END Tag jet loop
 
@@ -978,8 +1084,8 @@ void FRCalculator_Mu_dxysig_DILEP::FillHistByTrigger(TString histname, float val
 
 void FRCalculator_Mu_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KMuon muon, double thisweight, bool isTight){
 
-  float etaarray [] = {0.0, 0.8, 1.479, 2.0, 2.5};
-  float ptarray [] = {0., 5., 12., 15., 20., 25., 30., 35., 45., 60., 100., 200.};
+  float etaarray [] = {0.0, 0.8, 1.479, 2.5};
+  float ptarray [] = {0., 5., 10., 15., 25., 35., 50., 70.};
 
   float etaarray_2 [] = {0.0, 1.479, 2.5};
   float ptarray_2 [] = {10.,15.,40.,200.};
@@ -987,32 +1093,44 @@ void FRCalculator_Mu_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KMuon muon
   double TightISO = 0.07;
   double conept = MuonConePt(muon,TightISO);
 
+  TLorentzVector METvec;
+  METvec.SetPtEtaPhiE(METauto, 0, METphiauto, METauto);
+  double this_mt = MT(muon, METvec);
+
   FillHist(prefix+"_eta_F0", muon.Eta(), thisweight, -3., 3., 30);
   FillHist(prefix+"_pt_F0", muon.Pt(), thisweight, 0., 200., 200);
   FillHist(prefix+"_pt_cone_F0", conept, thisweight, 0., 200., 200);
+  FillHist(prefix+"_pt_cone_FRbinned_F0", conept, thisweight, ptarray, 7);
+  FillHist(prefix+"_pt_cone_FRbinned_w1_F0", conept, 1., ptarray, 7);
   FillHist(prefix+"_RelIso_F0", muon.RelIso04(), thisweight, 0., 1., 100);
   FillHist(prefix+"_Chi2_F0", muon.GlobalChi2(), thisweight, 0., 50., 50);
   FillHist(prefix+"_dXY_F0", fabs(muon.dXY()), thisweight, 0., 1., 1000);
   FillHist(prefix+"_dXYSig_F0", fabs(muon.dXYSig()), thisweight, 0., 15., 150);
   FillHist(prefix+"_dZ_F0", fabs(muon.dZ()), thisweight, 0., 0.5, 50);
+  FillHist(prefix+"_Type_F0", muon.GetType(), thisweight, 0., 50., 50);
   FillHist(prefix+"_onebin_F0", 0., thisweight, 0., 1., 1);
-  FillHist(prefix+"_events_pt_vs_eta_F0", muon.Pt(), fabs(muon.Eta()), thisweight, ptarray, 11, etaarray, 4);
-  FillHist(prefix+"_events_pt_cone_vs_eta_F0", conept, fabs(muon.Eta()), thisweight, ptarray, 11, etaarray, 4);
+  FillHist(prefix+"_events_pt_vs_eta_F0", muon.Pt(), fabs(muon.Eta()), thisweight, ptarray, 7, etaarray, 3);
+  FillHist(prefix+"_events_pt_cone_vs_eta_F0", conept, fabs(muon.Eta()), thisweight, ptarray, 7, etaarray, 3);
   FillHist(prefix+"_PFMET_F0", METauto, thisweight, 0., 1000., 1000);
+  FillHist(prefix+"_MT_F0", this_mt, thisweight, 0., 1000., 1000);
 
   if( isTight ){
     FillHist(prefix+"_eta_F", muon.Eta(), thisweight, -3., 3., 30);
     FillHist(prefix+"_pt_F", muon.Pt(), thisweight, 0., 200., 200);
     FillHist(prefix+"_pt_cone_F", conept, thisweight, 0., 200., 200);
+    FillHist(prefix+"_pt_cone_FRbinned_F", conept, thisweight, ptarray, 7);
+    FillHist(prefix+"_pt_cone_FRbinned_w1_F", conept, 1., ptarray, 7);
     FillHist(prefix+"_RelIso_F", muon.RelIso04(), thisweight, 0., 1., 100);
     FillHist(prefix+"_Chi2_F", muon.GlobalChi2(), thisweight, 0., 50., 50);
     FillHist(prefix+"_dXY_F", fabs(muon.dXY()), thisweight, 0., 1., 1000);
     FillHist(prefix+"_dXYSig_F", fabs(muon.dXYSig()), thisweight, 0., 15., 150);
     FillHist(prefix+"_dZ_F", fabs(muon.dZ()), thisweight, 0., 0.5, 50);
+    FillHist(prefix+"_Type_F", muon.GetType(), thisweight, 0., 50., 50);
     FillHist(prefix+"_onebin_F", 0., thisweight, 0., 1., 1);
-    FillHist(prefix+"_events_pt_vs_eta_F", muon.Pt(), fabs(muon.Eta()), thisweight, ptarray, 11, etaarray, 4);
-    FillHist(prefix+"_events_pt_cone_vs_eta_F", conept, fabs(muon.Eta()), thisweight, ptarray, 11, etaarray, 4);
+    FillHist(prefix+"_events_pt_vs_eta_F", muon.Pt(), fabs(muon.Eta()), thisweight, ptarray, 7, etaarray, 3);
+    FillHist(prefix+"_events_pt_cone_vs_eta_F", conept, fabs(muon.Eta()), thisweight, ptarray, 7, etaarray, 3);
     FillHist(prefix+"_PFMET_F", METauto, thisweight, 0., 1000., 1000);
+    FillHist(prefix+"_MT_F", this_mt, thisweight, 0., 1000., 1000);
 
   }
 

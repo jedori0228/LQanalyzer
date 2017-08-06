@@ -34,6 +34,7 @@ class DiLeptonAnalyzer : public AnalyzerCore {
 
   //==== FR
   double weight_fr, weight_err_fr;
+  int NTightLeptons;
   //==== central
   TH2D *hist_Muon_FR, *hist_Muon_PR, *hist_Electron_FR, *hist_Electron_PR;
   //==== awaypt change
