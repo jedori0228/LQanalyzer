@@ -203,12 +203,15 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
   std::map< TString, std::vector<double> > HLT_ptrange;
   HLT_ptrange["HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v"].push_back(10.); // 6.992
-  HLT_ptrange["HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v"].push_back(16.);
-  HLT_ptrange["HLT_Ele12_CaloIdL_TrackIdL_IsoVL_v"].push_back(16.); // 6.162
-  HLT_ptrange["HLT_Ele12_CaloIdL_TrackIdL_IsoVL_v"].push_back(20.);
+  HLT_ptrange["HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v"].push_back(9999.);
+
+  HLT_ptrange["HLT_Ele12_CaloIdL_TrackIdL_IsoVL_v"].push_back(15.); // 6.162
+  HLT_ptrange["HLT_Ele12_CaloIdL_TrackIdL_IsoVL_v"].push_back(9999.);
+
   HLT_ptrange["HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v"].push_back(20.); // 30.397
-  HLT_ptrange["HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v"].push_back(27.);
-  HLT_ptrange["HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v"].push_back(27.); // 16.43
+  HLT_ptrange["HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v"].push_back(9999.);
+
+  HLT_ptrange["HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v"].push_back(25.); // 16.43
   HLT_ptrange["HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v"].push_back(9999.);
 
   std::vector<TString> AllHLTs;
@@ -376,52 +379,48 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
       snu::KElectron electron = hnloose.at(0);
 
-      double weight_by_pt(0.);
       for(std::map< TString, std::vector<double> >::iterator it=HLT_ptrange.begin(); it!=HLT_ptrange.end(); it++){
-        double tmp = GetTriggerWeightByPtRange(it->first, it->second, hnloose, For_HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v);
-        if(tmp!=0.){
-          weight_by_pt = tmp;
-          break;
-        }
-      }
-
-      double this_weight = weight_by_pt*weight;
-
-      bool IsThisTight = PassID( electron, "ELECTRON_HN_TIGHTv4" );
-
-      TLorentzVector metvec;
-      metvec.SetPtEtaPhiE( METauto, 0, METphiauto, METauto );
-      double MTval = AnalyzerCore::MT( electron, metvec );
-
-      for(int j=0; j<4; j++){
-
-        double AwayjetPt = AwayjetPts[j];
-
-        bool histfilled = false; //Fill only one event at most
-        for(unsigned int i=0; i<jetColl_tag.size(); i++){
-
-          if(histfilled) break;
-          snu::KJet jet = jetColl_tag.at(i);
-          if( jet.Pt() < AwayjetPt ) continue;
-
-          double dPhi = electron.DeltaPhi( jet );
-
-          bool UseEvent = false;
-          //==== If QCD, don't have to require MET/MT
-          if( DijetFake )        UseEvent = (dPhi > 2.5) && (jet.ChargedEMEnergyFraction() < 0.65);
-          //==== If not, use it to remove W events
-          else if( DijetPrompt ) UseEvent = (dPhi > 2.5) && (jet.ChargedEMEnergyFraction() < 0.65) && (METauto < 20.) && (MTval < 25.);
-
-          if( UseEvent ){
-
-            FillDenAndNum("SingleElectronTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10), electron, this_weight, IsThisTight);
-
-            histfilled = true;
-
-          }
         
-        } // END Tag jet loop
- 
+        double weight_by_pt = GetTriggerWeightByPtRange(it->first, it->second, hnloose, For_HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v);
+        double this_weight = weight_by_pt*weight;
+
+        bool IsThisTight = PassID( electron, "ELECTRON_HN_TIGHTv4" );
+
+        TLorentzVector metvec;
+        metvec.SetPtEtaPhiE( METauto, 0, METphiauto, METauto );
+        double MTval = AnalyzerCore::MT( electron, metvec );
+
+        for(int j=0; j<4; j++){
+
+          double AwayjetPt = AwayjetPts[j];
+
+          bool histfilled = false; //Fill only one event at most
+          for(unsigned int i=0; i<jetColl_tag.size(); i++){
+
+            if(histfilled) break;
+            snu::KJet jet = jetColl_tag.at(i);
+            if( jet.Pt() < AwayjetPt ) continue;
+
+            double dPhi = electron.DeltaPhi( jet );
+
+            bool UseEvent = false;
+            //==== If QCD, don't have to require MET/MT
+            if( DijetFake )        UseEvent = (dPhi > 2.5) && (jet.ChargedEMEnergyFraction() < 0.65);
+            //==== If not, use it to remove W events
+            else if( DijetPrompt ) UseEvent = (dPhi > 2.5) && (jet.ChargedEMEnergyFraction() < 0.65) && (METauto < 20.) && (MTval < 25.);
+
+            if( UseEvent ){
+
+              FillDenAndNum((it->first)+"_SingleElectronTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10), electron, this_weight, IsThisTight);
+
+              histfilled = true;
+
+            }
+          
+          } // END Tag jet loop
+   
+        }
+
       }
   
     } // Tag Jet and electron exist
@@ -1094,7 +1093,8 @@ void FRCalculator_El_dxysig_DILEP::FillHistByTrigger(TString histname, float val
 void FRCalculator_El_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KElectron electron, double thisweight, bool isTight){
 
   float etaarray [] = {0.0, 0.8, 1.479, 2.5};
-  float ptarray [] = {0., 10., 15., 25., 35., 50., 70.};
+  //float ptarray [] = {0., 10., 15., 25., 35., 50., 70.};
+  float ptarray [] = {0., 5., 10., 15., 20., 25., 30., 35., 40., 45., 50., 55., 60., 65., 70.};
 
   float etaarray_2 [] = {0.0, 1.479, 2.5};
   float ptarray_2 [] = {10.,15.,40.,200.};
@@ -1117,8 +1117,8 @@ void FRCalculator_El_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KElectron 
   FillHist(prefix+"_dZ_F0", fabs(electron.dZ()), thisweight, 0., 0.5, 50);
   FillHist(prefix+"_Type_F0", electron.GetType(), thisweight, 0., 50., 50);
   FillHist(prefix+"_onebin_F0", 0., thisweight, 0., 1., 1);
-  FillHist(prefix+"_events_pt_vs_eta_F0", electron.Pt(), fabs(electron.Eta()), thisweight, ptarray, 6, etaarray, 3);
-  FillHist(prefix+"_events_pt_cone_vs_eta_F0", conept, fabs(electron.Eta()), thisweight, ptarray, 6, etaarray, 3);
+  FillHist(prefix+"_events_pt_vs_eta_F0", electron.Pt(), fabs(electron.Eta()), thisweight, ptarray, 14, etaarray, 3);
+  FillHist(prefix+"_events_pt_cone_vs_eta_F0", conept, fabs(electron.Eta()), thisweight, ptarray, 14, etaarray, 3);
   FillHist(prefix+"_PFMET_F0", METauto, thisweight, 0., 1000., 1000);
   FillHist(prefix+"_MT_F0", this_mt, thisweight, 0., 1000., 1000);
   FillHist(prefix+"_MET_vs_MT_F0", METauto, this_mt, thisweight, 0., 1000., 1000, 0., 1000., 1000);
@@ -1135,8 +1135,8 @@ void FRCalculator_El_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KElectron 
     FillHist(prefix+"_dZ_F", fabs(electron.dZ()), thisweight, 0., 0.5, 50);
     FillHist(prefix+"_Type_F", electron.GetType(), thisweight, 0., 50., 50);
     FillHist(prefix+"_onebin_F", 0., thisweight, 0., 1., 1);
-    FillHist(prefix+"_events_pt_vs_eta_F", electron.Pt(), fabs(electron.Eta()), thisweight, ptarray, 6, etaarray, 3);
-    FillHist(prefix+"_events_pt_cone_vs_eta_F", conept, fabs(electron.Eta()), thisweight, ptarray, 6, etaarray, 3);
+    FillHist(prefix+"_events_pt_vs_eta_F", electron.Pt(), fabs(electron.Eta()), thisweight, ptarray, 14, etaarray, 3);
+    FillHist(prefix+"_events_pt_cone_vs_eta_F", conept, fabs(electron.Eta()), thisweight, ptarray, 14, etaarray, 3);
     FillHist(prefix+"_PFMET_F", METauto, thisweight, 0., 1000., 1000);
     FillHist(prefix+"_MT_F", this_mt, thisweight, 0., 1000., 1000);
     FillHist(prefix+"_MET_vs_MT_F", METauto, this_mt, thisweight, 0., 1000., 1000, 0., 1000., 1000);

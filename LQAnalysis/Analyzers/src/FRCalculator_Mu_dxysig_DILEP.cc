@@ -198,16 +198,12 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   HLT_ptrange.clear();
 
   HLT_ptrange["HLT_Mu3_PFJet40_v"].push_back(5.);
-  HLT_ptrange["HLT_Mu3_PFJet40_v"].push_back(12.);
+  HLT_ptrange["HLT_Mu3_PFJet40_v"].push_back(9999.);
 
-  //HLT_ptrange["HLT_Mu8_TrkIsoVVL_v"].push_back(12.);
-  //HLT_ptrange["HLT_Mu8_TrkIsoVVL_v"].push_back(25.);
-  HLT_ptrange["HLT_Mu8_v"].push_back(12.);
-  HLT_ptrange["HLT_Mu8_v"].push_back(26);
+  HLT_ptrange["HLT_Mu8_v"].push_back(10.);
+  HLT_ptrange["HLT_Mu8_v"].push_back(9999.);
 
-  //HLT_ptrange["HLT_Mu17_TrkIsoVVL_v"].push_back(25.);
-  //HLT_ptrange["HLT_Mu17_TrkIsoVVL_v"].push_back(9999.);
-  HLT_ptrange["HLT_Mu17_v"].push_back(26);
+  HLT_ptrange["HLT_Mu17_v"].push_back(20.);
   HLT_ptrange["HLT_Mu17_v"].push_back(9999.);
 
   std::vector<TString> AllHLTs;
@@ -224,7 +220,9 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //==== pt > 40 GeV
   //==== LeptonVeto
   std::vector<snu::KJet> jetColl_tag = GetJets("JET_HN");
-  std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2", true);
+  std::vector<snu::KJet> jetColl_nolepveto = GetJets("JET_NOLEPTONVETO");
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2", true);
+  std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSE", true);
 
   std::vector<snu::KMuon> hnloose;
   hnloose.clear();
@@ -266,7 +264,6 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
       FillHist("TEST_dXY", fabs(nocutmu_raw.at(i).dXY()), 1., 0., 1., 1000);
     }
   }
-  std::vector<snu::KJet> jetColl_nolepveto = GetJets("JET_NOLEPTONVETO");
 
   //==== Make x:iso, y:mva 2D one-binned FR
 
@@ -351,55 +348,49 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
     if( (jetColl_tag.size() != 0) && (hnloose.size() == 1) ){
 
-      FillHist("CutFlow1", 0., 1., 0., 1., 1);
-
       snu::KMuon muon = hnloose.at(0);
 
-      double weight_by_pt(0.);
       for(std::map< TString, std::vector<double> >::iterator it=HLT_ptrange.begin(); it!=HLT_ptrange.end(); it++){
-        double tmp = GetTriggerWeightByPtRange(it->first, it->second, hnloose, For_HLT_Mu3_PFJet40_v);
-        if(tmp!=0.){
-          weight_by_pt = tmp;
-          break;
+
+        double weight_by_pt = GetTriggerWeightByPtRange(it->first, it->second, hnloose, For_HLT_Mu3_PFJet40_v);
+        double this_weight = weight_by_pt*weight;
+
+        bool IsThisTight = PassID( muon, "MUON_HN_TIGHT" );
+
+        TLorentzVector metvec;
+        metvec.SetPtEtaPhiE( METauto, 0, METphiauto, METauto );
+        double MTval = AnalyzerCore::MT( muon, metvec );
+
+        for(int j=0; j<4; j++){
+
+          double AwayjetPt = AwayjetPts[j];
+
+          bool histfilled = false; //Fill only one event at most
+          for(unsigned int i=0; i<jetColl_tag.size(); i++){
+
+            if(histfilled) break;
+            snu::KJet jet = jetColl_tag.at(i);
+            if( jet.Pt() < AwayjetPt ) continue;
+
+            double dPhi = muon.DeltaPhi( jet );
+
+            bool UseEvent = false;
+            //==== If QCD, don't have to require MET/MT
+            if( DijetFake )        UseEvent = (dPhi > 2.5) && (jet.Pt()/muon.Pt() > 1.);
+            //==== If not, use it to remove W events
+            else if( DijetPrompt ) UseEvent = (dPhi > 2.5) && (jet.Pt()/muon.Pt() > 1.) && (METauto < 20.) && (MTval < 25.);
+
+            if( UseEvent ){
+
+              FillDenAndNum((it->first)+"_SingleMuonTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10), muon, this_weight, IsThisTight);
+
+              histfilled = true;
+
+            }
+
+          } // END Tag jet loop
+
         }
-      }
-
-      double this_weight = weight_by_pt*weight;
-
-      bool IsThisTight = PassID( muon, "MUON_HN_TIGHT" );
-
-      TLorentzVector metvec;
-      metvec.SetPtEtaPhiE( METauto, 0, METphiauto, METauto );
-      double MTval = AnalyzerCore::MT( muon, metvec );
-
-      for(int j=0; j<4; j++){
-
-        double AwayjetPt = AwayjetPts[j];
-
-        bool histfilled = false; //Fill only one event at most
-        for(unsigned int i=0; i<jetColl_tag.size(); i++){
-
-          if(histfilled) break;
-          snu::KJet jet = jetColl_tag.at(i);
-          if( jet.Pt() < AwayjetPt ) continue;
-
-          double dPhi = muon.DeltaPhi( jet );
-
-          bool UseEvent = false;
-          //==== If QCD, don't have to require MET/MT
-          if( DijetFake )        UseEvent = (dPhi > 2.5) && (jet.Pt()/muon.Pt() > 1.);
-          //==== If not, use it to remove W events
-          else if( DijetPrompt ) UseEvent = (dPhi > 2.5) && (jet.Pt()/muon.Pt() > 1.) && (METauto < 20.) && (MTval < 25.);
-
-          if( UseEvent ){
-
-            FillDenAndNum("SingleMuonTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10), muon, this_weight, IsThisTight);
-
-            histfilled = true;
-
-          }
-
-        } // END Tag jet loop
 
       }
 
@@ -1085,7 +1076,8 @@ void FRCalculator_Mu_dxysig_DILEP::FillHistByTrigger(TString histname, float val
 void FRCalculator_Mu_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KMuon muon, double thisweight, bool isTight){
 
   float etaarray [] = {0.0, 0.8, 1.479, 2.5};
-  float ptarray [] = {0., 5., 10., 15., 25., 35., 50., 70.};
+  float ptarray [] = {0., 5., 10., 15., 20., 25., 30., 35., 40., 45., 50., 55., 60., 65., 70.};
+  //float ptarray [] = {0., 5., 10., 15., 25., 35., 50., 70.};
 
   float etaarray_2 [] = {0.0, 1.479, 2.5};
   float ptarray_2 [] = {10.,15.,40.,200.};
@@ -1109,8 +1101,8 @@ void FRCalculator_Mu_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KMuon muon
   FillHist(prefix+"_dZ_F0", fabs(muon.dZ()), thisweight, 0., 0.5, 50);
   FillHist(prefix+"_Type_F0", muon.GetType(), thisweight, 0., 50., 50);
   FillHist(prefix+"_onebin_F0", 0., thisweight, 0., 1., 1);
-  FillHist(prefix+"_events_pt_vs_eta_F0", muon.Pt(), fabs(muon.Eta()), thisweight, ptarray, 7, etaarray, 3);
-  FillHist(prefix+"_events_pt_cone_vs_eta_F0", conept, fabs(muon.Eta()), thisweight, ptarray, 7, etaarray, 3);
+  FillHist(prefix+"_events_pt_vs_eta_F0", muon.Pt(), fabs(muon.Eta()), thisweight, ptarray, 14, etaarray, 3);
+  FillHist(prefix+"_events_pt_cone_vs_eta_F0", conept, fabs(muon.Eta()), thisweight, ptarray, 14, etaarray, 3);
   FillHist(prefix+"_PFMET_F0", METauto, thisweight, 0., 1000., 1000);
   FillHist(prefix+"_MT_F0", this_mt, thisweight, 0., 1000., 1000);
 
@@ -1127,8 +1119,8 @@ void FRCalculator_Mu_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KMuon muon
     FillHist(prefix+"_dZ_F", fabs(muon.dZ()), thisweight, 0., 0.5, 50);
     FillHist(prefix+"_Type_F", muon.GetType(), thisweight, 0., 50., 50);
     FillHist(prefix+"_onebin_F", 0., thisweight, 0., 1., 1);
-    FillHist(prefix+"_events_pt_vs_eta_F", muon.Pt(), fabs(muon.Eta()), thisweight, ptarray, 7, etaarray, 3);
-    FillHist(prefix+"_events_pt_cone_vs_eta_F", conept, fabs(muon.Eta()), thisweight, ptarray, 7, etaarray, 3);
+    FillHist(prefix+"_events_pt_vs_eta_F", muon.Pt(), fabs(muon.Eta()), thisweight, ptarray, 14, etaarray, 3);
+    FillHist(prefix+"_events_pt_cone_vs_eta_F", conept, fabs(muon.Eta()), thisweight, ptarray, 14, etaarray, 3);
     FillHist(prefix+"_PFMET_F", METauto, thisweight, 0., 1000., 1000);
     FillHist(prefix+"_MT_F", this_mt, thisweight, 0., 1000., 1000);
 

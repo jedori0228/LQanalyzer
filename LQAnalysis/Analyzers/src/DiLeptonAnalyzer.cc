@@ -87,19 +87,19 @@ void DiLeptonAnalyzer::InitialiseAnalysis() throw( LQError ) {
   }
   tempDir->cd();
 
-  hist_Muon_FR = (TH2D*)file_Muon_FR->Get("SingleMuonTrigger_Dijet_Awayjet_40_events_pt_cone_vs_eta_F")->Clone();
-  hist_Electron_FR = (TH2D*)file_Electron_FR->Get("SingleElectronTrigger_Dijet_Awayjet_40_events_pt_cone_vs_eta_F")->Clone();
+  hist_Muon_FR = (TH2D*)file_Muon_FR->Get("Muon_Data_FR_Awayjet40")->Clone();
+  hist_Electron_FR = (TH2D*)file_Electron_FR->Get("Electron_Data_FR_Awayjet40;1")->Clone();
 
   //==== away pt
   TString awayjetpt[3] = {"20", "30", "60"};
   for(int i=0; i<3; i++){
-    hist_Muon_FR_syst["Awatjet_"+awayjetpt[i]]     = (TH2D*)file_Muon_FR->Get("SingleMuonTrigger_Dijet_Awayjet_"+awayjetpt[i]+"_events_pt_cone_vs_eta_F")->Clone();
-    hist_Electron_FR_syst["Awatjet_"+awayjetpt[i]] = (TH2D*)file_Electron_FR->Get("SingleElectronTrigger_Dijet_Awayjet_"+awayjetpt[i]+"_events_pt_cone_vs_eta_F")->Clone();
+    hist_Muon_FR_syst["Awatjet_"+awayjetpt[i]]     = (TH2D*)file_Muon_FR->Get("Muon_Data_FR_Awayjet"+awayjetpt[i])->Clone();
+    hist_Electron_FR_syst["Awatjet_"+awayjetpt[i]] = (TH2D*)file_Electron_FR->Get("Electron_Data_FR_Awayjet"+awayjetpt[i])->Clone();
   }
 
   //==== QCD
-  hist_Muon_FR_syst["QCD"] = (TH2D*)file_Muon_FR_QCD->Get("Muon_QCD_FR")->Clone();
-  hist_Electron_FR_syst["QCD"] = (TH2D*)file_Electron_FR_QCD->Get("Electron_QCD_FR")->Clone();
+  hist_Muon_FR_syst["QCD"] = (TH2D*)file_Muon_FR_QCD->Get("Muon_QCD_FR_Awayjet40")->Clone();
+  hist_Electron_FR_syst["QCD"] = (TH2D*)file_Electron_FR_QCD->Get("Electron_QCD_FR_Awayjet40")->Clone();
   
   file_Muon_FR->Close();
   file_Muon_FR_QCD->Close();
@@ -592,22 +592,41 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       KLepton this_lep( electrons.at(j) );
       lep.push_back( this_lep );
     }
-    std::sort(lep.begin(), lep.end(), LeptonPtComparing);
 
     bool HasStrangeLeptons=false;
     if(DoMCClosure){
       for(unsigned int i=0; i<lep.size(); i++){
+
         int this_type = lep.at(i).GetType();
         if(lep.at(i).LeptonFlavour()==KLepton::ELECTRON){
+          //if(this_type==2) HasStrangeLeptons=true; // From Z/W, but matchedpdgid != pdgid (conversion) //TODO test this
           if(this_type==3) HasStrangeLeptons=true; // e>eee
           if(this_type==16) HasStrangeLeptons=true; // gammastar
           if(this_type==40) HasStrangeLeptons=true; // photon matched
         }
         if(lep.at(i).LeptonFlavour()==KLepton::MUON){
           if(this_type==8) HasStrangeLeptons=true; // ??
+          if(this_type==10) HasStrangeLeptons=true; // gammastar
         }
         if(lep.at(i).MCIsCF()) HasStrangeLeptons=true;
-      }
+
+/*
+        //==== If Loose, only keep fake
+        if(!isT.at(i)){
+          if(lep.at(i).LeptonFlavour()==KLepton::MUON){
+            const snu::KMuon *mptr = lep.at(i).GetMuonPtr();
+            if(TruthMatched(*mptr)) HasStrangeLeptons = true;
+          }
+          if(lep.at(i).LeptonFlavour()==KLepton::ELECTRON){
+            const snu::KElectron *eptr = lep.at(i).GetElectronPtr();
+            if(TruthMatched(*eptr,false)) HasStrangeLeptons = true;
+          }
+          if(lep.at(i).MCIsCF()) HasStrangeLeptons=true;
+        }
+*/
+
+      } // END lepton loop
+
     }
     if(HasStrangeLeptons) continue;
 
@@ -657,7 +676,6 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       this_weight *= weight_fr;
       this_weight_err = this_weight*weight_err_fr;
 
-
       if(DoAwayJet){
 
         FRweights.push_back(weight_fr);
@@ -696,7 +714,14 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       this_weight_err = this_weight*weight_err_cf;
     }
 
+    //==== Now,
     //==== Fill Histogram
+    //====
+
+    //==== We have to sort lepton after we get fake weight,
+    //==== because isT = {muon, electron}
+    //==== If MCClosure, keep ordering as Muon-Electron (to see type)
+    if(!DoMCClosure) std::sort(lep.begin(), lep.end(), LeptonPtComparing);
 
     std::map< TString, bool > map_Region_to_Bool;
     map_Region_to_Bool.clear();
@@ -727,7 +752,6 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
     //==== LT = lepton
     LT = lep.at(0).Pt() + lep.at(1).Pt();
-
 
     //==== At least two jets
     if( jets.size()>=2 ){
@@ -770,12 +794,20 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
     if(map_Region_to_Bool[Suffix+"_Preselection"]){
       map_Region_to_Bool[Suffix+"_Low"] = map_Region_to_Bool[Suffix+"_Preselection"] &&
+                                          (nbjets_nolepveto == 0) &&
                                           ( (lep.at(0)+lep.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M() < 300. ) &&
                                           (MET < 80.);
+      map_Region_to_Bool[Suffix+"_LowCR"] = map_Region_to_Bool[Suffix+"_Preselection"] &&
+                                            ( (nbjets_nolepveto >= 1) || (MET > 100.) ) &&
+                                            ( (lep.at(0)+lep.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M() < 300. );
 
       map_Region_to_Bool[Suffix+"_High"] = map_Region_to_Bool[Suffix+"_Preselection"] &&
+                                           (nbjets_nolepveto == 0) &&
                                            ( (jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M() < 150. ) &&
                                            ( MET*MET/ST < 15. );
+      map_Region_to_Bool[Suffix+"_HighCR"] = map_Region_to_Bool[Suffix+"_Preselection"] &&
+                                             ( (nbjets_nolepveto >= 1) || (MET*MET/ST > 20.) ) &&
+                                             ( (jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M() < 150. );
     }
 
     //==== Test 1) Loose sample faking jet pt distribution
@@ -813,7 +845,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       if(map_Region_to_Bool[Suffix+"_Preselection"] && isSSForCF){
 
         for(unsigned int i=0; i<FRweights.size(); i++){
-          FillHist("FRsyst_"+FRweights_name.at(i), 0., FRweights.at(i), 0., 1., 1);
+          FillHist(Suffix+"_FRsyst_"+FRweights_name.at(i), 0., FRweights.at(i), 0., 1., 1);
         }
 
       }
@@ -1426,7 +1458,7 @@ double DiLeptonAnalyzer::CorrPt(snu::KElectron lep, double T_iso){
 
 double DiLeptonAnalyzer::GetMuonFR(bool geterr, float pt,  float eta){
 
-  if(pt < 5.) pt = 6.;
+  if(pt < 10.) pt = 11.;
   if(pt >= 70.) pt = 69.;
   if(fabs(eta) >= 2.4) eta = 2.3;
 
