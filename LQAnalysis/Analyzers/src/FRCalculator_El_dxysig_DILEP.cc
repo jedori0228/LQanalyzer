@@ -228,7 +228,8 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //==== pt > 40 GeV
   //==== LeptonVeto
   std::vector<snu::KJet> jetColl_tag = GetJets("JET_HN");
-  std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv2");
+  std::vector<snu::KJet> jetColl_nolepveto = GetJets("JET_NOLEPTONVETO");
+  std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSE");
 
   std::vector<snu::KElectron> hnloose;
   hnloose.clear();
@@ -379,6 +380,20 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
       snu::KElectron electron = hnloose.at(0);
 
+      double dr = 0.4;
+      bool jetfound=false;
+      snu::KJet cljet;
+      for(unsigned int j=0; j<jetColl_nolepveto.size(); j++){
+
+        snu::KJet jet = jetColl_nolepveto.at(j);
+        if( electron.DeltaR( jet ) < dr ){
+          dr = electron.DeltaR( jet );
+          jetfound = true;
+          cljet = jet;
+        }
+
+      }
+
       for(std::map< TString, std::vector<double> >::iterator it=HLT_ptrange.begin(); it!=HLT_ptrange.end(); it++){
         
         double weight_by_pt = GetTriggerWeightByPtRange(it->first, it->second, hnloose, For_HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v);
@@ -412,7 +427,11 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
             if( UseEvent ){
 
               FillDenAndNum((it->first)+"_SingleElectronTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10), electron, this_weight, IsThisTight);
-
+              if(jetfound){
+                bool IsBjet = IsBTagged(cljet, snu::KJet::CSVv2, snu::KJet::Medium);
+                if(IsBjet) FillDenAndNum((it->first)+"_SingleElectronTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10)+"_withbjet", electron, this_weight, IsThisTight);
+                else       FillDenAndNum((it->first)+"_SingleElectronTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10)+"_withoutbjet", electron, this_weight, IsThisTight);
+              }
               histfilled = true;
 
             }

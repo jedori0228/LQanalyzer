@@ -87,8 +87,19 @@ void DiLeptonAnalyzer::InitialiseAnalysis() throw( LQError ) {
   }
   tempDir->cd();
 
-  hist_Muon_FR = (TH2D*)file_Muon_FR->Get("Muon_Data_FR_Awayjet40")->Clone();
-  hist_Electron_FR = (TH2D*)file_Electron_FR->Get("Electron_Data_FR_Awayjet40;1")->Clone();
+  hist_Muon_FR                 = (TH2D*)file_Muon_FR->Get("Muon_Data_FR_Awayjet40")->Clone();
+  //hist_Muon_FR_withbjet        = (TH2D*)file_Muon_FR->Get("Muon_Data_FR_Awayjet40_withbjet")->Clone();
+  //hist_Muon_FR_withoutbjet     = (TH2D*)file_Muon_FR->Get("Muon_Data_FR_Awayjet40_withoutbjet")->Clone();
+  hist_Muon_FR_QCD             = (TH2D*)file_Muon_FR_QCD->Get("Muon_QCD_FR_Awayjet40")->Clone();
+  hist_Muon_FR_QCD_withbjet    = (TH2D*)file_Muon_FR_QCD->Get("Muon_QCD_FR_Awayjet40_withbjet")->Clone();
+  hist_Muon_FR_QCD_withoutbjet = (TH2D*)file_Muon_FR_QCD->Get("Muon_QCD_FR_Awayjet40_withoutbjet")->Clone();
+
+  hist_Electron_FR                 = (TH2D*)file_Electron_FR->Get("Electron_Data_FR_Awayjet40")->Clone();
+  //hist_Electron_FR_withbjet        = (TH2D*)file_Electron_FR->Get("Electron_Data_FR_Awayjet40_withbjet")->Clone();
+  //hist_Electron_FR_withoutbjet     = (TH2D*)file_Electron_FR->Get("Electron_Data_FR_Awayjet40_withoutbjet")->Clone();
+  hist_Electron_FR_QCD             = (TH2D*)file_Electron_FR_QCD->Get("Electron_QCD_FR_Awayjet40")->Clone();
+  hist_Electron_FR_QCD_withbjet    = (TH2D*)file_Electron_FR_QCD->Get("Electron_QCD_FR_Awayjet40_withbjet")->Clone();
+  hist_Electron_FR_QCD_withoutbjet = (TH2D*)file_Electron_FR_QCD->Get("Electron_QCD_FR_Awayjet40_withoutbjet")->Clone();
 
   //==== away pt
   TString awayjetpt[3] = {"20", "30", "60"};
@@ -97,10 +108,6 @@ void DiLeptonAnalyzer::InitialiseAnalysis() throw( LQError ) {
     hist_Electron_FR_syst["Awatjet_"+awayjetpt[i]] = (TH2D*)file_Electron_FR->Get("Electron_Data_FR_Awayjet"+awayjetpt[i])->Clone();
   }
 
-  //==== QCD
-  hist_Muon_FR_syst["QCD"] = (TH2D*)file_Muon_FR_QCD->Get("Muon_QCD_FR_Awayjet40")->Clone();
-  hist_Electron_FR_syst["QCD"] = (TH2D*)file_Electron_FR_QCD->Get("Electron_QCD_FR_Awayjet40")->Clone();
-  
   file_Muon_FR->Close();
   file_Muon_FR_QCD->Close();
   file_Electron_FR->Close();
@@ -123,20 +130,22 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   std::vector< snu::KElectron > testelectrons = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSE");
   //==== FRTEST
   for(unsigned int i=0; i<testelectrons.size(); i++){
-    bool fromtau = testelectrons.at(i).MCFromTau();
     FillHist("TEST_ELECTRON_FR_TYPE_F0", testelectrons.at(i).GetType(), 1., 0., 50., 50);
-    if(fromtau){
-      FillHist("TEST_ELECTRON_fromtau_FR_TYPE_F0", testelectrons.at(i).GetType(), 1., 0., 50., 50);
-    }
     if(PassID(testelectrons.at(i), "ELECTRON_HN_TIGHTv4")){
       FillHist("TEST_ELECTRON_FR_TYPE_F", testelectrons.at(i).GetType(), 1., 0., 50., 50);
-      if(fromtau){
-        FillHist("TEST_ELECTRON_fromtau_FR_TYPE_F", testelectrons.at(i).GetType(), 1., 0., 50., 50);
-      }
+    }
+
+    TString EtaRegion = "InnerBarrel";
+    if(fabs(testelectrons.at(i).SCEta()) > 1.479) EtaRegion = "EndCap";
+    else if(fabs(testelectrons.at(i).SCEta()) > 0.8) EtaRegion = "OuterBarrel";
+    else EtaRegion = "InnerBarrel";
+
+    if(!TruthMatched(testelectrons.at(i), false)){
+      FillHist("TEST_ELECTRON_FAKE_MVA_"+EtaRegion, testelectrons.at(i).MVA(), 1., -1., 1., 200);
     }
   }
 
-  std::vector< snu::KMuon > testmuons = GetMuons("MUON_HN_LOOSEv2", true);
+  std::vector< snu::KMuon > testmuons = GetMuons("MUON_HN_LOOSE", true);
   //==== FRTEST
   for(unsigned int i=0; i<testmuons.size(); i++){
     FillHist("TEST_MUON_FR_TYPE_F0", testmuons.at(i).GetType(), 1., 0., 50., 50);
@@ -248,7 +257,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   bool LooseSampleFakeJetPt = std::find(k_flags.begin(), k_flags.end(), "LooseSampleFakeJetPt") != k_flags.end();
 
   //==== Muons
-  std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSEv2", KeepFakeLepton);
+  std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSE", KeepFakeLepton);
 
   if(muons.size()>=2){
     if( muons.at(0).Pt() > muons.at(1).Pt() ) FillHist("Test_Muon01_CorrectPtOrder", 1., 1., 0., 2., 2);
@@ -264,7 +273,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   double MuTrkEffSF =  mcdata_correction->MuonTrackingEffScaleFactor(muons);
 
   //==== Electrons
-  std::vector< snu::KElectron > electrons = GetElectrons(false, KeepFakeLepton, "ELECTRON_HN_FAKELOOSEv2");
+  std::vector< snu::KElectron > electrons = GetElectrons(false, KeepFakeLepton, "ELECTRON_HN_FAKELOOSE");
   double electron_sf = 1.; //FIXME
 
   bool DoPOGElSF = std::find(k_flags.begin(), k_flags.end(), "DoPOGElSF") != k_flags.end();
@@ -343,6 +352,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   std::vector<snu::KElectron> electrons_veto = GetElectrons(false, KeepFakeLepton, "ELECTRON_HN_VETO");
   std::vector<snu::KElectron> electrons_tight; electrons_tight.clear();
   std::vector<bool> isT;
+  std::vector<int> NearBjet;
 
   int NPromptTight(0);
 
@@ -350,6 +360,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   int n_triLoose_muons = muons.size();
   int n_triTight_muons(0);
   for(unsigned int i=0; i<muons.size(); i++){
+    NearBjet.push_back( HasCloseBjet(muons.at(i), jets_nolepveto) );
     if(TruthMatched(muons.at(i))) NPromptTight++;
     if(PassID(muons.at(i), "MUON_HN_TIGHT")){
       isT.push_back(true);
@@ -365,6 +376,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   int n_triLoose_electrons = electrons.size();
   int n_triTight_electrons(0);
   for(unsigned int i=0; i<electrons.size(); i++){
+    NearBjet.push_back( HasCloseBjet(electrons.at(i), jets_nolepveto) );
     if(TruthMatched(electrons.at(i), false)) NPromptTight++;
     if(PassID(electrons.at(i), "ELECTRON_HN_TIGHTv4")){
       isT.push_back(true);
@@ -593,10 +605,13 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       lep.push_back( this_lep );
     }
 
-    bool HasStrangeLeptons=false;
     if(DoMCClosure){
-      for(unsigned int i=0; i<lep.size(); i++){
 
+      bool HasStrangeLeptons=false;
+      bool HasFakeLeptons=false;
+
+      for(unsigned int i=0; i<lep.size(); i++){
+/*
         int this_type = lep.at(i).GetType();
         if(lep.at(i).LeptonFlavour()==KLepton::ELECTRON){
           //if(this_type==2) HasStrangeLeptons=true; // From Z/W, but matchedpdgid != pdgid (conversion) //TODO test this
@@ -609,26 +624,26 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
           if(this_type==10) HasStrangeLeptons=true; // gammastar
         }
         if(lep.at(i).MCIsCF()) HasStrangeLeptons=true;
-
-/*
-        //==== If Loose, only keep fake
-        if(!isT.at(i)){
-          if(lep.at(i).LeptonFlavour()==KLepton::MUON){
-            const snu::KMuon *mptr = lep.at(i).GetMuonPtr();
-            if(TruthMatched(*mptr)) HasStrangeLeptons = true;
-          }
-          if(lep.at(i).LeptonFlavour()==KLepton::ELECTRON){
-            const snu::KElectron *eptr = lep.at(i).GetElectronPtr();
-            if(TruthMatched(*eptr,false)) HasStrangeLeptons = true;
-          }
-          if(lep.at(i).MCIsCF()) HasStrangeLeptons=true;
-        }
 */
+
+        //==== Check if fake exist
+        if(lep.at(i).LeptonFlavour()==KLepton::MUON){
+          const snu::KMuon *mptr = lep.at(i).GetMuonPtr();
+          if(!TruthMatched(*mptr)) HasFakeLeptons = true;
+        }
+        if(lep.at(i).LeptonFlavour()==KLepton::ELECTRON){
+          const snu::KElectron *eptr = lep.at(i).GetElectronPtr();
+          if(!TruthMatched(*eptr,false)) HasFakeLeptons = true;
+        }
+
 
       } // END lepton loop
 
+
+      if(HasStrangeLeptons) continue;
+      if(!HasFakeLeptons) continue;
+
     }
-    if(HasStrangeLeptons) continue;
 
     bool isSS = lep.at(0).Charge() == lep.at(1).Charge();
     bool isSSForCF = isSS;
@@ -672,7 +687,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
     vector<TString> FRweights_name;
     if( isLOOSEs.at(i) ){
 
-      get_eventweight(muons, electrons, isT, 0);
+      get_eventweight(muons, electrons, isT, NearBjet, 0);
       this_weight *= weight_fr;
       this_weight_err = this_weight*weight_err_fr;
 
@@ -683,19 +698,19 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
         ElFR_key = "Awatjet_20";
         MuFR_key = "Awatjet_20";
-        get_eventweight(muons, electrons, isT, 0);
+        get_eventweight(muons, electrons, isT, NearBjet, 0);
         FRweights.push_back(weight_fr);
         FRweights_name.push_back("FakeRate_ptcorr_eta20");
 
         ElFR_key = "Awatjet_30";
         MuFR_key = "Awatjet_30";
-        get_eventweight(muons, electrons, isT, 0);
+        get_eventweight(muons, electrons, isT, NearBjet, 0);
         FRweights.push_back(weight_fr);
         FRweights_name.push_back("FakeRate_ptcorr_eta30");
 
         ElFR_key = "Awatjet_60";
         MuFR_key = "Awatjet_60";
-        get_eventweight(muons, electrons, isT, 0);
+        get_eventweight(muons, electrons, isT, NearBjet, 0);
         FRweights.push_back(weight_fr);
         FRweights_name.push_back("FakeRate_ptcorr_eta60");
 
@@ -1230,6 +1245,7 @@ void DiLeptonAnalyzer::FillDiLeptonPlot(
     FillHist(leporder[i]+"Lepton_Pt_"+histsuffix,  leptons.at(i).Pt(), thisweight, 0., 2000., 2000);
     FillHist(leporder[i]+"Lepton_Eta_"+histsuffix, leptons.at(i).Eta(), thisweight, -3., 3., 60);
     FillHist(leporder[i]+"Lepton_Type_"+histsuffix, leptons.at(i).GetType(), thisweight, 0., 50., 50);
+    FillHist(leporder[i]+"Lepton_RelIso_"+histsuffix, leptons.at(i).RelIso(), thisweight, 0., 1., 100);
 
     double TightIso = 0.07;
     if(leptons.at(i).LeptonFlavour()==KLepton::ELECTRON){
@@ -1456,22 +1472,39 @@ double DiLeptonAnalyzer::CorrPt(snu::KElectron lep, double T_iso){
 
 
 
-double DiLeptonAnalyzer::GetMuonFR(bool geterr, float pt,  float eta){
+double DiLeptonAnalyzer::GetMuonFR(bool geterr, float pt,  float eta, int NearBjet){
 
   if(pt < 10.) pt = 11.;
   if(pt >= 70.) pt = 69.;
   if(fabs(eta) >= 2.4) eta = 2.3;
 
+  //cout << "[DiLeptonAnalyzer::GetMuonFR] pt = " << pt << endl;
+  //cout << "[DiLeptonAnalyzer::GetMuonFR] eta = " << eta << endl;
+  //cout << "[DiLeptonAnalyzer::GetMuonFR] MuFR_key = " << MuFR_key << endl;
+  //cout << "[DiLeptonAnalyzer::GetMuonFR] NearBjet = " << NearBjet << endl;
+
+  TH2D *THISFRHIST = NULL;
+
   if(MuFR_key==""){
-    int binx = hist_Muon_FR->FindBin(pt, abs(eta));
-    if(geterr) return hist_Muon_FR->GetBinError(binx);
-    else return hist_Muon_FR->GetBinContent(binx);
+    if(NearBjet==1)      THISFRHIST = hist_Muon_FR_withbjet;
+    else if(NearBjet==0) THISFRHIST = hist_Muon_FR_withoutbjet;
+    else                 THISFRHIST = hist_Muon_FR;
+  }
+  else if(MuFR_key=="QCD"){
+    if(NearBjet==1)      THISFRHIST = hist_Muon_FR_QCD_withbjet;
+    else if(NearBjet==0) THISFRHIST = hist_Muon_FR_QCD_withoutbjet;
+    else                 THISFRHIST = hist_Muon_FR_QCD;
   }
   else{
-    int binx = hist_Muon_FR_syst[MuFR_key]->FindBin(pt, abs(eta));
-    if(geterr) return hist_Muon_FR_syst[MuFR_key]->GetBinError(binx);
-    else return hist_Muon_FR_syst[MuFR_key]->GetBinContent(binx);
+    THISFRHIST = hist_Muon_FR_syst[MuFR_key];
   }
+
+  int binx = THISFRHIST->FindBin(pt, abs(eta));
+  //cout << "[DiLeptonAnalyzer::GetMuonFR] => FR = " << THISFRHIST->GetBinContent(binx) << endl;
+  
+
+  if(geterr) return THISFRHIST->GetBinError(binx);
+  else return THISFRHIST->GetBinContent(binx);
 
 }
 
@@ -1488,22 +1521,31 @@ double DiLeptonAnalyzer::GetMuonPR(bool geterr, float pt,  float eta){
   return 1.;
 }
 
-double DiLeptonAnalyzer::GetElectronFR(bool geterr, float pt,  float eta){
+double DiLeptonAnalyzer::GetElectronFR(bool geterr, float pt,  float eta, int NearBjet){
 
   if(pt < 10.) pt = 11.;
   if(pt >= 70.) pt = 69.;
   if(fabs(eta) >= 2.5) eta = 2.4;
 
+  TH2D *THISFRHIST = NULL;
+
   if(ElFR_key==""){
-    int binx = hist_Electron_FR->FindBin(pt, abs(eta));
-    if(geterr) return hist_Electron_FR->GetBinError(binx);
-    else return hist_Electron_FR->GetBinContent(binx);
+    if(NearBjet==1)      THISFRHIST = hist_Electron_FR_withbjet;
+    else if(NearBjet==0) THISFRHIST = hist_Electron_FR_withoutbjet;
+    else                 THISFRHIST = hist_Electron_FR;
+  }
+  else if(ElFR_key=="QCD"){
+    if(NearBjet==1)      THISFRHIST = hist_Electron_FR_QCD_withbjet;
+    else if(NearBjet==0) THISFRHIST = hist_Electron_FR_QCD_withoutbjet;
+    else                 THISFRHIST = hist_Electron_FR_QCD;
   }
   else{
-    int binx = hist_Electron_FR_syst[ElFR_key]->FindBin(pt, abs(eta));
-    if(geterr) return hist_Electron_FR_syst[ElFR_key]->GetBinError(binx);
-    else return hist_Electron_FR_syst[ElFR_key]->GetBinContent(binx);
+    THISFRHIST = hist_Electron_FR_syst[ElFR_key];
   }
+
+  int binx = THISFRHIST->FindBin(pt, abs(eta));
+  if(geterr) return THISFRHIST->GetBinError(binx);
+  else return THISFRHIST->GetBinContent(binx);
 
 }
 
@@ -1521,7 +1563,7 @@ double DiLeptonAnalyzer::GetElectronPR(bool geterr, float pt,  float eta){
 }
 
 
-void DiLeptonAnalyzer::get_eventweight(std::vector<snu::KMuon> muons, std::vector<snu::KElectron> electrons, std::vector<bool> isT, int HalfSampleErrorDir){
+void DiLeptonAnalyzer::get_eventweight(std::vector<snu::KMuon> muons, std::vector<snu::KElectron> electrons, std::vector<bool> isT, std::vector<int> NearBjet, int HalfSampleErrorDir){
 
   unsigned int n_leptons = isT.size();
   //cout << "[DiLeptonAnalyzer::get_eventweight] muons.size() = " << muons.size() << ", electrons.size() = " << electrons.size() << endl;
@@ -1529,13 +1571,11 @@ void DiLeptonAnalyzer::get_eventweight(std::vector<snu::KMuon> muons, std::vecto
   vector<float> lep_pt, lep_eta;
   vector<bool> ismuon;
   for(unsigned int i=0; i<muons.size(); i++){
-    //lep_pt.push_back(muons.at(i).Pt());
     lep_pt.push_back( CorrPt(muons.at(i), 0.07) );
     lep_eta.push_back(muons.at(i).Eta());
     ismuon.push_back(true);
   }
   for(unsigned int i=0; i<electrons.size(); i++){
-    //lep_pt.push_back(electrons.at(i).Pt());
     lep_pt.push_back( CorrPt(electrons.at(i), 0.08) );
     lep_eta.push_back(electrons.at(i).Eta());
     ismuon.push_back(false);
@@ -1547,16 +1587,16 @@ void DiLeptonAnalyzer::get_eventweight(std::vector<snu::KMuon> muons, std::vecto
   for(unsigned int i=0; i<n_leptons; i++){
     //==== Muon
     if(ismuon.at(i)){
-      fr.push_back( GetMuonFR(false, lep_pt.at(i), lep_eta.at(i)));
-      pr.push_back( GetMuonPR(false, lep_pt.at(i), lep_eta.at(i)));
-      fr_err.push_back( GetMuonFR(true, lep_pt.at(i), lep_eta.at(i)));
-      pr_err.push_back( GetMuonPR(true, lep_pt.at(i), lep_eta.at(i)));
+      fr.push_back( GetMuonFR(false, lep_pt.at(i), lep_eta.at(i), NearBjet.at(i)) );
+      pr.push_back( GetMuonPR(false, lep_pt.at(i), lep_eta.at(i)) );
+      fr_err.push_back( GetMuonFR(true, lep_pt.at(i), lep_eta.at(i), NearBjet.at(i)) );
+      pr_err.push_back( GetMuonPR(true, lep_pt.at(i), lep_eta.at(i)) );
     }
     //==== If not, it's an electron
     else{
-      fr.push_back( GetElectronFR(0, lep_pt.at(i), lep_eta.at(i)));
+      fr.push_back( GetElectronFR(0, lep_pt.at(i), lep_eta.at(i), NearBjet.at(i)) );
       pr.push_back( GetElectronPR(0, lep_pt.at(i), lep_eta.at(i)));
-      fr_err.push_back( GetElectronFR(1, lep_pt.at(i), lep_eta.at(i)));
+      fr_err.push_back( GetElectronFR(1, lep_pt.at(i), lep_eta.at(i), NearBjet.at(i)) );
       pr_err.push_back( GetElectronPR(1, lep_pt.at(i), lep_eta.at(i)));
     }
   }

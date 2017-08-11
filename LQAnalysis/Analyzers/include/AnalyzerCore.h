@@ -427,6 +427,7 @@ class AnalyzerCore : public LQCycleBase {
   double MuonConePt(snu::KMuon muon, double tightiso);
   double ElectronConePt(snu::KElectron electron, double tightiso);
   bool LeptonInsideFatJet(snu::KFatJet fj, double dr, std::vector<KLepton> lep);
+  int HasCloseBjet(KLepton lep, std::vector<snu::KJet> jets);
 
   std::map< TString, double > map_HNTriChannl_cutop; // key : <channel>_<mass>_<var>
   void SetHNTriCutOp(TString filepath);

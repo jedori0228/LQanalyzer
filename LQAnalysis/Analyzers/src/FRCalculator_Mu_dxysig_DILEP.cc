@@ -221,7 +221,6 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //==== LeptonVeto
   std::vector<snu::KJet> jetColl_tag = GetJets("JET_HN");
   std::vector<snu::KJet> jetColl_nolepveto = GetJets("JET_NOLEPTONVETO");
-  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2", true);
   std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSE", true);
 
   std::vector<snu::KMuon> hnloose;
@@ -350,6 +349,20 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
       snu::KMuon muon = hnloose.at(0);
 
+      double dr = 0.4;
+      bool jetfound=false;
+      snu::KJet cljet;
+      for(unsigned int j=0; j<jetColl_nolepveto.size(); j++){
+
+        snu::KJet jet = jetColl_nolepveto.at(j);
+        if( muon.DeltaR( jet ) < dr ){
+          dr = muon.DeltaR( jet );
+          jetfound = true;
+          cljet = jet;
+        }
+
+      }
+
       for(std::map< TString, std::vector<double> >::iterator it=HLT_ptrange.begin(); it!=HLT_ptrange.end(); it++){
 
         double weight_by_pt = GetTriggerWeightByPtRange(it->first, it->second, hnloose, For_HLT_Mu3_PFJet40_v);
@@ -383,7 +396,11 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
             if( UseEvent ){
 
               FillDenAndNum((it->first)+"_SingleMuonTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10), muon, this_weight, IsThisTight);
-
+              if(jetfound){
+                bool IsBjet = IsBTagged(cljet, snu::KJet::CSVv2, snu::KJet::Medium);
+                if(IsBjet) FillDenAndNum((it->first)+"_SingleMuonTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10)+"_withbjet", muon, this_weight, IsThisTight);
+                else       FillDenAndNum((it->first)+"_SingleMuonTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10)+"_withoutbjet", muon, this_weight, IsThisTight);
+              }
               histfilled = true;
 
             }
