@@ -22,7 +22,7 @@ class FRCalculator_El_dxysig_DILEP : public AnalyzerCore {
   void MakeHistograms();
   void FillCutFlow(TString cut, float w);
 
-  double GetTriggerWeightByPtRange(TString hltname, vector<double> ptrange, std::vector<snu::KElectron> electrons, int npfjet50);
+  double GetTriggerWeightByPtRange(TString hltname, vector<double> ptrange, double trigger_safe_pt, std::vector<snu::KElectron> electrons, int npfjet50);
   void FillHistByTrigger(TString histname, float value, std::map<TString, double> hltweight, float xmin, float xmax, int nbins=0);
   void FillHistByTrigger(TString histname, float value1, float value2, std::map<TString, double> hltweight , float x[], int nbinsx, float y[], int nbinsy);
   void FillDenAndNum(TString prefix, snu::KElectron electron, double thisweight, bool isTight);

@@ -128,7 +128,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //==== Get Jets
   //===============
 
-  std::vector<snu::KJet> jetColl_hn = GetJets("JET_HN");
+  std::vector<snu::KJet> jetColl_hn = GetJets("JET_NOLEPTONVETO", 20., 2.5);
 
   int n_jets = jetColl_hn.size();
   int n_bjets=0;
@@ -145,7 +145,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 */
   for(int j=0; j<n_jets; j++){
     if( IsBTagged(jetColl_hn.at(j), snu::KJet::CSVv2, snu::KJet::Medium) ) n_bjets++;
-    if( jetColl_hn.at(j).Pt() > 40. ) For_HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v++;
+    if( jetColl_hn.at(j).Pt() > 30. ) For_HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v++;
   }
 
   //======================
@@ -184,8 +184,10 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //==== FR binnings
   //==================
 
-  float etaarray [] = {0.0, 0.8, 1.479, 2.0, 2.5};
-  float ptarray [] = {0., 5., 10., 15., 20., 25., 30., 40., 45., 50., 70., 100.};
+  const int n_eta = 3;
+  float etaarray[n_eta+1] = {0.0, 0.8, 1.479, 2.5};
+  const int n_pt = 6;
+  float ptarray[n_pt+1] = {10., 15., 23., 35., 45., 60., 70.};
 
   float etaarray_2 [] = {0.0, 1.479, 2.5};
   float ptarray_2 [] = {10.,15.,40.,200.};
@@ -202,17 +204,23 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //   float ptarray [] = {0., 10., 15., 25., 35., 50., 70.};
 
   std::map< TString, std::vector<double> > HLT_ptrange;
+  std::map< TString, double > HLT_ptmin;
+
   HLT_ptrange["HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v"].push_back(10.); // 6.992
-  HLT_ptrange["HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v"].push_back(9999.);
+  HLT_ptrange["HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v"].push_back(23.);
+  HLT_ptmin["HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v"] = 9.5; // -> can go upto 14.44
 
-  HLT_ptrange["HLT_Ele12_CaloIdL_TrackIdL_IsoVL_v"].push_back(15.); // 6.162
-  HLT_ptrange["HLT_Ele12_CaloIdL_TrackIdL_IsoVL_v"].push_back(9999.);
+  HLT_ptrange["HLT_Ele12_CaloIdL_TrackIdL_IsoVL_v"].push_back(23.); // 6.162
+  HLT_ptrange["HLT_Ele12_CaloIdL_TrackIdL_IsoVL_v"].push_back(35.);
+  HLT_ptmin["HLT_Ele12_CaloIdL_TrackIdL_IsoVL_v"] = 15.; // -> can go upto 22.8 GeV
 
-  HLT_ptrange["HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v"].push_back(20.); // 30.397
-  HLT_ptrange["HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v"].push_back(9999.);
+  HLT_ptrange["HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v"].push_back(35.); // 30.397
+  HLT_ptrange["HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v"].push_back(45.); 
+  HLT_ptmin["HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v"] = 20.; // -> can go upto 30.4 GeV
 
-  HLT_ptrange["HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v"].push_back(25.); // 16.43
+  HLT_ptrange["HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v"].push_back(45.); // 16.43
   HLT_ptrange["HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v"].push_back(9999.);
+  HLT_ptmin["HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v"] = 25.; // -> can go upto 38 GeV
 
   std::vector<TString> AllHLTs;
   for(std::map< TString, std::vector<double> >::iterator it=HLT_ptrange.begin(); it!=HLT_ptrange.end(); it++){
@@ -224,12 +232,61 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   bool DijetFake = std::find(k_flags.begin(), k_flags.end(), "DijetFake") != k_flags.end();
   bool DijetPrompt= std::find(k_flags.begin(), k_flags.end(), "DijetPrompt") != k_flags.end();
 
+  //==== Norm Cehck for each trigger
+  if(DijetPrompt){
+
+    double m_Z = 91.1876;
+
+    std::vector< snu::KElectron > tightelectrons = GetElectrons(false, true, "ELECTRON_HN_TIGHTv4");
+
+    double electron_sf = mcdata_correction->ElectronScaleFactor("ELECTRON_HN_TIGHTv4", tightelectrons, 0);
+    double electron_RecoSF =  mcdata_correction->ElectronRecoScaleFactor(tightelectrons);
+
+    TLorentzVector metvec;
+    metvec.SetPtEtaPhiE( METauto, 0, METphiauto, METauto );
+
+    for(unsigned int i=0; i<AllHLTs.size(); i++){
+      TString ThisTrigger = AllHLTs.at(i);
+      if( PassTrigger(ThisTrigger) && (tightelectrons.size()!=0) ){
+
+        if(HLT_ptmin[ThisTrigger] > tightelectrons.at(0).Pt()) continue;
+
+        double triggerweight = WeightByTrigger(ThisTrigger, TargetLumi) ;
+        double this_weight = weight* electron_sf* electron_RecoSF*triggerweight;
+        //==== 1) Z-Peak
+        if(tightelectrons.size()==2){
+          double mll = (tightelectrons.at(0)+tightelectrons.at(1)).M();
+          if( fabs(mll-m_Z) < 10. ){
+            FillHist(ThisTrigger+"_ZPeak_mll", mll, this_weight, 0., 200., 200);
+            FillHist(ThisTrigger+"_ZPeak_leadpt", tightelectrons.at(0).Pt(), this_weight, 0., 500., 500);
+            FillHist(ThisTrigger+"_ZPeak_subleadpt", tightelectrons.at(1).Pt(), this_weight, 0., 500., 500);
+          }
+        }
+        //==== 2) W
+        if(tightelectrons.size()==1){
+          double MTval = AnalyzerCore::MT( tightelectrons.at(0), metvec );
+          if( (METauto>50.) && (MTval>50.) ){
+            FillHist(ThisTrigger+"_W_PFMET", METauto, this_weight, 0., 500., 500);
+            FillHist(ThisTrigger+"_W_MT", MTval, this_weight, 0., 500., 500);
+            FillHist(ThisTrigger+"_W_leadpt", tightelectrons.at(0).Pt(), this_weight, 0., 500., 500);
+          }
+        }
+
+
+      }
+    }
+
+
+  }
+
   //==== tag jet collections
   //==== pt > 40 GeV
   //==== LeptonVeto
   std::vector<snu::KJet> jetColl_tag = GetJets("JET_HN");
   std::vector<snu::KJet> jetColl_nolepveto = GetJets("JET_NOLEPTONVETO");
-  std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSE");
+  std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv1");
+  //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv2");
+
 
   std::vector<snu::KElectron> hnloose;
   hnloose.clear();
@@ -270,7 +327,6 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
       FillHist("TEST_Iso", nocutel_raw.at(i).PFRelIso(0.3), 1., 0., 1., 100);
     }
   }
-  std::vector<snu::KJet> jetColl_nolepveto = GetJets("JET_NOLEPTONVETO");
 
   //==== Make x:iso, y:mva 2D one-binned FR
 
@@ -320,15 +376,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
           std::vector<snu::KElectron> oneel;
           oneel.push_back(electron);
-          double weight_by_pt(0.);
-          for(std::map< TString, std::vector<double> >::iterator it=HLT_ptrange.begin(); it!=HLT_ptrange.end(); it++){
-            double tmp = GetTriggerWeightByPtRange(it->first, it->second, nocutel, For_HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v);
-            if(tmp!=0.){
-              weight_by_pt = tmp;
-              break;
-            }
-          }
-          double this_weight = weight_by_pt*weight;
+          double this_weight = weight;
 
           TString EtaRegion = "InnerBarrel";
           if(fabs(electron.SCEta()) > 1.479) EtaRegion = "EndCap";
@@ -376,71 +424,147 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
   if( PassTriggerOR(AllHLTs) ){
 
-    if( (jetColl_tag.size() != 0) && (hnloose.size() == 1) ){
+    if( (hnloose.size() == 1) ){
 
       snu::KElectron electron = hnloose.at(0);
 
-      double dr = 0.4;
-      bool jetfound=false;
-      snu::KJet cljet;
+      double dr = 0.5;
+      bool HasCloseBjet_Medium=false, HasCloseBjet_Loose=false;
       for(unsigned int j=0; j<jetColl_nolepveto.size(); j++){
 
         snu::KJet jet = jetColl_nolepveto.at(j);
         if( electron.DeltaR( jet ) < dr ){
-          dr = electron.DeltaR( jet );
-          jetfound = true;
-          cljet = jet;
+          if(IsBTagged(jet, snu::KJet::CSVv2, snu::KJet::Medium)){
+            HasCloseBjet_Medium = true;
+          }
+          if(IsBTagged(jet, snu::KJet::CSVv2, snu::KJet::Loose)){
+            HasCloseBjet_Loose = true;
+          }
         }
-
       }
 
       for(std::map< TString, std::vector<double> >::iterator it=HLT_ptrange.begin(); it!=HLT_ptrange.end(); it++){
         
-        double weight_by_pt = GetTriggerWeightByPtRange(it->first, it->second, hnloose, For_HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v);
-        double this_weight = weight_by_pt*weight;
+        double weight_by_pt = GetTriggerWeightByPtRange(it->first, it->second, HLT_ptmin[it->first], hnloose, For_HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v);
 
         bool IsThisTight = PassID( electron, "ELECTRON_HN_TIGHTv4" );
 
-        TLorentzVector metvec;
-        metvec.SetPtEtaPhiE( METauto, 0, METphiauto, METauto );
-        double MTval = AnalyzerCore::MT( electron, metvec );
+        if(DijetFake){
 
-        for(int j=0; j<4; j++){
+          double this_weight = weight_by_pt;
 
-          double AwayjetPt = AwayjetPts[j];
+          double AwayjetPt = 40; // just using central value..
 
-          bool histfilled = false; //Fill only one event at most
-          for(unsigned int i=0; i<jetColl_tag.size(); i++){
+          TString HISTPREFIX = "SingleElectronTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10);
+          FillDenAndNum(HISTPREFIX, electron, this_weight, IsThisTight);
+          if(HasCloseBjet_Medium) FillDenAndNum(HISTPREFIX+"_withbjet_Medium", electron, this_weight, IsThisTight);
+          else                    FillDenAndNum(HISTPREFIX+"_withoutbjet_Medium", electron, this_weight, IsThisTight);
+          if(HasCloseBjet_Loose) FillDenAndNum(HISTPREFIX+"_withbjet_Loose", electron, this_weight, IsThisTight);
+          else                   FillDenAndNum(HISTPREFIX+"_withoutbjet_Loose", electron, this_weight, IsThisTight);
 
-            if(histfilled) break;
-            snu::KJet jet = jetColl_tag.at(i);
-            if( jet.Pt() < AwayjetPt ) continue;
+          double ptweight = WeightByTrigger(it->first, TargetLumi);
+          ptweight *= weight;
+          if( !PassTrigger(it->first) ) ptweight = 0.;
+          if( electron.Pt() < HLT_ptmin[it->first] ) ptweight = 0.;
+          if( (it->first) == "HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v" ){
+            if( For_HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v == 0 ) ptweight = 0.;
+          }
 
-            double dPhi = electron.DeltaPhi( jet );
+          HISTPREFIX = (it->first)+"_SingleElectronTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10);
 
-            bool UseEvent = false;
-            //==== If QCD, don't have to require MET/MT
-            if( DijetFake )        UseEvent = (dPhi > 2.5) && (jet.ChargedEMEnergyFraction() < 0.65);
-            //==== If not, use it to remove W events
-            else if( DijetPrompt ) UseEvent = (dPhi > 2.5) && (jet.ChargedEMEnergyFraction() < 0.65) && (METauto < 20.) && (MTval < 25.);
+          double TightISO = 0.08;
+          double conept = ElectronConePt(electron,TightISO);
 
-            if( UseEvent ){
+          FillHist(HISTPREFIX+"_RelIso_F0", electron.PFRelIso(0.3), 1., 0., 0.6, 60);
+          FillHist(HISTPREFIX+"_events_pt_cone_vs_eta_F0", conept, fabs(electron.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+          if(HasCloseBjet_Medium) FillHist(HISTPREFIX+"_withbjet_Medium_events_pt_cone_vs_eta_F0", conept, fabs(electron.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+          else                    FillHist(HISTPREFIX+"_withoutbjet_Medium_events_pt_cone_vs_eta_F0", conept, fabs(electron.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+          if(HasCloseBjet_Loose) FillHist(HISTPREFIX+"_withbjet_Loose_events_pt_cone_vs_eta_F0", conept, fabs(electron.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+          else                    FillHist(HISTPREFIX+"_withoutbjet_Loose_events_pt_cone_vs_eta_F0", conept, fabs(electron.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
 
-              FillDenAndNum((it->first)+"_SingleElectronTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10), electron, this_weight, IsThisTight);
-              if(jetfound){
-                bool IsBjet = IsBTagged(cljet, snu::KJet::CSVv2, snu::KJet::Medium);
-                if(IsBjet) FillDenAndNum((it->first)+"_SingleElectronTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10)+"_withbjet", electron, this_weight, IsThisTight);
-                else       FillDenAndNum((it->first)+"_SingleElectronTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10)+"_withoutbjet", electron, this_weight, IsThisTight);
-              }
-              histfilled = true;
+          if(IsThisTight){
+            FillHist(HISTPREFIX+"_events_pt_cone_vs_eta_F", conept, fabs(electron.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+            if(HasCloseBjet_Medium) FillHist(HISTPREFIX+"_withbjet_Medium_events_pt_cone_vs_eta_F", conept, fabs(electron.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+            else                    FillHist(HISTPREFIX+"_withoutbjet_Medium_events_pt_cone_vs_eta_F", conept, fabs(electron.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+            if(HasCloseBjet_Loose) FillHist(HISTPREFIX+"_withbjet_Loose_events_pt_cone_vs_eta_F", conept, fabs(electron.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+            else                    FillHist(HISTPREFIX+"_withoutbjet_Loose_events_pt_cone_vs_eta_F", conept, fabs(electron.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+          }
 
-            }
-          
-          } // END Tag jet loop
-   
         }
+        else{
 
-      }
+          double this_weight = weight_by_pt*weight;
+
+          TLorentzVector metvec;
+          metvec.SetPtEtaPhiE( METauto, 0, METphiauto, METauto );
+          double MTval = AnalyzerCore::MT( electron, metvec );
+
+          for(int j=0; j<4; j++){
+
+            double AwayjetPt = AwayjetPts[j];
+
+            bool histfilled = false; //Fill only one event at most
+            for(unsigned int i=0; i<jetColl_tag.size(); i++){
+
+              if(histfilled) break;
+              snu::KJet jet = jetColl_tag.at(i);
+              if( jet.Pt() < AwayjetPt ) continue;
+
+              double dPhi = electron.DeltaPhi( jet );
+
+              bool UseEvent = false;
+              //==== If QCD, don't have to require MET/MT
+              if( DijetFake )        UseEvent = (dPhi > 2.5) && (jet.ChargedEMEnergyFraction() < 0.65);
+              //==== If not, use it to remove W events
+              else if( DijetPrompt ) UseEvent = (dPhi > 2.5) && (jet.ChargedEMEnergyFraction() < 0.65) && (METauto < 20.) && (MTval < 25.);
+
+              if( UseEvent ){
+
+                TString HISTPREFIX = "SingleElectronTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10);
+                FillDenAndNum(HISTPREFIX, electron, this_weight, IsThisTight);
+                if(HasCloseBjet_Medium) FillDenAndNum(HISTPREFIX+"_withbjet_Medium", electron, this_weight, IsThisTight);
+                else                    FillDenAndNum(HISTPREFIX+"_withoutbjet_Medium", electron, this_weight, IsThisTight);
+                if(HasCloseBjet_Loose) FillDenAndNum(HISTPREFIX+"_withbjet_Loose", electron, this_weight, IsThisTight);
+                else                   FillDenAndNum(HISTPREFIX+"_withoutbjet_Loose", electron, this_weight, IsThisTight);
+
+                double ptweight = WeightByTrigger(it->first, TargetLumi);
+                ptweight *= weight;
+                if( !PassTrigger(it->first) ) ptweight = 0.;
+                if( electron.Pt() < HLT_ptmin[it->first] ) ptweight = 0.;
+                if( (it->first) == "HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v" ){
+                  if( For_HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v == 0 ) ptweight = 0.;
+                }
+
+                HISTPREFIX = (it->first)+"_SingleElectronTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10);
+
+                double TightISO = 0.08;
+                double conept = ElectronConePt(electron,TightISO);
+
+                FillHist(HISTPREFIX+"_events_pt_cone_vs_eta_F0", conept, fabs(electron.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+                if(HasCloseBjet_Medium) FillHist(HISTPREFIX+"_withbjet_Medium_events_pt_cone_vs_eta_F0", conept, fabs(electron.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+                else                    FillHist(HISTPREFIX+"_withoutbjet_Medium_events_pt_cone_vs_eta_F0", conept, fabs(electron.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+                if(HasCloseBjet_Loose) FillHist(HISTPREFIX+"_withbjet_Loose_events_pt_cone_vs_eta_F0", conept, fabs(electron.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+                else                    FillHist(HISTPREFIX+"_withoutbjet_Loose_events_pt_cone_vs_eta_F0", conept, fabs(electron.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+
+                if(IsThisTight){
+                  FillHist(HISTPREFIX+"_events_pt_cone_vs_eta_F", conept, fabs(electron.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+                  if(HasCloseBjet_Medium) FillHist(HISTPREFIX+"_withbjet_Medium_events_pt_cone_vs_eta_F", conept, fabs(electron.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+                  else                    FillHist(HISTPREFIX+"_withoutbjet_Medium_events_pt_cone_vs_eta_F", conept, fabs(electron.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+                  if(HasCloseBjet_Loose) FillHist(HISTPREFIX+"_withbjet_Loose_events_pt_cone_vs_eta_F", conept, fabs(electron.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+                  else                    FillHist(HISTPREFIX+"_withoutbjet_Loose_events_pt_cone_vs_eta_F", conept, fabs(electron.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+                }
+
+                histfilled = true;
+
+              } // Use this event
+            
+            } // END Tag jet loop
+   
+          } // Awayjet loop
+
+        } // Dijet Prompt
+
+      } // Trigger oop
   
     } // Tag Jet and electron exist
 
@@ -608,9 +732,9 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
         std::map<TString, double> this_weight_Loose, this_weight_HighdXYLoose, this_weight_NodXYCutLoose;
         for(std::map< TString, std::vector<double> >::iterator it=HLT_ptrange.begin(); it!=HLT_ptrange.end(); it++){
-          this_weight_Loose[it->first]         = weight*GetTriggerWeightByPtRange(it->first, it->second, electrontriLooseColl, For_HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v);
-          this_weight_HighdXYLoose[it->first]  = weight*GetTriggerWeightByPtRange(it->first, it->second, electrontriHighdXYLooseColl, For_HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v);
-          this_weight_NodXYCutLoose[it->first] = weight*GetTriggerWeightByPtRange(it->first, it->second, electrontriNodXYCutLooseColl, For_HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v);
+          this_weight_Loose[it->first]         = weight*GetTriggerWeightByPtRange(it->first, it->second, HLT_ptmin[it->first], electrontriLooseColl, For_HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v);
+          this_weight_HighdXYLoose[it->first]  = weight*GetTriggerWeightByPtRange(it->first, it->second, HLT_ptmin[it->first], electrontriHighdXYLooseColl, For_HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v);
+          this_weight_NodXYCutLoose[it->first] = weight*GetTriggerWeightByPtRange(it->first, it->second, HLT_ptmin[it->first], electrontriNodXYCutLooseColl, For_HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v);
         }
 
         //Double_t this_weight_Loose = weight*GetPrescale(electrontriLooseColl, PassTrigger("HLT_Mu8_v"), PassTrigger("HLT_Mu17_v"));
@@ -690,10 +814,10 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
               FillHist("TEST_HalfSample", 0., 1., 0., 2., 2);
               TString HalfSampleIndex = "SampleA";
               FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_events_F0", 
-                                HighdXYelectron.Pt(), fabs(HighdXYelectron.Eta()), this_weight_HighdXYLoose, ptarray, 11, etaarray, 4);
+                                HighdXYelectron.Pt(), fabs(HighdXYelectron.Eta()), this_weight_HighdXYLoose, ptarray, n_pt, etaarray, n_eta);
               if( LeptonRelIso < TightISO ){
                 FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_events_F",
-                                  HighdXYelectron.Pt(), fabs(HighdXYelectron.Eta()), this_weight_HighdXYLoose, ptarray, 11, etaarray, 4);
+                                  HighdXYelectron.Pt(), fabs(HighdXYelectron.Eta()), this_weight_HighdXYLoose, ptarray, n_pt, etaarray, n_eta);
               }
 
             }
@@ -706,12 +830,12 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
               FillHist("TEST_HalfSample", 1., 1., 0., 2., 2);
               TString HalfSampleIndex = "SampleB";
               FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_events_F0",
-                                HighdXYelectron.Pt(), fabs(HighdXYelectron.Eta()), this_weight_HighdXYLoose, ptarray, 11, etaarray, 4);
+                                HighdXYelectron.Pt(), fabs(HighdXYelectron.Eta()), this_weight_HighdXYLoose, ptarray, n_pt, etaarray, n_eta);
               FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_PFMET_F0", MET, this_weight_HighdXYLoose, 0., 500., 500);
               FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_njets_F0", n_jets, this_weight_HighdXYLoose, 0., 10., 10);
               if( LeptonRelIso < TightISO ){
                 FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_events_F",
-                                  HighdXYelectron.Pt(), fabs(HighdXYelectron.Eta()), this_weight_HighdXYLoose, ptarray, 11, etaarray, 4);
+                                  HighdXYelectron.Pt(), fabs(HighdXYelectron.Eta()), this_weight_HighdXYLoose, ptarray, n_pt, etaarray, n_eta);
                 FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_PFMET_F", MET, this_weight_HighdXYLoose, 0., 500., 500);
                 FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_njets_F", n_jets, this_weight_HighdXYLoose, 0., 10., 10);
               }
@@ -1067,17 +1191,23 @@ float FRCalculator_El_dxysig_DILEP::GetPrescale(std::vector<snu::KElectron> elec
   return prescale_trigger;
 }
 
-double FRCalculator_El_dxysig_DILEP::GetTriggerWeightByPtRange(TString hltname, vector<double> ptrange, std::vector<snu::KElectron> electrons, int npfjet50){
+double FRCalculator_El_dxysig_DILEP::GetTriggerWeightByPtRange(TString hltname, vector<double> ptrange, double trigger_safe_pt, std::vector<snu::KElectron> electrons, int npfjet50){
 
   double prescale_trigger = 0.;
 
   if(electrons.size()==1){
     snu::KElectron electron = electrons.at(0);
-    double minpt = ptrange.at(0);
-    double maxpt = ptrange.at(1);
+    double min_cone_pt = ptrange.at(0);
+    double max_cone_pt = ptrange.at(1);
 
-    if(PassTrigger(hltname)){
-      if(electron.Pt() >= minpt && electron.Pt() < maxpt){
+    bool SafePt = (electron.Pt() > trigger_safe_pt);
+
+    if(SafePt && PassTrigger(hltname)){
+
+      double TightISO = 0.08;
+      double conept = ElectronConePt(electron,TightISO);
+
+      if(conept >= min_cone_pt && conept < max_cone_pt){
         prescale_trigger = WeightByTrigger(hltname, TargetLumi) ;
       }
 
@@ -1131,6 +1261,7 @@ void FRCalculator_El_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KElectron 
   FillHist(prefix+"_pt_cone_FRbinned_F0", conept, thisweight, ptarray, 6);
   FillHist(prefix+"_pt_cone_FRbinned_w1_F0", conept, 1., ptarray, 6);
   FillHist(prefix+"_RelIso_F0", electron.PFRelIso(0.3), thisweight, 0., 1., 100);
+  FillHist(prefix+"_MVA_F0", electron.MVA(), thisweight, -1., 1., 200);
   FillHist(prefix+"_dXY_F0", fabs(electron.dXY()), thisweight, 0., 1., 1000);
   FillHist(prefix+"_dXYSig_F0", fabs(electron.dXYSig()), thisweight, 0., 15., 150);
   FillHist(prefix+"_dZ_F0", fabs(electron.dZ()), thisweight, 0., 0.5, 50);
@@ -1149,6 +1280,7 @@ void FRCalculator_El_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KElectron 
     FillHist(prefix+"_pt_cone_FRbinned_F", conept, thisweight, ptarray, 6);
     FillHist(prefix+"_pt_cone_FRbinned_w1_F", conept, 1., ptarray, 6);
     FillHist(prefix+"_RelIso_F", electron.PFRelIso(0.3), thisweight, 0., 1., 100);
+    FillHist(prefix+"_MVA_F", electron.MVA(), thisweight, -1., 1., 200);
     FillHist(prefix+"_dXY_F", fabs(electron.dXY()), thisweight, 0., 1., 1000);
     FillHist(prefix+"_dXYSig_F", fabs(electron.dXYSig()), thisweight, 0., 15., 150);
     FillHist(prefix+"_dZ_F", fabs(electron.dZ()), thisweight, 0., 0.5, 50);

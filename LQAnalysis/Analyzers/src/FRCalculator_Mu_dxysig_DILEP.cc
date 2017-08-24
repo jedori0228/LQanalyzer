@@ -128,7 +128,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //==== Get Jets
   //===============
 
-  std::vector<snu::KJet> jetColl_hn = GetJets("JET_HN");
+  std::vector<snu::KJet> jetColl_hn = GetJets("JET_NOLEPTONVETO", 20., 2.5);
 
   int n_jets = jetColl_hn.size();
   int n_bjets=0;
@@ -145,7 +145,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 */
   for(int j=0; j<n_jets; j++){
     if( IsBTagged(jetColl_hn.at(j), snu::KJet::CSVv2, snu::KJet::Medium) ) n_bjets++;
-    if( jetColl_hn.at(j).Pt() > 50. ) For_HLT_Mu3_PFJet40_v++;
+    if( jetColl_hn.at(j).Pt() > 40. ) For_HLT_Mu3_PFJet40_v++;
   }
 
   //======================
@@ -184,8 +184,10 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //==== FR binnings
   //==================
 
-  float etaarray [] = {0.0, 0.8, 1.479, 2.0, 2.5};
-  float ptarray [] = {0., 5., 12., 15., 20., 25., 30., 35., 45., 60., 100., 200.};
+  const int n_eta = 3;
+  float etaarray[n_eta+1] = {0.0, 0.8, 1.479, 2.5};
+  const int n_pt = 7;
+  float ptarray[n_pt+1] = {5., 10., 20., 30., 40., 50., 60., 70.};
 
   float etaarray_2 [] = {0.0, 1.479, 2.5};
   float ptarray_2 [] = {10.,15.,40.,200.};
@@ -195,16 +197,24 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //===========
 
   std::map< TString, std::vector<double> > HLT_ptrange;
+  std::map< TString, double > HLT_ptmin;
   HLT_ptrange.clear();
 
   HLT_ptrange["HLT_Mu3_PFJet40_v"].push_back(5.);
-  HLT_ptrange["HLT_Mu3_PFJet40_v"].push_back(9999.);
+  HLT_ptrange["HLT_Mu3_PFJet40_v"].push_back(20.);
+  HLT_ptmin["HLT_Mu3_PFJet40_v"] = 5.;
 
-  HLT_ptrange["HLT_Mu8_v"].push_back(10.);
-  HLT_ptrange["HLT_Mu8_v"].push_back(9999.);
+  //HLT_ptrange["HLT_Mu8_v"].push_back(20.);
+  //HLT_ptrange["HLT_Mu8_v"].push_back(30.);
+  HLT_ptrange["HLT_Mu8_TrkIsoVVL_v"].push_back(20.);
+  HLT_ptrange["HLT_Mu8_TrkIsoVVL_v"].push_back(30.);
+  HLT_ptmin["HLT_Mu8_TrkIsoVVL_v"] = 10.;
 
-  HLT_ptrange["HLT_Mu17_v"].push_back(20.);
-  HLT_ptrange["HLT_Mu17_v"].push_back(9999.);
+  //HLT_ptrange["HLT_Mu17_v"].push_back(30.);
+  //HLT_ptrange["HLT_Mu17_v"].push_back(9999.);
+  HLT_ptrange["HLT_Mu17_TrkIsoVVL_v"].push_back(30.);
+  HLT_ptrange["HLT_Mu17_TrkIsoVVL_v"].push_back(9999.);
+  HLT_ptmin["HLT_Mu17_TrkIsoVVL_v"] = 20.;
 
   std::vector<TString> AllHLTs;
   for(std::map< TString, std::vector<double> >::iterator it=HLT_ptrange.begin(); it!=HLT_ptrange.end(); it++){
@@ -216,12 +226,62 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   bool DijetFake = std::find(k_flags.begin(), k_flags.end(), "DijetFake") != k_flags.end();
   bool DijetPrompt= std::find(k_flags.begin(), k_flags.end(), "DijetPrompt") != k_flags.end();
 
+  //==== Norm Cehck for each trigger
+  if(DijetPrompt){
+
+    double m_Z = 91.1876;
+
+    std::vector< snu::KMuon > tightmuons = GetMuons("MUON_HN_TIGHT", true, 10., 2.4);
+
+    double muon_id_iso_sf = mcdata_correction->MuonScaleFactor("MUON_HN_TIGHT", tightmuons, 0);
+    double MuTrkEffSF =  mcdata_correction->MuonTrackingEffScaleFactor(tightmuons);
+
+    TLorentzVector metvec;
+    metvec.SetPtEtaPhiE( METauto, 0, METphiauto, METauto );
+
+    for(unsigned int i=0; i<AllHLTs.size(); i++){
+      TString ThisTrigger = AllHLTs.at(i);
+      if( PassTrigger(ThisTrigger) && (tightmuons.size()!=0) ){
+
+        if(HLT_ptmin[ThisTrigger] > tightmuons.at(0).Pt()) continue;
+
+        double triggerweight = WeightByTrigger(ThisTrigger, TargetLumi) ;
+        double this_weight = weight*muon_id_iso_sf*MuTrkEffSF*triggerweight;
+        //==== 1) Z-Peak
+        if(tightmuons.size()==2){
+          double mll = (tightmuons.at(0)+tightmuons.at(1)).M();
+          if( fabs(mll-m_Z) < 10. ){
+            FillHist(ThisTrigger+"_ZPeak_mll", mll, this_weight, 0., 200., 200);
+            FillHist(ThisTrigger+"_ZPeak_leadpt", tightmuons.at(0).Pt(), this_weight, 0., 500., 500);
+            FillHist(ThisTrigger+"_ZPeak_subleadpt", tightmuons.at(1).Pt(), this_weight, 0., 500., 500);
+          }
+        }
+        //==== 2) W
+        if(tightmuons.size()==1){
+          double MTval = AnalyzerCore::MT( tightmuons.at(0), metvec );
+          if( (METauto>50.) && (MTval>50.) ){
+            FillHist(ThisTrigger+"_W_PFMET", METauto, this_weight, 0., 500., 500);
+            FillHist(ThisTrigger+"_W_MT", MTval, this_weight, 0., 500., 500);
+            FillHist(ThisTrigger+"_W_leadpt", tightmuons.at(0).Pt(), this_weight, 0., 500., 500);
+          }
+        }
+
+
+      }
+    }
+
+
+  }
+
   //==== tag jet collections
   //==== pt > 40 GeV
   //==== LeptonVeto
   std::vector<snu::KJet> jetColl_tag = GetJets("JET_HN");
   std::vector<snu::KJet> jetColl_nolepveto = GetJets("JET_NOLEPTONVETO");
-  std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSE", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSE", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv3", true);
+  std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv4", true);
 
   std::vector<snu::KMuon> hnloose;
   hnloose.clear();
@@ -307,7 +367,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
         onemu.push_back(muon);
         double weight_by_pt(0.);
         for(std::map< TString, std::vector<double> >::iterator it=HLT_ptrange.begin(); it!=HLT_ptrange.end(); it++){
-          double tmp = GetTriggerWeightByPtRange(it->first, it->second, onemu, For_HLT_Mu3_PFJet40_v);
+          double tmp = GetTriggerWeightByPtRange(it->first, it->second, HLT_ptmin[it->first], onemu, For_HLT_Mu3_PFJet40_v);
           if(tmp!=0.){
             weight_by_pt = tmp;
             break;
@@ -345,71 +405,146 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
   if( PassTriggerOR(AllHLTs) ){
 
-    if( (jetColl_tag.size() != 0) && (hnloose.size() == 1) ){
+    if( (hnloose.size() == 1) ){
 
       snu::KMuon muon = hnloose.at(0);
 
-      double dr = 0.4;
-      bool jetfound=false;
-      snu::KJet cljet;
+      double dr = 0.5;
+      bool HasCloseBjet_Medium=false, HasCloseBjet_Loose=false;
       for(unsigned int j=0; j<jetColl_nolepveto.size(); j++){
-
+        
         snu::KJet jet = jetColl_nolepveto.at(j);
         if( muon.DeltaR( jet ) < dr ){
-          dr = muon.DeltaR( jet );
-          jetfound = true;
-          cljet = jet;
+          if(IsBTagged(jet, snu::KJet::CSVv2, snu::KJet::Medium)){
+            HasCloseBjet_Medium = true;
+          }
+          if(IsBTagged(jet, snu::KJet::CSVv2, snu::KJet::Loose)){
+            HasCloseBjet_Loose = true;
+          }
         }
-
       }
 
       for(std::map< TString, std::vector<double> >::iterator it=HLT_ptrange.begin(); it!=HLT_ptrange.end(); it++){
 
-        double weight_by_pt = GetTriggerWeightByPtRange(it->first, it->second, hnloose, For_HLT_Mu3_PFJet40_v);
-        double this_weight = weight_by_pt*weight;
+        double weight_by_pt = GetTriggerWeightByPtRange(it->first, it->second, HLT_ptmin[it->first], hnloose, For_HLT_Mu3_PFJet40_v);
 
         bool IsThisTight = PassID( muon, "MUON_HN_TIGHT" );
 
-        TLorentzVector metvec;
-        metvec.SetPtEtaPhiE( METauto, 0, METphiauto, METauto );
-        double MTval = AnalyzerCore::MT( muon, metvec );
+        if(DijetFake){
 
-        for(int j=0; j<4; j++){
+          double this_weight = weight_by_pt;
 
-          double AwayjetPt = AwayjetPts[j];
+          double AwayjetPt = 40; // just using central value..
 
-          bool histfilled = false; //Fill only one event at most
-          for(unsigned int i=0; i<jetColl_tag.size(); i++){
+          TString HISTPREFIX = "SingleMuonTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10);
+          FillDenAndNum(HISTPREFIX, muon, this_weight, IsThisTight);
+          if(HasCloseBjet_Medium) FillDenAndNum(HISTPREFIX+"_withbjet_Medium", muon, this_weight, IsThisTight);
+          else                    FillDenAndNum(HISTPREFIX+"_withoutbjet_Medium", muon, this_weight, IsThisTight);
+          if(HasCloseBjet_Loose) FillDenAndNum(HISTPREFIX+"_withbjet_Loose", muon, this_weight, IsThisTight);
+          else                   FillDenAndNum(HISTPREFIX+"_withoutbjet_Loose", muon, this_weight, IsThisTight);
 
-            if(histfilled) break;
-            snu::KJet jet = jetColl_tag.at(i);
-            if( jet.Pt() < AwayjetPt ) continue;
+          double ptweight = WeightByTrigger(it->first, TargetLumi);
+          ptweight *= weight;
+          if( !PassTrigger(it->first) ) ptweight = 0.;
+          if( muon.MiniAODPt() < HLT_ptmin[it->first] ) ptweight = 0.;
+          if( (it->first) == "HLT_Mu3_PFJet40_v" ){
+            if( For_HLT_Mu3_PFJet40_v == 0 ) ptweight = 0.;
+          }
 
-            double dPhi = muon.DeltaPhi( jet );
+          HISTPREFIX = (it->first)+"_SingleMuonTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10);
 
-            bool UseEvent = false;
-            //==== If QCD, don't have to require MET/MT
-            if( DijetFake )        UseEvent = (dPhi > 2.5) && (jet.Pt()/muon.Pt() > 1.);
-            //==== If not, use it to remove W events
-            else if( DijetPrompt ) UseEvent = (dPhi > 2.5) && (jet.Pt()/muon.Pt() > 1.) && (METauto < 20.) && (MTval < 25.);
+          double TightISO = 0.07;
+          double conept = MuonConePt(muon,TightISO);
 
-            if( UseEvent ){
+          FillHist(HISTPREFIX+"_events_pt_cone_vs_eta_F0", conept, fabs(muon.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+          if(HasCloseBjet_Medium) FillHist(HISTPREFIX+"_withbjet_Medium_events_pt_cone_vs_eta_F0", conept, fabs(muon.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+          else                    FillHist(HISTPREFIX+"_withoutbjet_Medium_events_pt_cone_vs_eta_F0", conept, fabs(muon.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+          if(HasCloseBjet_Loose) FillHist(HISTPREFIX+"_withbjet_Loose_events_pt_cone_vs_eta_F0", conept, fabs(muon.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+          else                    FillHist(HISTPREFIX+"_withoutbjet_Loose_events_pt_cone_vs_eta_F0", conept, fabs(muon.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
 
-              FillDenAndNum((it->first)+"_SingleMuonTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10), muon, this_weight, IsThisTight);
-              if(jetfound){
-                bool IsBjet = IsBTagged(cljet, snu::KJet::CSVv2, snu::KJet::Medium);
-                if(IsBjet) FillDenAndNum((it->first)+"_SingleMuonTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10)+"_withbjet", muon, this_weight, IsThisTight);
-                else       FillDenAndNum((it->first)+"_SingleMuonTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10)+"_withoutbjet", muon, this_weight, IsThisTight);
-              }
-              histfilled = true;
-
-            }
-
-          } // END Tag jet loop
+          if(IsThisTight){
+            FillHist(HISTPREFIX+"_events_pt_cone_vs_eta_F", conept, fabs(muon.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+            if(HasCloseBjet_Medium) FillHist(HISTPREFIX+"_withbjet_Medium_events_pt_cone_vs_eta_F", conept, fabs(muon.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+            else                    FillHist(HISTPREFIX+"_withoutbjet_Medium_events_pt_cone_vs_eta_F", conept, fabs(muon.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+            if(HasCloseBjet_Loose) FillHist(HISTPREFIX+"_withbjet_Loose_events_pt_cone_vs_eta_F", conept, fabs(muon.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+            else                    FillHist(HISTPREFIX+"_withoutbjet_Loose_events_pt_cone_vs_eta_F", conept, fabs(muon.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+          } 
 
         }
+        else{
 
-      }
+          double this_weight = weight_by_pt*weight;
+
+          TLorentzVector metvec;
+          metvec.SetPtEtaPhiE( METauto, 0, METphiauto, METauto );
+          double MTval = AnalyzerCore::MT( muon, metvec );
+
+          for(int j=0; j<4; j++){
+
+            double AwayjetPt = AwayjetPts[j];
+
+            bool histfilled = false; //Fill only one event at most
+            for(unsigned int i=0; i<jetColl_tag.size(); i++){
+
+              if(histfilled) break;
+              snu::KJet jet = jetColl_tag.at(i);
+              if( jet.Pt() < AwayjetPt ) continue;
+
+              double dPhi = muon.DeltaPhi( jet );
+
+              bool UseEvent = false;
+              //==== If QCD, don't have to require MET/MT
+              if( DijetFake )        UseEvent = (dPhi > 2.5) && (jet.Pt()/muon.Pt() > 1.);
+              //==== If not, use it to remove W events
+              else if( DijetPrompt ) UseEvent = (dPhi > 2.5) && (jet.Pt()/muon.Pt() > 1.) && (METauto < 20.) && (MTval < 25.);
+
+              if( UseEvent ){
+
+                TString HISTPREFIX = "SingleMuonTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10);
+                FillDenAndNum(HISTPREFIX, muon, this_weight, IsThisTight);
+                if(HasCloseBjet_Medium) FillDenAndNum(HISTPREFIX+"_withbjet_Medium", muon, this_weight, IsThisTight);
+                else                    FillDenAndNum(HISTPREFIX+"_withoutbjet_Medium", muon, this_weight, IsThisTight);
+                if(HasCloseBjet_Loose) FillDenAndNum(HISTPREFIX+"_withbjet_Loose", muon, this_weight, IsThisTight);           
+                else                   FillDenAndNum(HISTPREFIX+"_withoutbjet_Loose", muon, this_weight, IsThisTight);
+
+                double ptweight = WeightByTrigger(it->first, TargetLumi);
+                ptweight *= weight;
+                if( !PassTrigger(it->first) ) ptweight = 0.;
+                if( muon.MiniAODPt() < HLT_ptmin[it->first] ) ptweight = 0.;
+                if( (it->first) == "HLT_Mu3_PFJet40_v" ){
+                  if( For_HLT_Mu3_PFJet40_v == 0 ) ptweight = 0.;
+                }
+
+                HISTPREFIX = (it->first)+"_SingleMuonTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10);
+
+                double TightISO = 0.07;
+                double conept = MuonConePt(muon,TightISO);
+
+                FillHist(HISTPREFIX+"_events_pt_cone_vs_eta_F0", conept, fabs(muon.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+                if(HasCloseBjet_Medium) FillHist(HISTPREFIX+"_withbjet_Medium_events_pt_cone_vs_eta_F0", conept, fabs(muon.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+                else                    FillHist(HISTPREFIX+"_withoutbjet_Medium_events_pt_cone_vs_eta_F0", conept, fabs(muon.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+                if(HasCloseBjet_Loose) FillHist(HISTPREFIX+"_withbjet_Loose_events_pt_cone_vs_eta_F0", conept, fabs(muon.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+                else                    FillHist(HISTPREFIX+"_withoutbjet_Loose_events_pt_cone_vs_eta_F0", conept, fabs(muon.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+
+                if(IsThisTight){
+                  FillHist(HISTPREFIX+"_events_pt_cone_vs_eta_F", conept, fabs(muon.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+                  if(HasCloseBjet_Medium) FillHist(HISTPREFIX+"_withbjet_Medium_events_pt_cone_vs_eta_F", conept, fabs(muon.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+                  else                    FillHist(HISTPREFIX+"_withoutbjet_Medium_events_pt_cone_vs_eta_F", conept, fabs(muon.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+                  if(HasCloseBjet_Loose) FillHist(HISTPREFIX+"_withbjet_Loose_events_pt_cone_vs_eta_F", conept, fabs(muon.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+                  else                    FillHist(HISTPREFIX+"_withoutbjet_Loose_events_pt_cone_vs_eta_F", conept, fabs(muon.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
+                }
+
+                histfilled = true;
+
+              } // Use this event 
+
+            } // END Tag jet loop
+
+          } // Awayjet loop
+
+        } // DijetPrompt
+
+      } // Trigger loop
 
     } // Tag Jet and muon exist
 
@@ -576,9 +711,9 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
         std::map<TString, double> this_weight_Loose, this_weight_HighdXYLoose, this_weight_NodXYCutLoose;
         for(std::map< TString, std::vector<double> >::iterator it=HLT_ptrange.begin(); it!=HLT_ptrange.end(); it++){
-          this_weight_Loose[it->first]         = weight*GetTriggerWeightByPtRange(it->first, it->second, muontriLooseColl, For_HLT_Mu3_PFJet40_v);
-          this_weight_HighdXYLoose[it->first]  = weight*GetTriggerWeightByPtRange(it->first, it->second, muontriHighdXYLooseColl, For_HLT_Mu3_PFJet40_v);
-          this_weight_NodXYCutLoose[it->first] = weight*GetTriggerWeightByPtRange(it->first, it->second, muontriNodXYCutLooseColl, For_HLT_Mu3_PFJet40_v);
+          this_weight_Loose[it->first]         = weight*GetTriggerWeightByPtRange(it->first, it->second, HLT_ptmin[it->first], muontriLooseColl, For_HLT_Mu3_PFJet40_v);
+          this_weight_HighdXYLoose[it->first]  = weight*GetTriggerWeightByPtRange(it->first, it->second, HLT_ptmin[it->first], muontriHighdXYLooseColl, For_HLT_Mu3_PFJet40_v);
+          this_weight_NodXYCutLoose[it->first] = weight*GetTriggerWeightByPtRange(it->first, it->second, HLT_ptmin[it->first], muontriNodXYCutLooseColl, For_HLT_Mu3_PFJet40_v);
         }
 
         //Double_t this_weight_Loose = weight*GetPrescale(muontriLooseColl, PassTrigger("HLT_Mu8_v"), PassTrigger("HLT_Mu17_v"));
@@ -661,10 +796,10 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
               FillHist("TEST_HalfSample", 0., 1., 0., 2., 2);
               TString HalfSampleIndex = "SampleA";
               FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_events_F0", 
-                                HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 11, etaarray, 4);
+                                HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, n_pt, etaarray, n_eta);
               if( LeptonRelIso < TightISO ){
                 FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_events_F",
-                                  HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 11, etaarray, 4);
+                                  HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, n_pt, etaarray, n_eta);
               }
 
             }
@@ -677,12 +812,12 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
               FillHist("TEST_HalfSample", 1., 1., 0., 2., 2);
               TString HalfSampleIndex = "SampleB";
               FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_events_F0",
-                                HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 11, etaarray, 4);
+                                HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, n_pt, etaarray, n_eta);
               FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_PFMET_F0", MET, this_weight_HighdXYLoose, 0., 500., 500);
               FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_njets_F0", n_jets, this_weight_HighdXYLoose, 0., 10., 10);
               if( LeptonRelIso < TightISO ){
                 FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_events_F",
-                                  HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, 11, etaarray, 4);
+                                  HighdXYmuon.Pt(), fabs(HighdXYmuon.Eta()), this_weight_HighdXYLoose, ptarray, n_pt, etaarray, n_eta);
                 FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_PFMET_F", MET, this_weight_HighdXYLoose, 0., 500., 500);
                 FillHistByTrigger(str_dXYCut+"_HighdXY_HalfSample_"+HalfSampleIndex+"_njets_F", n_jets, this_weight_HighdXYLoose, 0., 10., 10);
               }
@@ -1048,17 +1183,23 @@ float FRCalculator_Mu_dxysig_DILEP::GetPrescale(std::vector<snu::KMuon> muon, bo
   return prescale_trigger;
 }
 
-double FRCalculator_Mu_dxysig_DILEP::GetTriggerWeightByPtRange(TString hltname, vector<double> ptrange, std::vector<snu::KMuon> muons, int npfjet50){
+double FRCalculator_Mu_dxysig_DILEP::GetTriggerWeightByPtRange(TString hltname, vector<double> ptrange, double trigger_safe_pt, std::vector<snu::KMuon> muons, int npfjet50){
 
   double prescale_trigger = 0.;
 
   if(muons.size()==1){
     snu::KMuon muon = muons.at(0);
-    double minpt = ptrange.at(0);
-    double maxpt = ptrange.at(1);
+    double min_cone_pt = ptrange.at(0);
+    double max_cone_pt = ptrange.at(1);
 
-    if(PassTrigger(hltname)){
-      if(muon.MiniAODPt() >= minpt && muon.MiniAODPt() < maxpt){
+    bool SafePt = (muon.MiniAODPt() > trigger_safe_pt);
+
+    if(SafePt && PassTrigger(hltname)){
+
+      double TightISO = 0.07;
+      double conept = MuonConePt(muon,TightISO);
+
+      if(conept >= min_cone_pt && conept < max_cone_pt){
         prescale_trigger = WeightByTrigger(hltname, TargetLumi) ;
       }
 
@@ -1092,12 +1233,10 @@ void FRCalculator_Mu_dxysig_DILEP::FillHistByTrigger(TString histname, float val
 
 void FRCalculator_Mu_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KMuon muon, double thisweight, bool isTight){
 
-  float etaarray [] = {0.0, 0.8, 1.479, 2.5};
-  float ptarray [] = {0., 5., 10., 15., 20., 25., 30., 35., 40., 45., 50., 55., 60., 65., 70.};
-  //float ptarray [] = {0., 5., 10., 15., 25., 35., 50., 70.};
-
-  float etaarray_2 [] = {0.0, 1.479, 2.5};
-  float ptarray_2 [] = {10.,15.,40.,200.};
+  const int n_eta = 3;
+  float etaarray[n_eta+1] = {0.0, 0.8, 1.479, 2.5};
+   const int n_pt = 7;
+  float ptarray[n_pt+1] = {5., 10., 20., 30., 40., 50., 60., 70.};
 
   double TightISO = 0.07;
   double conept = MuonConePt(muon,TightISO);
@@ -1118,8 +1257,8 @@ void FRCalculator_Mu_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KMuon muon
   FillHist(prefix+"_dZ_F0", fabs(muon.dZ()), thisweight, 0., 0.5, 50);
   FillHist(prefix+"_Type_F0", muon.GetType(), thisweight, 0., 50., 50);
   FillHist(prefix+"_onebin_F0", 0., thisweight, 0., 1., 1);
-  FillHist(prefix+"_events_pt_vs_eta_F0", muon.Pt(), fabs(muon.Eta()), thisweight, ptarray, 14, etaarray, 3);
-  FillHist(prefix+"_events_pt_cone_vs_eta_F0", conept, fabs(muon.Eta()), thisweight, ptarray, 14, etaarray, 3);
+  FillHist(prefix+"_events_pt_vs_eta_F0", muon.Pt(), fabs(muon.Eta()), thisweight, ptarray, n_pt, etaarray, n_eta);
+  FillHist(prefix+"_events_pt_cone_vs_eta_F0", conept, fabs(muon.Eta()), thisweight, ptarray, n_pt, etaarray, n_eta);
   FillHist(prefix+"_PFMET_F0", METauto, thisweight, 0., 1000., 1000);
   FillHist(prefix+"_MT_F0", this_mt, thisweight, 0., 1000., 1000);
 
@@ -1136,8 +1275,8 @@ void FRCalculator_Mu_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KMuon muon
     FillHist(prefix+"_dZ_F", fabs(muon.dZ()), thisweight, 0., 0.5, 50);
     FillHist(prefix+"_Type_F", muon.GetType(), thisweight, 0., 50., 50);
     FillHist(prefix+"_onebin_F", 0., thisweight, 0., 1., 1);
-    FillHist(prefix+"_events_pt_vs_eta_F", muon.Pt(), fabs(muon.Eta()), thisweight, ptarray, 14, etaarray, 3);
-    FillHist(prefix+"_events_pt_cone_vs_eta_F", conept, fabs(muon.Eta()), thisweight, ptarray, 14, etaarray, 3);
+    FillHist(prefix+"_events_pt_vs_eta_F", muon.Pt(), fabs(muon.Eta()), thisweight, ptarray, n_pt, etaarray, n_eta);
+    FillHist(prefix+"_events_pt_cone_vs_eta_F", conept, fabs(muon.Eta()), thisweight, ptarray, n_pt, etaarray, n_eta);
     FillHist(prefix+"_PFMET_F", METauto, thisweight, 0., 1000., 1000);
     FillHist(prefix+"_MT_F", this_mt, thisweight, 0., 1000., 1000);
 
