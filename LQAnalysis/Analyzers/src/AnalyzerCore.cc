@@ -4405,25 +4405,22 @@ bool AnalyzerCore::LeptonInsideFatJet(snu::KFatJet fj, double dr, std::vector<KL
 
 }
 
-int AnalyzerCore::HasCloseBjet(KLepton lep, std::vector<snu::KJet> jets){
+int AnalyzerCore::HasCloseBjet(KLepton lep, std::vector<snu::KJet> jets, snu::KJet::WORKING_POINT wp){
 
-  double dr = 0.4;
-  bool jetfound=false;
-  snu::KJet cljet;
+  double dr = 0.5;
+  bool HasCloseBjet=false;
   for(unsigned int j=0; j<jets.size(); j++){
+
     snu::KJet jet = jets.at(j);
     if( lep.DeltaR( jet ) < dr ){
-      dr = lep.DeltaR( jet );
-      jetfound = true;
-      cljet = jet;
+      if(IsBTagged(jet, snu::KJet::CSVv2, wp)){
+        HasCloseBjet = true;
+      }
     }
-
   }
 
-  if(!jetfound) return -1;
-  bool IsBjet = IsBTagged(cljet, snu::KJet::CSVv2, snu::KJet::Medium);
-  if(IsBjet) return 1;
-  else return 0;
+
+  return HasCloseBjet;
 
 }
 
