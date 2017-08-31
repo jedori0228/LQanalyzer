@@ -29,6 +29,7 @@ class FRCalculator_Mu_dxysig_DILEP : public AnalyzerCore {
   void FillDenAndNum(TString prefix, snu::KMuon muon, std::map<TString, double> hltweight, bool isTight);
 
   float GetPrescale(std::vector<snu::KMuon> muon, bool passlow, bool passhigh);
+  float JSWeightByTrigger(TString triggername, float tlumi);
  private:
   
   //
