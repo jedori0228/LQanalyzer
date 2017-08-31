@@ -1266,23 +1266,42 @@ while not JobSuccess:
             if running_batch == True:
                 check_outfile = output + "/Job" +  "_" +  str(i) + "/" + outsamplename + "_Job_"+ str(i) +".o"+array_batchjobs[i-1]
 
-            os.system('tail -100 ' + check_outfile + ' > ' + local_sub_dir + '/outlog.txt')
-            nevent_processed_i=0.
-            nevents_total_i=0.
-            for line in open(local_sub_dir + '/outlog.txt', 'r'):
-                if "Processing entry" in line:
-                    if "LQCycleController" not in line:
-                        entries = line.split()
-                        if len(entries)> 6:                        
-                            num = entries[7]
-                            s = num.replace("/", " ")
-                            event_split = s.split()
-                            if len(event_split) < 2:
-                                print "Error [2002] " + event_split 
-                                print line
-                                os.system("cp " + local_sub_dir + '/outlog.txt ~/error_log_'+str(array_batchjobs[i-1]))
-                            nevent_processed_i = float(event_split[0])
-                            nevents_total_i= float(event_split[1])
+            # ( INFO  )  DiLeptonAnalyzer   : Processing entry 1366000/1366055
+            CompletedLine = False
+
+            while not CompletedLine:
+              os.system('tail -100 ' + check_outfile + ' > ' + local_sub_dir + '/outlog.txt')
+              nevent_processed_i=0.
+              nevents_total_i=0.
+              for line in open(local_sub_dir + '/outlog.txt', 'r'):
+                  if ("Processing entry" in line) and ("/" in line):
+                      if "LQCycleController" not in line:
+                          entries = line.split()
+                          if len(entries)> 6:                        
+                              if len(entries)==7:
+                                print "Error : printing entries"
+                                print entries
+                              #num = entries[7]
+                              #s = num.replace("/", " ")
+                              #event_split = s.split()
+                              #if len(event_split) < 2:
+                              #    print "Error [2002] "
+                              #    print event_split 
+                              #    print line
+                              #    os.system("cp " + local_sub_dir + '/outlog.txt ~/error_log_'+str(array_batchjobs[i-1]))
+                              slash_index=0
+                              for aaaa in range(0,len(line)):
+                                if line[aaaa:aaaa+5]=="entry":
+                                  slash_index=aaaa
+                                  break
+                              LineOnlyNevent = line[aaaa+6:]
+                              s = LineOnlyNevent.replace("/", " ")
+                              event_split = s.split()
+                              nevent_processed_i = float(event_split[0])
+                              nevents_total_i= float(event_split[1])
+                              if nevent_processed_i > nevents_total_i:
+                                break
+                              CompletedLine = True
             nevent_processed+=nevent_processed_i                
             nevents_total+=nevents_total_i
 
