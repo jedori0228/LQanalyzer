@@ -1,14 +1,7 @@
 #!/bin/sh
 
 declare -a tmp=(
-'HNMupEp_Tchannel_300'  'HNMupEp_Tchannel_400'  'HNMupEp_Tchannel_600'  'HNMupEp_Tchannel_700'  'HNMupEp_Tchannel_800'  'HNMupEp_Tchannel_900'  'HNMupEp_Tchannel_1000'  'HNMupEp_Tchannel_1200'  'HNMupEp_Tchannel_1300'  'HNMupEp_Tchannel_1400'  'HNMupEp_Tchannel_1500'  
-'HNMoriondLL_Tchannel_MupEp_100'  'HNMoriondLL_Tchannel_MupEp_200'  'HNMoriondLL_Tchannel_MupEp_500'  'HNMoriondLL_Tchannel_MupEp_1100'
-'HNMumEm_Tchannel_300'  'HNMumEm_Tchannel_400'  'HNMumEm_Tchannel_600'  'HNMumEm_Tchannel_700'  'HNMumEm_Tchannel_800'  'HNMumEm_Tchannel_900'  'HNMumEm_Tchannel_1000'  'HNMumEm_Tchannel_1200'  'HNMumEm_Tchannel_1300'  'HNMumEm_Tchannel_1400'  'HNMumEm_Tchannel_1500'  
-'HNMoriondLL_Tchannel_MumEm_100'  'HNMoriondLL_Tchannel_MumEm_200'  'HNMoriondLL_Tchannel_MumEm_500'  'HNMoriondLL_Tchannel_MumEm_1100'
-'HNEpMup_Tchannel_300'  'HNEpMup_Tchannel_400'  'HNEpMup_Tchannel_600'  'HNEpMup_Tchannel_700'  'HNEpMup_Tchannel_800'  'HNEpMup_Tchannel_900'  'HNEpMup_Tchannel_1000'  'HNEpMup_Tchannel_1200'  'HNEpMup_Tchannel_1300'  'HNEpMup_Tchannel_1400'  'HNEpMup_Tchannel_1500'  
-'HNMoriondLL_Tchannel_EpMup_100'  'HNMoriondLL_Tchannel_EpMup_200'  'HNMoriondLL_Tchannel_EpMup_500'  'HNMoriondLL_Tchannel_EpMup_1100'
-'HNEmMum_Tchannel_300'  'HNEmMum_Tchannel_400'  'HNEmMum_Tchannel_600'  'HNEmMum_Tchannel_700'  'HNEmMum_Tchannel_800'  'HNEmMum_Tchannel_900'  'HNEmMum_Tchannel_1000'  'HNEmMum_Tchannel_1200'  'HNEmMum_Tchannel_1300'  'HNEmMum_Tchannel_1400'  'HNEmMum_Tchannel_1500'  
-'HNMoriondLL_Tchannel_EmMum_100'  'HNMoriondLL_Tchannel_EmMum_200'  'HNMoriondLL_Tchannel_EmMum_500'  'HNMoriondLL_Tchannel_EmMum_1100'
+'ZGto2LG' 'WGtoLNuG'
 )
 
 ########################
@@ -21,7 +14,7 @@ declare -a trilep_fake_bkg=(
 'SingleTop_s' 'SingleTop_t' 'SingleTbar_t' 'SingleTop_tW' 'SingleTbar_tW'
 'WJets'
 'WZ' 'ZZ' 'WW'
-'TTJets_aMC'
+'TT_powheg'
 'ZGto2LG' 'WGtoLNuG'
 )
 declare -a trilep_fake_bkg_short=(
@@ -33,14 +26,16 @@ declare -a trilep_fake_bkg_short=(
 declare -a trilep_fake_bkg_long=(
 'DYJets'
 'WJets'
-'TTJets_aMC'
+'TT_powheg'
 )
 declare -a QCD_FR=(
 'QCD_Pt-1000toInf_MuEnriched' 'QCD_Pt-120to170_MuEnriched' 'QCD_Pt-15to20_MuEnriched' 'QCD_Pt-170to300_MuEnriched' 'QCD_Pt-20to30_MuEnriched' 'QCD_Pt-300to470_MuEnriched' 'QCD_Pt-30to50_MuEnriched' 'QCD_Pt-470to600_MuEnriched' 'QCD_Pt-50to80_MuEnriched' 'QCD_Pt-600to800_MuEnriched' 'QCD_Pt-800to1000_MuEnriched' 'QCD_Pt-80to120_MuEnriched'
 )
 
 declare -a QCD_FR_EM=(
-'QCD_Pt-20to30_EMEnriched' 'QCD_Pt-30to50_EMEnriched' 'QCD_Pt-50to80_EMEnriched' 'QCD_Pt-80to120_EMEnriched' 'QCD_Pt-120to170_EMEnriched' 'QCD_Pt-170to300_EMEnriched' 'QCD_Pt-300toInf_EMEnriched'
+'QCD_Pt-20to30_EMEnriched' 'QCD_Pt-30to50_EMEnriched' 'QCD_Pt-50to80_EMEnriched' 'QCD_Pt-80to120_EMEnriched'
+'QCD_Pt-120to170_EMEnriched' 'QCD_Pt-170to300_EMEnriched' 'QCD_Pt-300toInf_EMEnriched'
+'qcd_15to20_bctoe' 'qcd_170to250_bctoe' 'qcd_20to30_bctoe' 'qcd_250toinf_bctoe' 'qcd_30to80_bctoe' 'qcd_80to170_bctoe'
 )
 declare -a QCD_FR_bctoe=(
 'qcd_15to20_bctoe' 'qcd_170to250_bctoe' 'qcd_20to30_bctoe' 'qcd_250toinf_bctoe' 'qcd_30to80_bctoe' 'qcd_80to170_bctoe'
@@ -49,10 +44,12 @@ declare -a QCD_FR_bctoe=(
 
 ### FR MC Closure ###
 declare -a FR_MC_Closure=(
-'TT_powheg' 'WJets_MG' 'DYJets_MG' 'WJets'
+'TT_powheg' 'DYJets' 'WJets'
 )
-#'TT_powheg' 'DYJets' 'WJets' 'WJets_MG' 'DYtoEE' 'DYJets_MG'
-#)
+declare -a FR_MC_Closure_amc=(
+'DYJets' 'WJets'
+)
+
 
 ### SR ###
 declare -a trilep_bkg=(
@@ -254,7 +251,7 @@ declare dilepbkg_SS=(
 'ZZTo4L_powheg' 'ggZZto2e2mu' 'ggZZto2e2nu' 'ggZZto2e2tau' 'ggZZto2mu2nu' 'ggZZto2mu2tau' 'ggZZto4e' 'ggZZto4mu' 'ggZZto4tau'
 'TG' 'TTG' 'WGtoLNuG' 'ZGto2LG'
 'WWW' 'WWZ' 'WZZ' 'ZZZ'
-'TTLL_powheg' 'ttW' 'ttZ' 'ttH_nonbb'
+'ttW' 'ttZ' 'ttH_nonbb'
 'WWTo2L2Nu_DS'
 )
 
@@ -304,6 +301,14 @@ declare -a EMuSig_all=(
 'HNMumEm_40'  'HNMumEm_50'  'HNMumEm_60'  'HNMumEm_70'  'HNMumEm_80'  'HNMumEm_90'  'HNMumEm_100'  'HNMumEm_125'  'HNMumEm_150'  'HNMumEm_200'  'HNMumEm_250'  'HNMumEm_300'  'HNMumEm_400'  'HNMumEm_500'  'HNMumEm_600'  'HNMumEm_700'  'HNMumEm_800'  'HNMumEm_900'  'HNMumEm_1000'  'HNMumEm_1100'  'HNMumEm_1200'  'HNMumEm_1300'  'HNMumEm_1400'  'HNMumEm_1500'  
 'HNEpMup_40'  'HNEpMup_50'  'HNEpMup_60'  'HNEpMup_70'  'HNEpMup_80'  'HNEpMup_90'  'HNEpMup_100'  'HNEpMup_125'  'HNEpMup_150'  'HNEpMup_200'  'HNEpMup_250'  'HNEpMup_300'  'HNEpMup_400'  'HNEpMup_500'  'HNEpMup_600'  'HNEpMup_700'  'HNEpMup_800'  'HNEpMup_900'  'HNEpMup_1000'  'HNEpMup_1100'  'HNEpMup_1200'  'HNEpMup_1300'  'HNEpMup_1400'  'HNEpMup_1500'  
 'HNEmMum_40'  'HNEmMum_50'  'HNEmMum_60'  'HNEmMum_70'  'HNEmMum_80'  'HNEmMum_90'  'HNEmMum_100'  'HNEmMum_125'  'HNEmMum_150'  'HNEmMum_200'  'HNEmMum_250'  'HNEmMum_300'  'HNEmMum_400'  'HNEmMum_500'  'HNEmMum_600'  'HNEmMum_700'  'HNEmMum_800'  'HNEmMum_900'  'HNEmMum_1000'  'HNEmMum_1100'  'HNEmMum_1200'  'HNEmMum_1300'  'HNEmMum_1400'  'HNEmMum_1500'
+'HNMupEp_Tchannel_300'  'HNMupEp_Tchannel_400'  'HNMupEp_Tchannel_600'  'HNMupEp_Tchannel_700'  'HNMupEp_Tchannel_800'  'HNMupEp_Tchannel_900'  'HNMupEp_Tchannel_1000'  'HNMupEp_Tchannel_1200'  'HNMupEp_Tchannel_1300'  'HNMupEp_Tchannel_1400'  'HNMupEp_Tchannel_1500'  
+'HNMoriondLL_Tchannel_MupEp_100'  'HNMoriondLL_Tchannel_MupEp_200'  'HNMoriondLL_Tchannel_MupEp_500'  'HNMoriondLL_Tchannel_MupEp_1100'  
+'HNMumEm_Tchannel_300'  'HNMumEm_Tchannel_400'  'HNMumEm_Tchannel_600'  'HNMumEm_Tchannel_700'  'HNMumEm_Tchannel_800'  'HNMumEm_Tchannel_900'  'HNMumEm_Tchannel_1000'  'HNMumEm_Tchannel_1200'  'HNMumEm_Tchannel_1300'  'HNMumEm_Tchannel_1400'  'HNMumEm_Tchannel_1500'  
+'HNMoriondLL_Tchannel_MumEm_100'  'HNMoriondLL_Tchannel_MumEm_200'  'HNMoriondLL_Tchannel_MumEm_500'  'HNMoriondLL_Tchannel_MumEm_1100'  
+'HNEpMup_Tchannel_300'  'HNEpMup_Tchannel_400'  'HNEpMup_Tchannel_600'  'HNEpMup_Tchannel_700'  'HNEpMup_Tchannel_800'  'HNEpMup_Tchannel_900'  'HNEpMup_Tchannel_1000'  'HNEpMup_Tchannel_1200'  'HNEpMup_Tchannel_1300'  'HNEpMup_Tchannel_1400'  'HNEpMup_Tchannel_1500'  
+'HNMoriondLL_Tchannel_EpMup_100'  'HNMoriondLL_Tchannel_EpMup_200'  'HNMoriondLL_Tchannel_EpMup_500'  'HNMoriondLL_Tchannel_EpMup_1100'  
+'HNEmMum_Tchannel_300'  'HNEmMum_Tchannel_400'  'HNEmMum_Tchannel_600'  'HNEmMum_Tchannel_700'  'HNEmMum_Tchannel_800'  'HNEmMum_Tchannel_900'  'HNEmMum_Tchannel_1000'  'HNEmMum_Tchannel_1200'  'HNEmMum_Tchannel_1300'  'HNEmMum_Tchannel_1400'  'HNEmMum_Tchannel_1500'  
+'HNMoriondLL_Tchannel_EmMum_100'  'HNMoriondLL_Tchannel_EmMum_200'  'HNMoriondLL_Tchannel_EmMum_500'  'HNMoriondLL_Tchannel_EmMum_1100'  
 )
 
 declare -a DiMuSig_OS=(
