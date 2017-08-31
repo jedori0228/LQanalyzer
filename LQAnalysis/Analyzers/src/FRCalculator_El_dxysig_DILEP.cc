@@ -133,19 +133,10 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   int n_jets = jetColl_hn.size();
   int n_bjets=0;
 
-  int For_HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v=0;
-/*
-  //==== HLT_Mu3_PFJet40_v PFJet Pt Check
-  if( PassTrigger("HLT_Mu3_PFJet40_v") ){
-    if(jetColl_hn.size()!=0){
-      FillHist("HLT_Mu3_PFJet40_v_LeadingJetPt", jetColl_hn.at(0).Pt(), 1., 0., 200., 200);
-    }
-  }
-  return;
-*/
+  int For_PFJet30_v=0;
   for(int j=0; j<n_jets; j++){
     if( IsBTagged(jetColl_hn.at(j), snu::KJet::CSVv2, snu::KJet::Medium) ) n_bjets++;
-    if( jetColl_hn.at(j).Pt() > 30. ) For_HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v++;
+    if( jetColl_hn.at(j).Pt() > 40. ) For_PFJet30_v++;
   }
 
   //======================
@@ -210,17 +201,17 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   HLT_ptrange["HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v"].push_back(23.);
   HLT_ptmin["HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v"] = 9.5; // -> can go upto 14.44
 
-  HLT_ptrange["HLT_Ele12_CaloIdL_TrackIdL_IsoVL_v"].push_back(23.); // 6.162
-  HLT_ptrange["HLT_Ele12_CaloIdL_TrackIdL_IsoVL_v"].push_back(35.);
-  HLT_ptmin["HLT_Ele12_CaloIdL_TrackIdL_IsoVL_v"] = 15.; // -> can go upto 22.8 GeV
+  HLT_ptrange["HLT_Ele12_CaloIdL_TrackIdL_IsoVL_PFJet30_v"].push_back(23.); // 6.162
+  HLT_ptrange["HLT_Ele12_CaloIdL_TrackIdL_IsoVL_PFJet30_v"].push_back(35.);
+  HLT_ptmin["HLT_Ele12_CaloIdL_TrackIdL_IsoVL_PFJet30_v"] = 15.; // -> can go upto 22.8 GeV
 
-  HLT_ptrange["HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v"].push_back(35.); // 30.397
-  HLT_ptrange["HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v"].push_back(45.); 
-  HLT_ptmin["HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v"] = 20.; // -> can go upto 30.4 GeV
+  HLT_ptrange["HLT_Ele17_CaloIdL_TrackIdL_IsoVL_PFJet30_v"].push_back(35.); // 30.397
+  HLT_ptrange["HLT_Ele17_CaloIdL_TrackIdL_IsoVL_PFJet30_v"].push_back(45.); 
+  HLT_ptmin["HLT_Ele17_CaloIdL_TrackIdL_IsoVL_PFJet30_v"] = 20.; // -> can go upto 30.4 GeV
 
-  HLT_ptrange["HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v"].push_back(45.); // 16.43
-  HLT_ptrange["HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v"].push_back(9999.);
-  HLT_ptmin["HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v"] = 25.; // -> can go upto 38 GeV
+  HLT_ptrange["HLT_Ele23_CaloIdL_TrackIdL_IsoVL_PFJet30_v"].push_back(45.); // 16.43
+  HLT_ptrange["HLT_Ele23_CaloIdL_TrackIdL_IsoVL_PFJet30_v"].push_back(9999.);
+  HLT_ptmin["HLT_Ele23_CaloIdL_TrackIdL_IsoVL_PFJet30_v"] = 25.; // -> can go upto 38 GeV
 
   std::vector<TString> AllHLTs;
   for(std::map< TString, std::vector<double> >::iterator it=HLT_ptrange.begin(); it!=HLT_ptrange.end(); it++){
@@ -252,6 +243,9 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
         if(HLT_ptmin[ThisTrigger] > tightelectrons.at(0).Pt()) continue;
 
         double triggerweight = WeightByTrigger(ThisTrigger, TargetLumi) ;
+        if(ThisTrigger.Contains("PFJet30")){
+          if(For_PFJet30_v==0) triggerweight = 0.;
+        }
         double this_weight = weight* electron_sf* electron_RecoSF*triggerweight;
         //==== 1) Z-Peak
         if(tightelectrons.size()==2){
@@ -284,8 +278,10 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //==== LeptonVeto
   std::vector<snu::KJet> jetColl_tag = GetJets("JET_HN");
   std::vector<snu::KJet> jetColl_nolepveto = GetJets("JET_NOLEPTONVETO");
-  std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv1");
+  //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv1");
+  //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv1_LoosenSIP");
   //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv2");
+  std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv7");
 
 
   std::vector<snu::KElectron> hnloose;
@@ -317,7 +313,10 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 /*
   //==== 2-0) Loose Scan
 
-  std::vector<snu::KElectron> nocutel_raw = GetElectrons(false, true, "ELECTRON_HN_NOCUT");
+  //std::vector<snu::KElectron> nocutel_raw = GetElectrons(false, true, "ELECTRON_HN_NOCUT");
+  //std::vector<snu::KElectron> nocutel_raw = GetElectrons(false, true, "ELECTRON_HN_NOCUT_LoosenSIP");
+  //std::vector<snu::KElectron> nocutel_raw = GetElectrons(false, true, "ELECTRON_HN_NOCUT_v7_LoosenSIP");
+  std::vector<snu::KElectron> nocutel_raw = GetElectrons(false, true, "ELECTRON_HN_NOCUT_v7");
   std::vector<snu::KElectron> nocutel;
   nocutel.clear();
 
@@ -445,7 +444,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
       for(std::map< TString, std::vector<double> >::iterator it=HLT_ptrange.begin(); it!=HLT_ptrange.end(); it++){
         
-        double weight_by_pt = GetTriggerWeightByPtRange(it->first, it->second, HLT_ptmin[it->first], hnloose, For_HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v);
+        double weight_by_pt = GetTriggerWeightByPtRange(it->first, it->second, HLT_ptmin[it->first], hnloose, For_PFJet30_v);
 
         bool IsThisTight = PassID( electron, "ELECTRON_HN_TIGHTv4" );
 
@@ -466,8 +465,8 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
           ptweight *= weight;
           if( !PassTrigger(it->first) ) ptweight = 0.;
           if( electron.Pt() < HLT_ptmin[it->first] ) ptweight = 0.;
-          if( (it->first) == "HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v" ){
-            if( For_HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v == 0 ) ptweight = 0.;
+          if( (it->first).Contains("PFJet30") ){
+            if( For_PFJet30_v == 0 ) ptweight = 0.;
           }
 
           HISTPREFIX = (it->first)+"_SingleElectronTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10);
@@ -531,8 +530,8 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
                 ptweight *= weight;
                 if( !PassTrigger(it->first) ) ptweight = 0.;
                 if( electron.Pt() < HLT_ptmin[it->first] ) ptweight = 0.;
-                if( (it->first) == "HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v" ){
-                  if( For_HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v == 0 ) ptweight = 0.;
+                if( (it->first).Contains("PFJet30") ){
+                  if( For_PFJet30_v == 0 ) ptweight = 0.;
                 }
 
                 HISTPREFIX = (it->first)+"_SingleElectronTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10);
@@ -732,9 +731,9 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
         std::map<TString, double> this_weight_Loose, this_weight_HighdXYLoose, this_weight_NodXYCutLoose;
         for(std::map< TString, std::vector<double> >::iterator it=HLT_ptrange.begin(); it!=HLT_ptrange.end(); it++){
-          this_weight_Loose[it->first]         = weight*GetTriggerWeightByPtRange(it->first, it->second, HLT_ptmin[it->first], electrontriLooseColl, For_HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v);
-          this_weight_HighdXYLoose[it->first]  = weight*GetTriggerWeightByPtRange(it->first, it->second, HLT_ptmin[it->first], electrontriHighdXYLooseColl, For_HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v);
-          this_weight_NodXYCutLoose[it->first] = weight*GetTriggerWeightByPtRange(it->first, it->second, HLT_ptmin[it->first], electrontriNodXYCutLooseColl, For_HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v);
+          this_weight_Loose[it->first]         = weight*GetTriggerWeightByPtRange(it->first, it->second, HLT_ptmin[it->first], electrontriLooseColl, For_PFJet30_v);
+          this_weight_HighdXYLoose[it->first]  = weight*GetTriggerWeightByPtRange(it->first, it->second, HLT_ptmin[it->first], electrontriHighdXYLooseColl, For_PFJet30_v);
+          this_weight_NodXYCutLoose[it->first] = weight*GetTriggerWeightByPtRange(it->first, it->second, HLT_ptmin[it->first], electrontriNodXYCutLooseColl, For_PFJet30_v);
         }
 
         //Double_t this_weight_Loose = weight*GetPrescale(electrontriLooseColl, PassTrigger("HLT_Mu8_v"), PassTrigger("HLT_Mu17_v"));
@@ -1211,7 +1210,7 @@ double FRCalculator_El_dxysig_DILEP::GetTriggerWeightByPtRange(TString hltname, 
         prescale_trigger = WeightByTrigger(hltname, TargetLumi) ;
       }
 
-      if(hltname=="HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v"){
+      if(hltname.Contains("PFJet30")){
         if(npfjet50==0) prescale_trigger = 0.;
       }
     }

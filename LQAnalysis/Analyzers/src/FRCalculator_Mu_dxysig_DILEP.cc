@@ -134,18 +134,9 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   int n_bjets=0;
 
   int For_HLT_Mu3_PFJet40_v=0;
-/*
-  //==== HLT_Mu3_PFJet40_v PFJet Pt Check
-  if( PassTrigger("HLT_Mu3_PFJet40_v") ){
-    if(jetColl_hn.size()!=0){
-      FillHist("HLT_Mu3_PFJet40_v_LeadingJetPt", jetColl_hn.at(0).Pt(), 1., 0., 200., 200);
-    }
-  }
-  return;
-*/
   for(int j=0; j<n_jets; j++){
     if( IsBTagged(jetColl_hn.at(j), snu::KJet::CSVv2, snu::KJet::Medium) ) n_bjets++;
-    if( jetColl_hn.at(j).Pt() > 40. ) For_HLT_Mu3_PFJet40_v++;
+    if( jetColl_hn.at(j).Pt() > 50. ) For_HLT_Mu3_PFJet40_v++;
   }
 
   //======================
@@ -245,12 +236,15 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
         if(HLT_ptmin[ThisTrigger] > tightmuons.at(0).Pt()) continue;
 
-        double triggerweight = WeightByTrigger(ThisTrigger, TargetLumi) ;
+        double triggerweight = JSWeightByTrigger(ThisTrigger, TargetLumi);
+        if(ThisTrigger.Contains("PFJet40")){
+          if(For_HLT_Mu3_PFJet40_v==0) triggerweight = 0.;
+        }
         double this_weight = weight*muon_id_iso_sf*MuTrkEffSF*triggerweight;
         //==== 1) Z-Peak
         if(tightmuons.size()==2){
           double mll = (tightmuons.at(0)+tightmuons.at(1)).M();
-          if( fabs(mll-m_Z) < 10. ){
+          if( (tightmuons.at(0).Pt() > 20.) && (tightmuons.at(1).Pt() > 10.) && (fabs(mll-m_Z) < 10.) ){
             FillHist(ThisTrigger+"_ZPeak_mll", mll, this_weight, 0., 200., 200);
             FillHist(ThisTrigger+"_ZPeak_leadpt", tightmuons.at(0).Pt(), this_weight, 0., 500., 500);
             FillHist(ThisTrigger+"_ZPeak_subleadpt", tightmuons.at(1).Pt(), this_weight, 0., 500., 500);
@@ -280,8 +274,15 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   std::vector<snu::KJet> jetColl_nolepveto = GetJets("JET_NOLEPTONVETO");
   //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSE", true);
   //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2_LoosenSIP", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2_POGIP", true);
+  std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv5", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2_POGIP_SIP6", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2_POGIP_SIP8", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2_POGIP_SIP5", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2_POGIP_SIP4p5", true);
   //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv3", true);
-  std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv4", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv4", true);
 
   std::vector<snu::KMuon> hnloose;
   hnloose.clear();
@@ -310,7 +311,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   }
 
 /*
-  //==== 2-0) Loose Scaen
+  //==== 2-0) Loose Scan
 
   std::vector<snu::KMuon> nocutmu_raw = GetMuons("MUON_HN_NOCUT", true);
   std::vector<snu::KMuon> nocutmu;
@@ -319,87 +320,81 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   for(unsigned int i=0; i<nocutmu_raw.size(); i++){
     if( !TruthMatched( nocutmu_raw.at(i) ) ){
       nocutmu.push_back( nocutmu_raw.at(i) );
-      FillHist("TEST_Iso", nocutmu_raw.at(i).RelIso04(), 1., 0., 1., 100);
-      FillHist("TEST_dXY", fabs(nocutmu_raw.at(i).dXY()), 1., 0., 1., 1000);
     }
   }
 
   //==== Make x:iso, y:mva 2D one-binned FR
 
-  double MaxIso = 0.1;
+  double MaxSIP = 3;
+  for(int a=0; a<15; a++){
 
-  for(int a=0; a<20; a++){
-    int N_thismu(0);
+    double MaxChi2 = 10;
+    for(int b=0; b<15; b++){
 
-    snu::KMuon muon;
-    for(unsigned int i=0; i<nocutmu.size(); i++){
-      //cout << i<<"th" << endl;
-      //cout << "  iso = " <<nocutmu.at(i).RelIso04() << endl;
-      if( (nocutmu.at(i).RelIso04() < MaxIso) ){
-        //cout << "  => Pass" << endl;
-        N_thismu++;
-        muon = nocutmu.at(i);
-      }
-    } 
-
-    if(N_thismu==1){
-
-      //==== find closeset jet
-      double dr = 0.4;
-      bool jetfound=false;
-      snu::KJet cljet;
-      for(unsigned int j=0; j<jetColl_nolepveto.size(); j++){
-
-        snu::KJet jet = jetColl_nolepveto.at(j);
-        if( muon.DeltaR( jet ) < dr ){
-          dr = muon.DeltaR( jet );
-          jetfound = true;
-          cljet = jet;
+      int N_thismu(0);
+      snu::KMuon muon;
+      for(unsigned int i=0; i<nocutmu.size(); i++){
+        if( (fabs(nocutmu.at(i).dXYSig()) < MaxSIP) && (nocutmu.at(i).GlobalChi2() < MaxChi2) ){
+          N_thismu++;
+          muon = nocutmu.at(i);
         }
+      } 
 
-      }
-      if(jetfound){
+      if(N_thismu==1){
 
-        bool IsThisTight = PassID( muon, "MUON_HN_TIGHT" );
-        int hf = cljet.HadronFlavour();
+        //==== find closeset jet
+        double dr = 0.4;
+        bool jetfound=false;
+        snu::KJet cljet;
+        for(unsigned int j=0; j<jetColl_nolepveto.size(); j++){
 
-        std::vector<snu::KMuon> onemu;
-        onemu.push_back(muon);
-        double weight_by_pt(0.);
-        for(std::map< TString, std::vector<double> >::iterator it=HLT_ptrange.begin(); it!=HLT_ptrange.end(); it++){
-          double tmp = GetTriggerWeightByPtRange(it->first, it->second, HLT_ptmin[it->first], onemu, For_HLT_Mu3_PFJet40_v);
-          if(tmp!=0.){
-            weight_by_pt = tmp;
-            break;
+          snu::KJet jet = jetColl_nolepveto.at(j);
+          if( muon.DeltaR( jet ) < dr ){
+            dr = muon.DeltaR( jet );
+            jetfound = true;
+            cljet = jet;
           }
+
         }
-        double this_weight = weight_by_pt*weight;
+        if(jetfound){
 
-        double bin_MaxIso = MaxIso + 0.05/2.;
+          bool IsThisTight = PassID( muon, "MUON_HN_TIGHT" );
+          int hf = cljet.HadronFlavour();
 
-        if( hf >= 4 ){
-          FillHist("HeavyFlavour_F0", bin_MaxIso, this_weight, 0., 1.5, 30);
-          if(IsThisTight){
-           FillHist("HeavyFlavour_F", bin_MaxIso, this_weight, 0., 1.5, 30);
+          std::vector<snu::KMuon> onemu;
+          onemu.push_back(muon);
+          double this_weight  =weight;
+
+          double bin_MaxSIP = MaxSIP + 0.5/2.;
+          double bin_MaxChi2 = MaxChi2 + 0.5/2.;
+
+          if( hf >= 4 ){
+            FillHist("HeavyFlavour_F0", bin_MaxSIP, this_weight, 0., 10., 20);
+            if(IsThisTight){
+             FillHist("HeavyFlavour_F", bin_MaxSIP, this_weight, 0., 10., 20);
+            }
           }
-        }
-        else{
-          FillHist("LightFlavour_F0", bin_MaxIso, this_weight, 0., 1.5, 30);
-          if(IsThisTight){
-            FillHist("LightFlavour_F", bin_MaxIso, this_weight, 0., 1.5, 30);
+          else{
+            FillHist("LightFlavour_F0", bin_MaxSIP, this_weight, 0., 10., 20);
+            if(IsThisTight){
+              FillHist("LightFlavour_F", bin_MaxSIP, this_weight, 0., 10., 20);
+            }
           }
-        }
 
-      } // closest jet found
+        } // closest jet found
 
-    } // only one muon
+      } // only one muon
 
+      MaxChi2 += 5;
 
-    MaxIso += 0.05;
+    } // chi2 loop
+
+    MaxSIP += 0.5;
 
   } // iso loop
   return;
 */
+
 
   double AwayjetPts[] = {20, 30, 40, 60};
 
@@ -443,11 +438,11 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
           if(HasCloseBjet_Loose) FillDenAndNum(HISTPREFIX+"_withbjet_Loose", muon, this_weight, IsThisTight);
           else                   FillDenAndNum(HISTPREFIX+"_withoutbjet_Loose", muon, this_weight, IsThisTight);
 
-          double ptweight = WeightByTrigger(it->first, TargetLumi);
+          double ptweight = JSWeightByTrigger(it->first, TargetLumi);
           ptweight *= weight;
           if( !PassTrigger(it->first) ) ptweight = 0.;
           if( muon.MiniAODPt() < HLT_ptmin[it->first] ) ptweight = 0.;
-          if( (it->first) == "HLT_Mu3_PFJet40_v" ){
+          if( (it->first).Contains("PFJet40_v") ){
             if( For_HLT_Mu3_PFJet40_v == 0 ) ptweight = 0.;
           }
 
@@ -507,11 +502,11 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
                 if(HasCloseBjet_Loose) FillDenAndNum(HISTPREFIX+"_withbjet_Loose", muon, this_weight, IsThisTight);           
                 else                   FillDenAndNum(HISTPREFIX+"_withoutbjet_Loose", muon, this_weight, IsThisTight);
 
-                double ptweight = WeightByTrigger(it->first, TargetLumi);
+                double ptweight = JSWeightByTrigger(it->first, TargetLumi);
                 ptweight *= weight;
                 if( !PassTrigger(it->first) ) ptweight = 0.;
                 if( muon.MiniAODPt() < HLT_ptmin[it->first] ) ptweight = 0.;
-                if( (it->first) == "HLT_Mu3_PFJet40_v" ){
+                if( (it->first).Contains("PFJet40_v") ){
                   if( For_HLT_Mu3_PFJet40_v == 0 ) ptweight = 0.;
                 }
 
@@ -1166,13 +1161,13 @@ float FRCalculator_Mu_dxysig_DILEP::GetPrescale(std::vector<snu::KMuon> muon, bo
 
     if(muon.at(0).Pt() >= 20.){
       if(passhigh){
-        prescale_trigger = WeightByTrigger("HLT_Mu17_v", TargetLumi) ; //// 20 + GeV bins
+        prescale_trigger = JSWeightByTrigger("HLT_Mu17_v", TargetLumi) ; //// 20 + GeV bins
       }
       else prescale_trigger = 0.;
     }
     else{
       if(passlow){
-        prescale_trigger = WeightByTrigger("HLT_Mu8_v", TargetLumi) ;
+        prescale_trigger = JSWeightByTrigger("HLT_Mu8_v", TargetLumi) ;
       }
       else prescale_trigger = 0.;
     }
@@ -1200,10 +1195,10 @@ double FRCalculator_Mu_dxysig_DILEP::GetTriggerWeightByPtRange(TString hltname, 
       double conept = MuonConePt(muon,TightISO);
 
       if(conept >= min_cone_pt && conept < max_cone_pt){
-        prescale_trigger = WeightByTrigger(hltname, TargetLumi) ;
+        prescale_trigger = JSWeightByTrigger(hltname, TargetLumi) ;
       }
 
-      if(hltname=="HLT_Mu3_PFJet40_v"){
+      if(hltname.Contains("PFJet40")){
         if(npfjet50==0) prescale_trigger = 0.;
       }
     }
@@ -1295,7 +1290,23 @@ void FRCalculator_Mu_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KMuon muon
 
 }
 
+float FRCalculator_Mu_dxysig_DILEP::JSWeightByTrigger(TString triggername, float tlumi){
 
+  if(isData) return 1.;
+
+  double NormSF(1.);
+
+  if(triggername=="HLT_Mu3_PFJet40_v"){
+    NormSF = 0.72799;
+  }
+  if(triggername=="HLT_Mu8_TrkIsoVVL_v"){
+    NormSF = 1.39876;
+  }
+
+  return NormSF*WeightByTrigger(triggername, tlumi);
+
+
+}
 
 
 
