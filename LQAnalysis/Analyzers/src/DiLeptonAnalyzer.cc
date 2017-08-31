@@ -65,18 +65,37 @@ void DiLeptonAnalyzer::InitialiseAnalysis() throw( LQError ) {
 
   //==== Get Fake
 
-  //TString MuonFRType = "v3_TrkVVL_AllEvent_newhist_"; // Iso 0.6
-  TString MuonFRType = "v4_TrkVVL_AllEvent_newhist_";  // Iso 0.4
+  //TString MuonFRType_QCD = "v2_TrkVVL_AllEvent_newhist_"; // Iso 0.4, Loosen dXYs
+  //TString MuonFRType_QCD = "v2_LoosenSIP_TrkVVL_AllEvent_newhist_";
+  //TString MuonFRType_QCD = "v2_POGIP_TrkVVL_AllEvent_newhist_";
+  //TString MuonFRType_QCD = "v2_POGIP_SIP4p5_TrkVVL_AllEvent_newhist_";
+  //TString MuonFRType_QCD = "v2_POGIP_SIP5_TrkVVL_AllEvent_newhist_";
+  //TString MuonFRType_QCD = "v2_POGIP_SIP6_TrkVVL_AllEvent_newhist_";
+  //TString MuonFRType_QCD = "v2_POGIP_SIP8_TrkVVL_AllEvent_newhist_";
+  //TString MuonFRType_QCD = "v3_TrkVVL_AllEvent_newhist_"; // Iso 0.6
+  //TString MuonFRType_QCD = "v4_TrkVVL_AllEvent_newhist_";  // Iso 0.4
+  TString MuonFRType_QCD = "v5_";
 
-  //TString ElectronFRType = "v1_LoosenMVA_AllEvent_newhist_"; // Iso 0.6
-  TString ElectronFRType = "v1_OptiMVA_AllEvent_newhist_"; // Iso 0.6 + Optimized MVA
-  //TString ElectronFRType = "v2_LoosenMVA_AllEvent_newhist_"; // Iso 0.4
-  //TString ElectronFRType = "v2_OptiMVA_AllEvent_newhist_"; //Iso 0.4 + Optimized MVA
+  //TString MuonFRType_Data = "v2_POGIP_TrkVVL_AllEvent_newhist_";
+  //TString MuonFRType_Data = "v4_TrkVVL_AllEvent_newhist_";
+  //TString MuonFRType_Data = "v2_POGIP_TrkVVL_AllEvent_newhist_Normed_";
+  TString MuonFRType_Data = MuonFRType_QCD;
 
-  TFile *file_Muon_FR         = new TFile( lqdir+"/JskimData/FR/Muon_Data_"+MuonFRType+"FR.root");
-  TFile *file_Muon_FR_QCD     = new TFile( lqdir+"/JskimData/FR/Muon_QCD_" +MuonFRType+"FR.root"); 
-  TFile *file_Electron_FR     = new TFile( lqdir+"/JskimData/FR/Electron_Data_"+ElectronFRType+"FR.root");
-  TFile *file_Electron_FR_QCD = new TFile( lqdir+"/JskimData/FR/Electron_QCD_" +ElectronFRType+"FR.root");
+  //TString ElectronFRType_QCD = "v1_LoosenMVA_AllEvent_newhist_"; // Iso 0.6
+  //TString ElectronFRType_QCD = "v1_OptiMVA_AllEvent_newhist_"; // Iso 0.6 + Optimized MVA
+  //TString ElectronFRType_QCD = "v2_LoosenMVA_AllEvent_newhist_"; // Iso 0.4
+  //TString ElectronFRType_QCD = "v2_OptiMVA_AllEvent_newhist_"; //Iso 0.4 + Optimized MVA
+  //TString ElectronFRType_QCD = "v1_LoosenSIP_OptiMVA_AllEvent_newhist_";
+  //TString ElectronFRType_QCD = "v1_LoosenSIP_OptiMVA_AllEvent_newhist_PFJetTrigger_";
+  TString ElectronFRType_QCD = "v7_";
+
+  //TString ElectronFRType_Data = "v1_OptiMVA_AllEvent_newhist_";
+  TString ElectronFRType_Data = ElectronFRType_QCD;
+
+  TFile *file_Muon_FR         = new TFile( lqdir+"/JskimData/FR/Muon_Data_"+MuonFRType_Data+"FR.root");
+  TFile *file_Muon_FR_QCD     = new TFile( lqdir+"/JskimData/FR/Muon_QCD_" +MuonFRType_QCD+"FR.root"); 
+  TFile *file_Electron_FR     = new TFile( lqdir+"/JskimData/FR/Electron_Data_"+ElectronFRType_Data+"FR.root");
+  TFile *file_Electron_FR_QCD = new TFile( lqdir+"/JskimData/FR/Electron_QCD_" +ElectronFRType_QCD+"FR.root");
 
   gROOT->cd();
   TDirectory* tempDir = 0;
@@ -98,25 +117,25 @@ void DiLeptonAnalyzer::InitialiseAnalysis() throw( LQError ) {
   TString btag_wp = "_Loose";
   //TString btag_wp = "";
 
-  hist_Muon_FR                 = (TH2D*)file_Muon_FR->Get("Muon_Data_"+MuonFRType+"FR_Awayjet40")->Clone();
-  hist_Muon_FR_withbjet        = (TH2D*)file_Muon_FR->Get("Muon_Data_"+MuonFRType+"FR_Awayjet40_withbjet"+btag_wp)->Clone();
-  hist_Muon_FR_withoutbjet     = (TH2D*)file_Muon_FR->Get("Muon_Data_"+MuonFRType+"FR_Awayjet40_withoutbjet"+btag_wp)->Clone();
-  hist_Muon_FR_QCD             = (TH2D*)file_Muon_FR_QCD->Get("Muon_QCD_"+MuonFRType+"FR_Awayjet40")->Clone();
-  hist_Muon_FR_QCD_withbjet    = (TH2D*)file_Muon_FR_QCD->Get("Muon_QCD_"+MuonFRType+"FR_Awayjet40_withbjet"+btag_wp)->Clone();
-  hist_Muon_FR_QCD_withoutbjet = (TH2D*)file_Muon_FR_QCD->Get("Muon_QCD_"+MuonFRType+"FR_Awayjet40_withoutbjet"+btag_wp)->Clone();
+  hist_Muon_FR                 = (TH2D*)file_Muon_FR->Get("Muon_Data_"+MuonFRType_Data+"FR_Awayjet40")->Clone();
+  hist_Muon_FR_withbjet        = (TH2D*)file_Muon_FR->Get("Muon_Data_"+MuonFRType_Data+"FR_Awayjet40_withbjet"+btag_wp)->Clone();
+  hist_Muon_FR_withoutbjet     = (TH2D*)file_Muon_FR->Get("Muon_Data_"+MuonFRType_Data+"FR_Awayjet40_withoutbjet"+btag_wp)->Clone();
+  hist_Muon_FR_QCD             = (TH2D*)file_Muon_FR_QCD->Get("Muon_QCD_"+MuonFRType_QCD+"FR_Awayjet40")->Clone();
+  hist_Muon_FR_QCD_withbjet    = (TH2D*)file_Muon_FR_QCD->Get("Muon_QCD_"+MuonFRType_QCD+"FR_Awayjet40_withbjet"+btag_wp)->Clone();
+  hist_Muon_FR_QCD_withoutbjet = (TH2D*)file_Muon_FR_QCD->Get("Muon_QCD_"+MuonFRType_QCD+"FR_Awayjet40_withoutbjet"+btag_wp)->Clone();
 
-  hist_Electron_FR                 = (TH2D*)file_Electron_FR->Get("Electron_Data_"+ElectronFRType+"FR_Awayjet40")->Clone();
-  hist_Electron_FR_withbjet        = (TH2D*)file_Electron_FR->Get("Electron_Data_"+ElectronFRType+"FR_Awayjet40_withbjet"+btag_wp)->Clone();
-  hist_Electron_FR_withoutbjet     = (TH2D*)file_Electron_FR->Get("Electron_Data_"+ElectronFRType+"FR_Awayjet40_withoutbjet"+btag_wp)->Clone();
-  hist_Electron_FR_QCD             = (TH2D*)file_Electron_FR_QCD->Get("Electron_QCD_"+ElectronFRType+"FR_Awayjet40")->Clone();
-  hist_Electron_FR_QCD_withbjet    = (TH2D*)file_Electron_FR_QCD->Get("Electron_QCD_"+ElectronFRType+"FR_Awayjet40_withbjet"+btag_wp)->Clone();
-  hist_Electron_FR_QCD_withoutbjet = (TH2D*)file_Electron_FR_QCD->Get("Electron_QCD_"+ElectronFRType+"FR_Awayjet40_withoutbjet"+btag_wp)->Clone();
+  hist_Electron_FR                 = (TH2D*)file_Electron_FR->Get("Electron_Data_"+ElectronFRType_Data+"FR_Awayjet40")->Clone();
+  hist_Electron_FR_withbjet        = (TH2D*)file_Electron_FR->Get("Electron_Data_"+ElectronFRType_Data+"FR_Awayjet40_withbjet"+btag_wp)->Clone();
+  hist_Electron_FR_withoutbjet     = (TH2D*)file_Electron_FR->Get("Electron_Data_"+ElectronFRType_Data+"FR_Awayjet40_withoutbjet"+btag_wp)->Clone();
+  hist_Electron_FR_QCD             = (TH2D*)file_Electron_FR_QCD->Get("Electron_QCD_"+ElectronFRType_QCD+"FR_Awayjet40")->Clone();
+  hist_Electron_FR_QCD_withbjet    = (TH2D*)file_Electron_FR_QCD->Get("Electron_QCD_"+ElectronFRType_QCD+"FR_Awayjet40_withbjet"+btag_wp)->Clone();
+  hist_Electron_FR_QCD_withoutbjet = (TH2D*)file_Electron_FR_QCD->Get("Electron_QCD_"+ElectronFRType_QCD+"FR_Awayjet40_withoutbjet"+btag_wp)->Clone();
 
   //==== away pt
   TString awayjetpt[3] = {"20", "30", "60"};
   for(int i=0; i<3; i++){
-    hist_Muon_FR_syst["Awatjet_"+awayjetpt[i]]     = (TH2D*)file_Muon_FR->Get("Muon_Data_"+MuonFRType+"FR_Awayjet"+awayjetpt[i])->Clone();
-    hist_Electron_FR_syst["Awatjet_"+awayjetpt[i]] = (TH2D*)file_Electron_FR->Get("Electron_Data_"+ElectronFRType+"FR_Awayjet"+awayjetpt[i])->Clone();
+    hist_Muon_FR_syst["Awatjet_"+awayjetpt[i]]     = (TH2D*)file_Muon_FR->Get("Muon_Data_"+MuonFRType_Data+"FR_Awayjet"+awayjetpt[i])->Clone();
+    hist_Electron_FR_syst["Awatjet_"+awayjetpt[i]] = (TH2D*)file_Electron_FR->Get("Electron_Data_"+ElectronFRType_Data+"FR_Awayjet"+awayjetpt[i])->Clone();
   }
 
   file_Muon_FR->Close();
@@ -136,20 +155,38 @@ void DiLeptonAnalyzer::InitialiseAnalysis() throw( LQError ) {
 
 
 void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
+
 /*
-   std::vector< snu::KMuon > testmuons = GetMuons("MUON_HN_LOOSEv4", true);
-   for(unsigned int i=0; i<testmuons.size(); i++){
-     if(TruthMatched(testmuons.at(i))) continue;
+  std::vector< snu::KMuon > testmuons = GetMuons("MUON_HN_NOCUT", true);
+  std::vector<snu::KTruth> truthColl;
+  eventbase->GetTruthSel()->Selection(truthColl);
+  std::vector<snu::KJet> jets_nolepveto2 = GetJets("JET_HN_eta5_nolepveto", 20., 2.5);
+  bool HasZeroIsolationMuon = false;
+  FillHist("FakeMuon_Nvtx", eventbase->GetEvent().nVertices(), 1., 0., 50., 50);
+  for(unsigned int i=0; i<testmuons.size(); i++){
+    if(TruthMatched(testmuons.at(i))) continue;
 
-     FillHist("MuonIsoTest_RelIso", testmuons.at(i).RelIso04(), 1., 0., 0.6, 60);
+    FillHist("FakeMuon_RelIso", testmuons.at(i).RelIso04(), 1., 0., 0.6, 60);
+    FillHist("FakeMuon_dXY", testmuons.at(i).dXY(), 1., 0., 1.0, 1000);
+    FillHist("FakeMuon_dZ", testmuons.at(i).dXY(), 1., 0., 1.0, 1000);
 
-     if( testmuons.at(i).RelIso04() < 0.01 ){
-       FillHist("MuonIsoTest_SmallISO_RelIso", testmuons.at(i).RelIso04(), 1., 0., 0.01, 100);
-       FillHist("MuonIsoTest_SmallISO_Type", testmuons.at(i).GetType(), 1., 0., 50., 50);
-     }
 
-   }
+    if(testmuons.at(i).RelIso04() < 0.001){
+      HasZeroIsolationMuon = true;
 
+      FillHist("ZeroRelIso_dXY", testmuons.at(i).dXY(), 1., 0., 1.0, 1000);
+      FillHist("ZeroRelIso_dZ", testmuons.at(i).dZ(), 1., 0., 1.0, 1000);
+
+    }
+
+  }
+
+  if(HasZeroIsolationMuon){
+    FillHist("ZeroRelIso_Nvtx", eventbase->GetEvent().nVertices(), 1., 0., 50., 50);
+  }
+  return;
+*/
+/*
    std::vector< snu::KElectron > testelectrons = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv1");
    for(unsigned int i=0; i<testelectrons.size(); i++){
      if( TruthMatched(testelectrons.at(i),false) ) continue;
@@ -302,8 +339,15 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   //==== Muons
   //std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSE", KeepFakeLepton);
   //std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSEv2", KeepFakeLepton);
+  //std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSEv2_LoosenSIP", KeepFakeLepton);
+  //std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSEv2_POGIP", KeepFakeLepton);
+  std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSEv5", KeepFakeLepton);
+  //std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSEv2_POGIP_SIP4p5", KeepFakeLepton);
+  //std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSEv2_POGIP_SIP5", KeepFakeLepton);
+  //std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSEv2_POGIP_SIP6", KeepFakeLepton);
+  //std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSEv2_POGIP_SIP8", KeepFakeLepton);
   //std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSEv3", KeepFakeLepton);
-  std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSEv4", KeepFakeLepton);
+  //std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSEv4", KeepFakeLepton);
 
   if(muons.size()>=2){
     if( muons.at(0).Pt() > muons.at(1).Pt() ) FillHist("Test_Muon01_CorrectPtOrder", 1., 1., 0., 2., 2);
@@ -319,8 +363,10 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   double MuTrkEffSF =  mcdata_correction->MuonTrackingEffScaleFactor(muons);
 
   //==== Electrons
-  std::vector< snu::KElectron > electrons = GetElectrons(false, KeepFakeLepton, "ELECTRON_HN_FAKELOOSEv1");
+  //std::vector< snu::KElectron > electrons = GetElectrons(false, KeepFakeLepton, "ELECTRON_HN_FAKELOOSEv1");
   //std::vector< snu::KElectron > electrons = GetElectrons(false, KeepFakeLepton, "ELECTRON_HN_FAKELOOSEv2");
+  //std::vector< snu::KElectron > electrons = GetElectrons(false, KeepFakeLepton, "ELECTRON_HN_FAKELOOSEv1_LoosenSIP");
+  std::vector< snu::KElectron > electrons = GetElectrons(false, KeepFakeLepton, "ELECTRON_HN_FAKELOOSEv7");
 
   double electron_sf = mcdata_correction->ElectronScaleFactor("ELECTRON_HN_TIGHTv4", electrons, 0);
 
@@ -1218,6 +1264,27 @@ DiLeptonAnalyzer::~DiLeptonAnalyzer() {
   
   Message("In DiLeptonAnalyzer Destructor" , INFO);
   
+  //==== Prompt Rate
+  delete hist_Muon_PR;
+  delete hist_Electron_PR;
+  //==== Fake Rate
+  delete hist_Muon_FR;
+  delete hist_Electron_FR;
+  delete hist_Muon_FR_withbjet;
+  delete hist_Electron_FR_withbjet;
+  delete hist_Muon_FR_withoutbjet;
+  delete hist_Electron_FR_withoutbjet;
+  delete hist_Muon_FR_QCD;
+  delete hist_Electron_FR_QCD;
+  delete hist_Muon_FR_QCD_withbjet;
+  delete hist_Electron_FR_QCD_withbjet;
+  delete hist_Muon_FR_QCD_withoutbjet;
+  delete hist_Electron_FR_QCD_withoutbjet;
+
+  hist_Muon_FR_syst.clear();
+  hist_Electron_FR_syst.clear();
+
+
 }
 
 
