@@ -35,5 +35,6 @@
 #pragma link C++ class trilepton_mumumu_ntp_FR_method+;
 #pragma link C++ class trilepton_mumumu_MCClosure+;
 #pragma link C++ class DiLeptonAnalyzer+;
+#pragma link C++ class DiLeptonAnalyzer_CR+;
 
 #endif // __CINT__

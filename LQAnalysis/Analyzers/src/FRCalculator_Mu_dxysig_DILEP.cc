@@ -187,28 +187,34 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //==== HLTs
   //===========
 
-  std::map< TString, std::vector<double> > HLT_ptrange;
+  std::map< TString, std::vector<double> > HLT_ptconerange, HLT_ptrange;
   std::map< TString, double > HLT_ptmin;
-  HLT_ptrange.clear();
+  HLT_ptconerange.clear();
 
+  HLT_ptconerange["HLT_Mu3_PFJet40_v"].push_back(5.);
+  HLT_ptconerange["HLT_Mu3_PFJet40_v"].push_back(20.);
   HLT_ptrange["HLT_Mu3_PFJet40_v"].push_back(5.);
-  HLT_ptrange["HLT_Mu3_PFJet40_v"].push_back(20.);
+  HLT_ptrange["HLT_Mu3_PFJet40_v"].push_back(10.);
   HLT_ptmin["HLT_Mu3_PFJet40_v"] = 5.;
 
-  //HLT_ptrange["HLT_Mu8_v"].push_back(20.);
-  //HLT_ptrange["HLT_Mu8_v"].push_back(30.);
+  //HLT_ptconerange["HLT_Mu8_v"].push_back(20.);
+  //HLT_ptconerange["HLT_Mu8_v"].push_back(30.);
+  HLT_ptconerange["HLT_Mu8_TrkIsoVVL_v"].push_back(20.);
+  HLT_ptconerange["HLT_Mu8_TrkIsoVVL_v"].push_back(30.);
+  HLT_ptrange["HLT_Mu8_TrkIsoVVL_v"].push_back(10.);
   HLT_ptrange["HLT_Mu8_TrkIsoVVL_v"].push_back(20.);
-  HLT_ptrange["HLT_Mu8_TrkIsoVVL_v"].push_back(30.);
   HLT_ptmin["HLT_Mu8_TrkIsoVVL_v"] = 10.;
 
-  //HLT_ptrange["HLT_Mu17_v"].push_back(30.);
-  //HLT_ptrange["HLT_Mu17_v"].push_back(9999.);
-  HLT_ptrange["HLT_Mu17_TrkIsoVVL_v"].push_back(30.);
+  //HLT_ptconerange["HLT_Mu17_v"].push_back(30.);
+  //HLT_ptconerange["HLT_Mu17_v"].push_back(9999.);
+  HLT_ptconerange["HLT_Mu17_TrkIsoVVL_v"].push_back(30.);
+  HLT_ptconerange["HLT_Mu17_TrkIsoVVL_v"].push_back(9999.);
+  HLT_ptrange["HLT_Mu17_TrkIsoVVL_v"].push_back(20.);
   HLT_ptrange["HLT_Mu17_TrkIsoVVL_v"].push_back(9999.);
   HLT_ptmin["HLT_Mu17_TrkIsoVVL_v"] = 20.;
 
   std::vector<TString> AllHLTs;
-  for(std::map< TString, std::vector<double> >::iterator it=HLT_ptrange.begin(); it!=HLT_ptrange.end(); it++){
+  for(std::map< TString, std::vector<double> >::iterator it=HLT_ptconerange.begin(); it!=HLT_ptconerange.end(); it++){
     AllHLTs.push_back(it->first);
   }
 
@@ -241,6 +247,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
           if(For_HLT_Mu3_PFJet40_v==0) triggerweight = 0.;
         }
         double this_weight = weight*muon_id_iso_sf*MuTrkEffSF*triggerweight;
+        //cout << ThisTrigger << "\t" << weight << "\t" << this_weight << endl; //FIXME
         //==== 1) Z-Peak
         if(tightmuons.size()==2){
           double mll = (tightmuons.at(0)+tightmuons.at(1)).M();
@@ -276,7 +283,13 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2", true);
   //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2_LoosenSIP", true);
   //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2_POGIP", true);
-  std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv5", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv5", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv6", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv7_SIP10", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv7_SIP3p5", true);
+  std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv7_SIP3", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv7_SIP9", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv8", true);
   //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2_POGIP_SIP6", true);
   //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2_POGIP_SIP8", true);
   //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2_POGIP_SIP5", true);
@@ -323,12 +336,52 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
     }
   }
 
+  for(unsigned int i=0; i<nocutmu.size(); i++){
+
+    snu::KMuon muon = nocutmu.at(i);
+
+    //==== find closeset jet
+    double dr = 0.4;
+    bool jetfound=false;
+    snu::KJet cljet;
+    for(unsigned int j=0; j<jetColl_nolepveto.size(); j++){
+
+      snu::KJet jet = jetColl_nolepveto.at(j);
+      if( muon.DeltaR( jet ) < dr ){
+        dr = muon.DeltaR( jet );
+        jetfound = true;
+        cljet = jet;
+      }
+
+    }
+
+    if(jetfound){
+
+      bool IsThisTight = PassID( muon, "MUON_HN_TIGHT" );
+      int hf = cljet.HadronFlavour();
+      TString flavour = "Heavy";
+
+      if(hf<4) flavour = "Light";
+
+      FillHist(flavour+"_Chi2", muon.GlobalChi2(), 1., 0., 50., 50);
+      FillHist(flavour+"_dXY", fabs(muon.dXY()), 1., 0., 0.2, 200);
+      FillHist(flavour+"_dZ", fabs(muon.dZ()), 1., 0., 0.1, 100);
+      FillHist(flavour+"_dXYSig", fabs(muon.dXYSig()), 1., 0., 10., 100);
+      FillHist(flavour+"_validHits", muon.validHits(), 1., 0., 50., 50);
+      FillHist(flavour+"_validPixHits", muon.validPixHits(), 1., 0., 50., 50);
+      FillHist(flavour+"_validStations", muon.validStations(), 1., 0., 50., 50);
+      FillHist(flavour+"_ActiveLayer", muon.ActiveLayer(), 1., 0., 50., 50);
+
+    }
+
+  }
+
   //==== Make x:iso, y:mva 2D one-binned FR
 
-  double MaxSIP = 3;
-  for(int a=0; a<15; a++){
+  double MaxSIP = 3, dMaxSIP = 0.5;
+  for(int a=0; a<30; a++){
 
-    double MaxChi2 = 10;
+    double MaxChi2 = 10., dMaxChi2 = 10.;
     for(int b=0; b<15; b++){
 
       int N_thismu(0);
@@ -363,21 +416,31 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
           std::vector<snu::KMuon> onemu;
           onemu.push_back(muon);
-          double this_weight  =weight;
+          double this_weight = weight;
 
-          double bin_MaxSIP = MaxSIP + 0.5/2.;
-          double bin_MaxChi2 = MaxChi2 + 0.5/2.;
+          double bin_MaxSIP = MaxSIP + dMaxSIP/2.;
+          double bin_MaxChi2 = MaxChi2 + dMaxChi2/2.;
+
+          double TightISO = 0.07;
+          double conept = MuonConePt(muon,TightISO);
+
+          TString SIP_Chi2 = TString::Itoa(MaxSIP*10,10)+"_"+TString::Itoa(MaxChi2,10);
+          //cout << MaxSIP<<"\t"<<MaxChi2<<" ==> " << SIP_Chi2 << endl;
 
           if( hf >= 4 ){
-            FillHist("HeavyFlavour_F0", bin_MaxSIP, this_weight, 0., 10., 20);
+            FillHist("HeavyFlavour_F0", bin_MaxSIP, bin_MaxChi2, 1., 0., 10., 20, 0., 60., 60);
+            FillHist(SIP_Chi2+"_HeavyFlavour_pt_cone_vs_eta_F0", conept, fabs(muon.Eta()), 1., ptarray, n_pt, etaarray, n_eta);
             if(IsThisTight){
-             FillHist("HeavyFlavour_F", bin_MaxSIP, this_weight, 0., 10., 20);
+             FillHist("HeavyFlavour_F", bin_MaxSIP, bin_MaxChi2, 1., 0., 10., 20, 0., 60., 60);
+             FillHist(SIP_Chi2+"_HeavyFlavour_pt_cone_vs_eta_F", conept, fabs(muon.Eta()), 1., ptarray, n_pt, etaarray, n_eta);
             }
           }
           else{
-            FillHist("LightFlavour_F0", bin_MaxSIP, this_weight, 0., 10., 20);
+            FillHist("LightFlavour_F0", bin_MaxSIP, bin_MaxChi2, 1., 0., 10., 20, 0., 60., 60);
+            FillHist(SIP_Chi2+"_LightFlavour_pt_cone_vs_eta_F0", conept, fabs(muon.Eta()), 1., ptarray, n_pt, etaarray, n_eta);
             if(IsThisTight){
-              FillHist("LightFlavour_F", bin_MaxSIP, this_weight, 0., 10., 20);
+             FillHist("LightFlavour_F", bin_MaxSIP, bin_MaxChi2, 1., 0., 10., 20, 0., 60., 60);
+             FillHist(SIP_Chi2+"_LightFlavour_pt_cone_vs_eta_F", conept, fabs(muon.Eta()), 1, ptarray, n_pt, etaarray, n_eta);
             }
           }
 
@@ -385,11 +448,11 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
       } // only one muon
 
-      MaxChi2 += 5;
+      MaxChi2 += dMaxChi2;
 
     } // chi2 loop
 
-    MaxSIP += 0.5;
+    MaxSIP += dMaxSIP;
 
   } // iso loop
   return;
@@ -419,15 +482,16 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
         }
       }
 
-      for(std::map< TString, std::vector<double> >::iterator it=HLT_ptrange.begin(); it!=HLT_ptrange.end(); it++){
+      for(std::map< TString, std::vector<double> >::iterator it=HLT_ptconerange.begin(); it!=HLT_ptconerange.end(); it++){
 
-        double weight_by_pt = GetTriggerWeightByPtRange(it->first, it->second, HLT_ptmin[it->first], hnloose, For_HLT_Mu3_PFJet40_v);
+        double weight_by_pt_cone = GetTriggerWeightByPtRange(it->first, it->second, HLT_ptmin[it->first], hnloose, For_HLT_Mu3_PFJet40_v);
+        //double weight_by_pt = GetTriggerWeightByPtRange(it->first, HLT_ptrange[it->first], HLT_ptmin[it->first], hnloose, For_HLT_Mu3_PFJet40_v);
 
         bool IsThisTight = PassID( muon, "MUON_HN_TIGHT" );
 
         if(DijetFake){
 
-          double this_weight = weight_by_pt;
+          double this_weight = weight_by_pt_cone;
 
           double AwayjetPt = 40; // just using central value..
 
@@ -439,7 +503,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
           else                   FillDenAndNum(HISTPREFIX+"_withoutbjet_Loose", muon, this_weight, IsThisTight);
 
           double ptweight = JSWeightByTrigger(it->first, TargetLumi);
-          ptweight *= weight;
+          ptweight *= weight*MCweight;
           if( !PassTrigger(it->first) ) ptweight = 0.;
           if( muon.MiniAODPt() < HLT_ptmin[it->first] ) ptweight = 0.;
           if( (it->first).Contains("PFJet40_v") ){
@@ -468,7 +532,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
         }
         else{
 
-          double this_weight = weight_by_pt*weight;
+          double this_weight = weight_by_pt_cone*weight;
 
           TLorentzVector metvec;
           metvec.SetPtEtaPhiE( METauto, 0, METphiauto, METauto );
@@ -705,7 +769,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
       if( PassTriggerOR(AllHLTs) ){
 
         std::map<TString, double> this_weight_Loose, this_weight_HighdXYLoose, this_weight_NodXYCutLoose;
-        for(std::map< TString, std::vector<double> >::iterator it=HLT_ptrange.begin(); it!=HLT_ptrange.end(); it++){
+        for(std::map< TString, std::vector<double> >::iterator it=HLT_ptconerange.begin(); it!=HLT_ptconerange.end(); it++){
           this_weight_Loose[it->first]         = weight*GetTriggerWeightByPtRange(it->first, it->second, HLT_ptmin[it->first], muontriLooseColl, For_HLT_Mu3_PFJet40_v);
           this_weight_HighdXYLoose[it->first]  = weight*GetTriggerWeightByPtRange(it->first, it->second, HLT_ptmin[it->first], muontriHighdXYLooseColl, For_HLT_Mu3_PFJet40_v);
           this_weight_NodXYCutLoose[it->first] = weight*GetTriggerWeightByPtRange(it->first, it->second, HLT_ptmin[it->first], muontriNodXYCutLooseColl, For_HLT_Mu3_PFJet40_v);

@@ -282,6 +282,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv1_LoosenSIP");
   //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv2");
   std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv7");
+  //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv8");
 
 
   std::vector<snu::KElectron> hnloose;
@@ -310,13 +311,14 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
     
   }
 
-/*
+
   //==== 2-0) Loose Scan
 
   //std::vector<snu::KElectron> nocutel_raw = GetElectrons(false, true, "ELECTRON_HN_NOCUT");
   //std::vector<snu::KElectron> nocutel_raw = GetElectrons(false, true, "ELECTRON_HN_NOCUT_LoosenSIP");
   //std::vector<snu::KElectron> nocutel_raw = GetElectrons(false, true, "ELECTRON_HN_NOCUT_v7_LoosenSIP");
-  std::vector<snu::KElectron> nocutel_raw = GetElectrons(false, true, "ELECTRON_HN_NOCUT_v7");
+  //std::vector<snu::KElectron> nocutel_raw = GetElectrons(false, true, "ELECTRON_HN_NOCUT_v7");
+  std::vector<snu::KElectron> nocutel_raw = GetElectrons(false, true, "ELECTRON_HN_NOCUT_v8");
   std::vector<snu::KElectron> nocutel;
   nocutel.clear();
 
@@ -329,11 +331,14 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
   //==== Make x:iso, y:mva 2D one-binned FR
 
-  double MaxIso = 0.1;
-  for(int a=0; a<10; a++){
+  double MaxIso = 0.6;
+  for(int a=0; a<1; a++){
 
     double MinMVA = -1.;
     for(int b=0; b<200; b++){
+
+      TString StringMVA = TString::Itoa(100.*MinMVA,10);
+      //cout << MaxIso << "\t" << MinMVA << " => " << StringMVA << endl;
 
       //cout << "####" << endl;
       //cout << "MaxIso = " << MaxIso << endl;
@@ -380,7 +385,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
           TString EtaRegion = "InnerBarrel";
           if(fabs(electron.SCEta()) > 1.479) EtaRegion = "EndCap";
           else if(fabs(electron.SCEta()) > 0.8) EtaRegion = "OuterBarrel";
-          else EtaRegion = "InnerBarrel";;
+          else EtaRegion = "InnerBarrel";
 
           //cout << "###" << endl;
           //cout << "MaxIso = " << MaxIso << " > " << electron.PFRelIso(0.3) << endl;
@@ -395,16 +400,23 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
           double bin_MaxIso = MaxIso + 0.1/2.;
           double bin_MinMVA = MinMVA + 0.01/2.;
 
+          double TightISO = 0.08;
+          double conept = ElectronConePt(electron,TightISO);
+
           if( hf >= 4 ){
-            FillHist("HeavyFlavour_"+EtaRegion+"_F0", bin_MaxIso, bin_MinMVA, this_weight, 0., 1.5, 15, -1.5, 1.5, 300);
+            FillHist("HeavyFlavour_"+EtaRegion+"_F0", bin_MaxIso, bin_MinMVA, 1., 0., 1.5, 15, -1.5, 1.5, 300);
+            FillHist(StringMVA+"_"+EtaRegion+"_HeavyFlavour_pt_cone_vs_eta_F0", conept, fabs(electron.Eta()), 1., ptarray, n_pt, etaarray, n_eta);
             if(IsThisTight){
-              FillHist("HeavyFlavour_"+EtaRegion+"_F", bin_MaxIso, bin_MinMVA, this_weight, 0., 1.5, 15, -1.5, 1.5, 300);
+              FillHist("HeavyFlavour_"+EtaRegion+"_F", bin_MaxIso, bin_MinMVA, 1, 0., 1.5, 15, -1.5, 1.5, 300);
+              FillHist(StringMVA+"_"+EtaRegion+"_HeavyFlavour_pt_cone_vs_eta_F", conept, fabs(electron.Eta()), 1., ptarray, n_pt, etaarray, n_eta);
             }
           }
           else{
-            FillHist("LightFlavour_"+EtaRegion+"_F0", bin_MaxIso, bin_MinMVA, this_weight, 0., 1.5, 15, -1.5, 1.5, 300);
+            FillHist("LightFlavour_"+EtaRegion+"_F0", bin_MaxIso, bin_MinMVA, 1., 0., 1.5, 15, -1.5, 1.5, 300);
+            FillHist(StringMVA+"_"+EtaRegion+"_LightFlavour_pt_cone_vs_eta_F0", conept, fabs(electron.Eta()), 1., ptarray, n_pt, etaarray, n_eta);
             if(IsThisTight){
-              FillHist("LightFlavour_"+EtaRegion+"_F", bin_MaxIso, bin_MinMVA, this_weight, 0., 1.5, 15, -1.5, 1.5, 300);
+              FillHist("LightFlavour_"+EtaRegion+"_F", bin_MaxIso, bin_MinMVA, 1., 0., 1.5, 15, -1.5, 1.5, 300);
+              FillHist(StringMVA+"_"+EtaRegion+"_LightFlavour_pt_cone_vs_eta_F", conept, fabs(electron.Eta()), 1., ptarray, n_pt, etaarray, n_eta);
             }
           }
 
@@ -417,7 +429,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
     MaxIso += 0.1;
   } // iso loop
   return;
-*/
+
 
   double AwayjetPts[] = {20, 30, 40, 60};
 
@@ -462,7 +474,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
           else                   FillDenAndNum(HISTPREFIX+"_withoutbjet_Loose", electron, this_weight, IsThisTight);
 
           double ptweight = WeightByTrigger(it->first, TargetLumi);
-          ptweight *= weight;
+          ptweight *= weight*MCweight;
           if( !PassTrigger(it->first) ) ptweight = 0.;
           if( electron.Pt() < HLT_ptmin[it->first] ) ptweight = 0.;
           if( (it->first).Contains("PFJet30") ){

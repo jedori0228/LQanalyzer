@@ -1,7 +1,7 @@
 #!/bin/sh
 
 declare -a tmp=(
-'ZGto2LG' 'WGtoLNuG'
+'TT_powheg' 'WJets'
 )
 
 ########################
@@ -227,12 +227,12 @@ declare dilepbkg_missing=(
 )
 
 declare dilebkg_long=(
-'DYJets' 'TTLL_powheg'
+'DYJets' 'TT_powheg' 'WJets'
 )
 declare dilepbkg_all=(
 'DYJets_10to50'
 'WWTo2L2Nu_DS' 'ww_ds'
-'WWTo2L2Nu' 'ggWWto2L2Nu'
+'WWTo2L2Nu' 'ggWWto2L2Nu' 'ggHtoWW'
 'WZTo3LNu_powheg' 'WZto2L2Q_amcatnlo' 'WZTo3LNu_amcatnlo'
 'ZZTo4L_powheg' 'ggZZto2e2mu' 'ggZZto2e2nu' 'ggZZto2e2tau' 'ggZZto2mu2nu' 'ggZZto2mu2tau' 'ggZZto4e' 'ggZZto4mu' 'ggZZto4tau'
 'ZZTo2L2Nu_Powheg'
@@ -248,7 +248,7 @@ declare dilepbkg_all=(
 
 declare dilepbkg_SS=(
 'WZTo3LNu_powheg'
-'ZZTo4L_powheg' 'ggZZto2e2mu' 'ggZZto2e2nu' 'ggZZto2e2tau' 'ggZZto2mu2nu' 'ggZZto2mu2tau' 'ggZZto4e' 'ggZZto4mu' 'ggZZto4tau'
+'ZZTo4L_powheg' 'ggZZto2e2mu' 'ggZZto2e2nu' 'ggZZto2e2tau' 'ggZZto2mu2nu' 'ggZZto2mu2tau' 'ggZZto4e' 'ggZZto4mu' 'ggZZto4tau' 'ggHtoZZ'
 'TG' 'TTG' 'WGtoLNuG' 'ZGto2LG'
 'WWW' 'WWZ' 'WZZ' 'ZZZ'
 'ttW' 'ttZ' 'ttH_nonbb'
