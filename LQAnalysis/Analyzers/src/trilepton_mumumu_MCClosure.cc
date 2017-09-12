@@ -435,7 +435,7 @@ void trilepton_mumumu_MCClosure::ExecuteEvents()throw( LQError ){
   //==== preselection is done
 
 
-  m_datadriven_bkg->GetFakeObj()->SetUseQCDFake(true);
+  //m_datadriven_bkg->GetFakeObj()->SetUseQCDFake(true); //FIXME this functino is removedi n v8-0-7.27!!
   bool UsePtCone = std::find(k_flags.begin(), k_flags.end(), "UsePtCone") != k_flags.end();
   m_datadriven_bkg->SetUsePtCone(UsePtCone);
   double this_weight =     m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", muontriLooseColl.size(), electrontriLooseColl, "ELECTRON_MVA_TIGHT", electrontriLooseColl.size(), "ELECTRON_MVA_FAKELOOSE", "dijet_ajet40");

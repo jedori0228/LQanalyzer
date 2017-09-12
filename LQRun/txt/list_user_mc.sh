@@ -254,6 +254,14 @@ declare dilepbkg_SS=(
 'ttW' 'ttZ' 'ttH_nonbb'
 'WWTo2L2Nu_DS'
 )
+declare -a dilep_analysisCR_bkg=(
+'WZTo3LNu_powheg'
+'ZZTo4L_powheg' 'ggZZto2e2mu' 'ggZZto2e2nu' 'ggZZto2e2tau' 'ggZZto2mu2nu' 'ggZZto2mu2tau' 'ggZZto4e' 'ggZZto4mu' 'ggZZto4tau' 'ggHtoZZ'
+'TG' 'TTG' 'WGtoLNuG' 'ZGto2LG'
+'WWW' 'WZZ' 'WWZ' 'ZZZ'
+'ttW' 'ttZ' 'ttH_nonbb'
+)
+
 
 ## HNEmEm_250
 declare -a DiMuSig=(

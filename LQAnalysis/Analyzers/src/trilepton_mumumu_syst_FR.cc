@@ -138,12 +138,12 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
   //==== No normalization for MC Closure
   if(DoMCClosure){
     weight = 1.*MCweight;
-    m_datadriven_bkg->GetFakeObj()->SetUseQCDFake(true);
+    //m_datadriven_bkg->GetFakeObj()->SetUseQCDFake(true); //FIXME this functino is removedi n v8-0-7.27!!
   }
   dXYMins.clear();
   RelIsoMaxs.clear();
-  dXYMins = m_datadriven_bkg->GetFakeObj()->GetdXYMins();
-  RelIsoMaxs = m_datadriven_bkg->GetFakeObj()->GetRelIsoMaxs();
+  //dXYMins = m_datadriven_bkg->GetFakeObj()->GetdXYMins(); //FIXME this functino is removedi n v8-0-7.27!!
+  //RelIsoMaxs = m_datadriven_bkg->GetFakeObj()->GetRelIsoMaxs(); //FIXME this functino is removedi n v8-0-7.27!!
 
   bool UsePtCone = std::find(k_flags.begin(), k_flags.end(), "UsePtCone") != k_flags.end();
   m_datadriven_bkg->SetUsePtCone(UsePtCone);
@@ -206,7 +206,7 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
         map_whichCR_to_isCR["SSDiMuon"] = isSS;
 
         //==== fake method weighting
-        m_datadriven_bkg->GetFakeObj()->SetTrilepWP(dXYMins.at(aaa), RelIsoMaxs.at(bbb));
+        //m_datadriven_bkg->GetFakeObj()->SetTrilepWP(dXYMins.at(aaa), RelIsoMaxs.at(bbb)); //FIXME this functino is removedi n v8-0-7.27!!
         std::vector<snu::KElectron> empty_electron;
         empty_electron.clear();
         double this_weight = m_datadriven_bkg->Get_DataDrivenWeight(false, muontriLooseColl, "MUON_HN_TRI_TIGHT", 2, empty_electron, "ELECTRON_MVA_TIGHT", 0);
@@ -216,7 +216,7 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
           TString this_suffix = it->first;
           if(it->second){
             FillUpDownHist(str_dXYCut+"_n_events_"+this_suffix, 0., this_weight, this_weight_err, 0., 1., 1);
-            FillHist(str_dXYCut+"_n_OnlyLoose_"+this_suffix, m_datadriven_bkg->GetFakeObj()->GetNLooseNotTight(), 1., 0., 4., 4);
+            //FillHist(str_dXYCut+"_n_OnlyLoose_"+this_suffix, m_datadriven_bkg->GetFakeObj()->GetNLooseNotTight(), 1., 0., 4., 4);  //FIXME this functino is removedi n v8-0-7.27!!
           }
         }
 
@@ -238,7 +238,7 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
         snu::KParticle HN[4];;
 
         //==== fake method weighting
-        m_datadriven_bkg->GetFakeObj()->SetTrilepWP(dXYMins.at(aaa), RelIsoMaxs.at(bbb));
+        //m_datadriven_bkg->GetFakeObj()->SetTrilepWP(dXYMins.at(aaa), RelIsoMaxs.at(bbb)); //FIXME this functino is removedi n v8-0-7.27!!
         std::vector<snu::KElectron> empty_electron;
         empty_electron.clear();
 
@@ -393,7 +393,7 @@ void trilepton_mumumu_syst_FR::ExecuteEvents()throw( LQError ){
           TString this_suffix = it->first;
           if(it->second){
             FillUpDownHist(str_dXYCut+"_n_events_"+this_suffix, 0., this_weight, this_weight_err, 0., 1., 1);
-            FillHist(str_dXYCut+"_n_OnlyLoose_"+this_suffix, m_datadriven_bkg->GetFakeObj()->GetNLooseNotTight(), 1., 0., 4., 4);
+            //FillHist(str_dXYCut+"_n_OnlyLoose_"+this_suffix, m_datadriven_bkg->GetFakeObj()->GetNLooseNotTight(), 1., 0., 4., 4); //FIXME this functino is removedi n v8-0-7.27!!
           }
         }
 

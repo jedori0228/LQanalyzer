@@ -747,31 +747,31 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       bool HasStrangeLeptons=false;
       bool HasFakeLeptons=false;
 
-      for(unsigned int i=0; i<lep.size(); i++){
+      for(unsigned int j=0; j<lep.size(); j++){
 /*
-        int this_type = lep.at(i).GetType();
-        if(lep.at(i).LeptonFlavour()==KLepton::ELECTRON){
+        int this_type = lep.at(j).GetType();
+        if(lep.at(j).LeptonFlavour()==KLepton::ELECTRON){
           //if(this_type==2) HasStrangeLeptons=true; // From Z/W, but matchedpdgid != pdgid (conversion) //TODO test this
           if(this_type==3) HasStrangeLeptons=true; // e>eee
           if(this_type==16) HasStrangeLeptons=true; // gammastar
           if(this_type==40) HasStrangeLeptons=true; // photon matched
         }
-        if(lep.at(i).LeptonFlavour()==KLepton::MUON){
+        if(lep.at(j).LeptonFlavour()==KLepton::MUON){
           if(this_type==8) HasStrangeLeptons=true; // ??
           if(this_type==10) HasStrangeLeptons=true; // gammastar
         }
-        if(lep.at(i).MCIsCF()) HasStrangeLeptons=true;
+        if(lep.at(j).MCIsCF()) HasStrangeLeptons=true;
 */
 
-        if( lep.at(i).GetType() == 0 ) HasStrangeLeptons = true;
+        if( lep.at(j).GetType() == 0 ) HasStrangeLeptons = true;
 
         //==== Check if fake exist
-        if(lep.at(i).LeptonFlavour()==KLepton::MUON){
-          const snu::KMuon *mptr = lep.at(i).GetMuonPtr();
+        if(lep.at(j).LeptonFlavour()==KLepton::MUON){
+          const snu::KMuon *mptr = lep.at(j).GetMuonPtr();
           if(!TruthMatched(*mptr)) HasFakeLeptons = true;
         }
-        if(lep.at(i).LeptonFlavour()==KLepton::ELECTRON){
-          const snu::KElectron *eptr = lep.at(i).GetElectronPtr();
+        if(lep.at(j).LeptonFlavour()==KLepton::ELECTRON){
+          const snu::KElectron *eptr = lep.at(j).GetElectronPtr();
           if(!TruthMatched(*eptr,false)) HasFakeLeptons = true;
         }
 
@@ -806,8 +806,8 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       TruthPrintOut();
       cout << "<Reco>" << endl;
       cout << "pt\teta\tphi\tcharge\ttype\n" << endl;
-      for(unsigned int i=0; i<lep.size(); i++){
-        cout << lep.at(i).Pt() << "\t" << lep.at(i).Eta() << "\t" << lep.at(i).Phi() << "\t" << lep.at(i).Charge() << "\t" << lep.at(i).GetType() << endl;
+      for(unsigned int j=0; j<lep.size(); j++){
+        cout << lep.at(j).Pt() << "\t" << lep.at(j).Eta() << "\t" << lep.at(j).Phi() << "\t" << lep.at(j).Charge() << "\t" << lep.at(j).GetType() << endl;
       }
     }
     continue;
@@ -973,20 +973,20 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
       if(map_Region_to_Bool[Suffix+"_Preselection"] && jets_nolepveto.size() > 0){
 
-        for(unsigned int i=0; i<lep.size(); i++){
+        for(unsigned int j=0; j<lep.size(); j++){
 
-          if(lep.at(i).LeptonFlavour() == KLepton::MUON){
-            if( PassID( *(lep.at(i).GetMuonPtr()), "MUON_HN_TIGHT" ) ) continue;
+          if(lep.at(j).LeptonFlavour() == KLepton::MUON){
+            if( PassID( *(lep.at(j).GetMuonPtr()), "MUON_HN_TIGHT" ) ) continue;
           }
-          else if(lep.at(i).LeptonFlavour() == KLepton::ELECTRON){
-            if( PassID( *(lep.at(i).GetElectronPtr()), "ELECTRON_HN_TIGHTv4" ) ) continue;
+          else if(lep.at(j).LeptonFlavour() == KLepton::ELECTRON){
+            if( PassID( *(lep.at(j).GetElectronPtr()), "ELECTRON_HN_TIGHTv4" ) ) continue;
           }
           else continue;
 
-          for(unsigned int j=0; j<jets_nolepveto.size(); j++){
-            double this_dr = (lep.at(i).DeltaR( jets_nolepveto.at(j) ) );
+          for(unsigned int k=0; k<jets_nolepveto.size(); k++){
+            double this_dr = (lep.at(j).DeltaR( jets_nolepveto.at(k) ) );
             if(this_dr < 0.3){
-              FillHist(Suffix+"_LooseSample_LeptonClosestJet_Pt", jets_nolepveto.at(j).Pt(), 1, 0., 200., 200);
+              FillHist(Suffix+"_LooseSample_LeptonClosestJet_Pt", jets_nolepveto.at(k).Pt(), 1, 0., 200., 200);
             }
           }
 
@@ -1002,8 +1002,8 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
     if(DoAwayJet){
       if(map_Region_to_Bool[Suffix+"_Preselection"] && isSSForCF){
 
-        for(unsigned int i=0; i<FRweights.size(); i++){
-          FillHist(Suffix+"_FRsyst_"+FRweights_name.at(i), 0., FRweights.at(i), 0., 1., 1);
+        for(unsigned int j=0; j<FRweights.size(); j++){
+          FillHist(Suffix+"_FRsyst_"+FRweights_name.at(j), 0., FRweights.at(j), 0., 1., 1);
         }
 
       }
@@ -1089,7 +1089,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
       }
       else{
-        for(int i=12;i<=40;i++) cutop[i] = -999.;
+        for(int j=12;j<=40;j++) cutop[j] = -999.;
       }
 
       //==== Two Forward Jets

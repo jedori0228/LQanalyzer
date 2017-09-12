@@ -185,7 +185,7 @@ void trilepton_mumumu_CR_FR_method::ExecuteEvents()throw( LQError ){
       weight = 1.*MCweight;
     }
 
-    m_datadriven_bkg->GetFakeObj()->SetUseQCDFake(true); 
+    //m_datadriven_bkg->GetFakeObj()->SetUseQCDFake(true); //FIXME this function is removed in v8-0-7.27!!
   }
 
   //==================================
