@@ -281,7 +281,8 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv1");
   //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv1_LoosenSIP");
   //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv2");
-  std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv7");
+  //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv7");
+  std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv7_pt15");
   //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv8");
 
 
@@ -311,7 +312,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
     
   }
 
-
+/*
   //==== 2-0) Loose Scan
 
   //std::vector<snu::KElectron> nocutel_raw = GetElectrons(false, true, "ELECTRON_HN_NOCUT");
@@ -429,7 +430,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
     MaxIso += 0.1;
   } // iso loop
   return;
-
+*/
 
   double AwayjetPts[] = {20, 30, 40, 60};
 
