@@ -1404,88 +1404,88 @@ void DiLeptonAnalyzer::FillDiLeptonPlot(
 
   TString leporder[4] = {"leading", "second", "third", "fourth"};
 
-  FillHist("Nevents_"+histsuffix, 0., thisweight, 0., 1., 1);
-  FillHist("weight_fr_"+histsuffix, weight_fr, 1., -2., 2., 400);
-  FillHist("PFMET_"+histsuffix, MET, thisweight, 0., 1000., 1000);
-  FillHist("PFMET_phi_"+histsuffix, METphi, thisweight, -3.2, 3.2, 100);
-  FillHist("Njets_"+histsuffix, jets.size(), thisweight, 0., 10., 10);
-  FillHist("Njets_nolepveto_"+histsuffix, jets_nolepveto.size(), thisweight, 0., 10., 10);
-  FillHist("Nfwdjets_"+histsuffix, jets_fwd.size(), thisweight, 0., 10., 10);
-  FillHist("Nbjets_"+histsuffix, nbjets, thisweight, 0., 10., 10);
-  FillHist("Nbjets_nolepveto_"+histsuffix, nbjets_nolepveto, thisweight, 0., 10., 10);
-  FillHist("Nbfwdjets_"+histsuffix, nbjets_fwd, thisweight, 0., 10., 10);
-  FillHist("Nvtx_"+histsuffix, n_vtx, thisweight, 0., 100., 100);
+  JSFillHist(histsuffix, "Nevents_"+histsuffix, 0., thisweight, 0., 1., 1);
+  JSFillHist(histsuffix, "weight_fr_"+histsuffix, weight_fr, 1., -2., 2., 400);
+  JSFillHist(histsuffix, "PFMET_"+histsuffix, MET, thisweight, 0., 1000., 1000);
+  JSFillHist(histsuffix, "PFMET_phi_"+histsuffix, METphi, thisweight, -3.2, 3.2, 100);
+  JSFillHist(histsuffix, "Njets_"+histsuffix, jets.size(), thisweight, 0., 10., 10);
+  JSFillHist(histsuffix, "Njets_nolepveto_"+histsuffix, jets_nolepveto.size(), thisweight, 0., 10., 10);
+  JSFillHist(histsuffix, "Nfwdjets_"+histsuffix, jets_fwd.size(), thisweight, 0., 10., 10);
+  JSFillHist(histsuffix, "Nbjets_"+histsuffix, nbjets, thisweight, 0., 10., 10);
+  JSFillHist(histsuffix, "Nbjets_nolepveto_"+histsuffix, nbjets_nolepveto, thisweight, 0., 10., 10);
+  JSFillHist(histsuffix, "Nbfwdjets_"+histsuffix, nbjets_fwd, thisweight, 0., 10., 10);
+  JSFillHist(histsuffix, "Nvtx_"+histsuffix, n_vtx, thisweight, 0., 100., 100);
 
-  FillHist("HT_"+histsuffix, HT, thisweight, 0., 2000., 2000);
-  FillHist("ST_"+histsuffix, ST, thisweight, 0., 2000., 2000);
-  FillHist("LT_"+histsuffix, LT, thisweight, 0., 2000., 2000);
-  FillHist("MCT_"+histsuffix, contramass, thisweight, 0., 2000., 2000);
-  FillHist("MET2overST_"+histsuffix, MET*MET/ST, thisweight, 0., 2000., 2000);
-  FillHist("DeltaRl1l2_"+histsuffix, leptons.at(0).DeltaR(leptons.at(1)), thisweight, 0., 10., 100);
+  JSFillHist(histsuffix, "HT_"+histsuffix, HT, thisweight, 0., 2000., 2000);
+  JSFillHist(histsuffix, "ST_"+histsuffix, ST, thisweight, 0., 2000., 2000);
+  JSFillHist(histsuffix, "LT_"+histsuffix, LT, thisweight, 0., 2000., 2000);
+  JSFillHist(histsuffix, "MCT_"+histsuffix, contramass, thisweight, 0., 2000., 2000);
+  JSFillHist(histsuffix, "MET2overST_"+histsuffix, MET*MET/ST, thisweight, 0., 2000., 2000);
+  JSFillHist(histsuffix, "DeltaRl1l2_"+histsuffix, leptons.at(0).DeltaR(leptons.at(1)), thisweight, 0., 10., 100);
 
-  FillHist("m_ll_"+histsuffix, (leptons.at(0)+leptons.at(1)).M(), thisweight, 0., 2000., 2000);
+  JSFillHist(histsuffix, "m_ll_"+histsuffix, (leptons.at(0)+leptons.at(1)).M(), thisweight, 0., 2000., 2000);
 
-  FillHist("NTightLeptons_weighted_"+histsuffix,   NTightLeptons, thisweight, 0., 5., 5);
-  FillHist("NTightLeptons_unweighted_"+histsuffix, NTightLeptons, 1., 0., 5., 5);
+  JSFillHist(histsuffix, "NTightLeptons_weighted_"+histsuffix,   NTightLeptons, thisweight, 0., 5., 5);
+  JSFillHist(histsuffix, "NTightLeptons_unweighted_"+histsuffix, NTightLeptons, 1., 0., 5., 5);
   for(int i=0; i<leptons.size(); i++){
     if(i==4) break;
-    FillHist(leporder[i]+"Lepton_Pt_"+histsuffix,  leptons.at(i).Pt(), thisweight, 0., 2000., 2000);
-    FillHist(leporder[i]+"Lepton_Eta_"+histsuffix, leptons.at(i).Eta(), thisweight, -3., 3., 60);
-    FillHist(leporder[i]+"Lepton_Type_"+histsuffix, leptons.at(i).GetType(), thisweight, 0., 50., 50);
-    FillHist(leporder[i]+"Lepton_RelIso_"+histsuffix, leptons.at(i).RelIso(), thisweight, 0., 1., 100);
+    JSFillHist(histsuffix, leporder[i]+"Lepton_Pt_"+histsuffix,  leptons.at(i).Pt(), thisweight, 0., 2000., 2000);
+    JSFillHist(histsuffix, leporder[i]+"Lepton_Eta_"+histsuffix, leptons.at(i).Eta(), thisweight, -3., 3., 60);
+    JSFillHist(histsuffix, leporder[i]+"Lepton_Type_"+histsuffix, leptons.at(i).GetType(), thisweight, 0., 50., 50);
+    JSFillHist(histsuffix, leporder[i]+"Lepton_RelIso_"+histsuffix, leptons.at(i).RelIso(), thisweight, 0., 1., 100);
 
     double TightIso = 0.07;
     if(leptons.at(i).LeptonFlavour()==KLepton::ELECTRON){
       TightIso = 0.08;
-      FillHist(leporder[i]+"Lepton_mva_"+histsuffix, leptons.at(i).GetElectronPtr()->MVA(), thisweight, -1., 1., 200);
+      JSFillHist(histsuffix, leporder[i]+"Lepton_mva_"+histsuffix, leptons.at(i).GetElectronPtr()->MVA(), thisweight, -1., 1., 200);
     }
-    FillHist(leporder[i]+"Lepton_Pt_cone_"+histsuffix, CorrPt(leptons.at(i), TightIso), thisweight, 0., 2000., 2000);
+    JSFillHist(histsuffix, leporder[i]+"Lepton_Pt_cone_"+histsuffix, CorrPt(leptons.at(i), TightIso), thisweight, 0., 2000., 2000);
 
   }
   for(int i=0; i<jets.size(); i++){
     if(i==4) break;
-    FillHist(leporder[i]+"Jet_Pt_"+histsuffix,  jets.at(i).Pt(), thisweight, 0., 2000., 2000);
-    FillHist(leporder[i]+"Jet_Eta_"+histsuffix, jets.at(i).Eta(), thisweight, -3., 3., 60);
+    JSFillHist(histsuffix, leporder[i]+"Jet_Pt_"+histsuffix,  jets.at(i).Pt(), thisweight, 0., 2000., 2000);
+    JSFillHist(histsuffix, leporder[i]+"Jet_Eta_"+histsuffix, jets.at(i).Eta(), thisweight, -3., 3., 60);
   }
   for(int i=0; i<jets_fwd.size(); i++){
     if(i==4) break;
-    FillHist(leporder[i]+"ForwardJet_Pt_"+histsuffix,  jets_fwd.at(i).Pt(), thisweight, 0., 2000., 2000);
-    FillHist(leporder[i]+"ForwardJet_Eta_"+histsuffix, jets_fwd.at(i).Eta(), thisweight, -5., 5., 100);
+    JSFillHist(histsuffix, leporder[i]+"ForwardJet_Pt_"+histsuffix,  jets_fwd.at(i).Pt(), thisweight, 0., 2000., 2000);
+    JSFillHist(histsuffix, leporder[i]+"ForwardJet_Eta_"+histsuffix, jets_fwd.at(i).Eta(), thisweight, -5., 5., 100);
   }
   for(int i=0; i<jets_nolepveto.size(); i++){
     if(i==4) break;
-    FillHist(leporder[i]+"NoLepVetoJet_Pt_"+histsuffix, jets_nolepveto.at(i).Pt(), thisweight, 0., 2000., 2000);
-    FillHist(leporder[i]+"NoLepVetoJet_Eta_"+histsuffix, jets_nolepveto.at(i).Eta(), thisweight, -3., 3., 60);
+    JSFillHist(histsuffix, leporder[i]+"NoLepVetoJet_Pt_"+histsuffix, jets_nolepveto.at(i).Pt(), thisweight, 0., 2000., 2000);
+    JSFillHist(histsuffix, leporder[i]+"NoLepVetoJet_Eta_"+histsuffix, jets_nolepveto.at(i).Eta(), thisweight, -3., 3., 60);
   }
 
   if(jets.size() >= 2){
     //==== m(jj) closeset to m(W) : high mass scenario
-    FillHist("m_jj_jjWclosest_"+histsuffix, (jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M(), thisweight, 0., 2000., 2000);
-    FillHist("m_Leadljj_jjWclosest_"+histsuffix, (leptons.at(0)+jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M(), thisweight, 0., 2000., 2000);
-    FillHist("m_SubLeadljj_jjWclosest_"+histsuffix, (leptons.at(1)+jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M(), thisweight, 0., 2000., 2000);
-    FillHist("m_lljj_jjWclosest_"+histsuffix, (leptons.at(0)+leptons.at(1)+jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M(), thisweight, 0., 2000., 2000);
-    FillHist("DeltaRjjWclosest_"+histsuffix, jets.at(index_jjW_j1).DeltaR(jets.at(index_jjW_j2)), thisweight, 0., 10., 100);
-    FillHist("DeltaRLeadl_jjWclosest_"+histsuffix, leptons.at(0).DeltaR( jets.at(index_jjW_j1)+jets.at(index_jjW_j2) ), thisweight, 0., 10., 100);
-    FillHist("DeltaRSubLeadl_jjWclosest_"+histsuffix, leptons.at(1).DeltaR( jets.at(index_jjW_j1)+jets.at(index_jjW_j2) ), thisweight, 0., 10., 100);
-    FillHist("DeltaRLeadl_SubLeadljjWclosest_"+histsuffix, leptons.at(0).DeltaR( leptons.at(1)+jets.at(index_jjW_j1)+jets.at(index_jjW_j2) ), thisweight, 0., 10., 100);
-    FillHist("DeltaRSubLeadl_LeadljjWclosest_"+histsuffix, leptons.at(1).DeltaR( leptons.at(0)+jets.at(index_jjW_j1)+jets.at(index_jjW_j2) ), thisweight, 0., 10., 100);
+    JSFillHist(histsuffix, "m_jj_jjWclosest_"+histsuffix, (jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M(), thisweight, 0., 2000., 2000);
+    JSFillHist(histsuffix, "m_Leadljj_jjWclosest_"+histsuffix, (leptons.at(0)+jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M(), thisweight, 0., 2000., 2000);
+    JSFillHist(histsuffix, "m_SubLeadljj_jjWclosest_"+histsuffix, (leptons.at(1)+jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M(), thisweight, 0., 2000., 2000);
+    JSFillHist(histsuffix, "m_lljj_jjWclosest_"+histsuffix, (leptons.at(0)+leptons.at(1)+jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M(), thisweight, 0., 2000., 2000);
+    JSFillHist(histsuffix, "DeltaRjjWclosest_"+histsuffix, jets.at(index_jjW_j1).DeltaR(jets.at(index_jjW_j2)), thisweight, 0., 10., 100);
+    JSFillHist(histsuffix, "DeltaRLeadl_jjWclosest_"+histsuffix, leptons.at(0).DeltaR( jets.at(index_jjW_j1)+jets.at(index_jjW_j2) ), thisweight, 0., 10., 100);
+    JSFillHist(histsuffix, "DeltaRSubLeadl_jjWclosest_"+histsuffix, leptons.at(1).DeltaR( jets.at(index_jjW_j1)+jets.at(index_jjW_j2) ), thisweight, 0., 10., 100);
+    JSFillHist(histsuffix, "DeltaRLeadl_SubLeadljjWclosest_"+histsuffix, leptons.at(0).DeltaR( leptons.at(1)+jets.at(index_jjW_j1)+jets.at(index_jjW_j2) ), thisweight, 0., 10., 100);
+    JSFillHist(histsuffix, "DeltaRSubLeadl_LeadljjWclosest_"+histsuffix, leptons.at(1).DeltaR( leptons.at(0)+jets.at(index_jjW_j1)+jets.at(index_jjW_j2) ), thisweight, 0., 10., 100);
 
     //==== m(lljj) cloeset to m(W) : low mass scenario
-    FillHist("m_jj_lljjWclosest_"+histsuffix, (jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M(), thisweight, 0., 2000., 2000);
-    FillHist("m_Leadljj_lljjWclosest_"+histsuffix, (leptons.at(0)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M(), thisweight, 0., 2000., 2000);
-    FillHist("m_SubLeadljj_lljjWclosest_"+histsuffix, (leptons.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M(), thisweight, 0., 2000., 2000);
-    FillHist("m_lljj_lljjWclosest_"+histsuffix, (leptons.at(0)+leptons.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M(), thisweight, 0., 2000., 2000);
-    FillHist("DeltaRlljjWclosest_"+histsuffix, jets.at(index_lljjW_j1).DeltaR(jets.at(index_lljjW_j2)), thisweight, 0., 10., 100);
-    FillHist("DeltaRLeadl_lljjWclosest_"+histsuffix, leptons.at(0).DeltaR( jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2) ), thisweight, 0., 10., 100);
-    FillHist("DeltaRSubLeadl_lljjWclosest_"+histsuffix, leptons.at(1).DeltaR( jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2) ), thisweight, 0., 10., 100);
-    FillHist("DeltaRLeadl_SubLeadllljjWclosest_"+histsuffix, leptons.at(0).DeltaR( leptons.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2) ), thisweight, 0., 10., 100);
-    FillHist("DeltaRSubLeadl_LeadllljjWclosest_"+histsuffix, leptons.at(1).DeltaR( leptons.at(0)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2) ), thisweight, 0., 10., 100);
+    JSFillHist(histsuffix, "m_jj_lljjWclosest_"+histsuffix, (jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M(), thisweight, 0., 2000., 2000);
+    JSFillHist(histsuffix, "m_Leadljj_lljjWclosest_"+histsuffix, (leptons.at(0)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M(), thisweight, 0., 2000., 2000);
+    JSFillHist(histsuffix, "m_SubLeadljj_lljjWclosest_"+histsuffix, (leptons.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M(), thisweight, 0., 2000., 2000);
+    JSFillHist(histsuffix, "m_lljj_lljjWclosest_"+histsuffix, (leptons.at(0)+leptons.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M(), thisweight, 0., 2000., 2000);
+    JSFillHist(histsuffix, "DeltaRlljjWclosest_"+histsuffix, jets.at(index_lljjW_j1).DeltaR(jets.at(index_lljjW_j2)), thisweight, 0., 10., 100);
+    JSFillHist(histsuffix, "DeltaRLeadl_lljjWclosest_"+histsuffix, leptons.at(0).DeltaR( jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2) ), thisweight, 0., 10., 100);
+    JSFillHist(histsuffix, "DeltaRSubLeadl_lljjWclosest_"+histsuffix, leptons.at(1).DeltaR( jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2) ), thisweight, 0., 10., 100);
+    JSFillHist(histsuffix, "DeltaRLeadl_SubLeadllljjWclosest_"+histsuffix, leptons.at(0).DeltaR( leptons.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2) ), thisweight, 0., 10., 100);
+    JSFillHist(histsuffix, "DeltaRSubLeadl_LeadllljjWclosest_"+histsuffix, leptons.at(1).DeltaR( leptons.at(0)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2) ), thisweight, 0., 10., 100);
 
-    FillHist("DeltaRjjptorder_"+histsuffix, jets.at(0).DeltaR( jets.at(1) ), thisweight, 0., 10., 100);
-    FillHist("m_jjptorder_"+histsuffix, (jets.at(0)+jets.at(1)).M(), thisweight, 0., 2000., 2000);
-    FillHist("m_Leadljjptorder_"+histsuffix, (leptons.at(0)+jets.at(0)+jets.at(1)).M(), thisweight, 0., 2000., 2000);
-    FillHist("m_SubLeadljjptorder_"+histsuffix, (leptons.at(1)+jets.at(0)+jets.at(1)).M(), thisweight, 0., 2000., 2000);
-    FillHist("m_lljjptorder_"+histsuffix, (leptons.at(0)+leptons.at(1)+jets.at(0)+jets.at(1)).M(), thisweight, 0., 2000., 2000);
+    JSFillHist(histsuffix, "DeltaRjjptorder_"+histsuffix, jets.at(0).DeltaR( jets.at(1) ), thisweight, 0., 10., 100);
+    JSFillHist(histsuffix, "m_jjptorder_"+histsuffix, (jets.at(0)+jets.at(1)).M(), thisweight, 0., 2000., 2000);
+    JSFillHist(histsuffix, "m_Leadljjptorder_"+histsuffix, (leptons.at(0)+jets.at(0)+jets.at(1)).M(), thisweight, 0., 2000., 2000);
+    JSFillHist(histsuffix, "m_SubLeadljjptorder_"+histsuffix, (leptons.at(1)+jets.at(0)+jets.at(1)).M(), thisweight, 0., 2000., 2000);
+    JSFillHist(histsuffix, "m_lljjptorder_"+histsuffix, (leptons.at(0)+leptons.at(1)+jets.at(0)+jets.at(1)).M(), thisweight, 0., 2000., 2000);
   }
 
   if(thieweighterr!=0.){

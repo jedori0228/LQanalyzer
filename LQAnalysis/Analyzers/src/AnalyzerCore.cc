@@ -1980,6 +1980,13 @@ AnalyzerCore::~AnalyzerCore(){
   }
   maphist.clear();
 
+  for(map< TString, map<TString, TH1*> >::iterator it = JSmaphist.begin(); it!= JSmaphist.end(); it++){
+    for(map<TString, TH1*>::iterator itit = (it->second).begin(); itit != (it->second).end(); itit++){
+      delete itit->second;
+    }
+  }
+  JSmaphist.clear();
+
   for(map<TString, TH2*>::iterator it = maphist2D.begin(); it!= maphist2D.end(); it++){
     delete it->second;
   }
@@ -3005,6 +3012,7 @@ void AnalyzerCore::MakeCleverHistograms(histtype type, TString clhistname ){
 void AnalyzerCore::MakeHistograms(){
   //// Additional plots to make                                                                                
   maphist.clear();
+  JSmaphist.clear();
   maphist2D.clear();
   maphist3D.clear();
 
@@ -3021,6 +3029,12 @@ void AnalyzerCore::MakeHistograms(TString hname, int nbins, float xmin, float xm
   maphist[hname] =  new TH1D(hname.Data(),hname.Data(),nbins,xmin,xmax);
   //maphist[hname]->GetXaxis()->SetTitle("TEST");
   maphist[hname]->GetXaxis()->SetTitle(label);
+}
+
+void AnalyzerCore::JSMakeHistograms(TString suffix, TString hname, int nbins, float xmin, float xmax){
+
+  (JSmaphist[suffix])[hname] = new TH1D(hname.Data(),hname.Data(),nbins,xmin,xmax);
+
 }
 
 
@@ -3123,6 +3137,22 @@ void AnalyzerCore::FillHist(TString histname, float value, float w, float xmin, 
     if(GetHist(histname)) GetHist(histname)->Fill(value, w);
   }
   
+}
+
+void AnalyzerCore::JSFillHist(TString suffix, TString histname, float value, float w, float xmin, float xmax, int nbins){
+
+  m_logger << DEBUG << "JSFillHist : " << suffix << "\t" << histname << LQLogger::endmsg;
+  if(JSGetHist(suffix, histname)) JSGetHist(suffix,histname)->Fill(value, w);
+  else{
+    if (nbins < 0) {
+      m_logger << ERROR << histname << " was NOT found. Nbins was not set also... please configure histogram maker correctly" << LQLogger::endmsg;
+      exit(0);
+    }
+    m_logger << DEBUG << "Making the histogram" << LQLogger::endmsg;
+    JSMakeHistograms(suffix, histname, nbins, xmin, xmax);
+    if(JSGetHist(suffix, histname)) JSGetHist(suffix, histname)->Fill(value, w);
+  }
+
 }
 
 void AnalyzerCore::FillHist(TString histname, float value1, float value2, float w, float xmin, float xmax, int nbinsx, float ymin, float ymax, int nbinsy , TString label){
@@ -3498,6 +3528,28 @@ void AnalyzerCore::WriteHists(){
       }
     }
   }
+
+  for(map< TString, map<TString, TH1*> >::iterator it = JSmaphist.begin(); it!= JSmaphist.end(); it++){
+
+    TString this_suffix = it->first;
+    map<TString, TH1*> this_histmap = it->second;
+
+    TDirectory *dir = m_outputFile->GetDirectory(this_suffix);
+    if(!dir){
+      Dir = m_outputFile->mkdir(this_suffix);
+    }
+    m_outputFile->cd(this_suffix);
+
+    for(map<TString, TH1*>::iterator itit = this_histmap.begin(); itit!=this_histmap.end(); itit++){
+
+      itit->second->Write();
+
+    }
+
+    m_outputFile->cd();
+
+  }
+
   for(map<TString, TH2*>::iterator mapit = maphist2D.begin(); mapit != maphist2D.end(); mapit++){
     
     TDirectory *dir = m_outputFile->GetDirectory("Hists2D");
@@ -3545,6 +3597,23 @@ TH1* AnalyzerCore::GetHist(TString hname){
   std::map<TString, TH1*>::iterator mapit = maphist.find(hname);
   if(mapit != maphist.end()) return mapit->second;
   else m_logger << DEBUG  << hname << " was not found in map" << LQLogger::endmsg;
+
+  return h;
+}
+
+TH1* AnalyzerCore::JSGetHist(TString suffix, TString hname){
+
+  TH1* h = NULL;
+  std::map< TString, std::map<TString, TH1*> >::iterator it = JSmaphist.find(suffix);
+  if(it == JSmaphist.end()) m_logger << DEBUG << "Suffix:"<<suffix << " was not found in JSmaphist" << LQLogger::endmsg;
+  else{
+
+    std::map<TString, TH1*> this_maphist = it->second;
+    std::map<TString, TH1*>::iterator itit = this_maphist.find(hname);
+    if(itit != this_maphist.end()) return itit->second;
+    else m_logger << DEBUG  << hname << " was not found in JSmaphist" << LQLogger::endmsg;
+
+  }
 
   return h;
 }

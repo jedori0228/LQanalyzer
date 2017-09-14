@@ -252,6 +252,7 @@ class AnalyzerCore : public LQCycleBase {
 
   TDirectory *Dir;
   map<TString, TH1*> maphist;
+  map< TString, map<TString, TH1*> > JSmaphist;
   map<TString, TH2*> maphist2D;
   map<TString, TH3*> maphist3D;
   map<TString, TNtupleD*> mapntp;
@@ -456,6 +457,10 @@ class AnalyzerCore : public LQCycleBase {
     double deltaR_OS_min, double gamma_star_mass,
     double PFMET
   );
+
+  TH1* JSGetHist(TString suffix, TString hname);
+  void JSFillHist(TString suffix, TString histname, float value, float w, float xmin, float xmax, int nbins);
+  void JSMakeHistograms(TString suffix, TString hname, int nbins, float xmin, float xmax);
 
 
   //==== (Trilepton) H+->WA stuffs
