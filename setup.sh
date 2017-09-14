@@ -368,6 +368,8 @@ if [ ! -d ${LQANALYZER_LOG_PATH} ]; then
     mkdir ${LQANALYZER_LOG_PATH}
 fi
 
+rm -rf debug.txt
+
 echo "Running analysis from" $HOSTNAME " in directory: " $PWD
 
 #clean up all emacs tmp files
