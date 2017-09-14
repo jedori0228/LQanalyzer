@@ -604,7 +604,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
     if(!PassTriggerOR( Triggers.at(i) )) continue;
 
     double EMu_MCTriggerWeight = 0.;
-    if(Suffix=="EMu"){
+    if(Suffix.Contains("EMu")){
       //==== Data
       if(isData){
 
@@ -635,7 +635,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
     if(!isTTs.at(i) && !isLOOSEs.at(i)) continue;
 
     //==== That two lepton pass basic pt cuts
-    if(Suffix=="DiMuon"){
+    if(Suffix.Contains("DiMuon")){
       //==== to properly veto below tricky event
       //==== ### failing third muon veto ###
       //==== muons.size() = 3
@@ -649,7 +649,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         if((muons.at(0).Pt() < 20.) || (muons.at(1).Pt() < 10.)) continue;
       }
     }
-    if(Suffix=="DiElectron"){
+    if(Suffix.Contains("DiElectron")){
       if(isTTs.at(i)){
         if(electrons_tight.at(0).Pt() < 25. || electrons_tight.at(1).Pt() < 15.) continue;
       }
@@ -657,7 +657,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         if(electrons.at(0).Pt() < 25. || electrons.at(1).Pt() < 15.) continue;
       }
     }
-    if(Suffix=="EMu"){
+    if(Suffix.Contains("EMu")){
       double MuMinPt = 9999., ElMinPt = 9999.;
 
       bool PtOkay = false;
@@ -705,28 +705,39 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
     //==== DiMuon-DoubleMuon PD / ...
     if(isData && k_channel != "DoubleMuon_CF"){
-      if(Suffix == "DiMuon"){
+      if(Suffix.Contains("DiMuon")){
         if(k_channel != "DoubleMuon") continue;
       }
-      if(Suffix == "DiElectron"){
+      if(Suffix.Contains("DiElectron")){
         if(k_channel != "DoubleEG") continue;
       }
-      if(Suffix == "EMu"){
+      if(Suffix.Contains("EMu")){
         if(k_channel != "MuonEG") continue;
       }
     }
 
     double trigger_ps_weight(1.);
-    if(Suffix=="EMu") trigger_ps_weight = EMu_MCTriggerWeight;
+    if(Suffix.Contains("EMu")) trigger_ps_weight = EMu_MCTriggerWeight;
     else              trigger_ps_weight = WeightByTrigger(Triggers.at(i), TargetLumi);
 
     double this_weight = weight*trigger_ps_weight;
 
     double trigger_sf = 1.;
-    if(!isData && Suffix=="DiMuon"){
+    if(!isData && Suffix.Contains("DiMuon")){
       double trigger_eff_Data = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, "", muons, "MUON_HN_TIGHT", 0, 0, 0);
       double trigger_eff_MC = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, "", muons, "MUON_HN_TIGHT", 0, 1, 0);
       trigger_sf = trigger_eff_Data/trigger_eff_MC;
+    }
+    if(!isData && Suffix.Contains("DiElectron")){
+      //cout << "## Calculating DiElectron Trigger SF ##" << endl;
+      //cout << "1) Data" << endl;
+      double trigger_eff_Data = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, "", muons, "MUON_HN_TIGHT", 1, 0, 0);
+      //cout << "trigger_eff_Data = " << trigger_eff_Data << endl;
+      //cout << "2) MC" << endl;
+      double trigger_eff_MC = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, "", muons, "MUON_HN_TIGHT", 1, 1, 0);
+      //cout << "trigger_eff_MC = " << trigger_eff_MC << endl;
+      trigger_sf = trigger_eff_Data/trigger_eff_MC;
+      //cout << "=> sf = " << trigger_sf << endl;
     }
     //trigger_sf = 1.;//FIXME
 
@@ -861,7 +872,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
 
     }
-    if( RunningChargeFlipData && Suffix=="DiElectron" && !isSS ){
+    if( RunningChargeFlipData && Suffix.Contains("DiElectron") && !isSS ){
       GetCFWeight(electrons_before_shift.at(0), electrons_before_shift.at(1));
 
       this_weight *= weight_cf;
@@ -944,7 +955,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
     map_Region_to_Bool[Suffix+"_Preselection"] = ( jets.size()>=2 );
     map_Region_to_Bool[Suffix+"_Preselection_secondptge20"] = ( jets.size()>=2 ) && (lep.at(1).Pt() >= 20.);
     //==== For DiElectron, remove Z peak (CF)
-    if(Suffix == "DiElectron"){
+    if(Suffix.Contains("DiElectron")){
       map_Region_to_Bool[Suffix+"_Preselection"] = map_Region_to_Bool[Suffix+"_Preselection"] && isOffZ;
     }
 
