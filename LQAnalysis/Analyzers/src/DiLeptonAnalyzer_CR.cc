@@ -793,7 +793,7 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
           if( lep.at(j).Charge() != lep.at(k).Charge() ){
 
             WithOSSF = true;
-            if( fabs( (lep.at(j)+lep.at(k)).M() - m_Z ) < 10. ){
+            if( fabs( (lep.at(j)+lep.at(k)).M() - m_Z ) < 15. ){
               WithOSSF_OnZ = true;
               tmp_IsOSSF_OnZ = true;
             } // Z mass
@@ -807,7 +807,7 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
       } // loop k
     } // loop j
     if(WithOSSF){
-      if( fabs( (lep.at(0)+lep.at(1)+lep.at(2)).M() - m_Z ) < 10. ) WithOS_lll_OnZ = true;
+      if( fabs( (lep.at(0)+lep.at(1)+lep.at(2)).M() - m_Z ) < 15. ) WithOS_lll_OnZ = true;
     }
 
     //==== Three
@@ -898,21 +898,23 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
     // bool WithOS_lll_OnZ = false;
 
     if(Suffix.Contains("Three")){
-      bool OSSF_ZGveto = (WithOSSF_OnZ) && ( (lep.at(0)+lep.at(1)+lep.at(2)).M() - m_Z  > 10. );
+      bool OSSF_ZGveto = (WithOSSF_OnZ) && ( (lep.at(0)+lep.at(1)+lep.at(2)).M() - m_Z  > 15. );
       map_Region_to_Bool[Suffix+"_WZ"]                   = OSSF_ZGveto && (MET > 50.);
       map_Region_to_Bool[Suffix+"_WZ_NotAllSameFlavour"] = OSSF_ZGveto && (MET > 50.) && !AllSameFlavour;
       map_Region_to_Bool[Suffix+"_WZ_AllSameFlavour"]    = OSSF_ZGveto && (MET > 50.) && AllSameFlavour;
 /*
-      map_Region_to_Bool[Suffix+"_WZ"] = (WithOSSF_OnZ) && (MET > 50.) && ( (lep.at(0)+lep.at(1)+lep.at(2)).M() - m_Z  > 10. ) && (nbjets_nolepveto==0);
-      map_Region_to_Bool[Suffix+"_WZ_NotAllSameFlavour"] = (WithOSSF_OnZ) && (MET > 50.) && ( (lep.at(0)+lep.at(1)+lep.at(2)).M() - m_Z  > 10. )
+      map_Region_to_Bool[Suffix+"_WZ"] = (WithOSSF_OnZ) && (MET > 50.) && ( (lep.at(0)+lep.at(1)+lep.at(2)).M() - m_Z  > 15. ) && (nbjets_nolepveto==0);
+      map_Region_to_Bool[Suffix+"_WZ_NotAllSameFlavour"] = (WithOSSF_OnZ) && (MET > 50.) && ( (lep.at(0)+lep.at(1)+lep.at(2)).M() - m_Z  > 15. )
                                                            && !AllSameFlavour && (nbjets_nolepveto==0);
-      map_Region_to_Bool[Suffix+"_WZ_AllSameFlavour"] = (WithOSSF_OnZ) && (MET > 50.) && ( (lep.at(0)+lep.at(1)+lep.at(2)).M() - m_Z  > 10. )
+      map_Region_to_Bool[Suffix+"_WZ_AllSameFlavour"] = (WithOSSF_OnZ) && (MET > 50.) && ( (lep.at(0)+lep.at(1)+lep.at(2)).M() - m_Z  > 15. )
                                                         && AllSameFlavour && (nbjets_nolepveto==0);
 */
       map_Region_to_Bool[Suffix+"_ZGamma"] = (WithOS_lll_OnZ) && (!WithOSSF_OnZ) && (MET < 50.) && (nbjets_nolepveto==0);
     }
     if(Suffix.Contains("Four")){
       map_Region_to_Bool[Suffix+"_ZZ"] = WithTwoZPair && (nbjets_nolepveto==0);
+      map_Region_to_Bool[Suffix+"_ZZ_NotAllSameFlavour"] = WithTwoZPair && (nbjets_nolepveto==0) && !AllSameFlavour;
+      map_Region_to_Bool[Suffix+"_ZZ_AllSameFlavour"] = WithTwoZPair && (nbjets_nolepveto==0) && AllSameFlavour;
     }
 
     //==== ST = lepton + jet + MET
