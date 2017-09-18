@@ -592,7 +592,7 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
   isNoExtraOtherFlavour.push_back( true );
 
   Suffixs.push_back("DiElectron_FourLepton");
-  Triggers.push_back(triggerlist_DiMuon);
+  Triggers.push_back(triggerlist_DiElectron);
   isTTTs.push_back( isFourLepton_TwoElectron_TTTT && !RunningNonPromptData );
   isLOOSEs.push_back( isFourLepton_TwoElectron_Loose && RunningNonPromptData );
   isNoExtra.push_back( (n_triVeto_leptons == 4) && (n_veto_electrons >= 2) );
@@ -1158,6 +1158,19 @@ void DiLeptonAnalyzer_CR::FillDiLeptonPlot(
   if(thieweighterr!=0.){
     FillDiLeptonPlot(histsuffix+"_up",   leptons, jets, jets_fwd, jets_nolepveto, thisweight + thieweighterr, 0.);
     FillDiLeptonPlot(histsuffix+"_down", leptons, jets, jets_fwd, jets_nolepveto, thisweight - thieweighterr, 0.);
+
+    //==== Check Single/Double Fake
+
+    //==== 1) LL : thisweight = -e^2
+    if(NTightLeptons==0){
+      FillDiLeptonPlot(histsuffix+"_SingleFake", leptons, jets, jets_fwd, jets_nolepveto, 2.*thisweight, 0.);
+      FillDiLeptonPlot(histsuffix+"_DoubleFake", leptons, jets, jets_fwd, jets_nolepveto, -1.*thisweight, 0.);
+    }
+    //==== 2) TL : thisweight = e
+    if(NTightLeptons==1){
+      FillDiLeptonPlot(histsuffix+"_SingleFake", leptons, jets, jets_fwd, jets_nolepveto, thisweight, 0.);
+    }
+
   }
 
 
