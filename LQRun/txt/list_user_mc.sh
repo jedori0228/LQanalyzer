@@ -1,7 +1,7 @@
 #!/bin/sh
 
-declare -a tmp=(
-'TT_powheg' 'WJets'
+declare -a nonprompt=(
+'TT_powheg' 'WJets' 'DYJets'
 )
 
 ########################
@@ -247,7 +247,7 @@ declare dilepbkg_all=(
 )
 
 declare dilepbkg_SS=(
-'WZTo3LNu_powheg'
+'WZTo3LNu_powheg' 'WZTo3LNu_mllmin01'
 'ZZTo4L_powheg' 'ggZZto2e2mu' 'ggZZto2e2nu' 'ggZZto2e2tau' 'ggZZto2mu2nu' 'ggZZto2mu2tau' 'ggZZto4e' 'ggZZto4mu' 'ggZZto4tau' 'ggHtoZZ'
 'TG' 'TTG' 'WGtoLNuG' 'ZGto2LG'
 'WWW' 'WWZ' 'WZZ' 'ZZZ'

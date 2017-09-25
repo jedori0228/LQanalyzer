@@ -287,7 +287,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv6", true);
   //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv7_SIP10", true);
   //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv7_SIP3p5", true);
-  std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv7_SIP3", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv7_SIP3", true);
   //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv7_SIP9", true);
   //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv8", true);
   //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2_POGIP_SIP6", true);
@@ -296,6 +296,9 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2_POGIP_SIP4p5", true);
   //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv3", true);
   //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv4", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv9", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv10", true);
+  std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv11", true);
 
   std::vector<snu::KMuon> hnloose;
   hnloose.clear();
@@ -323,10 +326,11 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
   }
 
-/*
+
   //==== 2-0) Loose Scan
 
-  std::vector<snu::KMuon> nocutmu_raw = GetMuons("MUON_HN_NOCUT", true);
+  //std::vector<snu::KMuon> nocutmu_raw = GetMuons("MUON_HN_NOCUT", true);
+  std::vector<snu::KMuon> nocutmu_raw = GetMuons("MUON_HN_NOCUT_IPsame", true);
   std::vector<snu::KMuon> nocutmu;
   nocutmu.clear();
 
@@ -357,7 +361,6 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
     if(jetfound){
 
-      bool IsThisTight = PassID( muon, "MUON_HN_TIGHT" );
       int hf = cljet.HadronFlavour();
       TString flavour = "Heavy";
 
@@ -379,7 +382,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //==== Make x:iso, y:mva 2D one-binned FR
 
   double MaxSIP = 3, dMaxSIP = 0.5;
-  for(int a=0; a<30; a++){
+  for(int a=0; a<60; a++){
 
     double MaxChi2 = 10., dMaxChi2 = 10.;
     for(int b=0; b<15; b++){
@@ -411,7 +414,8 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
         }
         if(jetfound){
 
-          bool IsThisTight = PassID( muon, "MUON_HN_TIGHT" );
+          //bool IsThisTight = PassID( muon, "MUON_HN_TIGHT" );
+          bool IsThisTight = PassID( muon, "MUON_HN_TIGHTv2" );
           int hf = cljet.HadronFlavour();
 
           std::vector<snu::KMuon> onemu;
@@ -428,18 +432,18 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
           //cout << MaxSIP<<"\t"<<MaxChi2<<" ==> " << SIP_Chi2 << endl;
 
           if( hf >= 4 ){
-            FillHist("HeavyFlavour_F0", bin_MaxSIP, bin_MaxChi2, 1., 0., 10., 20, 0., 60., 60);
+            FillHist("HeavyFlavour_F0", bin_MaxSIP, bin_MaxChi2, 1., 0., 40., 80, 0., 200., 200);
             FillHist(SIP_Chi2+"_HeavyFlavour_pt_cone_vs_eta_F0", conept, fabs(muon.Eta()), 1., ptarray, n_pt, etaarray, n_eta);
             if(IsThisTight){
-             FillHist("HeavyFlavour_F", bin_MaxSIP, bin_MaxChi2, 1., 0., 10., 20, 0., 60., 60);
+             FillHist("HeavyFlavour_F", bin_MaxSIP, bin_MaxChi2, 1., 0., 40., 80, 0., 200., 200);
              FillHist(SIP_Chi2+"_HeavyFlavour_pt_cone_vs_eta_F", conept, fabs(muon.Eta()), 1., ptarray, n_pt, etaarray, n_eta);
             }
           }
           else{
-            FillHist("LightFlavour_F0", bin_MaxSIP, bin_MaxChi2, 1., 0., 10., 20, 0., 60., 60);
+            FillHist("LightFlavour_F0", bin_MaxSIP, bin_MaxChi2, 1., 0., 40., 80, 0., 200., 200);
             FillHist(SIP_Chi2+"_LightFlavour_pt_cone_vs_eta_F0", conept, fabs(muon.Eta()), 1., ptarray, n_pt, etaarray, n_eta);
             if(IsThisTight){
-             FillHist("LightFlavour_F", bin_MaxSIP, bin_MaxChi2, 1., 0., 10., 20, 0., 60., 60);
+             FillHist("LightFlavour_F", bin_MaxSIP, bin_MaxChi2, 1., 0., 40., 80, 0., 200., 200);
              FillHist(SIP_Chi2+"_LightFlavour_pt_cone_vs_eta_F", conept, fabs(muon.Eta()), 1, ptarray, n_pt, etaarray, n_eta);
             }
           }
@@ -456,7 +460,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
   } // iso loop
   return;
-*/
+
 
 
   double AwayjetPts[] = {20, 30, 40, 60};
@@ -487,7 +491,8 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
         double weight_by_pt_cone = GetTriggerWeightByPtRange(it->first, it->second, HLT_ptmin[it->first], hnloose, For_HLT_Mu3_PFJet40_v);
         //double weight_by_pt = GetTriggerWeightByPtRange(it->first, HLT_ptrange[it->first], HLT_ptmin[it->first], hnloose, For_HLT_Mu3_PFJet40_v);
 
-        bool IsThisTight = PassID( muon, "MUON_HN_TIGHT" );
+        //bool IsThisTight = PassID( muon, "MUON_HN_TIGHT" );
+        bool IsThisTight = PassID( muon, "MUON_HN_TIGHTv2" );
 
         if(DijetFake){
 
@@ -1310,9 +1315,9 @@ void FRCalculator_Mu_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KMuon muon
   FillHist(prefix+"_pt_cone_FRbinned_F0", conept, thisweight, ptarray, 7);
   FillHist(prefix+"_pt_cone_FRbinned_w1_F0", conept, 1., ptarray, 7);
   FillHist(prefix+"_RelIso_F0", muon.RelIso04(), thisweight, 0., 1., 100);
-  FillHist(prefix+"_Chi2_F0", muon.GlobalChi2(), thisweight, 0., 50., 50);
+  FillHist(prefix+"_Chi2_F0", muon.GlobalChi2(), thisweight, 0., 200., 200);
   FillHist(prefix+"_dXY_F0", fabs(muon.dXY()), thisweight, 0., 1., 1000);
-  FillHist(prefix+"_dXYSig_F0", fabs(muon.dXYSig()), thisweight, 0., 15., 150);
+  FillHist(prefix+"_dXYSig_F0", fabs(muon.dXYSig()), thisweight, 0., 40., 400);
   FillHist(prefix+"_dZ_F0", fabs(muon.dZ()), thisweight, 0., 0.5, 50);
   FillHist(prefix+"_Type_F0", muon.GetType(), thisweight, 0., 50., 50);
   FillHist(prefix+"_onebin_F0", 0., thisweight, 0., 1., 1);
@@ -1328,9 +1333,9 @@ void FRCalculator_Mu_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KMuon muon
     FillHist(prefix+"_pt_cone_FRbinned_F", conept, thisweight, ptarray, 7);
     FillHist(prefix+"_pt_cone_FRbinned_w1_F", conept, 1., ptarray, 7);
     FillHist(prefix+"_RelIso_F", muon.RelIso04(), thisweight, 0., 1., 100);
-    FillHist(prefix+"_Chi2_F", muon.GlobalChi2(), thisweight, 0., 50., 50);
+    FillHist(prefix+"_Chi2_F", muon.GlobalChi2(), thisweight, 0., 200., 200);
     FillHist(prefix+"_dXY_F", fabs(muon.dXY()), thisweight, 0., 1., 1000);
-    FillHist(prefix+"_dXYSig_F", fabs(muon.dXYSig()), thisweight, 0., 15., 150);
+    FillHist(prefix+"_dXYSig_F", fabs(muon.dXYSig()), thisweight, 0., 40., 400);
     FillHist(prefix+"_dZ_F", fabs(muon.dZ()), thisweight, 0., 0.5, 50);
     FillHist(prefix+"_Type_F", muon.GetType(), thisweight, 0., 50., 50);
     FillHist(prefix+"_onebin_F", 0., thisweight, 0., 1., 1);

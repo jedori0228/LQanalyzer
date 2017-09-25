@@ -472,9 +472,9 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
   }
 
   //==== Lepton Numbers
-  std::vector<snu::KMuon> muons_veto = GetMuons("MUON_HN_VETO", KeepFakeLepton);
+  std::vector<snu::KMuon> muons_veto = GetMuons("MUON_HN_VETO", true);
   std::vector<snu::KMuon> muons_tight; muons_tight.clear();
-  std::vector<snu::KElectron> electrons_veto = GetElectrons(false, KeepFakeLepton, "ELECTRON_HN_VETO");
+  std::vector<snu::KElectron> electrons_veto = GetElectrons(true, true, "ELECTRON_HN_VETO");
   std::vector<snu::KElectron> electrons_tight; electrons_tight.clear();
   std::vector<bool> isT;
   std::vector<int> NearBjet;

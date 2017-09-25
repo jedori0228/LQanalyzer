@@ -63,43 +63,55 @@ void DiLeptonAnalyzer::InitialiseAnalysis() throw( LQError ) {
 
   TString lqdir = getenv("LQANALYZER_DIR");
 
+  //===============
   //==== Get Fake
+  //===============
 
-  //TString MuonFRType_QCD = "v2_TrkVVL_AllEvent_newhist_"; // Iso 0.4, Loosen dXYs
-  //TString MuonFRType_QCD = "v2_LoosenSIP_TrkVVL_AllEvent_newhist_";
-  //TString MuonFRType_QCD = "v2_POGIP_TrkVVL_AllEvent_newhist_";
-  //TString MuonFRType_QCD = "v2_POGIP_SIP4p5_TrkVVL_AllEvent_newhist_";
-  //TString MuonFRType_QCD = "v2_POGIP_SIP5_TrkVVL_AllEvent_newhist_";
-  //TString MuonFRType_QCD = "v2_POGIP_SIP6_TrkVVL_AllEvent_newhist_";
-  //TString MuonFRType_QCD = "v2_POGIP_SIP8_TrkVVL_AllEvent_newhist_";
-  //TString MuonFRType_QCD = "v3_TrkVVL_AllEvent_newhist_"; // Iso 0.6
-  //TString MuonFRType_QCD = "v4_TrkVVL_AllEvent_newhist_";  // Iso 0.4
-  //TString MuonFRType_QCD = "v5_";
-  //TString MuonFRType_QCD = "v6_";
+  //==== Muon
+
   //TString MuonFRType_QCD = "v7_SIP10_";
   //TString MuonFRType_QCD = "v7_SIP3p5_";
   TString MuonFRType_QCD = "v7_SIP3_";
   //TString MuonFRType_QCD = "v7_SIP9_";
   //TString MuonFRType_QCD = "v8_";
+  //TString MuonFRType_QCD = "v9_";
+  //TString MuonFRType_QCD = "v10_";
 
-  //TString MuonFRType_Data = "v2_POGIP_TrkVVL_AllEvent_newhist_";
-  //TString MuonFRType_Data = "v4_TrkVVL_AllEvent_newhist_";
-  //TString MuonFRType_Data = "v2_POGIP_TrkVVL_AllEvent_newhist_Normed_";
-  //TString MuonFRType_Data = "v5_";
+  //TString MuonFRType_Data = "v7_SIP3_";
   TString MuonFRType_Data = MuonFRType_QCD;
 
-  //TString ElectronFRType_QCD = "v1_LoosenMVA_AllEvent_newhist_"; // Iso 0.6
-  //TString ElectronFRType_QCD = "v1_OptiMVA_AllEvent_newhist_"; // Iso 0.6 + Optimized MVA
-  //TString ElectronFRType_QCD = "v2_LoosenMVA_AllEvent_newhist_"; // Iso 0.4
-  //TString ElectronFRType_QCD = "v2_OptiMVA_AllEvent_newhist_"; //Iso 0.4 + Optimized MVA
-  //TString ElectronFRType_QCD = "v1_LoosenSIP_OptiMVA_AllEvent_newhist_";
-  //TString ElectronFRType_QCD = "v1_LoosenSIP_OptiMVA_AllEvent_newhist_PFJetTrigger_";
+  MuonLooseID_loosest = "MUON_HN_LOOSEv7_SIP3_loosest";
+  MuonVetoID_loosest = "MUON_HN_VETO_loosest";
+  MuonTightID = "MUON_HN_TIGHT";
+
+  bool UesTightv2 = false;
+  if(MuonFRType_QCD.Contains("v9") || MuonFRType_Data.Contains("v9")){
+    MuonLooseID_loosest = "MUON_HN_LOOSEv9_loosest";
+    UesTightv2 = true;
+  }
+  if(MuonFRType_QCD.Contains("v10") || MuonFRType_Data.Contains("v10")){
+    MuonLooseID_loosest = "MUON_HN_LOOSEv10_loosest";
+    UesTightv2 = true;
+  }
+
+  if(UesTightv2){
+    MuonVetoID_loosest = "MUON_HN_VETOv2_loosest"; // chi2 loosen to 999
+    MuonTightID = "MUON_HN_TIGHTv2";
+  }
+
+  //==== Electron
+
   TString ElectronFRType_QCD = "v7_";
   //TString ElectronFRType_QCD = "v8_";
 
-  //TString ElectronFRType_Data = "v1_OptiMVA_AllEvent_newhist_";
   //TString ElectronFRType_Data = "v7_";
   TString ElectronFRType_Data = ElectronFRType_QCD;
+
+  ElectronLooseID_loosest = "ELECTRON_HN_FAKELOOSEv7_loosest";
+  ElectronVetoID_loosest = "ELECTRON_HN_VETO_loosest";
+  ElectronTightID = "ELECTRON_HN_TIGHTv4";
+
+  //==== Read rootfiles
 
   TFile *file_Muon_FR         = new TFile( lqdir+"/JskimData/FR/Muon_Data_"+MuonFRType_Data+"FR.root");
   TFile *file_Muon_FR_QCD     = new TFile( lqdir+"/JskimData/FR/Muon_QCD_" +MuonFRType_QCD+"FR.root"); 
@@ -350,89 +362,22 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   bool LooseSampleFakeJetPt = std::find(k_flags.begin(), k_flags.end(), "LooseSampleFakeJetPt") != k_flags.end();
 
   //==== Muons
-  //std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSE", KeepFakeLepton);
-  //std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSEv2", KeepFakeLepton);
-  //std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSEv2_LoosenSIP", KeepFakeLepton);
-  //std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSEv2_POGIP", KeepFakeLepton);
-  //std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSEv5", KeepFakeLepton);
-  //std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSEv6", KeepFakeLepton);
-  //std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSEv7_SIP10", KeepFakeLepton);
-  //std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSEv7_SIP3p5", KeepFakeLepton);
-  std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSEv7_SIP3", KeepFakeLepton);
-  //std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSEv7_SIP9", KeepFakeLepton);
-  //std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSEv8", KeepFakeLepton);
-  //std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSEv2_POGIP_SIP4p5", KeepFakeLepton);
-  //std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSEv2_POGIP_SIP5", KeepFakeLepton);
-  //std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSEv2_POGIP_SIP6", KeepFakeLepton);
-  //std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSEv2_POGIP_SIP8", KeepFakeLepton);
-  //std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSEv3", KeepFakeLepton);
-  //std::vector< snu::KMuon > muons = GetMuons("MUON_HN_LOOSEv4", KeepFakeLepton);
-
-  if(muons.size()>=2){
-    if( muons.at(0).Pt() > muons.at(1).Pt() ) FillHist("Test_Muon01_CorrectPtOrder", 1., 1., 0., 2., 2);
-    else                                      FillHist("Test_Muon01_CorrectPtOrder", 0., 1., 0., 2., 2);
-  }
-  std::sort(muons.begin(), muons.end(), MuonPtComparing);
-  if(muons.size()>=2){
-    if( muons.at(0).Pt() > muons.at(1).Pt() ) FillHist("TestAfter_Muon01_CorrectPtOrder", 1., 1., 0., 2., 2);
-    else                                      FillHist("TestAfter_Muon01_CorrectPtOrder", 0., 1., 0., 2., 2);
-  }
-
-  double muon_id_iso_sf = mcdata_correction->MuonScaleFactor("MUON_HN_TIGHT", muons, 0);
-  double MuTrkEffSF =  mcdata_correction->MuonTrackingEffScaleFactor(muons);
-  //muon_id_iso_sf = 1.; //FIXME
+  std::vector<snu::KMuon> muons_loosest = GetMuons(MuonLooseID_loosest, KeepFakeLepton);
+  std::vector<snu::KMuon> muons_veto_loosest = GetMuons(MuonVetoID_loosest, true);
 
   //==== Electrons
-  //std::vector< snu::KElectron > electrons = GetElectrons(false, KeepFakeLepton, "ELECTRON_HN_FAKELOOSEv1");
-  //std::vector< snu::KElectron > electrons = GetElectrons(false, KeepFakeLepton, "ELECTRON_HN_FAKELOOSEv2");
-  //std::vector< snu::KElectron > electrons = GetElectrons(false, KeepFakeLepton, "ELECTRON_HN_FAKELOOSEv1_LoosenSIP");
-  std::vector< snu::KElectron > electrons = GetElectrons(false, KeepFakeLepton, "ELECTRON_HN_FAKELOOSEv7");
-  //std::vector< snu::KElectron > electrons = GetElectrons(false, KeepFakeLepton, "ELECTRON_HN_FAKELOOSEv8");
+  std::vector<snu::KElectron> electrons_loosest = GetElectrons(false, KeepFakeLepton, ElectronLooseID_loosest);
+  std::vector<snu::KElectron> electrons_veto_loosest = GetElectrons(true, true, ElectronVetoID_loosest);
 
-
-  double electron_sf = mcdata_correction->ElectronScaleFactor("ELECTRON_HN_TIGHTv4", electrons, 0);
-  //electron_sf = 1.; //FIXME
-
-  bool DoPOGElSF = std::find(k_flags.begin(), k_flags.end(), "DoPOGElSF") != k_flags.end();
-  if(DoPOGElSF) electron_sf = mcdata_correction->ElectronScaleFactor("ELECTRON_MVA_90", electrons, 0);
-  double electron_RecoSF =  mcdata_correction->ElectronRecoScaleFactor(electrons);
-
-  //==== If Chargeflip, then shift down electron, and replace electrons with it
-  //==== To get correct CF rate, we save original (OS event) electron to electrons_before_shift
   bool RunningChargeFlipData = k_running_chargeflip && isData;
-  std::vector< snu::KElectron > electrons_before_shift;
-  electrons_before_shift.clear();
-  if(RunningChargeFlipData){
-    for(unsigned int i=0; i<electrons.size(); i++){
-      electrons_before_shift.push_back( electrons.at(i) );
-      snu::KElectron tmp_el = electrons.at(i);
-      double shift_ = 1.-0.01;
-      tmp_el.SetPtEtaPhiM(shift_*tmp_el.Pt(), tmp_el.Eta(), tmp_el.Phi(), 0.511e-3);
-      //tmp_el.SetPxPyPzE(shift_*tmp_el.Px(), shift_*tmp_el.Py(), shift_*tmp_el.Pz(), shift_*tmp_el.E());
-      electrons.at(i) = tmp_el;
-    }
-  }
-
-/*
-  //==== Quick Fake Histogram name check
-  if(muons.size()==2){
-  cout << "#### Muon Fake ####" << endl;
-  m_datadriven_bkg->Get_DataDrivenWeight_MM(
-    false, muons, PassID(muons[0],"MUON_HN_TIGHT"),  PassID(muons[1],"MUON_HN_TIGHT"),
-    "Tight0.07_0.005_3_0.04",
-    "Tight0.07_0.005_3_0.04",
-    true, true, "ptcorr_eta", 0.07, 0.07,false,false);
-  }
-  if(electrons.size()==2){
-  cout << "#### Electron Fake ####" << endl;
-  m_datadriven_bkg->Get_DataDrivenWeight_EE(false, electrons, "ELECTRON_HN_FAKELOOSEv2","ELECTRON_HN_TIGHTv4","40",true);
-  }
-  return;
-*/
 
   //==== Jets
-  std::vector<snu::KJet> jets = GetJets("JET_HN_eta5", 20., 2.5);
-  std::vector<snu::KJet> jets_nolepveto = GetJets("JET_HN_eta5_nolepveto", 20., 2.5);
+  //std::vector<snu::KJet> jets = GetJets("JET_HN_eta5", 20., 2.5);
+  //std::vector<snu::KJet> jets_nolepveto = GetJets("JET_HN_eta5_nolepveto", 20., 2.5);
+  //==== Call eta5 jets, and make forward jets
+  //std::vector<snu::KJet> jets_eta5 = GetJets("JET_HN_eta5", 20., 5.);
+
+  std::vector<snu::KJet> jets_eta5_nolepveto_loosest = GetJets("JET_HN_eta5_nolepveto_loosest", 10., 5.);
 
 /*
   //==== jet HadFlavour vs BTagging
@@ -449,162 +394,47 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   return;
 */
 
-  //==== Call eta5 jets, and make forward jets
-  std::vector<snu::KJet> jets_eta5 = GetJets("JET_HN_eta5", 20., 5.);
-  std::vector<snu::KJet> jets_fwd;
-
-  for(unsigned int i=0; i<jets_eta5.size(); i++){
-    if( fabs(jets_eta5.at(i).Eta()) > 2.5 ) jets_fwd.push_back( jets_eta5.at(i) );
+  if(!isData){
+    weight*=pileup_reweight;
+    weight*=GetKFactor();
   }
 
-  nbjets = 0;
-  for(int j=0; j<jets.size(); j++){
-    if( IsBTagged(jets.at(j), snu::KJet::CSVv2, snu::KJet::Medium) ){
-      nbjets++;
-    }
-  }
-
-  nbjets_nolepveto = 0;
-  for(int j=0; j<jets_nolepveto.size(); j++){
-    if( IsBTagged(jets_nolepveto.at(j), snu::KJet::CSVv2, snu::KJet::Medium) ){
-      nbjets_nolepveto++;
-    }
-  }
-
-  nbjets_fwd = 0;
-  for(int j=0; j<jets_fwd.size(); j++){
-    if( IsBTagged(jets_fwd.at(j), snu::KJet::CSVv2, snu::KJet::Medium) ){
-      nbjets_fwd++;
-    }
-  }
-
-  //==== Lepton Numbers
-  std::vector<snu::KMuon> muons_veto = GetMuons("MUON_HN_VETO", KeepFakeLepton);
-  std::vector<snu::KMuon> muons_tight; muons_tight.clear();
-  std::vector<snu::KElectron> electrons_veto = GetElectrons(false, KeepFakeLepton, "ELECTRON_HN_VETO");
-  std::vector<snu::KElectron> electrons_tight; electrons_tight.clear();
-  std::vector<bool> isT;
-  std::vector<int> NearBjet;
   bool DoFRBJET = std::find(k_flags.begin(), k_flags.end(), "DoFRBJET") != k_flags.end();
-
-  int NPromptTight(0);
   snu::KJet::WORKING_POINT btag_wp = snu::KJet::Loose;
-
-  int n_veto_muons = muons_veto.size();
-  int n_triLoose_muons = muons.size();
-  int n_triTight_muons(0);
-  for(unsigned int i=0; i<muons.size(); i++){
-
-    if(DoFRBJET) NearBjet.push_back( HasCloseBjet(muons.at(i), jets_nolepveto, btag_wp) );
-    else NearBjet.push_back( -1 );
-
-    if(TruthMatched(muons.at(i))) NPromptTight++;
-    if(PassID(muons.at(i), "MUON_HN_TIGHT")){
-      isT.push_back(true);
-      muons_tight.push_back(muons.at(i));
-      n_triTight_muons++;
-    }
-    else{
-      isT.push_back(false);
-    }
-  }
-
-  int n_veto_electrons = electrons_veto.size();
-  int n_triLoose_electrons = electrons.size();
-  int n_triTight_electrons(0);
-  for(unsigned int i=0; i<electrons.size(); i++){
-
-    if(DoFRBJET) NearBjet.push_back( HasCloseBjet(electrons.at(i), jets_nolepveto, btag_wp) );
-    else NearBjet.push_back( -1 );
-
-    if(TruthMatched(electrons.at(i), false)) NPromptTight++;
-    if(PassID(electrons.at(i), "ELECTRON_HN_TIGHTv4")){
-      isT.push_back(true);
-      electrons_tight.push_back(electrons.at(i));
-      n_triTight_electrons++;
-    }
-    else{
-      isT.push_back(false);
-    }
-  }
-
-  int n_triLoose_leptons = n_triLoose_muons+n_triLoose_electrons;
-  int n_triTight_leptons = n_triTight_muons+n_triTight_electrons;
-  NTightLeptons = n_triTight_leptons;
-
-  bool isTwoMuon_TT    = (n_triTight_muons == 2); // veto third later
-  bool isTwoMuon_Loose = (n_triLoose_muons == 2 && n_triTight_muons != 2);
-
-  bool isTwoElectron_TT    = (n_triTight_electrons == 2); // veto third later 
-  bool isTwoElectron_Loose = (n_triLoose_electrons == 2 && n_triTight_electrons != 2);
-
-  bool isEMu_TT    = (n_triTight_muons == 1 && n_triTight_electrons == 1);
-  bool isEMu_Loose = (n_triLoose_muons == 1)     &&
-                     (n_triLoose_electrons == 1) &&
-                     (n_triTight_leptons != 2);
 
   bool NonPromptRun = std::find(k_flags.begin(), k_flags.end(), "RunFake") != k_flags.end();
   RunNtp = std::find(k_flags.begin(), k_flags.end(), "RunNtp") != k_flags.end();
 
-  if(!isData){
-    weight*=muon_id_iso_sf;
-    weight*=MuTrkEffSF;
-    weight*=pileup_reweight;
-    weight*=GetKFactor();
-    weight*=electron_sf;
-    weight*=electron_RecoSF;
-  }
-
   snu::KEvent Evt = eventbase->GetEvent();
-  MET = Evt.MET();
-  METphi = Evt.METPhi();
-  CorrectedMETRochester(muons, MET, METphi);
-  CorrectedMETElectron(0, electrons, MET, METphi);
-
   n_vtx = Evt.nVertices();
 
   //==== Define Analysis Region
 
   std::vector< TString > Suffixs;
   std::vector< std::vector<TString> > Triggers;
-  std::vector< bool > isTTs, isLOOSEs, isNoExtra, isNoExtraOtherFlavour;
 
   bool RunningNonPromptData = NonPromptRun && (isData||DoMCClosure);
 
+  //==== Make Suffix 
 
   Suffixs.push_back("DiMuon");
   Triggers.push_back(triggerlist_DiMuon);
-  isTTs.push_back( isTwoMuon_TT && !RunningNonPromptData );
-  isLOOSEs.push_back( isTwoMuon_Loose && RunningNonPromptData );
-  isNoExtra.push_back( n_veto_muons == 2 );
-  isNoExtraOtherFlavour.push_back( n_veto_electrons == 0 );
-
 
   Suffixs.push_back("DiElectron");
   Triggers.push_back(triggerlist_DiElectron);
-  isTTs.push_back( isTwoElectron_TT && !RunningNonPromptData );
-  isLOOSEs.push_back( isTwoElectron_Loose && RunningNonPromptData );
-  isNoExtra.push_back( n_veto_electrons == 2 );
-  isNoExtraOtherFlavour.push_back( n_veto_muons == 0 );
-
 
   Suffixs.push_back("EMu");
   Triggers.push_back(triggerlist_EMu);
-  isTTs.push_back( isEMu_TT && !RunningNonPromptData );
-  isLOOSEs.push_back( isEMu_Loose && RunningNonPromptData );
-  isNoExtra.push_back( n_veto_muons == 1 && n_veto_electrons == 1 );
-  isNoExtraOtherFlavour.push_back( true  );
-
 
   for(unsigned int i=0; i<Suffixs.size(); i++){
 
-    TString Suffix = Suffixs.at(i);
+    TString OriginalSuffix = Suffixs.at(i);
 
     //==== Trigger pass
     if(!PassTriggerOR( Triggers.at(i) )) continue;
 
     double EMu_MCTriggerWeight = 0.;
-    if(Suffix.Contains("EMu")){
+    if(OriginalSuffix.Contains("EMu")){
       //==== Data
       if(isData){
 
@@ -629,646 +459,1083 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         if(PassTriggerOR( triggerlist_EMu_PeriodH )) EMu_MCTriggerWeight += 8605.69;
       }
     }
-    FillCutFlowByName(Suffix, "MET_PV_Trig", w_cutflow[Suffix], isData);
+    FillCutFlowByName(OriginalSuffix, "MET_PV_Trig", w_cutflow[OriginalSuffix], isData);
 
-    //==== Two leptons
-    if(!isTTs.at(i) && !isLOOSEs.at(i)) continue;
+    //====================================
+    //==== Systematic source loop starts
+    //==== 1) Muon Energy Scale
+    //==== 2) Jet Energy Scale
+    //==== 3) Jet Energy Resolution
+    //==== 4) Unclustered Energy
+    //==== 5) Muon ID Scale Factor
+    //==== 6) Pileup
+    //==== 7) Trigger SF
+    //==== 8) Electron ID Scale Factor
+    //==== 9) Electron Energy Scale
+    //====================================
 
-    //==== That two lepton pass basic pt cuts
-    if(Suffix.Contains("DiMuon")){
-      //==== to properly veto below tricky event
-      //==== ### failing third muon veto ###
-      //==== muons.size() = 3
-      //==== muons.at(0).Pt() = 51.8417 => isTight = 0
-      //==== muons.at(1).Pt() = 27.8285 => isTight = 1
-      //==== muons.at(2).Pt() = 8.72782 => isTight = 1
-      if(isTTs.at(i)){
-        if((muons_tight.at(0).Pt() < 20.) || (muons_tight.at(1).Pt() < 10.)) continue;
+    int N_sys = 2*9+1;
+    int it_sys_start = 0;
+    if(!RunNtp){
+      it_sys_start = 8;
+      N_sys = it_sys_start+1;
+    }
+
+    for(int it_sys=it_sys_start; it_sys<N_sys; it_sys++){
+
+      //==== MET
+      //==== also set string for this systematic type
+      MET = Evt.MET();
+      METphi = Evt.METPhi();
+      TString this_syst;
+      if(it_sys==0){
+        this_syst = "_MuonEn_up";
+        //MET = Evt.PFMETShifted(snu::KEvent::MuonEn, snu::KEvent::up);
+      }
+      else if(it_sys==1){
+        this_syst = "_MuonEn_down";
+        //MET = Evt.PFMETShifted(snu::KEvent::MuonEn, snu::KEvent::down);
+      }
+      else if(it_sys==2){
+        this_syst = "_JetEn_up";
+        MET = Evt.PFMETShifted(snu::KEvent::JetEn, snu::KEvent::up);
+      }
+      else if(it_sys==3){
+        this_syst = "_JetEn_down";
+        MET = Evt.PFMETShifted(snu::KEvent::JetEn, snu::KEvent::down);
+      }
+      else if(it_sys==4){
+        this_syst = "_JetRes_up";
+        MET = Evt.PFMETShifted(snu::KEvent::JetRes, snu::KEvent::up);
+      }
+      else if(it_sys==5){
+        this_syst = "_JetRes_down";
+        MET = Evt.PFMETShifted(snu::KEvent::JetRes, snu::KEvent::down);
+      }
+      else if(it_sys==6){
+        this_syst = "_Unclustered_up";
+        MET = Evt.PFMETShifted(snu::KEvent::Unclustered, snu::KEvent::up);
+      }
+      else if(it_sys==7){
+        this_syst = "_Unclustered_down";
+        MET = Evt.PFMETShifted(snu::KEvent::Unclustered, snu::KEvent::down);
+      }
+      else if(it_sys==8){
+        this_syst = ""; //Central
+      }
+      else if(it_sys==9){
+        this_syst = "_MuonIDSF_up";
+      }
+      else if(it_sys==10){
+        this_syst = "_MuonIDSF_down";
+      }
+      else if(it_sys==11){
+        this_syst = "_PU_down";
+      }
+      else if(it_sys==12){
+        this_syst = "_PU_up";
+      }
+      else if(it_sys==13){
+        this_syst = "_TriggerSF_down";
+      }
+      else if(it_sys==14){
+        this_syst = "_TriggerSF_up";
+      }
+      else if(it_sys==15){
+        this_syst = "_ElectronIDSF_up";
+      }
+      else if(it_sys==16){
+        this_syst = "_ElectronIDSF_down";
+      }
+      else if(it_sys==17){
+        this_syst = "_ElectronEn_up";
+      }
+      else if(it_sys==18){
+        this_syst = "_ElectronEn_down";
       }
       else{
-        if((muons.at(0).Pt() < 20.) || (muons.at(1).Pt() < 10.)) continue;
+        Message("it_sys out of range!" , INFO);
+        return;
       }
-    }
-    if(Suffix.Contains("DiElectron")){
-      if(isTTs.at(i)){
-        if(electrons_tight.at(0).Pt() < 25. || electrons_tight.at(1).Pt() < 15.) continue;
+
+      TString Suffix = OriginalSuffix+this_syst;
+
+      //================
+      //==== Make Muon
+      //================
+
+      double this_MuonLooseRelIso = 0.4;
+      double this_MuonVetoRelIso = 0.6;
+      std::vector<snu::KMuon> muons, muons_veto;
+      if(this_syst == "_MuonEn_up"){
+        //==== Signal Leptons
+        for(unsigned int j=0; j<muons_loosest.size(); j++){
+          snu::KMuon this_muon = muons_loosest.at(j);
+          this_muon.SetPtEtaPhiM( this_muon.Pt()*this_muon.PtShiftedUp(), this_muon.Eta(), this_muon.Phi(), this_muon.M() );
+          double new_RelIso = this_muon.RelIso04()/this_muon.PtShiftedUp();
+          this_muon.SetRelIso(0.4, new_RelIso);
+          if( this_muon.Pt() >= 10. && new_RelIso < this_MuonLooseRelIso ) muons.push_back( this_muon );
+        }
+        //==== Veto Leptons
+        for(unsigned int j=0; j<muons_veto_loosest.size(); j++){
+          snu::KMuon this_muon = muons_veto_loosest.at(j);
+          this_muon.SetPtEtaPhiM( this_muon.Pt()*this_muon.PtShiftedUp(), this_muon.Eta(), this_muon.Phi(), this_muon.M() );
+          double new_RelIso = this_muon.RelIso04()/this_muon.PtShiftedUp();
+          this_muon.SetRelIso(0.4, new_RelIso);
+          if( this_muon.Pt() >= 5. && new_RelIso < this_MuonVetoRelIso ) muons_veto.push_back( this_muon );
+        }
+      }
+      else if(this_syst == "_MuonEn_down"){
+        //==== Signal Leptons
+        for(unsigned int j=0; j<muons_loosest.size(); j++){
+          snu::KMuon this_muon = muons_loosest.at(j);
+          this_muon.SetPtEtaPhiM( this_muon.Pt()*this_muon.PtShiftedDown(), this_muon.Eta(), this_muon.Phi(), this_muon.M() );
+          double new_RelIso = this_muon.RelIso04()/this_muon.PtShiftedDown();
+          this_muon.SetRelIso(0.4, new_RelIso);
+          if( this_muon.Pt() >= 10. && new_RelIso < this_MuonLooseRelIso ) muons.push_back( this_muon );
+        }
+        //==== Veto Leptons
+        for(unsigned int j=0; j<muons_veto_loosest.size(); j++){
+          snu::KMuon this_muon = muons_veto_loosest.at(j);
+          this_muon.SetPtEtaPhiM( this_muon.Pt()*this_muon.PtShiftedDown(), this_muon.Eta(), this_muon.Phi(), this_muon.M() );
+          double new_RelIso = this_muon.RelIso04()/this_muon.PtShiftedDown();
+          this_muon.SetRelIso(0.4, new_RelIso);
+          if( this_muon.Pt() >= 5. && new_RelIso < this_MuonVetoRelIso ) muons_veto.push_back( this_muon );
+        }
+      }
+      //==== normal muons
+      else{
+        //==== Signal Leptons
+        for(unsigned int j=0; j<muons_loosest.size(); j++){
+          snu::KMuon this_muon = muons_loosest.at(j);
+          if( this_muon.Pt() >= 10. && this_muon.RelIso04() < this_MuonLooseRelIso ) muons.push_back( this_muon );
+        }
+        //==== Veto Leptons
+        for(unsigned int j=0; j<muons_veto_loosest.size(); j++){
+          snu::KMuon this_muon = muons_veto_loosest.at(j);
+          if( this_muon.Pt() >= 5. && this_muon.RelIso04() < this_MuonVetoRelIso ) muons_veto.push_back( this_muon );
+        }
+      }
+      std::sort(muons.begin(), muons.end(), MuonPtComparing);
+
+      //====================
+      //==== Make Electron
+      //====================
+
+      std::vector<snu::KElectron> electrons, electrons_veto;
+      std::vector<snu::KElectron> electrons_notshifted;
+      double this_ElectronLooseRelIso = 0.6;
+      double this_ElectronVetoRelIso = 0.6;
+      int ElEnDir = 0;
+      if(this_syst == "_ElectronEn_up"){
+        ElEnDir = 1;
+        //==== Signal Leptons
+        for(unsigned int j=0; j<electrons_loosest.size(); j++){
+          snu::KElectron this_electron = electrons_loosest.at(j);
+          this_electron.SetPtEtaPhiM( this_electron.Pt()*this_electron.PtShiftedUp(), this_electron.Eta(), this_electron.Phi(), this_electron.M() );
+          double new_RelIso = this_electron.PFRelIso(0.3)/this_electron.PtShiftedUp();
+          this_electron.SetPFRelIso(0.3, new_RelIso);
+          if( this_electron.Pt() >= 10. && new_RelIso < this_ElectronLooseRelIso ) electrons.push_back( this_electron );
+        }
+        //==== Veto Leptons
+        for(unsigned int j=0; j<electrons_veto_loosest.size(); j++){
+          snu::KElectron this_electron = electrons_veto_loosest.at(j);
+          this_electron.SetPtEtaPhiM( this_electron.Pt()*this_electron.PtShiftedUp(), this_electron.Eta(), this_electron.Phi(), this_electron.M() );
+          double new_RelIso = this_electron.PFRelIso(0.3)/this_electron.PtShiftedUp();
+          this_electron.SetPFRelIso(0.3, new_RelIso);
+          if( this_electron.Pt() >= 10. && new_RelIso < this_ElectronVetoRelIso ) electrons_veto.push_back( this_electron );
+        }
+      }
+      else if(this_syst == "_ElectronEn_down"){
+        ElEnDir = -1;
+        //==== Signal Leptons
+        for(unsigned int j=0; j<electrons_loosest.size(); j++){
+          snu::KElectron this_electron = electrons_loosest.at(j);
+          this_electron.SetPtEtaPhiM( this_electron.Pt()*this_electron.PtShiftedDown(), this_electron.Eta(), this_electron.Phi(), this_electron.M() );
+          double new_RelIso = this_electron.PFRelIso(0.3)/this_electron.PtShiftedDown();
+          this_electron.SetPFRelIso(0.3, new_RelIso);
+          if( this_electron.Pt() >= 10. && new_RelIso < this_ElectronLooseRelIso ) electrons.push_back( this_electron );
+        }
+        //==== Veto Leptons
+        for(unsigned int j=0; j<electrons_veto_loosest.size(); j++){
+          snu::KElectron this_electron = electrons_veto_loosest.at(j);
+          this_electron.SetPtEtaPhiM( this_electron.Pt()*this_electron.PtShiftedDown(), this_electron.Eta(), this_electron.Phi(), this_electron.M() );
+          double new_RelIso = this_electron.PFRelIso(0.3)/this_electron.PtShiftedDown();
+          this_electron.SetPFRelIso(0.3, new_RelIso);
+          if( this_electron.Pt() >= 10. && new_RelIso < this_ElectronVetoRelIso ) electrons_veto.push_back( this_electron );
+        }
+      }
+      //==== normal electrons
+      else{
+        //==== Signal Leptons
+        for(unsigned int j=0; j<electrons_loosest.size(); j++){
+          snu::KElectron this_electron = electrons_loosest.at(j);
+          if( this_electron.Pt() >= 10. && this_electron.PFRelIso(0.3) < this_ElectronLooseRelIso ) electrons.push_back( this_electron );
+        }
+        //==== Veto Leptons
+        for(unsigned int j=0; j<electrons_veto_loosest.size(); j++){
+          snu::KElectron this_electron = electrons_veto_loosest.at(j);
+          if( this_electron.Pt() >= 10. && this_electron.PFRelIso(0.3) < this_ElectronVetoRelIso ) electrons_veto.push_back( this_electron );
+        }
+      }
+
+      //==== If Chargeflip, then shift down electron, and replace electrons with it
+      //==== To get correct CF rate, we save original (OS event) electron to electrons_before_shift
+      std::vector< snu::KElectron > electrons_before_shift;
+      electrons_before_shift.clear();
+      if(RunningChargeFlipData){
+        for(unsigned int j=0; j<electrons.size(); j++){
+          electrons_before_shift.push_back( electrons.at(j) );
+          snu::KElectron tmp_el = electrons.at(j);
+          double shift_ = 1.-0.01;
+          tmp_el.SetPtEtaPhiM(shift_*tmp_el.Pt(), tmp_el.Eta(), tmp_el.Phi(), 0.511e-3);
+          //tmp_el.SetPxPyPzE(shift_*tmp_el.Px(), shift_*tmp_el.Py(), shift_*tmp_el.Pz(), shift_*tmp_el.E());
+          electrons.at(j) = tmp_el;
+        }
+      }
+
+      //==== We don't have MiniAODPt for electorn..
+
+      if(ElEnDir!=0){
+        for(unsigned int j=0; j<electrons.size(); j++){
+          snu::KElectron new_electron = electrons.at(j);
+          if(ElEnDir>0) new_electron.SetPtEtaPhiM( new_electron.Pt()/new_electron.PtShiftedUp(), new_electron.Eta(), new_electron.Phi(), new_electron.M() );
+          else new_electron.SetPtEtaPhiM( new_electron.Pt()/new_electron.PtShiftedDown(), new_electron.Eta(), new_electron.Phi(), new_electron.M() );
+          electrons_notshifted.push_back(new_electron);
+        }
+      }
+
+
+      CorrectedMETElectron(ElEnDir, electrons_notshifted, MET, METphi);
+      std::sort(electrons.begin(), electrons.end(), ElectronPtComparing);
+
+      //==== MET is calculated with No-Rochestor-Corrected Muons
+      //==== In this step, muons are 
+      //==== 1) Rochestor corrected & Up/Down
+      //==== 2) Rochestor corrected
+      //==== Both cases, we can correct MET (w.r.t. muon) using
+      //==== AnalyzerCore::CorrectedMETRochester(std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi)
+      CorrectedMETRochester(muons, MET, METphi);
+
+      //===============
+      //==== Make Jet
+      //===============
+
+      std::vector<snu::KJet> jets_eta5_nolepveto; // eta < 5, NO lepton-veto
+      if(this_syst == "_JetEn_up"){
+        for(unsigned int j=0; j<jets_eta5_nolepveto_loosest.size(); j++){
+          snu::KJet this_jet = jets_eta5_nolepveto_loosest.at(j);
+          double this_E = this_jet.E()*this_jet.ScaledUpEnergy();
+          double this_3p = sqrt(this_E*this_E-this_jet.M()*this_jet.M());
+          double this_3p_sf = this_3p/this_jet.P();
+          this_jet.SetPxPyPzE( this_3p_sf*this_jet.Px(), this_3p_sf*this_jet.Py(), this_3p_sf*this_jet.Pz(), this_E);
+          if(this_jet.Pt() >= 20.) jets_eta5_nolepveto.push_back(this_jet);
+        }
+      }
+      else if(this_syst == "_JetEn_down"){
+        for(unsigned int j=0; j<jets_eta5_nolepveto_loosest.size(); j++){
+          snu::KJet this_jet = jets_eta5_nolepveto_loosest.at(j);
+          double this_E = this_jet.E()*this_jet.ScaledDownEnergy();
+          double this_3p = sqrt(this_E*this_E-this_jet.M()*this_jet.M());
+          double this_3p_sf = this_3p/this_jet.P();
+          this_jet.SetPxPyPzE( this_3p_sf*this_jet.Px(), this_3p_sf*this_jet.Py(), this_3p_sf*this_jet.Pz(), this_E);
+          if(this_jet.Pt() >= 20.) jets_eta5_nolepveto.push_back(this_jet);
+        }
       }
       else{
-        if(electrons.at(0).Pt() < 25. || electrons.at(1).Pt() < 15.) continue;
+        for(unsigned int j=0; j<jets_eta5_nolepveto_loosest.size(); j++){
+          snu::KJet this_jet = jets_eta5_nolepveto_loosest.at(j);
+          if(this_jet.Pt() >= 20.) jets_eta5_nolepveto.push_back(this_jet);
+        }
       }
-    }
-    if(Suffix.Contains("EMu")){
-      double MuMinPt = 9999., ElMinPt = 9999.;
 
-      bool PtOkay = false;
+      std::vector<snu::KJet> jets; // eta < 2.5, lepton-veto
+      std::vector<snu::KJet> jets_nolepveto; // eta < 2.5, NO lepton-veto
+      std::vector<snu::KJet> jets_fwd; // 2.5 < eta < 5, lepton-veto => to make forward
 
-      if(PassTriggerOR(triggerlist_EMu_Mu8Ele23)){
+      for(unsigned int j=0; j<jets_eta5_nolepveto.size(); j++){
 
-        MuMinPt = 10.;
-        ElMinPt = 25.;
+        snu::KJet this_jet = jets_eta5_nolepveto.at(j);
+        bool IsNormalJet = fabs( this_jet.Eta() ) < 2.5;
+        bool IsForwardJet = fabs( this_jet.Eta() ) >= 2.5;
+        bool lepinside = HasLeptonInsideJet(this_jet, muons_veto, electrons_veto);
 
-        if(isTTs.at(i)){
-          if( (muons_tight.at(0).Pt() > MuMinPt) && (electrons_tight.at(0).Pt() > ElMinPt) ) PtOkay = true;
+        if(IsNormalJet && !lepinside) jets.push_back( this_jet );
+        if(IsNormalJet) jets_nolepveto.push_back( this_jet );
+        if(IsForwardJet && !lepinside) jets_fwd.push_back( this_jet );
+
+      }
+
+      nbjets = 0;
+      for(int j=0; j<jets.size(); j++){
+        if( IsBTagged(jets.at(j), snu::KJet::CSVv2, snu::KJet::Medium) ){
+          nbjets++;
+        }
+      }
+
+      nbjets_nolepveto = 0;
+      for(int j=0; j<jets_nolepveto.size(); j++){
+        if( IsBTagged(jets_nolepveto.at(j), snu::KJet::CSVv2, snu::KJet::Medium) ){
+          nbjets_nolepveto++;
+        }
+      }
+
+      nbjets_fwd = 0;
+      for(int j=0; j<jets_fwd.size(); j++){
+        if( IsBTagged(jets_fwd.at(j), snu::KJet::CSVv2, snu::KJet::Medium) ){
+          nbjets_fwd++;
+        }
+      }
+
+
+      //==== Lepton Numbers
+
+      std::vector<snu::KMuon> muons_tight; muons_tight.clear();
+      std::vector<snu::KElectron> electrons_tight; electrons_tight.clear();
+      std::vector<bool> isT;
+      std::vector<int> NearBjet;
+
+      int NPromptTight(0);
+
+      int n_veto_muons = muons_veto.size();
+      int n_triLoose_muons = muons.size();
+      int n_triTight_muons(0);
+      for(unsigned int j=0; j<muons.size(); j++){
+
+        if(DoFRBJET) NearBjet.push_back( HasCloseBjet(muons.at(j), jets_nolepveto, btag_wp) );
+        else NearBjet.push_back( -1 );
+
+        if(TruthMatched(muons.at(j))) NPromptTight++;
+        if(PassID(muons.at(j), MuonTightID)){
+          isT.push_back(true);
+          muons_tight.push_back(muons.at(j));
+          n_triTight_muons++;
         }
         else{
-          if( (muons.at(0).Pt() > MuMinPt) && (electrons.at(0).Pt() > ElMinPt) ) PtOkay = true;
+          isT.push_back(false);
         }
-
-      }
-      if(PassTriggerOR(triggerlist_EMu_Mu23Ele8)){
-
-        MuMinPt = 25.;
-        ElMinPt = 10.;
-
-        if(isTTs.at(i)){
-          if( (muons_tight.at(0).Pt() > MuMinPt) && (electrons_tight.at(0).Pt() > ElMinPt) ) PtOkay = true;
-        }
-        else{ 
-          if( (muons.at(0).Pt() > MuMinPt) && (electrons.at(0).Pt() > ElMinPt) ) PtOkay = true;
-        }
-
-
       }
 
-      if( !PtOkay ) continue;
+      int n_veto_electrons = electrons_veto.size();
+      int n_triLoose_electrons = electrons.size();
+      int n_triTight_electrons(0);
+      for(unsigned int j=0; j<electrons.size(); j++){
 
-    }
-    FillCutFlowByName(Suffix, "TwoLeptons", w_cutflow[Suffix], isData);
+        if(DoFRBJET) NearBjet.push_back( HasCloseBjet(electrons.at(j), jets_nolepveto, btag_wp) );
+        else NearBjet.push_back( -1 );
 
-    //==== No Extra lepton
-    if(!isNoExtra.at(i)) continue;
-    FillCutFlowByName(Suffix, "NoExtraLepton", w_cutflow[Suffix], isData);
+        if(TruthMatched(electrons.at(j), false)) NPromptTight++;
+        if(PassID(electrons.at(j), ElectronTightID)){
+          isT.push_back(true);
+          electrons_tight.push_back(electrons.at(j));
+          n_triTight_electrons++;
+        }
+        else{
+          isT.push_back(false);
+        }
+      }
 
-    //==== No Extra different flavour lepton
-    if(!isNoExtraOtherFlavour.at(i)) continue;
-    FillCutFlowByName(Suffix, "NoExtraFlavourLepton", w_cutflow[Suffix], isData);
+      int n_triLoose_leptons = n_triLoose_muons+n_triLoose_electrons;
+      int n_triTight_leptons = n_triTight_muons+n_triTight_electrons;
+      NTightLeptons = n_triTight_leptons;
 
-    //==== DiMuon-DoubleMuon PD / ...
-    if(isData && k_channel != "DoubleMuon_CF"){
+      bool isTwoMuon_TT    = (n_triTight_muons == 2); // veto third later
+      bool isTwoMuon_Loose = (n_triLoose_muons == 2 && n_triTight_muons != 2);
+
+      bool isTwoElectron_TT    = (n_triTight_electrons == 2); // veto third later 
+      bool isTwoElectron_Loose = (n_triLoose_electrons == 2 && n_triTight_electrons != 2);
+
+      bool isEMu_TT    = (n_triTight_muons == 1 && n_triTight_electrons == 1);
+      bool isEMu_Loose = (n_triLoose_muons == 1)     &&
+                         (n_triLoose_electrons == 1) &&
+                         (n_triTight_leptons != 2);
+
+      bool isTT, isLOOSE;
+      bool isNoExtra, isNoExtraOtherFlavour;
+
       if(Suffix.Contains("DiMuon")){
-        if(k_channel != "DoubleMuon") continue;
+        isTT = isTwoMuon_TT && !RunningNonPromptData;
+        isLOOSE = isTwoMuon_Loose && RunningNonPromptData;
+        isNoExtra = n_veto_muons == 2;
+        isNoExtraOtherFlavour = n_veto_electrons == 0;
       }
       if(Suffix.Contains("DiElectron")){
-        if(k_channel != "DoubleEG") continue;
+        isTT = isTwoElectron_TT && !RunningNonPromptData;
+        isLOOSE = isTwoElectron_Loose && RunningNonPromptData;
+        isNoExtra = n_veto_electrons == 2;
+        isNoExtraOtherFlavour = n_veto_muons == 0;
       }
       if(Suffix.Contains("EMu")){
-        if(k_channel != "MuonEG") continue;
+        isTT = isEMu_TT && !RunningNonPromptData;
+        isLOOSE = isEMu_Loose && RunningNonPromptData;
+        isNoExtra = (n_veto_muons == 1) && (n_veto_electrons == 1);
+        isNoExtraOtherFlavour = true;
       }
-    }
+      
+      //==== Two leptons
+      if(!isTT && !isLOOSE) continue;
 
-    double trigger_ps_weight(1.);
-    if(Suffix.Contains("EMu")) trigger_ps_weight = EMu_MCTriggerWeight;
-    else              trigger_ps_weight = WeightByTrigger(Triggers.at(i), TargetLumi);
-
-    double this_weight = weight*trigger_ps_weight;
-
-    double trigger_sf = 1.;
-    if(!isData && Suffix.Contains("DiMuon")){
-      double trigger_eff_Data = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, "", muons, "MUON_HN_TIGHT", 0, 0, 0);
-      double trigger_eff_MC = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, "", muons, "MUON_HN_TIGHT", 0, 1, 0);
-      trigger_sf = trigger_eff_Data/trigger_eff_MC;
-    }
-    if(!isData && Suffix.Contains("DiElectron")){
-      //cout << "## Calculating DiElectron Trigger SF ##" << endl;
-      //cout << "1) Data" << endl;
-      double trigger_eff_Data = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, "", muons, "MUON_HN_TIGHT", 1, 0, 0);
-      //cout << "trigger_eff_Data = " << trigger_eff_Data << endl;
-      //cout << "2) MC" << endl;
-      double trigger_eff_MC = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, "", muons, "MUON_HN_TIGHT", 1, 1, 0);
-      //cout << "trigger_eff_MC = " << trigger_eff_MC << endl;
-      trigger_sf = trigger_eff_Data/trigger_eff_MC;
-      //cout << "=> sf = " << trigger_sf << endl;
-    }
-    //trigger_sf = 1.;//FIXME
-
-    this_weight *= trigger_sf;
-
-    std::vector<KLepton> lep;
-    for(unsigned int j=0; j<muons.size(); j++){
-      KLepton this_lep( muons.at(j) );
-      lep.push_back( this_lep );
-    }
-    for(unsigned int j=0; j<electrons.size(); j++){
-      KLepton this_lep( electrons.at(j) );
-      lep.push_back( this_lep );
-    }
-
-    if(DoMCClosure){
-
-      bool HasStrangeLeptons=false;
-      bool HasFakeLeptons=false;
-
-      for(unsigned int j=0; j<lep.size(); j++){
-/*
-        int this_type = lep.at(j).GetType();
-        if(lep.at(j).LeptonFlavour()==KLepton::ELECTRON){
-          //if(this_type==2) HasStrangeLeptons=true; // From Z/W, but matchedpdgid != pdgid (conversion) //TODO test this
-          if(this_type==3) HasStrangeLeptons=true; // e>eee
-          if(this_type==16) HasStrangeLeptons=true; // gammastar
-          if(this_type==40) HasStrangeLeptons=true; // photon matched
+      //==== That two lepton pass basic pt cuts
+      if(Suffix.Contains("DiMuon")){
+        //==== to properly veto below tricky event
+        //==== ### failing third muon veto ###
+        //==== muons.size() = 3
+        //==== muons.at(0).Pt() = 51.8417 => isTight = 0
+        //==== muons.at(1).Pt() = 27.8285 => isTight = 1
+        //==== muons.at(2).Pt() = 8.72782 => isTight = 1
+        if(isTT){
+          if((muons_tight.at(0).Pt() < 20.) || (muons_tight.at(1).Pt() < 10.)) continue;
         }
-        if(lep.at(j).LeptonFlavour()==KLepton::MUON){
-          if(this_type==8) HasStrangeLeptons=true; // ??
-          if(this_type==10) HasStrangeLeptons=true; // gammastar
+        else{
+          if((muons.at(0).Pt() < 20.) || (muons.at(1).Pt() < 10.)) continue;
         }
-        if(lep.at(j).MCIsCF()) HasStrangeLeptons=true;
-*/
-
-        if( lep.at(j).GetType() == 0 ) HasStrangeLeptons = true;
-
-        //==== Check if fake exist
-        if(lep.at(j).LeptonFlavour()==KLepton::MUON){
-          const snu::KMuon *mptr = lep.at(j).GetMuonPtr();
-          if(!TruthMatched(*mptr)) HasFakeLeptons = true;
-        }
-        if(lep.at(j).LeptonFlavour()==KLepton::ELECTRON){
-          const snu::KElectron *eptr = lep.at(j).GetElectronPtr();
-          if(!TruthMatched(*eptr,false)) HasFakeLeptons = true;
-        }
-
-
-      } // END lepton loop
-
-
-      if(HasStrangeLeptons) continue;
-      if(!HasFakeLeptons) continue;
-
-    }
-
-    bool isSS = lep.at(0).Charge() == lep.at(1).Charge();
-    bool isSSForCF = isSS;
-    if(RunningChargeFlipData) isSSForCF = !isSS;
-
-    double m_Z = 91.1876;
-    bool isOffZ = fabs( (lep.at(0)+lep.at(1)).M() - m_Z ) > 10.;
-    bool isAboveZ = ( (lep.at(0)+lep.at(1)).M() - m_Z ) > 10.;
-    bool isBelowZ = ( (lep.at(0)+lep.at(1)).M() - m_Z ) < -10.;
-
-/*
-    //==== TT/DY Same-Sign Prompt check
-    if(DoMCClosure && NPromptTight==2 && isSS){
-      FillHist("SSType_"+Suffix, lep.at(0).GetType(), 1., 0., 40., 40);
-      FillHist("SSType_"+Suffix, lep.at(1).GetType(), 1., 0., 40., 40);
-      FillHist("SSIsCF_"+Suffix, lep.at(0).MCIsCF(), 1., 0., 2., 2);
-      FillHist("SSIsCF_"+Suffix, lep.at(1).MCIsCF(), 1., 0., 2., 2);
-      cout << "########### SS Two Prompt ###########" << endl;
-      cout << "Channel = " << Suffix << endl;
-      cout << "<Truth>" << endl;
-      TruthPrintOut();
-      cout << "<Reco>" << endl;
-      cout << "pt\teta\tphi\tcharge\ttype\n" << endl;
-      for(unsigned int j=0; j<lep.size(); j++){
-        cout << lep.at(j).Pt() << "\t" << lep.at(j).Eta() << "\t" << lep.at(j).Phi() << "\t" << lep.at(j).Charge() << "\t" << lep.at(j).GetType() << endl;
       }
-    }
-    continue;
-*/
-
-    //==== mll Cut Study
-    FillHist("CutStudy_m_ll_"+Suffix, ( lep.at(0)+lep.at(1) ).M(), 1., 0., 40., 400);
-    if(isSS) FillHist("CutStudy_m_ll_SS_"+Suffix, ( lep.at(0)+lep.at(1) ).M(), 1., 0., 40., 400);
-    else FillHist("CutStudy_m_ll_OS_"+Suffix, ( lep.at(0)+lep.at(1) ).M(), 1., 0., 40., 400);
-    bool mll10GeV = ( lep.at(0)+lep.at(1) ).M() < 10.;
-    if(mll10GeV) continue;
-    FillCutFlowByName(Suffix, "LowDileptonMass", w_cutflow[Suffix], isData);
-
-    double this_weight_err(0.);
-    vector<double> FRweights;
-    vector<TString> FRweights_name;
-    if( isLOOSEs.at(i) ){
-
-      get_eventweight(muons, electrons, isT, NearBjet, 0);
-      this_weight *= weight_fr;
-      this_weight_err = this_weight*weight_err_fr;
-
-      if(DoAwayJet){
-
-        FRweights.push_back(weight_fr);
-        FRweights_name.push_back("FakeRate_ptcorr_eta40");
-
-        ElFR_key = "Awatjet_20";
-        MuFR_key = "Awatjet_20";
-        get_eventweight(muons, electrons, isT, NearBjet, 0);
-        FRweights.push_back(weight_fr);
-        FRweights_name.push_back("FakeRate_ptcorr_eta20");
-
-        ElFR_key = "Awatjet_30";
-        MuFR_key = "Awatjet_30";
-        get_eventweight(muons, electrons, isT, NearBjet, 0);
-        FRweights.push_back(weight_fr);
-        FRweights_name.push_back("FakeRate_ptcorr_eta30");
-
-        ElFR_key = "Awatjet_60";
-        MuFR_key = "Awatjet_60";
-        get_eventweight(muons, electrons, isT, NearBjet, 0);
-        FRweights.push_back(weight_fr);
-        FRweights_name.push_back("FakeRate_ptcorr_eta60");
-
-
-        //==== reset
-        ElFR_key = "";
-        MuFR_key = "";
+      if(Suffix.Contains("DiElectron")){
+        if(isTT){
+          if(electrons_tight.at(0).Pt() < 25. || electrons_tight.at(1).Pt() < 15.) continue;
+        }
+        else{
+          if(electrons.at(0).Pt() < 25. || electrons.at(1).Pt() < 15.) continue;
+        }
       }
+      if(Suffix.Contains("EMu")){
+        double MuMinPt = 9999., ElMinPt = 9999.;
 
+        bool PtOkay = false;
 
-    }
-    if( RunningChargeFlipData && Suffix.Contains("DiElectron") && !isSS ){
-      GetCFWeight(electrons_before_shift.at(0), electrons_before_shift.at(1));
+        if(PassTriggerOR(triggerlist_EMu_Mu8Ele23)){
 
-      this_weight *= weight_cf;
-      this_weight_err = this_weight*weight_err_cf;
-    }
+          MuMinPt = 10.;
+          ElMinPt = 25.;
 
-    //==== Now,
-    //==== Fill Histogram
-    //====
-
-    //==== We have to sort lepton after we get fake weight,
-    //==== because isT = {muon, electron}
-    //==== If MCClosure, keep ordering as Muon-Electron (to see type)
-    if(!DoMCClosure) std::sort(lep.begin(), lep.end(), LeptonPtComparing);
-
-    std::map< TString, bool > map_Region_to_Bool;
-    map_Region_to_Bool.clear();
-
-    //==== Default Variation
-    //==== 1) OnZ/OffZ/All
-    //==== 2) OS/SS/All
-
-    //==== # of jets
-    map_Region_to_Bool[Suffix+"_0jets"] = (jets.size()==0);
-    map_Region_to_Bool[Suffix+"_1jets"] = (jets.size()==1);
-    map_Region_to_Bool[Suffix+"_1jets_0nlbjets"] = (jets.size()==1) && (nbjets_nolepveto==0);
-    map_Region_to_Bool[Suffix+"_1jets_0nlbjets_mllge100"] = (jets.size()==1) && (nbjets_nolepveto==0) && (( lep.at(0)+lep.at(1) ).M() >= 100.);
-
-    //==== # of forward b jet
-    map_Region_to_Bool[Suffix+"_0nlbjets"] = (nbjets_nolepveto==0);
-    map_Region_to_Bool[Suffix+"_Inclusive1nlbjets"] = (nbjets_nolepveto>=1);
-    map_Region_to_Bool[Suffix+"_Inclusive1nlbjets_METge50"] = (nbjets_nolepveto>=1) && (MET>50.); // control region
-
-    //==== ST = lepton + jet + MET
-    ST = lep.at(0).Pt() + lep.at(1).Pt() + MET;
-    for(unsigned int ij=0; ij <jets.size(); ij++){
-      ST += jets.at(ij).Pt();
-    }
-
-    //==== HT = jet
-    HT = 0.;
-    for(unsigned int ij=0; ij <jets.size(); ij++){
-      HT += jets.at(ij).Pt();
-    }
-
-    //==== LT = lepton
-    LT = lep.at(0).Pt() + lep.at(1).Pt();
-
-    //==== At least two jets
-    if( jets.size()>=2 ){
-      index_jjW_j1 = 0;
-      index_jjW_j2 = 1;
-      double mjj = GetDijetMassClosest(jets, 80.4, index_jjW_j1, index_jjW_j2);
-      index_lljjW_j1 = 0;
-      index_lljjW_j2 = 1;
-      double mlljj = GetDileptonDijetMassClosest(lep, jets, 80.4, index_lljjW_j1, index_lljjW_j2);
-
-      //==== More CutFlows
-      if( jets.size()>=2 ){
-        FillCutFlowByName(Suffix, "InclusiveTwoJets", w_cutflow[Suffix], isData);
-        if( MET < 50. ){
-          FillCutFlowByName(Suffix, "MET50", w_cutflow[Suffix], isData);
-          if( mjj < 200. ){
-            FillCutFlowByName(Suffix, "Mjj200", w_cutflow[Suffix], isData);
-            if( nbjets == 0 ){
-              FillCutFlowByName(Suffix, "NoBJet", w_cutflow[Suffix], isData);
-              if( nbjets_nolepveto == 0 ){
-                FillCutFlowByName(Suffix, "NoBJet_nolepveto", w_cutflow[Suffix], isData);
-              }
-            }
+          if(isTT){
+            if( (muons_tight.at(0).Pt() > MuMinPt) && (electrons_tight.at(0).Pt() > ElMinPt) ) PtOkay = true;
           }
+          else{
+            if( (muons.at(0).Pt() > MuMinPt) && (electrons.at(0).Pt() > ElMinPt) ) PtOkay = true;
+          }
+
+        }
+        if(PassTriggerOR(triggerlist_EMu_Mu23Ele8)){
+
+          MuMinPt = 25.;
+          ElMinPt = 10.;
+
+          if(isTT){
+            if( (muons_tight.at(0).Pt() > MuMinPt) && (electrons_tight.at(0).Pt() > ElMinPt) ) PtOkay = true;
+          }
+          else{ 
+            if( (muons.at(0).Pt() > MuMinPt) && (electrons.at(0).Pt() > ElMinPt) ) PtOkay = true;
+          }
+
+
+        }
+
+        if( !PtOkay ) continue;
+
+      }
+
+      FillCutFlowByName(Suffix, "TwoLeptons", w_cutflow[Suffix], isData);
+
+      //==== No Extra lepton
+      if(!isNoExtra) continue;
+      FillCutFlowByName(Suffix, "NoExtraLepton", w_cutflow[Suffix], isData);
+
+      //==== No Extra different flavour lepton
+      if(!isNoExtraOtherFlavour) continue;
+      FillCutFlowByName(Suffix, "NoExtraFlavourLepton", w_cutflow[Suffix], isData);
+
+      //==== DiMuon-DoubleMuon PD / ...
+      if(isData && k_channel != "DoubleMuon_CF"){
+        if(Suffix.Contains("DiMuon")){
+          if(k_channel != "DoubleMuon") continue;
+        }
+        if(Suffix.Contains("DiElectron")){
+          if(k_channel != "DoubleEG") continue;
+        }
+        if(Suffix.Contains("EMu")){
+          if(k_channel != "MuonEG") continue;
         }
       }
 
-    }
+      double trigger_ps_weight(1.);
+      if(Suffix.Contains("EMu")) trigger_ps_weight = EMu_MCTriggerWeight;
+      else              trigger_ps_weight = WeightByTrigger(Triggers.at(i), TargetLumi);
 
+      double this_weight = weight*trigger_ps_weight;
 
-    //==== Preselection
+      //double muon_id_iso_sf = mcdata_correction->MuonScaleFactor(MuonTightID, muons, 0); //FIXME
+      double muon_id_iso_sf = mcdata_correction->MuonScaleFactor("MUON_HN_TIGHT", muons, 0);
+      double MuTrkEffSF =  mcdata_correction->MuonTrackingEffScaleFactor(muons);
+      //muon_id_iso_sf = 1.; //FIXME
+      this_weight *= muon_id_iso_sf*MuTrkEffSF;
 
-    map_Region_to_Bool[Suffix+"_Preselection"] = ( jets.size()>=2 );
-    map_Region_to_Bool[Suffix+"_Preselection_secondptge20"] = ( jets.size()>=2 ) && (lep.at(1).Pt() >= 20.);
-    //==== For DiElectron, remove Z peak (CF)
-    if(Suffix.Contains("DiElectron")){
-      map_Region_to_Bool[Suffix+"_Preselection"] = map_Region_to_Bool[Suffix+"_Preselection"] && isOffZ;
-    }
+      double electron_sf = mcdata_correction->ElectronScaleFactor(ElectronTightID, electrons, 0);
+      //electron_sf = 1.; //FIXME
+      double electron_RecoSF =  mcdata_correction->ElectronRecoScaleFactor(electrons);
+      this_weight *= electron_sf*electron_RecoSF;
 
-    //==== If Preselection, then define Low/High
+      double trigger_sf = 1.;
+      if(!isData && Suffix.Contains("DiMuon")){
+        //double trigger_eff_Data = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, "", muons, MuonTightID, 0, 0, 0);
+        //double trigger_eff_MC = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, "", muons, MuonTightID, 0, 1, 0);
+        double trigger_eff_Data = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, "", muons, "MUON_HN_TIGHT", 0, 0, 0);
+        double trigger_eff_MC = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, "", muons, "MUON_HN_TIGHT", 0, 1, 0);
+        trigger_sf = trigger_eff_Data/trigger_eff_MC;
+      }
+      if(!isData && Suffix.Contains("DiElectron")){
+        //cout << "## Calculating DiElectron Trigger SF ##" << endl;
+        //cout << "1) Data" << endl;
+        double trigger_eff_Data = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, "", muons, MuonTightID, 1, 0, 0);
+        //cout << "trigger_eff_Data = " << trigger_eff_Data << endl;
+        //cout << "2) MC" << endl;
+        double trigger_eff_MC = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, "", muons, MuonTightID, 1, 1, 0);
+        //cout << "trigger_eff_MC = " << trigger_eff_MC << endl;
+        trigger_sf = trigger_eff_Data/trigger_eff_MC;
+        //cout << "=> sf = " << trigger_sf << endl;
+      }
+      //trigger_sf = 1.;//FIXME
 
-    if(map_Region_to_Bool[Suffix+"_Preselection"]){
-      map_Region_to_Bool[Suffix+"_Low"] = map_Region_to_Bool[Suffix+"_Preselection"] &&
-                                          (nbjets_nolepveto == 0) &&
-                                          ( (lep.at(0)+lep.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M() < 300. ) &&
-                                          (MET < 80.);
-      map_Region_to_Bool[Suffix+"_LowCR"] = map_Region_to_Bool[Suffix+"_Preselection"] &&
-                                            ( (nbjets_nolepveto >= 1) || (MET > 100.) ) &&
-                                            ( (lep.at(0)+lep.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M() < 300. );
+      this_weight *= trigger_sf;
 
-      map_Region_to_Bool[Suffix+"_High"] = map_Region_to_Bool[Suffix+"_Preselection"] &&
-                                           (nbjets_nolepveto == 0) &&
-                                           ( (jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M() < 150. ) &&
-                                           ( MET*MET/ST < 15. );
-      map_Region_to_Bool[Suffix+"_HighCR"] = map_Region_to_Bool[Suffix+"_Preselection"] &&
-                                             ( (nbjets_nolepveto >= 1) || (MET*MET/ST > 20.) ) &&
-                                             ( (jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M() < 150. );
-    }
+      std::vector<KLepton> lep;
+      for(unsigned int j=0; j<muons.size(); j++){
+        KLepton this_lep( muons.at(j) );
+        lep.push_back( this_lep );
+      }
+      for(unsigned int j=0; j<electrons.size(); j++){
+        KLepton this_lep( electrons.at(j) );
+        lep.push_back( this_lep );
+      }
 
-    //==== Test 1) Loose sample faking jet pt distribution
-    if(LooseSampleFakeJetPt){
+      if(DoMCClosure){
 
-      if(map_Region_to_Bool[Suffix+"_Preselection"] && jets_nolepveto.size() > 0){
+        bool HasStrangeLeptons=false;
+        bool HasFakeLeptons=false;
 
         for(unsigned int j=0; j<lep.size(); j++){
-
-          if(lep.at(j).LeptonFlavour() == KLepton::MUON){
-            if( PassID( *(lep.at(j).GetMuonPtr()), "MUON_HN_TIGHT" ) ) continue;
+  /*
+          int this_type = lep.at(j).GetType();
+          if(lep.at(j).LeptonFlavour()==KLepton::ELECTRON){
+            //if(this_type==2) HasStrangeLeptons=true; // From Z/W, but matchedpdgid != pdgid (conversion) //TODO test this
+            if(this_type==3) HasStrangeLeptons=true; // e>eee
+            if(this_type==16) HasStrangeLeptons=true; // gammastar
+            if(this_type==40) HasStrangeLeptons=true; // photon matched
           }
-          else if(lep.at(j).LeptonFlavour() == KLepton::ELECTRON){
-            if( PassID( *(lep.at(j).GetElectronPtr()), "ELECTRON_HN_TIGHTv4" ) ) continue;
+          if(lep.at(j).LeptonFlavour()==KLepton::MUON){
+            if(this_type==8) HasStrangeLeptons=true; // ??
+            if(this_type==10) HasStrangeLeptons=true; // gammastar
           }
-          else continue;
+          if(lep.at(j).MCIsCF()) HasStrangeLeptons=true;
+  */
 
-          for(unsigned int k=0; k<jets_nolepveto.size(); k++){
-            double this_dr = (lep.at(j).DeltaR( jets_nolepveto.at(k) ) );
-            if(this_dr < 0.3){
-              FillHist(Suffix+"_LooseSample_LeptonClosestJet_Pt", jets_nolepveto.at(k).Pt(), 1, 0., 200., 200);
-            }
+          if( lep.at(j).GetType() == 0 ) HasStrangeLeptons = true;
+
+          //==== Check if fake exist
+          if(lep.at(j).LeptonFlavour()==KLepton::MUON){
+            const snu::KMuon *mptr = lep.at(j).GetMuonPtr();
+            if(!TruthMatched(*mptr)) HasFakeLeptons = true;
+          }
+          if(lep.at(j).LeptonFlavour()==KLepton::ELECTRON){
+            const snu::KElectron *eptr = lep.at(j).GetElectronPtr();
+            if(!TruthMatched(*eptr,false)) HasFakeLeptons = true;
           }
 
 
-        }
+        } // END lepton loop
+
+
+        if(HasStrangeLeptons) continue;
+        if(!HasFakeLeptons) continue;
 
       }
 
-      continue;
-    }
+      bool isSS = lep.at(0).Charge() == lep.at(1).Charge();
+      bool isSSForCF = isSS;
+      if(RunningChargeFlipData) isSSForCF = !isSS;
 
-    //==== Test 2) Awayjet pt variation on fake yield
-    if(DoAwayJet){
-      if(map_Region_to_Bool[Suffix+"_Preselection"] && isSSForCF){
+      double m_Z = 91.1876;
+      bool isOffZ = fabs( (lep.at(0)+lep.at(1)).M() - m_Z ) > 10.;
+      bool isAboveZ = ( (lep.at(0)+lep.at(1)).M() - m_Z ) > 10.;
+      bool isBelowZ = ( (lep.at(0)+lep.at(1)).M() - m_Z ) < -10.;
 
-        for(unsigned int j=0; j<FRweights.size(); j++){
-          FillHist(Suffix+"_FRsyst_"+FRweights_name.at(j), 0., FRweights.at(j), 0., 1., 1);
+  /*
+      //==== TT/DY Same-Sign Prompt check
+      if(DoMCClosure && NPromptTight==2 && isSS){
+        FillHist("SSType_"+Suffix, lep.at(0).GetType(), 1., 0., 40., 40);
+        FillHist("SSType_"+Suffix, lep.at(1).GetType(), 1., 0., 40., 40);
+        FillHist("SSIsCF_"+Suffix, lep.at(0).MCIsCF(), 1., 0., 2., 2);
+        FillHist("SSIsCF_"+Suffix, lep.at(1).MCIsCF(), 1., 0., 2., 2);
+        cout << "########### SS Two Prompt ###########" << endl;
+        cout << "Channel = " << Suffix << endl;
+        cout << "<Truth>" << endl;
+        TruthPrintOut();
+        cout << "<Reco>" << endl;
+        cout << "pt\teta\tphi\tcharge\ttype\n" << endl;
+        for(unsigned int j=0; j<lep.size(); j++){
+          cout << lep.at(j).Pt() << "\t" << lep.at(j).Eta() << "\t" << lep.at(j).Phi() << "\t" << lep.at(j).Charge() << "\t" << lep.at(j).GetType() << endl;
         }
-
       }
       continue;
-    }
+  */
 
-    //==== Test 3) If MCClosure, only save Preselection
-    if(DoMCClosure){
-      bool tempbool_presel = map_Region_to_Bool[Suffix+"_Preselection"];
-      bool tempbool_alljets = true;
-      bool tempbool_0jets = map_Region_to_Bool[Suffix+"_0jets"];
-      bool tempbool_1jets = map_Region_to_Bool[Suffix+"_1jets"];
+      //==== mll Cut Study
+      if(this_syst == ""){
+        FillHist("CutStudy_m_ll_"+Suffix, ( lep.at(0)+lep.at(1) ).M(), 1., 0., 40., 400);
+        if(isSS) FillHist("CutStudy_m_ll_SS_"+Suffix, ( lep.at(0)+lep.at(1) ).M(), 1., 0., 40., 400);
+        else FillHist("CutStudy_m_ll_OS_"+Suffix, ( lep.at(0)+lep.at(1) ).M(), 1., 0., 40., 400);
+      }
+      bool mll10GeV = ( lep.at(0)+lep.at(1) ).M() < 10.;
+      if(mll10GeV) continue;
+      FillCutFlowByName(Suffix, "LowDileptonMass", w_cutflow[Suffix], isData);
+
+      double this_weight_err(0.);
+      vector<double> FRweights;
+      vector<TString> FRweights_name;
+      if( isLOOSE ){
+
+        get_eventweight(muons, electrons, isT, NearBjet, 0);
+        this_weight *= weight_fr;
+        this_weight_err = this_weight*weight_err_fr;
+
+        if(DoAwayJet){
+
+          FRweights.push_back(weight_fr);
+          FRweights_name.push_back("FakeRate_ptcorr_eta40");
+
+          ElFR_key = "Awatjet_20";
+          MuFR_key = "Awatjet_20";
+          get_eventweight(muons, electrons, isT, NearBjet, 0);
+          FRweights.push_back(weight_fr);
+          FRweights_name.push_back("FakeRate_ptcorr_eta20");
+
+          ElFR_key = "Awatjet_30";
+          MuFR_key = "Awatjet_30";
+          get_eventweight(muons, electrons, isT, NearBjet, 0);
+          FRweights.push_back(weight_fr);
+          FRweights_name.push_back("FakeRate_ptcorr_eta30");
+
+          ElFR_key = "Awatjet_60";
+          MuFR_key = "Awatjet_60";
+          get_eventweight(muons, electrons, isT, NearBjet, 0);
+          FRweights.push_back(weight_fr);
+          FRweights_name.push_back("FakeRate_ptcorr_eta60");
+
+
+          //==== reset
+          ElFR_key = "";
+          MuFR_key = "";
+        }
+
+
+      }
+      if( RunningChargeFlipData && Suffix.Contains("DiElectron") && !isSS ){
+        GetCFWeight(electrons_before_shift.at(0), electrons_before_shift.at(1));
+
+        this_weight *= weight_cf;
+        this_weight_err = this_weight*weight_err_cf;
+      }
+
+      //==== Now,
+      //==== Fill Histogram
+      //====
+
+      //==== We have to sort lepton after we get fake weight,
+      //==== because isT = {muon, electron}
+      //==== If MCClosure, keep ordering as Muon-Electron (to see type)
+      if(!DoMCClosure) std::sort(lep.begin(), lep.end(), LeptonPtComparing);
+
+      std::map< TString, bool > map_Region_to_Bool;
       map_Region_to_Bool.clear();
-      map_Region_to_Bool[Suffix+"_Preselection"] = tempbool_presel;
-      map_Region_to_Bool[Suffix+"_alljets"] = tempbool_alljets;
-      map_Region_to_Bool[Suffix+"_0jets"] = tempbool_0jets;
-      map_Region_to_Bool[Suffix+"_1jets"] = tempbool_1jets;
-      bool PositiveMCWeight = std::find(k_flags.begin(), k_flags.end(), "PositiveMCWeight") != k_flags.end();
-      if(PositiveMCWeight) this_weight *= MCweight;
 
-      if( map_Region_to_Bool[Suffix+"_Preselection"] && isSSForCF ){
-        FillHist("NLooseNotTight_"+Suffix+"_Preselection_SS", n_triLoose_leptons-n_triTight_leptons, this_weight, 0., 3., 3);
-        FillHist("NLooseNotTight_weight1_"+Suffix+"_Preselection_SS", n_triLoose_leptons-n_triTight_leptons, 1., 0., 3., 3);
-      }
-    }
+      //==== Default Variation
+      //==== 1) OnZ/OffZ/All
+      //==== 2) OS/SS/All
 
-    //==== Make Ntuple
-    bool NtupleSkim = map_Region_to_Bool[Suffix+"_Preselection"] && isSSForCF;
+      //==== # of jets
+      map_Region_to_Bool[Suffix+"_0jets"] = (jets.size()==0);
+      map_Region_to_Bool[Suffix+"_1jets"] = (jets.size()==1);
+      map_Region_to_Bool[Suffix+"_1jets_0nlbjets"] = (jets.size()==1) && (nbjets_nolepveto==0);
+      map_Region_to_Bool[Suffix+"_1jets_0nlbjets_mllge100"] = (jets.size()==1) && (nbjets_nolepveto==0) && (( lep.at(0)+lep.at(1) ).M() >= 100.);
 
-    if(RunNtp && NtupleSkim){
-      double cutop[100];
-      cutop[0] = lep.at(0).Pt();
-      cutop[1] = lep.at(1).Pt();
-      cutop[2] = lep.at(0).DeltaR( lep.at(1) );
-      cutop[3] = (lep.at(0)+lep.at(1)).M();
-      cutop[4] = isSSForCF;
-      cutop[5] = isOffZ ? 1 : 0;
+      //==== # of forward b jet
+      map_Region_to_Bool[Suffix+"_0nlbjets"] = (nbjets_nolepveto==0);
+      map_Region_to_Bool[Suffix+"_Inclusive1nlbjets"] = (nbjets_nolepveto>=1);
+      map_Region_to_Bool[Suffix+"_Inclusive1nlbjets_METge50"] = (nbjets_nolepveto>=1) && (MET>50.); // control region
 
-      cutop[6] = jets.size();
-      cutop[7] = nbjets;
-      cutop[8] = jets_nolepveto.size();
-      cutop[9] = nbjets_nolepveto;
-      cutop[10] = jets_fwd.size();
-      cutop[11] = nbjets_fwd;
-
-      //==== Two Jets
-      if(jets.size() >= 2){
-
-        //==== pt order
-        cutop[12] = jets.at(0).Pt();
-        cutop[13] = jets.at(1).Pt();
-        cutop[14] = jets.at(0).DeltaR( jets.at(1) );
-        cutop[15] = (jets.at(0)+jets.at(1)).M();
-        cutop[16] = (lep.at(0)+jets.at(0)+jets.at(1)).M();
-        cutop[17] = (lep.at(1)+jets.at(0)+jets.at(1)).M();
-        cutop[18] = (lep.at(0)+lep.at(1)+jets.at(0)+jets.at(1)).M();
-
-        //==== m(jj)~W (high mass)
-        cutop[19] = jets.at(index_jjW_j1).Pt();
-        cutop[20] = jets.at(index_jjW_j2).Pt();
-        cutop[21] = (jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M();
-        cutop[22] = (lep.at(0)+jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M();
-        cutop[23] = (lep.at(1)+jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M();
-        cutop[24] = (lep.at(0)+lep.at(1)+jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M();
-        cutop[25] = jets.at(index_jjW_j1).DeltaR(jets.at(index_jjW_j2));
-        cutop[26] = lep.at(0).DeltaR( jets.at(index_jjW_j1)+jets.at(index_jjW_j2) );
-        cutop[27] = lep.at(1).DeltaR( jets.at(index_jjW_j1)+jets.at(index_jjW_j2) );
-        cutop[28] = lep.at(0).DeltaR( lep.at(1)+jets.at(index_jjW_j1)+jets.at(index_jjW_j2) );
-        cutop[29] = lep.at(1).DeltaR( lep.at(0)+jets.at(index_jjW_j1)+jets.at(index_jjW_j2) );
-
-        //==== m(lljj)~W (low mass)
-        cutop[30] = jets.at(index_lljjW_j1).Pt();
-        cutop[31] = jets.at(index_lljjW_j2).Pt();
-        cutop[32] = (jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M();
-        cutop[33] = (lep.at(0)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M();
-        cutop[34] = (lep.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M();
-        cutop[35] = (lep.at(0)+lep.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M();
-        cutop[36] = jets.at(index_lljjW_j1).DeltaR(jets.at(index_lljjW_j2));
-        cutop[37] = lep.at(0).DeltaR( jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2) );
-        cutop[38] = lep.at(1).DeltaR( jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2) );
-        cutop[39] = lep.at(0).DeltaR( lep.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2) );
-        cutop[40] = lep.at(1).DeltaR( lep.at(0)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2) );
-
-      }
-      else{
-        for(int j=12;j<=40;j++) cutop[j] = -999.;
+      //==== ST = lepton + jet + MET
+      ST = lep.at(0).Pt() + lep.at(1).Pt() + MET;
+      for(unsigned int ij=0; ij <jets.size(); ij++){
+        ST += jets.at(ij).Pt();
       }
 
-      //==== Two Forward Jets
-      if(jets_fwd.size() >= 2){
-        cutop[41] = jets_fwd.at(0).DeltaR( jets_fwd.at(1) );
-      }
-      else{
-        cutop[41] = -999;
+      //==== HT = jet
+      HT = 0.;
+      for(unsigned int ij=0; ij <jets.size(); ij++){
+        HT += jets.at(ij).Pt();
       }
 
-      //==== Transverse Energies
-      cutop[42] = MET;
-      cutop[43] = ST;
-      cutop[44] = HT;
-      cutop[45] = LT;
+      //==== LT = lepton
+      LT = lep.at(0).Pt() + lep.at(1).Pt();
 
-      cutop[46] = this_weight;
-      cutop[47] = this_weight_err;
+      //==== At least two jets
+      if( jets.size()>=2 ){
+        index_jjW_j1 = 0;
+        index_jjW_j2 = 1;
+        double mjj = GetDijetMassClosest(jets, 80.4, index_jjW_j1, index_jjW_j2);
+        index_lljjW_j1 = 0;
+        index_lljjW_j2 = 1;
+        double mlljj = GetDileptonDijetMassClosest(lep, jets, 80.4, index_lljjW_j1, index_lljjW_j2);
 
-      cutop[48] = lep.at(0).Eta();
-      cutop[49] = lep.at(1).Eta();
-
-      double sceta_0 = -999;
-      if(lep.at(0).LeptonFlavour() == KLepton::ELECTRON){
-        cutop[50] = lep.at(0).GetElectronPtr()->SCEta();
-      }
-      else{
-        cutop[50] = -999.;
-      }
-
-      if(lep.at(1).LeptonFlavour() == KLepton::ELECTRON){
-        cutop[51] = lep.at(1).GetElectronPtr()->SCEta();
-      }
-      else{
-        cutop[51] = -999.;
-      }
-
-
-      FillNtp("Ntp_"+Suffix+"_Preselection_SS",cutop);
-
-    }
-    if(RunNtp) continue;
-
-    for(std::map< TString, bool >::iterator it = map_Region_to_Bool.begin(); it != map_Region_to_Bool.end(); it++){
-      TString this_suffix = it->first;
-      if(it->second){
-
-        //=====================
-        //==== NO Charge Flip
-        //=====================
-
-        if(!RunningChargeFlipData){
-
-          //=========================
-          //==== Filling Histograms
-          //=========================
-
-          //==== All m(ll) / SS+OS
-          FillDiLeptonPlot(this_suffix+"_AllCharge", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
-          //==== All m(ll) / SS
-          if(isSS){
-            FillDiLeptonPlot(this_suffix+"_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
-            FillHist("LeptonType_"+this_suffix+"_SS", lep.at(0).GetType(), 1., 0., 50., 50);
-            FillHist("LeptonType_"+this_suffix+"_SS", lep.at(1).GetType(), 1., 0., 50., 50);
+        //==== More CutFlows
+        if( jets.size()>=2 ){
+          FillCutFlowByName(Suffix, "InclusiveTwoJets", w_cutflow[Suffix], isData);
+          if( MET < 50. ){
+            FillCutFlowByName(Suffix, "MET50", w_cutflow[Suffix], isData);
+            if( mjj < 200. ){
+              FillCutFlowByName(Suffix, "Mjj200", w_cutflow[Suffix], isData);
+              if( nbjets == 0 ){
+                FillCutFlowByName(Suffix, "NoBJet", w_cutflow[Suffix], isData);
+                if( nbjets_nolepveto == 0 ){
+                  FillCutFlowByName(Suffix, "NoBJet_nolepveto", w_cutflow[Suffix], isData);
+                }
+              }
+            }
           }
-          //==== All m(ll) / OS
-          else{
-            FillDiLeptonPlot(this_suffix+"_OS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
-          }
+        }
 
-          if(isOffZ){
+      }
 
-            //==== OffZ / SS+OS
-            FillDiLeptonPlot(this_suffix+"_OffZ_AllCharge", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
 
-            //==== OffZ / SS
-            if(isSS){
-              FillDiLeptonPlot(this_suffix+"_OffZ_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
-            }
-            //==== OffZ / OS
-            else{
-              FillDiLeptonPlot(this_suffix+"_OffZ_OS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
-            }
+      //==== Preselection
 
-            if(isAboveZ){
+      map_Region_to_Bool[Suffix+"_Preselection"] = ( jets.size()>=2 );
+      map_Region_to_Bool[Suffix+"_Preselection_secondptge20"] = ( jets.size()>=2 ) && (lep.at(1).Pt() >= 20.);
+      //==== For DiElectron, remove Z peak (CF)
+      if(Suffix.Contains("DiElectron")){
+        map_Region_to_Bool[Suffix+"_Preselection"] = map_Region_to_Bool[Suffix+"_Preselection"] && isOffZ;
+      }
 
-              //==== AboveZ / SS+OS
-              FillDiLeptonPlot(this_suffix+"_AboveZ_AllCharge", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+      //==== If Preselection, then define Low/High
 
-              //==== AboveZ / SS
-              if(isSS){
-                FillDiLeptonPlot(this_suffix+"_AboveZ_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
-              }
-              //==== AboveZ / OS
-              else{
-                FillDiLeptonPlot(this_suffix+"_AboveZ_OS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
-              }
+      if(map_Region_to_Bool[Suffix+"_Preselection"]){
+        map_Region_to_Bool[Suffix+"_Low"] = map_Region_to_Bool[Suffix+"_Preselection"] &&
+                                            (nbjets_nolepveto == 0) &&
+                                            ( (lep.at(0)+lep.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M() < 300. ) &&
+                                            (MET < 80.);
+        map_Region_to_Bool[Suffix+"_LowCR"] = map_Region_to_Bool[Suffix+"_Preselection"] &&
+                                              ( (nbjets_nolepveto >= 1) || (MET > 100.) ) &&
+                                              ( (lep.at(0)+lep.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M() < 300. );
 
-            }
+        map_Region_to_Bool[Suffix+"_High"] = map_Region_to_Bool[Suffix+"_Preselection"] &&
+                                             (nbjets_nolepveto == 0) &&
+                                             ( (jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M() < 150. ) &&
+                                             ( MET*MET/ST < 15. );
+        map_Region_to_Bool[Suffix+"_HighCR"] = map_Region_to_Bool[Suffix+"_Preselection"] &&
+                                               ( (nbjets_nolepveto >= 1) || (MET*MET/ST > 20.) ) &&
+                                               ( (jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M() < 150. );
 
-            if(isBelowZ){
-
-              //==== BelowZ / SS+OS
-              FillDiLeptonPlot(this_suffix+"_BelowZ_AllCharge", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
-
-              //==== BelowZ / SS
-              if(isSS){
-                FillDiLeptonPlot(this_suffix+"_BelowZ_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
-              }
-              //==== BelowZ / OS
-              else{
-                FillDiLeptonPlot(this_suffix+"_BelowZ_OS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
-              }
-
-            }
-
+        if(Suffix.Contains("EMu")){
+          if(lep.at(1).LeptonFlavour()==KLepton::ELECTRON){
+            map_Region_to_Bool[Suffix+"_Preselection_ElectronSubLead"] = true;
           }
           else{
+            map_Region_to_Bool[Suffix+"_Preselection_MuonSubLead"] = true;
+          }
+        }
+      }
 
-            //==== OnZ / SS+OS
-            FillDiLeptonPlot(this_suffix+"_OnZ_AllCharge", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+      //==== Test 1) Loose sample faking jet pt distribution
+      if(LooseSampleFakeJetPt){
 
-            //==== OnZ / SS
-            if(isSS){
-              FillDiLeptonPlot(this_suffix+"_OnZ_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+        if(map_Region_to_Bool[Suffix+"_Preselection"] && jets_nolepveto.size() > 0){
+
+          for(unsigned int j=0; j<lep.size(); j++){
+
+            if(lep.at(j).LeptonFlavour() == KLepton::MUON){
+              if( PassID( *(lep.at(j).GetMuonPtr()), MuonTightID ) ) continue;
             }
-            //==== OnZ /OS
-            else{
-              FillDiLeptonPlot(this_suffix+"_OnZ_OS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+            else if(lep.at(j).LeptonFlavour() == KLepton::ELECTRON){
+              if( PassID( *(lep.at(j).GetElectronPtr()), ElectronTightID ) ) continue;
             }
+            else continue;
+
+            for(unsigned int k=0; k<jets_nolepveto.size(); k++){
+              double this_dr = (lep.at(j).DeltaR( jets_nolepveto.at(k) ) );
+              if(this_dr < 0.3){
+                FillHist(Suffix+"_LooseSample_LeptonClosestJet_Pt", jets_nolepveto.at(k).Pt(), 1, 0., 200., 200);
+              }
+            }
+
 
           }
-
 
         }
 
-        //=================
-        //==== ChargeFlip
-        //=================
+        continue;
+      }
 
-        //==== To NOT DRAWING OS plot from CF (file size..)
-        //==== Separate CF from others
+      //==== Test 2) Awayjet pt variation on fake yield
+      if(DoAwayJet){
+        if(map_Region_to_Bool[Suffix+"_Preselection"] && isSSForCF){
 
+          for(unsigned int j=0; j<FRweights.size(); j++){
+            FillHist(Suffix+"_FRsyst_"+FRweights_name.at(j), 0., FRweights.at(j), 0., 1., 1);
+          }
+
+        }
+        continue;
+      }
+
+      //==== Test 3) If MCClosure, only save Preselection
+      if(DoMCClosure){
+        bool tempbool_presel = map_Region_to_Bool[Suffix+"_Preselection"];
+        bool tempbool_alljets = true;
+        bool tempbool_0jets = map_Region_to_Bool[Suffix+"_0jets"];
+        bool tempbool_1jets = map_Region_to_Bool[Suffix+"_1jets"];
+        map_Region_to_Bool.clear();
+        map_Region_to_Bool[Suffix+"_Preselection"] = tempbool_presel;
+        map_Region_to_Bool[Suffix+"_alljets"] = tempbool_alljets;
+        map_Region_to_Bool[Suffix+"_0jets"] = tempbool_0jets;
+        map_Region_to_Bool[Suffix+"_1jets"] = tempbool_1jets;
+        bool PositiveMCWeight = std::find(k_flags.begin(), k_flags.end(), "PositiveMCWeight") != k_flags.end();
+        if(PositiveMCWeight) this_weight *= MCweight;
+
+        if( map_Region_to_Bool[Suffix+"_Preselection"] && isSSForCF ){
+          FillHist("NLooseNotTight_"+Suffix+"_Preselection_SS", n_triLoose_leptons-n_triTight_leptons, this_weight, 0., 3., 3);
+          FillHist("NLooseNotTight_weight1_"+Suffix+"_Preselection_SS", n_triLoose_leptons-n_triTight_leptons, 1., 0., 3., 3);
+        }
+      }
+
+      //==== Make Ntuple
+      bool NtupleSkim = map_Region_to_Bool[Suffix+"_Preselection"] && isSSForCF;
+
+      if(RunNtp && NtupleSkim){
+        double cutop[100];
+        cutop[0] = lep.at(0).Pt();
+        cutop[1] = lep.at(1).Pt();
+        cutop[2] = lep.at(0).DeltaR( lep.at(1) );
+        cutop[3] = (lep.at(0)+lep.at(1)).M();
+        cutop[4] = isSSForCF;
+        cutop[5] = isOffZ ? 1 : 0;
+
+        cutop[6] = jets.size();
+        cutop[7] = nbjets;
+        cutop[8] = jets_nolepveto.size();
+        cutop[9] = nbjets_nolepveto;
+        cutop[10] = jets_fwd.size();
+        cutop[11] = nbjets_fwd;
+
+        //==== Two Jets
+        if(jets.size() >= 2){
+
+          //==== pt order
+          cutop[12] = jets.at(0).Pt();
+          cutop[13] = jets.at(1).Pt();
+          cutop[14] = jets.at(0).DeltaR( jets.at(1) );
+          cutop[15] = (jets.at(0)+jets.at(1)).M();
+          cutop[16] = (lep.at(0)+jets.at(0)+jets.at(1)).M();
+          cutop[17] = (lep.at(1)+jets.at(0)+jets.at(1)).M();
+          cutop[18] = (lep.at(0)+lep.at(1)+jets.at(0)+jets.at(1)).M();
+
+          //==== m(jj)~W (high mass)
+          cutop[19] = jets.at(index_jjW_j1).Pt();
+          cutop[20] = jets.at(index_jjW_j2).Pt();
+          cutop[21] = (jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M();
+          cutop[22] = (lep.at(0)+jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M();
+          cutop[23] = (lep.at(1)+jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M();
+          cutop[24] = (lep.at(0)+lep.at(1)+jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M();
+          cutop[25] = jets.at(index_jjW_j1).DeltaR(jets.at(index_jjW_j2));
+          cutop[26] = lep.at(0).DeltaR( jets.at(index_jjW_j1)+jets.at(index_jjW_j2) );
+          cutop[27] = lep.at(1).DeltaR( jets.at(index_jjW_j1)+jets.at(index_jjW_j2) );
+          cutop[28] = lep.at(0).DeltaR( lep.at(1)+jets.at(index_jjW_j1)+jets.at(index_jjW_j2) );
+          cutop[29] = lep.at(1).DeltaR( lep.at(0)+jets.at(index_jjW_j1)+jets.at(index_jjW_j2) );
+
+          //==== m(lljj)~W (low mass)
+          cutop[30] = jets.at(index_lljjW_j1).Pt();
+          cutop[31] = jets.at(index_lljjW_j2).Pt();
+          cutop[32] = (jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M();
+          cutop[33] = (lep.at(0)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M();
+          cutop[34] = (lep.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M();
+          cutop[35] = (lep.at(0)+lep.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M();
+          cutop[36] = jets.at(index_lljjW_j1).DeltaR(jets.at(index_lljjW_j2));
+          cutop[37] = lep.at(0).DeltaR( jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2) );
+          cutop[38] = lep.at(1).DeltaR( jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2) );
+          cutop[39] = lep.at(0).DeltaR( lep.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2) );
+          cutop[40] = lep.at(1).DeltaR( lep.at(0)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2) );
+
+        }
         else{
-          //==== using OS event, weight CF and estimate SS
-          if(Suffix=="DiElectron" && !isSS){
+          for(int j=12;j<=40;j++) cutop[j] = -999.;
+        }
+
+        //==== Two Forward Jets
+        if(jets_fwd.size() >= 2){
+          cutop[41] = jets_fwd.at(0).DeltaR( jets_fwd.at(1) );
+        }
+        else{
+          cutop[41] = -999;
+        }
+
+        //==== Transverse Energies
+        cutop[42] = MET;
+        cutop[43] = ST;
+        cutop[44] = HT;
+        cutop[45] = LT;
+
+        cutop[46] = this_weight;
+        cutop[47] = this_weight_err;
+
+        cutop[48] = lep.at(0).Eta();
+        cutop[49] = lep.at(1).Eta();
+
+        double sceta_0 = -999;
+        if(lep.at(0).LeptonFlavour() == KLepton::ELECTRON){
+          cutop[50] = lep.at(0).GetElectronPtr()->SCEta();
+        }
+        else{
+          cutop[50] = -999.;
+        }
+
+        if(lep.at(1).LeptonFlavour() == KLepton::ELECTRON){
+          cutop[51] = lep.at(1).GetElectronPtr()->SCEta();
+        }
+        else{
+          cutop[51] = -999.;
+        }
+
+
+        FillNtp("Ntp_"+Suffix+"_Preselection_SS",cutop);
+
+      }
+      if(RunNtp) continue;
+
+      for(std::map< TString, bool >::iterator it = map_Region_to_Bool.begin(); it != map_Region_to_Bool.end(); it++){
+        TString this_suffix = it->first;
+        if(it->second){
+
+          //=====================
+          //==== NO Charge Flip
+          //=====================
+
+          if(!RunningChargeFlipData){
 
             //=========================
             //==== Filling Histograms
             //=========================
 
-            FillDiLeptonPlot(this_suffix+"_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
-            //==== OffZ
-            if(isOffZ){
-              FillDiLeptonPlot(this_suffix+"_OffZ_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+            //==== All m(ll) / SS+OS
+            FillDiLeptonPlot(this_suffix+"_AllCharge", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+            //==== All m(ll) / SS
+            if(isSS){
+              FillDiLeptonPlot(this_suffix+"_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+              FillHist("LeptonType_"+this_suffix+"_SS", lep.at(0).GetType(), 1., 0., 50., 50);
+              FillHist("LeptonType_"+this_suffix+"_SS", lep.at(1).GetType(), 1., 0., 50., 50);
             }
-            //==== OnZ
+            //==== All m(ll) / OS
             else{
-              FillDiLeptonPlot(this_suffix+"_OnZ_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+              FillDiLeptonPlot(this_suffix+"_OS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
             }
-            
-          } // END fill chargeflip only for DiElectron OS
-        }
+
+            if(isOffZ){
+
+              //==== OffZ / SS+OS
+              FillDiLeptonPlot(this_suffix+"_OffZ_AllCharge", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+
+              //==== OffZ / SS
+              if(isSS){
+                FillDiLeptonPlot(this_suffix+"_OffZ_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+              }
+              //==== OffZ / OS
+              else{
+                FillDiLeptonPlot(this_suffix+"_OffZ_OS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+              }
+
+              if(isAboveZ){
+
+                //==== AboveZ / SS+OS
+                FillDiLeptonPlot(this_suffix+"_AboveZ_AllCharge", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+
+                //==== AboveZ / SS
+                if(isSS){
+                  FillDiLeptonPlot(this_suffix+"_AboveZ_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+                }
+                //==== AboveZ / OS
+                else{
+                  FillDiLeptonPlot(this_suffix+"_AboveZ_OS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+                }
+
+              }
+
+              if(isBelowZ){
+
+                //==== BelowZ / SS+OS
+                FillDiLeptonPlot(this_suffix+"_BelowZ_AllCharge", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+
+                //==== BelowZ / SS
+                if(isSS){
+                  FillDiLeptonPlot(this_suffix+"_BelowZ_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+                }
+                //==== BelowZ / OS
+                else{
+                  FillDiLeptonPlot(this_suffix+"_BelowZ_OS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+                }
+
+              }
+
+            }
+            else{
+
+              //==== OnZ / SS+OS
+              FillDiLeptonPlot(this_suffix+"_OnZ_AllCharge", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+
+              //==== OnZ / SS
+              if(isSS){
+                FillDiLeptonPlot(this_suffix+"_OnZ_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+              }
+              //==== OnZ /OS
+              else{
+                FillDiLeptonPlot(this_suffix+"_OnZ_OS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+              }
+
+            }
 
 
-      } // END passing this region
-    } // END Search Region loop
+          }
 
+          //=================
+          //==== ChargeFlip
+          //=================
+
+          //==== To NOT DRAWING OS plot from CF (file size..)
+          //==== Separate CF from others
+
+          else{
+            //==== using OS event, weight CF and estimate SS
+            if(Suffix=="DiElectron" && !isSS){
+
+              //=========================
+              //==== Filling Histograms
+              //=========================
+
+              FillDiLeptonPlot(this_suffix+"_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+              //==== OffZ
+              if(isOffZ){
+                FillDiLeptonPlot(this_suffix+"_OffZ_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+              }
+              //==== OnZ
+              else{
+                FillDiLeptonPlot(this_suffix+"_OnZ_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+              }
+              
+            } // END fill chargeflip only for DiElectron OS
+          }
+
+
+        } // END passing this region
+      } // END Search Region loop
+
+    } // END Systematic loop
 
   } // END Suffix (Channel; DiMuon, DiElectron, EMu) loop
 
@@ -1366,11 +1633,18 @@ void DiLeptonAnalyzer::MakeHistograms(){
   AnalyzerCore::MakeHistograms();
   Message("Made histograms", INFO);
 
-  MakeNtp("Ntp_DiMuon_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:leadingLepton_Eta:secondLepton_Eta");
+  int N_sys = 2*9+1;
+  TString systs[] = {"_MuonEn_up", "_MuonEn_down", "_JetEn_up", "_JetEn_down", "_JetRes_up", "_JetRes_down", "_Unclustered_up", "_Unclustered_down", "", "_MuonIDSF_up", "_MuonIDSF_down", "_PU_down", "_PU_up", "_TriggerSF_down", "_TriggerSF_up", "_ElectronIDSF_up", "_ElectronIDSF_down", "_ElectronEn_up", "_ElectronEn_down"};
+  for(int i=0; i<N_sys; i++){
 
-  MakeNtp("Ntp_DiElectron_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:leadingLepton_Eta:secondLepton_Eta");
+  MakeNtp("Ntp_DiMuon"+systs[i]+"_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:leadingLepton_Eta:secondLepton_Eta");
 
-  MakeNtp("Ntp_EMu_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:leadingLepton_Eta:secondLepton_Eta");
+  MakeNtp("Ntp_DiElectron"+systs[i]+"_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:leadingLepton_Eta:secondLepton_Eta");
+
+  MakeNtp("Ntp_EMu"+systs[i]+"_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:leadingLepton_Eta:secondLepton_Eta");
+
+  }
+
 
   /**
    *  Remove//Overide this DiLeptonAnalyzerCore::MakeHistograms() to make new hists for your analysis
@@ -1401,6 +1675,8 @@ void DiLeptonAnalyzer::FillDiLeptonPlot(
   double thisweight,
   double thieweighterr
   ){
+
+  if(RunNtp) return;
 
   TString leporder[4] = {"leading", "second", "third", "fourth"};
 
@@ -1433,11 +1709,16 @@ void DiLeptonAnalyzer::FillDiLeptonPlot(
     JSFillHist(histsuffix, leporder[i]+"Lepton_Eta_"+histsuffix, leptons.at(i).Eta(), thisweight, -3., 3., 60);
     JSFillHist(histsuffix, leporder[i]+"Lepton_Type_"+histsuffix, leptons.at(i).GetType(), thisweight, 0., 50., 50);
     JSFillHist(histsuffix, leporder[i]+"Lepton_RelIso_"+histsuffix, leptons.at(i).RelIso(), thisweight, 0., 1., 100);
+    JSFillHist(histsuffix, leporder[i]+"Lepton_dXY_"+histsuffix, fabs(leptons.at(i).dXY()), thisweight, 0., 1., 1000);
+    JSFillHist(histsuffix, leporder[i]+"Lepton_dXYSig_"+histsuffix, fabs(leptons.at(i).dXYSig()), thisweight, 0., 40., 400);
 
     double TightIso = 0.07;
     if(leptons.at(i).LeptonFlavour()==KLepton::ELECTRON){
       TightIso = 0.08;
       JSFillHist(histsuffix, leporder[i]+"Lepton_mva_"+histsuffix, leptons.at(i).GetElectronPtr()->MVA(), thisweight, -1., 1., 200);
+    }
+    else{
+      JSFillHist(histsuffix, leporder[i]+"Lepton_Chi2_"+histsuffix, leptons.at(i).GetMuonPtr()->GlobalChi2(), thisweight, 0., 200., 200);
     }
     JSFillHist(histsuffix, leporder[i]+"Lepton_Pt_cone_"+histsuffix, CorrPt(leptons.at(i), TightIso), thisweight, 0., 2000., 2000);
 

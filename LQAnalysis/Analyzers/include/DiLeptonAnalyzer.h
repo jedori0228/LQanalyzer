@@ -32,6 +32,10 @@ class DiLeptonAnalyzer : public AnalyzerCore {
     double thieweighterr
   );
 
+  TString MuonTightID, ElectronTightID;
+  TString MuonLooseID_loosest, ElectronLooseID_loosest;
+  TString MuonVetoID_loosest, ElectronVetoID_loosest;
+
   //==== FR
   double weight_fr, weight_err_fr;
   int NTightLeptons;

@@ -2609,14 +2609,13 @@ float AnalyzerCore::GetVirtualMass(int pdg, bool includenu, bool includeph){
 
   if(!includeph){
     if(!includenu){
+      //==== Two OSSF status 1 lepton pair 
       if(es1.size()==2){
-	snu::KParticle ll = es1[0]  + es1[1];
-	return ll.M();
+        if(es1[0].PdgId() * es1[1].PdgId() <0){
+	        snu::KParticle ll = es1[0]  + es1[1];
+	        return ll.M();
+        }
       }
-    }
-    else  if(es1.size()==2){
-      snu::KParticle ll = es1[0]  + es1[1];
-      return ll.M();
     }
   }
   else{
@@ -3508,11 +3507,12 @@ void AnalyzerCore::WriteHists(){
   m_outputFile->cd();
 
   for(map<TString, TH1*>::iterator mapit = maphist.begin(); mapit != maphist.end(); mapit++){
-    
+/*    
     if(mapit->first.Contains("cutflow")){
       mapit->second->Write();
     }
     else{
+
       TDirectory *dir = m_outputFile->GetDirectory("Hists");
    
       if (dir) {
@@ -3527,6 +3527,10 @@ void AnalyzerCore::WriteHists(){
 	m_outputFile->cd();
       }
     }
+*/
+
+    mapit->second->Write();
+
   }
 
   for(map< TString, map<TString, TH1*> >::iterator it = JSmaphist.begin(); it!= JSmaphist.end(); it++){
@@ -3551,7 +3555,7 @@ void AnalyzerCore::WriteHists(){
   }
 
   for(map<TString, TH2*>::iterator mapit = maphist2D.begin(); mapit != maphist2D.end(); mapit++){
-    
+/*
     TDirectory *dir = m_outputFile->GetDirectory("Hists2D");
 
     if (dir) {
@@ -3565,6 +3569,10 @@ void AnalyzerCore::WriteHists(){
       mapit->second->Write();
       m_outputFile->cd();
     }
+*/
+
+    mapit->second->Write();
+
   }
   
   for(map<TString, TH3*>::iterator mapit = maphist3D.begin(); mapit != maphist3D.end(); mapit++){
@@ -3616,6 +3624,20 @@ TH1* AnalyzerCore::JSGetHist(TString suffix, TString hname){
   }
 
   return h;
+}
+
+bool AnalyzerCore::HasLeptonInsideJet(snu::KJet jet, std::vector<snu::KMuon> mus, std::vector<snu::KElectron> els){
+
+
+  for(unsigned int i=0; i<mus.size(); i++){
+    if( jet.DeltaR( mus.at(i) ) < 0.4 ) return true;
+  }
+  for(unsigned int i=0; i<els.size(); i++){
+    if( jet.DeltaR( els.at(i) ) < 0.4 ) return true;
+  }
+
+  return false;
+
 }
 
 
@@ -4401,9 +4423,11 @@ void AnalyzerCore::CorrectedMETMuon(int sys, std::vector<snu::KMuon> muall, doub
     py_orig+= muall.at(imu).Py();
     if(sys==1){
       px_shifted += muall.at(imu).Px()*muall.at(imu).PtShiftedUp();
+      py_shifted += muall.at(imu).Py()*muall.at(imu).PtShiftedUp();
     }
     if(sys==-1){
       px_shifted += muall.at(imu).Px()*muall.at(imu).PtShiftedDown();
+      py_shifted += muall.at(imu).Py()*muall.at(imu).PtShiftedDown();
     }
   }
   met_x = met_x + px_orig - px_shifted;
@@ -4428,9 +4452,11 @@ void AnalyzerCore::CorrectedMETElectron(int sys, std::vector<snu::KElectron> ela
     py_orig+= elall.at(imu).Py();
     if(sys==1){
       px_shifted += elall.at(imu).Px()*elall.at(imu).PtShiftedUp();
+      py_shifted += elall.at(imu).Py()*elall.at(imu).PtShiftedUp();
     }
     if(sys==-1){
       px_shifted += elall.at(imu).Px()*elall.at(imu).PtShiftedDown();
+      py_shifted += elall.at(imu).Py()*elall.at(imu).PtShiftedDown();
     }
   }
   met_x = met_x + px_orig - px_shifted;
