@@ -250,7 +250,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
         //==== 1) Z-Peak
         if(tightelectrons.size()==2){
           double mll = (tightelectrons.at(0)+tightelectrons.at(1)).M();
-          if( fabs(mll-m_Z) < 10. ){
+          if( (tightelectrons.at(0).Pt() > 25.) && (tightelectrons.at(1).Pt() > 15.) && fabs(mll-m_Z) < 10. ){
             FillHist(ThisTrigger+"_ZPeak_mll", mll, this_weight, 0., 200., 200);
             FillHist(ThisTrigger+"_ZPeak_leadpt", tightelectrons.at(0).Pt(), this_weight, 0., 500., 500);
             FillHist(ThisTrigger+"_ZPeak_subleadpt", tightelectrons.at(1).Pt(), this_weight, 0., 500., 500);
@@ -259,10 +259,15 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
         //==== 2) W
         if(tightelectrons.size()==1){
           double MTval = AnalyzerCore::MT( tightelectrons.at(0), metvec );
-          if( (METauto>50.) && (MTval>50.) ){
+          if( (METauto>50.) && (MTval>50.) && (tightelectrons.at(0).Pt() > 25.) ){
             FillHist(ThisTrigger+"_W_PFMET", METauto, this_weight, 0., 500., 500);
             FillHist(ThisTrigger+"_W_MT", MTval, this_weight, 0., 500., 500);
             FillHist(ThisTrigger+"_W_leadpt", tightelectrons.at(0).Pt(), this_weight, 0., 500., 500);
+          }
+          if( (METauto>40.) && (MTval>60.) && (MTval< 100.) && (tightelectrons.at(0).Pt() > 25.) ){
+            FillHist(ThisTrigger+"_W_John_PFMET", METauto, this_weight, 0., 500., 500);
+            FillHist(ThisTrigger+"_W_John_MT", MTval, this_weight, 0., 500., 500);
+            FillHist(ThisTrigger+"_W_John_leadpt", tightelectrons.at(0).Pt(), this_weight, 0., 500., 500);
           }
         }
 
@@ -281,8 +286,8 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv1");
   //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv1_LoosenSIP");
   //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv2");
-  //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv7");
-  std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv7_pt15");
+  std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv7");
+  //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv7_pt15");
   //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv8");
 
 
@@ -436,7 +441,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
   if( PassTriggerOR(AllHLTs) ){
 
-    if( (hnloose.size() == 1) ){
+    if( (hnloose_raw.size() == 1) && (hnloose.size() == 1) && (electrons_veto.size() == 1) ){
 
       snu::KElectron electron = hnloose.at(0);
 
@@ -1253,12 +1258,10 @@ void FRCalculator_El_dxysig_DILEP::FillHistByTrigger(TString histname, float val
 
 void FRCalculator_El_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KElectron electron, double thisweight, bool isTight){
 
-  float etaarray [] = {0.0, 0.8, 1.479, 2.5};
-  //float ptarray [] = {0., 10., 15., 25., 35., 50., 70.};
-  float ptarray [] = {0., 5., 10., 15., 20., 25., 30., 35., 40., 45., 50., 55., 60., 65., 70.};
-
-  float etaarray_2 [] = {0.0, 1.479, 2.5};
-  float ptarray_2 [] = {10.,15.,40.,200.};
+  const int n_eta = 3;
+  float etaarray[n_eta+1] = {0.0, 0.8, 1.479, 2.5};
+  const int n_pt = 6;
+  float ptarray[n_pt+1] = {10., 15., 23., 35., 45., 60., 70.};
 
   double TightISO = 0.08;
   double conept = ElectronConePt(electron,TightISO);
@@ -1279,8 +1282,8 @@ void FRCalculator_El_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KElectron 
   FillHist(prefix+"_dZ_F0", fabs(electron.dZ()), thisweight, 0., 0.5, 50);
   FillHist(prefix+"_Type_F0", electron.GetType(), thisweight, 0., 50., 50);
   FillHist(prefix+"_onebin_F0", 0., thisweight, 0., 1., 1);
-  FillHist(prefix+"_events_pt_vs_eta_F0", electron.Pt(), fabs(electron.Eta()), thisweight, ptarray, 14, etaarray, 3);
-  FillHist(prefix+"_events_pt_cone_vs_eta_F0", conept, fabs(electron.Eta()), thisweight, ptarray, 14, etaarray, 3);
+  FillHist(prefix+"_events_pt_vs_eta_F0", electron.Pt(), fabs(electron.Eta()), thisweight, ptarray, 6, etaarray, 3);
+  FillHist(prefix+"_events_pt_cone_vs_eta_F0", conept, fabs(electron.Eta()), thisweight, ptarray, 6, etaarray, 3);
   FillHist(prefix+"_PFMET_F0", METauto, thisweight, 0., 1000., 1000);
   FillHist(prefix+"_MT_F0", this_mt, thisweight, 0., 1000., 1000);
   FillHist(prefix+"_MET_vs_MT_F0", METauto, this_mt, thisweight, 0., 1000., 1000, 0., 1000., 1000);
@@ -1298,8 +1301,8 @@ void FRCalculator_El_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KElectron 
     FillHist(prefix+"_dZ_F", fabs(electron.dZ()), thisweight, 0., 0.5, 50);
     FillHist(prefix+"_Type_F", electron.GetType(), thisweight, 0., 50., 50);
     FillHist(prefix+"_onebin_F", 0., thisweight, 0., 1., 1);
-    FillHist(prefix+"_events_pt_vs_eta_F", electron.Pt(), fabs(electron.Eta()), thisweight, ptarray, 14, etaarray, 3);
-    FillHist(prefix+"_events_pt_cone_vs_eta_F", conept, fabs(electron.Eta()), thisweight, ptarray, 14, etaarray, 3);
+    FillHist(prefix+"_events_pt_vs_eta_F", electron.Pt(), fabs(electron.Eta()), thisweight, ptarray, 6, etaarray, 3);
+    FillHist(prefix+"_events_pt_cone_vs_eta_F", conept, fabs(electron.Eta()), thisweight, ptarray, 6, etaarray, 3);
     FillHist(prefix+"_PFMET_F", METauto, thisweight, 0., 1000., 1000);
     FillHist(prefix+"_MT_F", this_mt, thisweight, 0., 1000., 1000);
     FillHist(prefix+"_MET_vs_MT_F", METauto, this_mt, thisweight, 0., 1000., 1000, 0., 1000., 1000);
