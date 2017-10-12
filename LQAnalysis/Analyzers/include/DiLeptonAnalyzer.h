@@ -80,6 +80,10 @@ class DiLeptonAnalyzer : public AnalyzerCore {
   double GetDileptonDijetMassClosest(std::vector<KLepton> leps, std::vector<snu::KJet> js, double mass, int& m, int& n);
   double GetFatjetMassClosest(std::vector<snu::KFatJet> fjs, double mass, int& m);
 
+  //==== PDFs
+  vector<float> *ForTree_PdfWeights;
+  vector<float> *ForTree_ScaleWeights;
+
  private:
   
   //
