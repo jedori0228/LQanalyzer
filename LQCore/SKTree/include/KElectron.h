@@ -264,8 +264,11 @@ namespace snu {
 
     /// VtxDist with vertex chosen to be primary   
     inline Double_t  dxy() const {return  k_dxy;}
+    inline Double_t  dXY() const {return  k_dxy;}
     inline Double_t  dxySig() const {return  k_dxy_sig;}
+    inline Double_t  dXYSig() const {return  k_dxy_sig;}
     inline Double_t  dz() const {return  k_dz;}
+    inline Double_t  dZ() const {return  k_dz;}
     
 
     inline Double_t  TrkVx() const {return  k_trkvx;}
