@@ -84,7 +84,8 @@ void FRCalculator_Mu_dxysig_DILEP::InitialiseAnalysis() throw( LQError ) {
 
 void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
-  if(!(eventbase->GetEvent().RunNumber()==273450 && eventbase->GetEvent().EventNumber()==723521614)) return;
+  //if(!(eventbase->GetEvent().RunNumber()==273450 && eventbase->GetEvent().EventNumber()==725619133)) return;
+
   double thisdXYCut = 0.005;
   double TightISO = 0.07;
 
@@ -605,6 +606,8 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
                 //==== If not, use it to remove W events
                 else if( DijetPrompt ){
                   UseEvent = (dPhi > 2.5) && (jet.Pt()/muon.Pt() > 1.) && (METauto < 20.) && (MTval < 25.);
+/*
+                  cout << "trigger = " << it->first << endl;
                   cout << "muon.Pt() = " << muon.Pt() << endl;
                   cout << "muon.RelIso04() = " << muon.RelIso04() << endl;
                   cout << "muon.dXYSig() = " << muon.dXYSig() << endl;
@@ -614,6 +617,8 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
                   cout << "jet.Pt()/muon.Pt() = " << jet.Pt()/muon.Pt() << endl;
                   cout << "METauto = " << METauto << endl;
                   cout << "MTval = " << MTval << endl;
+                  cout << "--> UseEvent = " << UseEvent << endl;
+*/
                 }
               }
               else UseEvent = true;
