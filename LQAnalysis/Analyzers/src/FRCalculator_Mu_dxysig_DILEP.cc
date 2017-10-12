@@ -84,6 +84,7 @@ void FRCalculator_Mu_dxysig_DILEP::InitialiseAnalysis() throw( LQError ) {
 
 void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
+  if(!(eventbase->GetEvent().RunNumber()==273450 && eventbase->GetEvent().EventNumber()==723521614)) return;
   double thisdXYCut = 0.005;
   double TightISO = 0.07;
 
@@ -171,6 +172,42 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
   std::vector<snu::KMuon> muontriNodXYCutVLooseColl_raw = GetMuons("MUON_HN_NODXYCUT_VLOOSE_lowestPtCut", true);
 
+  bool DoHighdXY = std::find(k_flags.begin(), k_flags.end(), "DoHighdXY") != k_flags.end();
+  bool DoSmallHighdXY = std::find(k_flags.begin(), k_flags.end(), "DoSmallHighdXY") != k_flags.end();
+
+  TString LooseID = "MUON_HN_LOOSEv7_SIP3";
+  if(DoHighdXY){
+    if(DoSmallHighdXY) LooseID = "MUON_HN_Loose_HighdXY_Small";
+    else               LooseID = "MUON_HN_Loose_HighdXY";
+  }
+  cout << "LooseID = " << LooseID << endl;
+
+  std::vector<snu::KMuon> hnloose_raw = GetMuons(LooseID, true);
+
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSE", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2_LoosenSIP", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2_POGIP", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv5", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv6", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv7_SIP10", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv7_SIP3p5", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv7_SIP3", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_Loose_HighdXY", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv7_SIP9", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv8", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2_POGIP_SIP6", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2_POGIP_SIP8", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2_POGIP_SIP5", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2_POGIP_SIP4p5", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv3", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv4", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv9", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv10", true);
+  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv11", true);
+
+  CorrectedMETRochester(muons_veto, METauto, METphiauto);
+
   //==================
   //==== FR binnings
   //==================
@@ -199,7 +236,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
   //HLT_ptconerange["HLT_Mu8_v"].push_back(20.);
   //HLT_ptconerange["HLT_Mu8_v"].push_back(30.);
-  HLT_ptconerange["HLT_Mu8_TrkIsoVVL_v"].push_back(20.);
+  HLT_ptconerange["HLT_Mu8_TrkIsoVVL_v"].push_back(20.); // HLT_Mu8_TrkIsoVVL_v 7.832
   HLT_ptconerange["HLT_Mu8_TrkIsoVVL_v"].push_back(30.);
   HLT_ptrange["HLT_Mu8_TrkIsoVVL_v"].push_back(10.);
   HLT_ptrange["HLT_Mu8_TrkIsoVVL_v"].push_back(20.);
@@ -207,7 +244,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
   //HLT_ptconerange["HLT_Mu17_v"].push_back(30.);
   //HLT_ptconerange["HLT_Mu17_v"].push_back(9999.);
-  HLT_ptconerange["HLT_Mu17_TrkIsoVVL_v"].push_back(30.);
+  HLT_ptconerange["HLT_Mu17_TrkIsoVVL_v"].push_back(30.); // HLT_Mu17_TrkIsoVVL_v 217.553
   HLT_ptconerange["HLT_Mu17_TrkIsoVVL_v"].push_back(9999.);
   HLT_ptrange["HLT_Mu17_TrkIsoVVL_v"].push_back(20.);
   HLT_ptrange["HLT_Mu17_TrkIsoVVL_v"].push_back(9999.);
@@ -224,7 +261,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   bool DijetPrompt= std::find(k_flags.begin(), k_flags.end(), "DijetPrompt") != k_flags.end();
 
   //==== Norm Cehck for each trigger
-  if(DijetPrompt){
+  if(DijetPrompt && !DoHighdXY){
 
     double m_Z = 91.1876;
 
@@ -260,11 +297,17 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
         //==== 2) W
         if(tightmuons.size()==1){
           double MTval = AnalyzerCore::MT( tightmuons.at(0), metvec );
-          if( (METauto>50.) && (MTval>50.) ){
+          if( (METauto>50.) && (MTval>50.) && (tightmuons.at(0).Pt() > 20.) ){
             FillHist(ThisTrigger+"_W_PFMET", METauto, this_weight, 0., 500., 500);
             FillHist(ThisTrigger+"_W_MT", MTval, this_weight, 0., 500., 500);
             FillHist(ThisTrigger+"_W_leadpt", tightmuons.at(0).Pt(), this_weight, 0., 500., 500);
           }
+          if( (METauto>40.) && (MTval>60.) && (MTval< 100.) && (tightmuons.at(0).Pt() > 20.) ){
+            FillHist(ThisTrigger+"_W_John_PFMET", METauto, this_weight, 0., 500., 500);
+            FillHist(ThisTrigger+"_W_John_MT", MTval, this_weight, 0., 500., 500);
+            FillHist(ThisTrigger+"_W_John_leadpt", tightmuons.at(0).Pt(), this_weight, 0., 500., 500);
+          }
+
         }
 
 
@@ -279,26 +322,6 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //==== LeptonVeto
   std::vector<snu::KJet> jetColl_tag = GetJets("JET_HN");
   std::vector<snu::KJet> jetColl_nolepveto = GetJets("JET_NOLEPTONVETO");
-  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSE", true);
-  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2", true);
-  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2_LoosenSIP", true);
-  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2_POGIP", true);
-  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv5", true);
-  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv6", true);
-  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv7_SIP10", true);
-  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv7_SIP3p5", true);
-  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv7_SIP3", true);
-  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv7_SIP9", true);
-  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv8", true);
-  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2_POGIP_SIP6", true);
-  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2_POGIP_SIP8", true);
-  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2_POGIP_SIP5", true);
-  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv2_POGIP_SIP4p5", true);
-  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv3", true);
-  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv4", true);
-  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv9", true);
-  //std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv10", true);
-  std::vector<snu::KMuon> hnloose_raw = GetMuons("MUON_HN_LOOSEv11", true);
 
   std::vector<snu::KMuon> hnloose;
   hnloose.clear();
@@ -326,7 +349,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
   }
 
-
+/*
   //==== 2-0) Loose Scan
 
   //std::vector<snu::KMuon> nocutmu_raw = GetMuons("MUON_HN_NOCUT", true);
@@ -460,15 +483,24 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
   } // iso loop
   return;
+*/
 
-
+                cout << "##################" << endl;
+                cout << "RunNumber = " << eventbase->GetEvent().RunNumber() << endl;
+                cout << "EventNumber = " << eventbase->GetEvent().EventNumber() << endl;
+                cout << "-> MET = " << METauto << ", METphi = " << METphiauto << endl;
 
   double AwayjetPts[] = {20, 30, 40, 60};
 
   if( PassTriggerOR(AllHLTs) ){
 
-    if( (hnloose.size() == 1) ){
+    cout << "HLT PASS" << endl;
+    cout << "hnloose_raw.size() = " << hnloose_raw.size() << endl;
+    cout << "hnloose.size() = " << hnloose.size() << endl;
+    cout << "muons_veto.size() = " << muons_veto.size() << endl;
+    if( (hnloose_raw.size() == 1) && (hnloose.size() == 1) && (muons_veto.size() == 1) ){
 
+      cout << "Only one Lepton" << endl;
       snu::KMuon muon = hnloose.at(0);
 
       double dr = 0.5;
@@ -491,8 +523,9 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
         double weight_by_pt_cone = GetTriggerWeightByPtRange(it->first, it->second, HLT_ptmin[it->first], hnloose, For_HLT_Mu3_PFJet40_v);
         //double weight_by_pt = GetTriggerWeightByPtRange(it->first, HLT_ptrange[it->first], HLT_ptmin[it->first], hnloose, For_HLT_Mu3_PFJet40_v);
 
-        //bool IsThisTight = PassID( muon, "MUON_HN_TIGHT" );
-        bool IsThisTight = PassID( muon, "MUON_HN_TIGHTv2" );
+        TString TightID = "MUON_HN_TIGHT";
+        if(DoHighdXY && !DoSmallHighdXY) TightID = "MUON_HN_Tight_HighdXY";
+        bool IsThisTight = PassID( muon, TightID );
 
         if(DijetFake){
 
@@ -501,6 +534,8 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
           double AwayjetPt = 40; // just using central value..
 
           TString HISTPREFIX = "SingleMuonTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10);
+          if(DoHighdXY) HISTPREFIX = "SingleMuonTrigger_HighdXY";
+
           FillDenAndNum(HISTPREFIX, muon, this_weight, IsThisTight);
           if(HasCloseBjet_Medium) FillDenAndNum(HISTPREFIX+"_withbjet_Medium", muon, this_weight, IsThisTight);
           else                    FillDenAndNum(HISTPREFIX+"_withoutbjet_Medium", muon, this_weight, IsThisTight);
@@ -516,6 +551,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
           }
 
           HISTPREFIX = (it->first)+"_SingleMuonTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10);
+          if(DoHighdXY) HISTPREFIX = (it->first)+"_SingleMuonTrigger_HighdXY";
 
           double TightISO = 0.07;
           double conept = MuonConePt(muon,TightISO);
@@ -543,28 +579,50 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
           metvec.SetPtEtaPhiE( METauto, 0, METphiauto, METauto );
           double MTval = AnalyzerCore::MT( muon, metvec );
 
-          for(int j=0; j<4; j++){
+          int n_awayjets = 4;
+          if(DoHighdXY) n_awayjets = 1;
+
+          for(int j=0; j<n_awayjets; j++){
 
             double AwayjetPt = AwayjetPts[j];
 
+            int n_tagjets = jetColl_tag.size();
+            if(DoHighdXY) n_tagjets = 1;
+
             bool histfilled = false; //Fill only one event at most
-            for(unsigned int i=0; i<jetColl_tag.size(); i++){
+            for(unsigned int i=0; i<n_tagjets; i++){
 
               if(histfilled) break;
-              snu::KJet jet = jetColl_tag.at(i);
-              if( jet.Pt() < AwayjetPt ) continue;
-
-              double dPhi = muon.DeltaPhi( jet );
 
               bool UseEvent = false;
-              //==== If QCD, don't have to require MET/MT
-              if( DijetFake )        UseEvent = (dPhi > 2.5) && (jet.Pt()/muon.Pt() > 1.);
-              //==== If not, use it to remove W events
-              else if( DijetPrompt ) UseEvent = (dPhi > 2.5) && (jet.Pt()/muon.Pt() > 1.) && (METauto < 20.) && (MTval < 25.);
+
+              if(!DoHighdXY){
+                snu::KJet jet = jetColl_tag.at(i);
+                if( jet.Pt() < AwayjetPt ) continue;
+                double dPhi = muon.DeltaPhi( jet );
+                //==== If QCD, don't have to require MET/MT
+                if( DijetFake )        UseEvent = (dPhi > 2.5) && (jet.Pt()/muon.Pt() > 1.);
+                //==== If not, use it to remove W events
+                else if( DijetPrompt ){
+                  UseEvent = (dPhi > 2.5) && (jet.Pt()/muon.Pt() > 1.) && (METauto < 20.) && (MTval < 25.);
+                  cout << "muon.Pt() = " << muon.Pt() << endl;
+                  cout << "muon.RelIso04() = " << muon.RelIso04() << endl;
+                  cout << "muon.dXYSig() = " << muon.dXYSig() << endl;
+                  cout << "jet.Pt() = " << jet.Pt() << endl;
+                  cout << "AwayjetPt = " << AwayjetPt << endl;
+                  cout << "dPhi = " << dPhi << endl;
+                  cout << "jet.Pt()/muon.Pt() = " << jet.Pt()/muon.Pt() << endl;
+                  cout << "METauto = " << METauto << endl;
+                  cout << "MTval = " << MTval << endl;
+                }
+              }
+              else UseEvent = true;
 
               if( UseEvent ){
 
                 TString HISTPREFIX = "SingleMuonTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10);
+                if(DoHighdXY) HISTPREFIX = "SingleMuonTrigger_HighdXY";
+
                 FillDenAndNum(HISTPREFIX, muon, this_weight, IsThisTight);
                 if(HasCloseBjet_Medium) FillDenAndNum(HISTPREFIX+"_withbjet_Medium", muon, this_weight, IsThisTight);
                 else                    FillDenAndNum(HISTPREFIX+"_withoutbjet_Medium", muon, this_weight, IsThisTight);
@@ -580,6 +638,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
                 }
 
                 HISTPREFIX = (it->first)+"_SingleMuonTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10);
+                if(DoHighdXY) HISTPREFIX = (it->first)+"_SingleMuonTrigger_HighdXY";
 
                 double TightISO = 0.07;
                 double conept = MuonConePt(muon,TightISO);
