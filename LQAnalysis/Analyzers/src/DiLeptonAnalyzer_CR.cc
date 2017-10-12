@@ -812,6 +812,8 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
 
     //==== Three
     KLepton extralepton;
+    KLepton Z_lead, Z_sublead;
+    snu::KParticle Z_candidate;
     double MT_extralepton(-999.);
     if(Suffix.Contains("Three")){
       //==== IsOSSF_OnZs;
@@ -826,9 +828,24 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
           m_ll_min = m_lls.at(j);
         }
       }
-      if(counter==0) extralepton = lep.at(2);
-      if(counter==1) extralepton = lep.at(1);
-      if(counter==2) extralepton = lep.at(0);
+      if(counter==0){
+        extralepton = lep.at(2);
+        Z_lead = lep.at(0);
+        Z_sublead = lep.at(1);
+        Z_candidate = lep.at(0)+lep.at(1);
+      }
+      if(counter==1){
+        extralepton = lep.at(1);
+        Z_lead = lep.at(0);
+        Z_sublead = lep.at(2);
+        Z_candidate = lep.at(0)+lep.at(2);
+      }
+      if(counter==2){
+        extralepton = lep.at(0);
+        Z_lead = lep.at(1);
+        Z_sublead = lep.at(2);
+        Z_candidate = lep.at(1)+lep.at(2);
+      }
 
       TLorentzVector METvec;
       METvec.SetPtEtaPhiE(MET, 0, METphi, MET);
@@ -838,6 +855,7 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
 
     //==== Four
     bool WithTwoZPair = false;
+    vector<double> ZZ_zmasses;
     if(Suffix.Contains("Four")){
 
       //==== IsOSSF_OnZs;
@@ -846,12 +864,18 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
 
       if(IsOSSF_OnZs.at(0)&&IsOSSF_OnZs.at(5)){
         WithTwoZPair = true;
+        ZZ_zmasses.push_back( (lep.at(0)+lep.at(1)).M() );
+        ZZ_zmasses.push_back( (lep.at(2)+lep.at(3)).M() );
       }
       if(IsOSSF_OnZs.at(1)&&IsOSSF_OnZs.at(4)){
         WithTwoZPair = true;
+        ZZ_zmasses.push_back( (lep.at(0)+lep.at(2)).M() );
+        ZZ_zmasses.push_back( (lep.at(1)+lep.at(3)).M() );
       }
       if(IsOSSF_OnZs.at(2)&&IsOSSF_OnZs.at(3)){
         WithTwoZPair = true;
+        ZZ_zmasses.push_back( (lep.at(0)+lep.at(3)).M() );
+        ZZ_zmasses.push_back( (lep.at(1)+lep.at(2)).M() );
       }
 
     }
@@ -898,17 +922,12 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
     // bool WithOS_lll_OnZ = false;
 
     if(Suffix.Contains("Three")){
-      bool OSSF_ZGveto = (WithOSSF_OnZ) && ( (lep.at(0)+lep.at(1)+lep.at(2)).M() - m_Z  > 15. );
+
+      bool OSSF_ZGveto = (WithOSSF_OnZ) && ( (lep.at(0)+lep.at(1)+lep.at(2)).M() - m_Z  > 15. ) && (nbjets_nolepveto==0);
       map_Region_to_Bool[Suffix+"_WZ"]                   = OSSF_ZGveto && (MET > 50.);
       map_Region_to_Bool[Suffix+"_WZ_NotAllSameFlavour"] = OSSF_ZGveto && (MET > 50.) && !AllSameFlavour;
       map_Region_to_Bool[Suffix+"_WZ_AllSameFlavour"]    = OSSF_ZGveto && (MET > 50.) && AllSameFlavour;
-/*
-      map_Region_to_Bool[Suffix+"_WZ"] = (WithOSSF_OnZ) && (MET > 50.) && ( (lep.at(0)+lep.at(1)+lep.at(2)).M() - m_Z  > 15. ) && (nbjets_nolepveto==0);
-      map_Region_to_Bool[Suffix+"_WZ_NotAllSameFlavour"] = (WithOSSF_OnZ) && (MET > 50.) && ( (lep.at(0)+lep.at(1)+lep.at(2)).M() - m_Z  > 15. )
-                                                           && !AllSameFlavour && (nbjets_nolepveto==0);
-      map_Region_to_Bool[Suffix+"_WZ_AllSameFlavour"] = (WithOSSF_OnZ) && (MET > 50.) && ( (lep.at(0)+lep.at(1)+lep.at(2)).M() - m_Z  > 15. )
-                                                        && AllSameFlavour && (nbjets_nolepveto==0);
-*/
+
       map_Region_to_Bool[Suffix+"_ZGamma"] = (WithOS_lll_OnZ) && (!WithOSSF_OnZ) && (MET < 50.) && (nbjets_nolepveto==0);
     }
     if(Suffix.Contains("Four")){
@@ -937,6 +956,7 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
       if(it->second){
         FillDiLeptonPlot(this_suffix, lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
 
+/*
         int counter(0);
         for(unsigned int j=0; j<lep.size()-1; j++){
           for(unsigned int k=j+1; k<lep.size(); k++){
@@ -948,18 +968,42 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
             counter++;
           }
         }
+*/
 
         if(this_suffix.Contains("WZ")){
-          JSFillHist(this_suffix, "MT_"+this_suffix, MT_extralepton, this_weight, 0., 2000., 2000);
-          JSFillHist(this_suffix+"_up", "MT_"+this_suffix+"_up", MT_extralepton, this_weight+this_weight_err, 0., 2000., 2000);
+          JSFillHist(this_suffix,         "MT_"+this_suffix,         MT_extralepton, this_weight, 0., 2000., 2000);
+          JSFillHist(this_suffix+"_up",   "MT_"+this_suffix+"_up",   MT_extralepton, this_weight+this_weight_err, 0., 2000., 2000);
           JSFillHist(this_suffix+"_down", "MT_"+this_suffix+"_down", MT_extralepton, this_weight-this_weight_err, 0., 2000., 2000);
 
-          JSFillHist(this_suffix, "ExtraLepton_Pt_"+this_suffix, extralepton.Pt(), this_weight, 0., 2000., 2000);
-          JSFillHist(this_suffix+"_up", "ExtraLepton_Pt_"+this_suffix+"_up", extralepton.Pt(), this_weight+this_weight_err, 0., 2000., 2000);
+          JSFillHist(this_suffix,         "Z_leadingLepton_Pt_"+this_suffix,         Z_lead.Pt(), this_weight, 0., 2000., 2000);
+          JSFillHist(this_suffix+"_up",   "Z_leadingLepton_Pt_"+this_suffix+"_up",   Z_lead.Pt(), this_weight+this_weight_err, 0., 2000., 2000);
+          JSFillHist(this_suffix+"_down", "Z_leadingLepton_Pt_"+this_suffix+"_down", Z_lead.Pt(), this_weight-this_weight_err, 0., 2000., 2000);
+
+          JSFillHist(this_suffix,         "Z_secondLepton_Pt_"+this_suffix,         Z_sublead.Pt(), this_weight, 0., 2000., 2000);
+          JSFillHist(this_suffix+"_up",   "Z_secondLepton_Pt_"+this_suffix+"_up",   Z_sublead.Pt(), this_weight+this_weight_err, 0., 2000., 2000);
+          JSFillHist(this_suffix+"_down", "Z_secondLepton_Pt_"+this_suffix+"_down", Z_sublead.Pt(), this_weight-this_weight_err, 0., 2000., 2000);
+
+          JSFillHist(this_suffix,         "ExtraLepton_Pt_"+this_suffix,         extralepton.Pt(), this_weight, 0., 2000., 2000);
+          JSFillHist(this_suffix+"_up",   "ExtraLepton_Pt_"+this_suffix+"_up",   extralepton.Pt(), this_weight+this_weight_err, 0., 2000., 2000);
           JSFillHist(this_suffix+"_down", "ExtraLepton_Pt_"+this_suffix+"_down", extralepton.Pt(), this_weight-this_weight_err, 0., 2000., 2000);
+
+          JSFillHist(this_suffix,         "MZcand_"+this_suffix,         Z_candidate.M(), this_weight, 70., 120., 50);
+          JSFillHist(this_suffix+"_up",   "MZcand_"+this_suffix+"_up",   Z_candidate.M(), this_weight+this_weight_err, 70., 120., 50);
+          JSFillHist(this_suffix+"_down", "MZcand_"+this_suffix+"_down", Z_candidate.M(), this_weight-this_weight_err, 70., 120., 50);
 
         }
 
+        if(this_suffix.Contains("ZZ")){
+
+          for(unsigned int zzz=0; zzz<ZZ_zmasses.size(); zzz++){
+
+            JSFillHist(this_suffix, "MZcand_"+this_suffix, ZZ_zmasses.at(zzz), this_weight, 70., 120., 50);
+            JSFillHist(this_suffix+"_up", "MZcand_"+this_suffix+"_up", ZZ_zmasses.at(zzz), this_weight+this_weight_err, 70., 120., 50);
+            JSFillHist(this_suffix+"_down", "MZcand_"+this_suffix+"_down", ZZ_zmasses.at(zzz), this_weight-this_weight_err, 70., 120., 50);
+
+          }
+
+        }
 
 
       } // END passing this region
@@ -1122,6 +1166,9 @@ void DiLeptonAnalyzer_CR::FillDiLeptonPlot(
   JSFillHist(histsuffix, "m_ll_"+histsuffix, (leptons.at(0)+leptons.at(1)).M(), thisweight, 0., 2000., 2000);
   if(leptons.size()==3){
     JSFillHist(histsuffix, "m_lll_"+histsuffix, (leptons.at(0)+leptons.at(1)+leptons.at(2)).M(), thisweight, 0., 2000., 2000);
+  }
+  if(leptons.size()==4){
+    JSFillHist(histsuffix, "m_llll_"+histsuffix, (leptons.at(0)+leptons.at(1)+leptons.at(2)+leptons.at(3)).M(), thisweight, 0., 2000., 2000);
   }
 
   JSFillHist(histsuffix, "NTightLeptons_weighted_"+histsuffix,   NTightLeptons, thisweight, 0., 5., 5);
