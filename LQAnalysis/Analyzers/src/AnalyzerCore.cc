@@ -4388,8 +4388,14 @@ void AnalyzerCore::FillLeptonKinematicPlot(std::vector<KLepton> lep, TString suf
 
 void AnalyzerCore::CorrectedMETRochester(std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi){
 
+  //cout << "[AnalyzerCore::CorrectedMETRochester] OrignialMET = " << OrignialMET << endl;
+  //cout << "[AnalyzerCore::CorrectedMETRochester] OriginalMETPhi = " << OriginalMETPhi << endl;
+
   float met_x = OrignialMET*TMath::Cos(OriginalMETPhi);
   float met_y = OrignialMET*TMath::Sin(OriginalMETPhi);
+
+  //cout << "[AnalyzerCore::CorrectedMETRochester] met_x = " << met_x << endl;
+  //cout << "[AnalyzerCore::CorrectedMETRochester] met_y = " << met_y << endl;
 
   float px_orig(0.), py_orig(0.),px_corrected(0.), py_corrected(0.);
   for(unsigned int im=0; im < muall.size() ; im++){
@@ -4400,12 +4406,21 @@ void AnalyzerCore::CorrectedMETRochester(std::vector<snu::KMuon> muall, double& 
       px_corrected += muall.at(im).Px();
       py_corrected += muall.at(im).Py();
 
+    //cout << "[AnalyzerCore::CorrectedMETRochester] px_orig = " << px_orig << endl;
+    //cout << "[AnalyzerCore::CorrectedMETRochester] py_orig = " << py_orig << endl;
+    //cout << "[AnalyzerCore::CorrectedMETRochester] px_corrected = " << px_corrected << endl;
+    //cout << "[AnalyzerCore::CorrectedMETRochester] py_corrected = " << py_corrected << endl;
+
+
   }
   met_x = met_x + px_orig - px_corrected;
   met_y = met_y + py_orig - py_corrected;
 
   OrignialMET =  sqrt(met_x*met_x + met_y*met_y);
-  OriginalMETPhi = TMath::ATan2(met_x,met_y);
+  OriginalMETPhi = TMath::ATan2(met_y,met_x);
+
+  //cout << "[AnalyzerCore::CorrectedMETRochester] New MET = " << OrignialMET << endl;
+  //cout << "[AnalyzerCore::CorrectedMETRochester] New METPhi = " << OriginalMETPhi << endl;
 
 }
 
@@ -4434,7 +4449,7 @@ void AnalyzerCore::CorrectedMETMuon(int sys, std::vector<snu::KMuon> muall, doub
   met_y = met_y + py_orig - py_shifted;
 
   OrignialMET =  sqrt(met_x*met_x + met_y*met_y);
-  OriginalMETPhi = TMath::ATan2(met_x,met_y);
+  OriginalMETPhi = TMath::ATan2(met_y,met_x);
 
 }
 
@@ -4463,7 +4478,7 @@ void AnalyzerCore::CorrectedMETElectron(int sys, std::vector<snu::KElectron> ela
   met_y = met_y + py_orig - py_shifted;
 
   OrignialMET =  sqrt(met_x*met_x + met_y*met_y);
-  OriginalMETPhi = TMath::ATan2(met_x,met_y);
+  OriginalMETPhi = TMath::ATan2(met_y,met_x);
 
 }
 
