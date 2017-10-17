@@ -488,9 +488,11 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
     //==== 7) Trigger SF
     //==== 8) Electron ID Scale Factor
     //==== 9) Electron Energy Scale
+    //==== 10) BTagSF Eff
+    //==== 11) BTagSF Miss 
     //====================================
 
-    int N_sys = 2*9+1;
+    int N_sys = 2*11+1;
     int it_sys_start = 0;
     if(!RunNtp){
       it_sys_start = 8;
@@ -568,6 +570,18 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       }
       else if(it_sys==18){
         this_syst = "_ElectronEn_down";
+      }
+      else if(it_sys==19){
+        this_syst = "_BTagSFEff_up";
+      }
+      else if(it_sys==20){
+        this_syst = "_BTagSFEff_down";
+      }
+      else if(it_sys==21){
+        this_syst = "_BTagSFMiss_up";
+      }
+      else if(it_sys==22){
+        this_syst = "_BTagSFMiss_down";
       }
       else{
         Message("it_sys out of range!" , INFO);
@@ -704,7 +718,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
           electrons_before_shift.push_back( electrons.at(j) );
           snu::KElectron tmp_el = electrons.at(j);
           double shift_ = 1.-0.01;
-          tmp_el.SetPtEtaPhiM(shift_*tmp_el.Pt(), tmp_el.Eta(), tmp_el.Phi(), 0.511e-3);
+          tmp_el.SetPtEtaPhiM(shift_*tmp_el.Pt(), tmp_el.Eta(), tmp_el.Phi(), tmp_el.M());
           //tmp_el.SetPxPyPzE(shift_*tmp_el.Px(), shift_*tmp_el.Py(), shift_*tmp_el.Pz(), shift_*tmp_el.E());
           electrons.at(j) = tmp_el;
         }
@@ -744,7 +758,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
           double this_scaling = 1.;
           if(this_syst == "_JetEn_up") this_scaling = this_jet.ScaledUpEnergy();
-          if(this_syst == "_JetRes_up") this_scaling = this_jet.SmearedResUp();
+          if(this_syst == "_JetRes_up") this_scaling = this_jet.SmearedResUp()/this_jet.SmearedRes();
 
           double this_E = this_jet.E()*this_scaling;
           double this_3p = sqrt(this_E*this_E-this_jet.M()*this_jet.M());
@@ -759,7 +773,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
           double this_scaling = 1.;
           if(this_syst == "_JetEn_down") this_scaling = this_jet.ScaledDownEnergy();
-          if(this_syst == "_JetRes_down") this_scaling = this_jet.SmearedResDown();
+          if(this_syst == "_JetRes_down") this_scaling = this_jet.SmearedResDown()/this_jet.SmearedRes();;
 
           double this_E = this_jet.E()*this_scaling;
           double this_3p = sqrt(this_E*this_E-this_jet.M()*this_jet.M());
@@ -792,23 +806,29 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
       }
 
+      int BTagSFDir = 0;
+      if(this_syst == "_BTagSFEff_up") BTagSFDir = +1;
+      if(this_syst == "_BTagSFEff_down") BTagSFDir = -1;
+      if(this_syst == "_BTagSFMiss_up") BTagSFDir = +3;
+      if(this_syst == "_BTagSFMiss_down") BTagSFDir = -3;
+
       nbjets = 0;
       for(int j=0; j<jets.size(); j++){
-        if( IsBTagged(jets.at(j), snu::KJet::CSVv2, snu::KJet::Medium) ){
+        if( IsBTagged(jets.at(j), snu::KJet::CSVv2, snu::KJet::Medium, -1, BTagSFDir) ){
           nbjets++;
         }
       }
 
       nbjets_nolepveto = 0;
       for(int j=0; j<jets_nolepveto.size(); j++){
-        if( IsBTagged(jets_nolepveto.at(j), snu::KJet::CSVv2, snu::KJet::Medium) ){
+        if( IsBTagged(jets_nolepveto.at(j), snu::KJet::CSVv2, snu::KJet::Medium, -1, BTagSFDir) ){
           nbjets_nolepveto++;
         }
       }
 
       nbjets_fwd = 0;
       for(int j=0; j<jets_fwd.size(); j++){
-        if( IsBTagged(jets_fwd.at(j), snu::KJet::CSVv2, snu::KJet::Medium) ){
+			  if( IsBTagged(jets_fwd.at(j), snu::KJet::CSVv2, snu::KJet::Medium, -1, BTagSFDir) ){
           nbjets_fwd++;
         }
       }
@@ -1685,8 +1705,9 @@ void DiLeptonAnalyzer::MakeHistograms(){
   AnalyzerCore::MakeHistograms();
   Message("Made histograms", INFO);
 
-  int N_sys = 2*9+1;
-  TString systs[] = {"_MuonEn_up", "_MuonEn_down", "_JetEn_up", "_JetEn_down", "_JetRes_up", "_JetRes_down", "_Unclustered_up", "_Unclustered_down", "", "_MuonIDSF_up", "_MuonIDSF_down", "_PU_down", "_PU_up", "_TriggerSF_down", "_TriggerSF_up", "_ElectronIDSF_up", "_ElectronIDSF_down", "_ElectronEn_up", "_ElectronEn_down"};
+  int N_sys = 2*11+1;
+  TString systs[] = {"_MuonEn_up", "_MuonEn_down", "_JetEn_up", "_JetEn_down", "_JetRes_up", "_JetRes_down", "_Unclustered_up", "_Unclustered_down", "", "_MuonIDSF_up", "_MuonIDSF_down", "_PU_down", "_PU_up", "_TriggerSF_down", "_TriggerSF_up", "_ElectronIDSF_up", "_ElectronIDSF_down", "_ElectronEn_up", "_ElectronEn_down", "_BTagSFEff_up", "_BTagSFEff_down", "_BTagSFMiss_up", "_BTagSFMiss_down"};
+
   for(int i=0; i<N_sys; i++){
 
   MakeNtp("Ntp_DiMuon"+systs[i]+"_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:leadingLepton_Eta:secondLepton_Eta");
