@@ -717,7 +717,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         for(unsigned int j=0; j<electrons.size(); j++){
           electrons_before_shift.push_back( electrons.at(j) );
           snu::KElectron tmp_el = electrons.at(j);
-          double shift_ = 1.-0.01;
+          double shift_ = 1.-0.015;
           tmp_el.SetPtEtaPhiM(shift_*tmp_el.Pt(), tmp_el.Eta(), tmp_el.Phi(), tmp_el.M());
           //tmp_el.SetPxPyPzE(shift_*tmp_el.Px(), shift_*tmp_el.Py(), shift_*tmp_el.Pz(), shift_*tmp_el.E());
           electrons.at(j) = tmp_el;
@@ -760,10 +760,13 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
           if(this_syst == "_JetEn_up") this_scaling = this_jet.ScaledUpEnergy();
           if(this_syst == "_JetRes_up") this_scaling = this_jet.SmearedResUp()/this_jet.SmearedRes();
 
-          double this_E = this_jet.E()*this_scaling;
-          double this_3p = sqrt(this_E*this_E-this_jet.M()*this_jet.M());
-          double this_3p_sf = this_3p/this_jet.P();
-          this_jet.SetPxPyPzE( this_3p_sf*this_jet.Px(), this_3p_sf*this_jet.Py(), this_3p_sf*this_jet.Pz(), this_E);
+          //double this_E = this_jet.E()*this_scaling;
+          //double this_3p = sqrt(this_E*this_E-this_jet.M()*this_jet.M());
+          //double this_3p_sf = this_3p/this_jet.P();
+          //this_jet.SetPxPyPzE( this_3p_sf*this_jet.Px(), this_3p_sf*this_jet.Py(), this_3p_sf*this_jet.Pz(), this_E);
+
+          this_jet *= this_scaling;
+
           if(this_jet.Pt() >= 20.) jets_eta5_nolepveto.push_back(this_jet);
         }
       }
@@ -775,10 +778,13 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
           if(this_syst == "_JetEn_down") this_scaling = this_jet.ScaledDownEnergy();
           if(this_syst == "_JetRes_down") this_scaling = this_jet.SmearedResDown()/this_jet.SmearedRes();;
 
-          double this_E = this_jet.E()*this_scaling;
-          double this_3p = sqrt(this_E*this_E-this_jet.M()*this_jet.M());
-          double this_3p_sf = this_3p/this_jet.P();
-          this_jet.SetPxPyPzE( this_3p_sf*this_jet.Px(), this_3p_sf*this_jet.Py(), this_3p_sf*this_jet.Pz(), this_E);
+          //double this_E = this_jet.E()*this_scaling;
+          //double this_3p = sqrt(this_E*this_E-this_jet.M()*this_jet.M());
+          //double this_3p_sf = this_3p/this_jet.P();
+          //this_jet.SetPxPyPzE( this_3p_sf*this_jet.Px(), this_3p_sf*this_jet.Py(), this_3p_sf*this_jet.Pz(), this_E);
+
+          this_jet *= this_scaling;
+
           if(this_jet.Pt() >= 20.) jets_eta5_nolepveto.push_back(this_jet);
         }
       }
@@ -828,7 +834,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
       nbjets_fwd = 0;
       for(int j=0; j<jets_fwd.size(); j++){
-			  if( IsBTagged(jets_fwd.at(j), snu::KJet::CSVv2, snu::KJet::Medium, -1, BTagSFDir) ){
+        if( IsBTagged(jets_fwd.at(j), snu::KJet::CSVv2, snu::KJet::Medium, -1, BTagSFDir) ){
           nbjets_fwd++;
         }
       }
@@ -1897,23 +1903,23 @@ double DiLeptonAnalyzer::GetCF(KLepton lep, bool geterr){
   double invPt = 1./lep.Pt();
   double a = 999., b= 999.;
   if(el_eta < 0.9){
-    if(invPt< 0.023){a=(-0.00138148); b=(4.33442e-05);}
-    else{a=(0.00101034); b=(-1.14551e-05);}
+    if(invPt< 0.023){a=(-0.001381); b=(4.334e-05);}
+    else{a=(0.001010); b=(-1.146e-05);}
   }
   else if(el_eta < 1.4442){
-    if(invPt< 0.015){a=(-0.042964); b=(0.000866971);}
-    else if(invPt< 0.023){a=(-0.0152852); b=(0.000452217);}
-    else{a=(-0.00154575); b=(0.000127211);}
+    if(invPt< 0.015){a=(-0.04296); b=(0.0008670);}
+    else if(invPt< 0.023){a=(-0.01529); b=(0.0004522);}
+    else{a=(-0.001546); b=(0.0001272);}
   }
   else{
-    if(invPt< 0.012){a=(-0.423831); b=(0.00636555);}
-    else if(invPt< 0.020){a=(-0.103982); b=(0.00254955);}
-    else{a=(-0.0160296); b=(0.000767227);}
+    if(invPt< 0.012){a=(-0.4238); b=(0.006366);}
+    else if(invPt< 0.020){a=(-0.1040); b=(0.002550);}
+    else{a=(-0.01603); b=(0.0007672);}
   }
 
   double sf(1.);
-  if(el_eta < 1.4442) sf = 0.723378267;
-  else sf = 0.650661097;
+  if(el_eta < 1.4442) sf = 0.693589;
+  else sf = 0.684761;
 
   double sys=0.;
   double rate = (a)*invPt + (b);
