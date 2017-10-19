@@ -29,6 +29,7 @@ ST(-999), HT(-999), LT(-999), contramass(-999),
 nbjets(-999), nbjets_fwd(-999), nbjets_nolepveto(-999), n_vtx(-999),
 index_jjW_j1(-999), index_jjW_j2(-999),
 index_lljjW_j1(-999), index_lljjW_j2(-999),
+index_fjW(-999),
 RunNtp(false)
 {
   
@@ -380,12 +381,10 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   bool RunningChargeFlipData = k_running_chargeflip && isData;
 
   //==== Jets
-  //std::vector<snu::KJet> jets = GetJets("JET_HN_eta5", 20., 2.5);
-  //std::vector<snu::KJet> jets_nolepveto = GetJets("JET_HN_eta5_nolepveto", 20., 2.5);
-  //==== Call eta5 jets, and make forward jets
-  //std::vector<snu::KJet> jets_eta5 = GetJets("JET_HN_eta5", 20., 5.);
-
   std::vector<snu::KJet> jets_eta5_nolepveto_loosest = GetJets("JET_HN_eta5_nolepveto_loosest", 10., 5.);
+
+  //==== Fatjets
+  std::vector<snu::KFatJet> fatjets_loosest = GetFatJets("FATJET_NOCUT");
 
 /*
   //==== jet HadFlavour vs BTagging
@@ -820,25 +819,80 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
       nbjets = 0;
       for(int j=0; j<jets.size(); j++){
-        if( IsBTagged(jets.at(j), snu::KJet::CSVv2, snu::KJet::Medium, -1, BTagSFDir) ){
+        if( IsBTagged(jets.at(j), snu::KJet::CSVv2, snu::KJet::Medium, -1, BTagSFDir) && fabs(jets.at(j).Eta())<2.4 ){
           nbjets++;
         }
       }
 
       nbjets_nolepveto = 0;
       for(int j=0; j<jets_nolepveto.size(); j++){
-        if( IsBTagged(jets_nolepveto.at(j), snu::KJet::CSVv2, snu::KJet::Medium, -1, BTagSFDir) ){
+        if( IsBTagged(jets_nolepveto.at(j), snu::KJet::CSVv2, snu::KJet::Medium, -1, BTagSFDir) && fabs(jets_nolepveto.at(j).Eta())<2.4 ){
           nbjets_nolepveto++;
         }
       }
 
       nbjets_fwd = 0;
       for(int j=0; j<jets_fwd.size(); j++){
-        if( IsBTagged(jets_fwd.at(j), snu::KJet::CSVv2, snu::KJet::Medium, -1, BTagSFDir) ){
+        if( IsBTagged(jets_fwd.at(j), snu::KJet::CSVv2, snu::KJet::Medium, -1, BTagSFDir) && fabs(jets_fwd.at(j).Eta())<2.4 ){
           nbjets_fwd++;
         }
       }
 
+      //==== Remove FatJet with jet inside
+      //cout << "fatjets_loosest.size() = " << fatjets_loosest.size() << endl;
+      vector<snu::KFatJet> fatjets_loosest_jetremoved;
+      for(unsigned int j=0; j<fatjets_loosest.size(); j++){
+        snu::KFatJet this_fatjet = fatjets_loosest.at(j);
+
+        //==== Remove jet
+        bool JetInsideFatjet = false;
+        for(unsigned int k=0; k<jets.size(); k++){
+          if( this_fatjet.DeltaR( jets.at(k) ) < 0.8 ){
+            JetInsideFatjet = true;
+            break;
+          }
+        }
+        if(JetInsideFatjet) continue;
+
+        fatjets_loosest_jetremoved.push_back(this_fatjet);
+      }
+      //cout << "fatjets_loosest_jetremoved.size() = " << fatjets_loosest_jetremoved.size() << endl;
+
+      //==== Do Up Down //TODO
+      //==== Also apply ID cuts!
+      vector<snu::KFatJet> fatjets;
+      if( (this_syst == "_JetEn_up") || (this_syst == "_JetRes_up") ){
+        for(unsigned int j=0; j<fatjets_loosest_jetremoved.size(); j++){
+          snu::KFatJet this_jet = fatjets_loosest_jetremoved.at(j);
+
+          double this_scaling = 1.;
+          if(this_syst == "_JetEn_up") this_scaling = this_jet.ScaledUpEnergy();
+          if(this_syst == "_JetRes_up") this_scaling = this_jet.SmearedResUp()/this_jet.SmearedRes();
+          this_jet *= this_scaling;
+
+          if(JSFatJetID(this_jet)) fatjets.push_back(this_jet);
+        }
+      }
+      else if( (this_syst == "_JetEn_down") || (this_syst == "_JetRes_down") ){
+        for(unsigned int j=0; j<fatjets_loosest_jetremoved.size(); j++){
+          snu::KFatJet this_jet = fatjets_loosest_jetremoved.at(j);
+
+          double this_scaling = 1.;
+          if(this_syst == "_JetEn_down") this_scaling = this_jet.ScaledDownEnergy();
+          if(this_syst == "_JetRes_down") this_scaling = this_jet.SmearedResDown()/this_jet.SmearedRes();;
+          this_jet *= this_scaling;
+
+          if(JSFatJetID(this_jet)) fatjets.push_back(this_jet);
+        }
+      }
+      else{
+        for(unsigned int j=0; j<fatjets_loosest_jetremoved.size(); j++){
+          snu::KFatJet this_jet = fatjets_loosest_jetremoved.at(j);
+          
+          if(JSFatJetID(this_jet)) fatjets.push_back(this_jet);
+        }
+      }
+      //cout << "fatjets.size() = " << fatjets.size() << endl;
 
       //==== Lepton Numbers
 
@@ -1246,11 +1300,17 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       for(unsigned int ij=0; ij <jets.size(); ij++){
         ST += jets.at(ij).Pt();
       }
+      for(unsigned int ij=0; ij <fatjets.size(); ij++){
+        ST += fatjets.at(ij).Pt();
+      }
 
       //==== HT = jet
       HT = 0.;
       for(unsigned int ij=0; ij <jets.size(); ij++){
         HT += jets.at(ij).Pt();
+      }
+      for(unsigned int ij=0; ij <fatjets.size(); ij++){
+        HT += fatjets.at(ij).Pt();
       }
 
       //==== LT = lepton
@@ -1283,12 +1343,18 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         }
 
       }
+      if( fatjets.size()>=1 ){
+        double mfatjet = GetFatjetMassClosest(fatjets, 80.4, index_fjW);
+      }
 
 
       //==== Preselection
 
-      map_Region_to_Bool[Suffix+"_Preselection"] = ( jets.size()>=2 );
-      map_Region_to_Bool[Suffix+"_Preselection_secondptge20"] = ( jets.size()>=2 ) && (lep.at(1).Pt() >= 20.);
+      bool TwoJet_NoFatJet = (jets.size()>=2) && (fatjets.size()==0);
+      bool OneFatJet = (fatjets.size()>=1);
+
+      map_Region_to_Bool[Suffix+"_Preselection"] = TwoJet_NoFatJet || OneFatJet;
+      map_Region_to_Bool[Suffix+"_Preselection_secondptge20"] = map_Region_to_Bool[Suffix+"_Preselection"] && (lep.at(1).Pt() >= 20.);
       //==== For DiElectron, remove Z peak (CF)
       if(Suffix.Contains("DiElectron")){
         map_Region_to_Bool[Suffix+"_Preselection"] = map_Region_to_Bool[Suffix+"_Preselection"] && isOffZ;
@@ -1297,21 +1363,47 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       //==== If Preselection, then define Low/High
 
       if(map_Region_to_Bool[Suffix+"_Preselection"]){
-        map_Region_to_Bool[Suffix+"_Low"] = map_Region_to_Bool[Suffix+"_Preselection"] &&
+
+        //==== Low Mass
+        //==== Only using TwoJet_NoFatJet
+        map_Region_to_Bool[Suffix+"_Low"] = TwoJet_NoFatJet &&
                                             (nbjets_nolepveto == 0) &&
                                             ( (lep.at(0)+lep.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M() < 300. ) &&
                                             (MET < 80.);
-        map_Region_to_Bool[Suffix+"_LowCR"] = map_Region_to_Bool[Suffix+"_Preselection"] &&
+        map_Region_to_Bool[Suffix+"_LowCR"] = TwoJet_NoFatJet &&
                                               ( (nbjets_nolepveto >= 1) || (MET > 100.) ) &&
                                               ( (lep.at(0)+lep.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M() < 300. );
 
+        //==== High Mass
+        //==== 1) TwoJet_NoFatJet
+        //==== 2) OneFatJet
+
+        double mjj_high = -999.;
+        if(TwoJet_NoFatJet){
+          mjj_high = (jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M();
+        }
+        else if(OneFatJet){
+          mjj_high = fatjets.at(index_fjW).PrunedMass();
+        }
+        else{
+          cout << "WTF" << endl;
+          exit(EXIT_FAILURE);
+        }
+
         map_Region_to_Bool[Suffix+"_High"] = map_Region_to_Bool[Suffix+"_Preselection"] &&
                                              (nbjets_nolepveto == 0) &&
-                                             ( (jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M() < 150. ) &&
+                                             ( mjj_high < 150. ) &&
                                              ( MET*MET/ST < 15. );
         map_Region_to_Bool[Suffix+"_HighCR"] = map_Region_to_Bool[Suffix+"_Preselection"] &&
                                                ( (nbjets_nolepveto >= 1) || (MET*MET/ST > 20.) ) &&
-                                               ( (jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M() < 150. );
+                                               ( mjj_high < 150. );
+
+        map_Region_to_Bool[Suffix+"_High_TwoJet_NoFatJet"]   = map_Region_to_Bool[Suffix+"_High"] && TwoJet_NoFatJet;
+        map_Region_to_Bool[Suffix+"_HighCR_TwoJet_NoFatJet"] = map_Region_to_Bool[Suffix+"_HighCR"] && TwoJet_NoFatJet;
+
+        map_Region_to_Bool[Suffix+"_High_OneFatJet"]   = map_Region_to_Bool[Suffix+"_High"] && OneFatJet;
+        map_Region_to_Bool[Suffix+"_HighCR_OneFatJet"] = map_Region_to_Bool[Suffix+"_HighCR"] && OneFatJet;
+
 
         if(Suffix.Contains("EMu")){
           if(lep.at(1).LeptonFlavour()==KLepton::ELECTRON){
@@ -1386,7 +1478,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       }
 
       //==== Make Ntuple
-      bool NtupleSkim = map_Region_to_Bool[Suffix+"_Preselection"] && isSSForCF;
+      bool NtupleSkim = (map_Region_to_Bool[Suffix+"_Preselection"]) && isSSForCF;
 
       if(RunNtp && NtupleSkim){
         double cutop[100];
@@ -1443,8 +1535,32 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
           cutop[40] = lep.at(1).DeltaR( lep.at(0)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2) );
 
         }
+        //==== fatjet
         else{
           for(int j=12;j<=40;j++) cutop[j] = -999.;
+
+          //==== pt order
+          cutop[12] = fatjets.at(0).Pt();
+          cutop[13] = -999.;
+          cutop[14] = -999.;
+          cutop[15] = (fatjets.at(0)).PrunedMass();
+          cutop[16] = (lep.at(0)+fatjets.at(0)).M();
+          cutop[17] = (lep.at(1)+fatjets.at(0)).M();
+          cutop[18] = (lep.at(0)+lep.at(1)+fatjets.at(0)).M();
+
+          //==== m(fj)~W (high mass)
+          cutop[19] = fatjets.at(index_jjW_j1).Pt();
+          cutop[20] = -999.;
+          cutop[21] = (fatjets.at(index_fjW)).PrunedMass();
+          cutop[22] = (lep.at(0)+fatjets.at(index_fjW)).M();
+          cutop[23] = (lep.at(1)+fatjets.at(index_fjW)).M();
+          cutop[24] = (lep.at(0)+lep.at(1)+fatjets.at(index_fjW)).M();
+          cutop[25] = -999.;
+          cutop[26] = lep.at(0).DeltaR( fatjets.at(index_fjW) );
+          cutop[27] = lep.at(1).DeltaR( fatjets.at(index_fjW) );
+          cutop[28] = lep.at(0).DeltaR( lep.at(1)+fatjets.at(index_fjW) );
+          cutop[29] = lep.at(1).DeltaR( lep.at(0)+fatjets.at(index_fjW) );
+
         }
 
         //==== Two Forward Jets
@@ -1482,6 +1598,8 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
           cutop[51] = -999.;
         }
 
+        cutop[52] = fatjets.size();
+
 
         FillNtp("Ntp_"+Suffix+"_Preselection_SS",cutop);
 
@@ -1502,45 +1620,72 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
             //==== Filling Histograms
             //=========================
 
-            //==== All m(ll) / SS+OS
-            FillDiLeptonPlot(this_suffix+"_AllCharge", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
             //==== All m(ll) / SS
             if(isSS){
-              FillDiLeptonPlot(this_suffix+"_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+              FillDiLeptonPlot(this_suffix+"_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
+              FillHist("LeptonType_"+this_suffix+"_SS", lep.at(0).GetType(), 1., 0., 50., 50);
+              FillHist("LeptonType_"+this_suffix+"_SS", lep.at(1).GetType(), 1., 0., 50., 50);
+            }
+
+            if(isOffZ){
+              //==== OffZ / SS
+              if(isSS){
+                FillDiLeptonPlot(this_suffix+"_OffZ_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
+              }
+              if(isAboveZ){
+                //==== AboveZ / SS
+                if(isSS){
+                  FillDiLeptonPlot(this_suffix+"_AboveZ_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
+                }
+              }
+            }
+            else{
+              //==== OnZ / SS
+              if(isSS){
+                FillDiLeptonPlot(this_suffix+"_OnZ_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
+              }
+            }
+
+/*
+            //==== All m(ll) / SS+OS
+            FillDiLeptonPlot(this_suffix+"_AllCharge", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
+            //==== All m(ll) / SS
+            if(isSS){
+              FillDiLeptonPlot(this_suffix+"_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
               FillHist("LeptonType_"+this_suffix+"_SS", lep.at(0).GetType(), 1., 0., 50., 50);
               FillHist("LeptonType_"+this_suffix+"_SS", lep.at(1).GetType(), 1., 0., 50., 50);
             }
             //==== All m(ll) / OS
             else{
-              FillDiLeptonPlot(this_suffix+"_OS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+              FillDiLeptonPlot(this_suffix+"_OS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
             }
 
             if(isOffZ){
 
               //==== OffZ / SS+OS
-              FillDiLeptonPlot(this_suffix+"_OffZ_AllCharge", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+              FillDiLeptonPlot(this_suffix+"_OffZ_AllCharge", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
 
               //==== OffZ / SS
               if(isSS){
-                FillDiLeptonPlot(this_suffix+"_OffZ_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+                FillDiLeptonPlot(this_suffix+"_OffZ_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
               }
               //==== OffZ / OS
               else{
-                FillDiLeptonPlot(this_suffix+"_OffZ_OS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+                FillDiLeptonPlot(this_suffix+"_OffZ_OS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
               }
 
               if(isAboveZ){
 
                 //==== AboveZ / SS+OS
-                FillDiLeptonPlot(this_suffix+"_AboveZ_AllCharge", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+                FillDiLeptonPlot(this_suffix+"_AboveZ_AllCharge", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
 
                 //==== AboveZ / SS
                 if(isSS){
-                  FillDiLeptonPlot(this_suffix+"_AboveZ_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+                  FillDiLeptonPlot(this_suffix+"_AboveZ_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
                 }
                 //==== AboveZ / OS
                 else{
-                  FillDiLeptonPlot(this_suffix+"_AboveZ_OS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+                  FillDiLeptonPlot(this_suffix+"_AboveZ_OS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
                 }
 
               }
@@ -1548,15 +1693,15 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
               if(isBelowZ){
 
                 //==== BelowZ / SS+OS
-                FillDiLeptonPlot(this_suffix+"_BelowZ_AllCharge", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+                FillDiLeptonPlot(this_suffix+"_BelowZ_AllCharge", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
 
                 //==== BelowZ / SS
                 if(isSS){
-                  FillDiLeptonPlot(this_suffix+"_BelowZ_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+                  FillDiLeptonPlot(this_suffix+"_BelowZ_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
                 }
                 //==== BelowZ / OS
                 else{
-                  FillDiLeptonPlot(this_suffix+"_BelowZ_OS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+                  FillDiLeptonPlot(this_suffix+"_BelowZ_OS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
                 }
 
               }
@@ -1565,18 +1710,19 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
             else{
 
               //==== OnZ / SS+OS
-              FillDiLeptonPlot(this_suffix+"_OnZ_AllCharge", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+              FillDiLeptonPlot(this_suffix+"_OnZ_AllCharge", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
 
               //==== OnZ / SS
               if(isSS){
-                FillDiLeptonPlot(this_suffix+"_OnZ_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+                FillDiLeptonPlot(this_suffix+"_OnZ_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
               }
               //==== OnZ /OS
               else{
-                FillDiLeptonPlot(this_suffix+"_OnZ_OS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+                FillDiLeptonPlot(this_suffix+"_OnZ_OS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
               }
 
             }
+*/
 
 
           }
@@ -1596,14 +1742,14 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
               //==== Filling Histograms
               //=========================
 
-              FillDiLeptonPlot(this_suffix+"_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+              FillDiLeptonPlot(this_suffix+"_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
               //==== OffZ
               if(isOffZ){
-                FillDiLeptonPlot(this_suffix+"_OffZ_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+                FillDiLeptonPlot(this_suffix+"_OffZ_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
               }
               //==== OnZ
               else{
-                FillDiLeptonPlot(this_suffix+"_OnZ_SS", lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
+                FillDiLeptonPlot(this_suffix+"_OnZ_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
               }
               
             } // END fill chargeflip only for DiElectron OS
@@ -1716,11 +1862,11 @@ void DiLeptonAnalyzer::MakeHistograms(){
 
   for(int i=0; i<N_sys; i++){
 
-  MakeNtp("Ntp_DiMuon"+systs[i]+"_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:leadingLepton_Eta:secondLepton_Eta");
+  MakeNtp("Ntp_DiMuon"+systs[i]+"_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:leadingLepton_Eta:secondLepton_Eta:Nfatjets");
 
-  MakeNtp("Ntp_DiElectron"+systs[i]+"_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:leadingLepton_Eta:secondLepton_Eta");
+  MakeNtp("Ntp_DiElectron"+systs[i]+"_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:leadingLepton_Eta:secondLepton_Eta:Nfatjets");
 
-  MakeNtp("Ntp_EMu"+systs[i]+"_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:leadingLepton_Eta:secondLepton_Eta");
+  MakeNtp("Ntp_EMu"+systs[i]+"_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:leadingLepton_Eta:secondLepton_Eta:Nfatjets");
 
 
     GetNtp("Ntp_DiMuon"+systs[i]+"_Preselection_SS")->Branch("PdfWeights", "vector<float>",&ForTree_PdfWeights);
@@ -1759,6 +1905,7 @@ void DiLeptonAnalyzer::FillDiLeptonPlot(
   std::vector< snu::KJet > jets,
   std::vector< snu::KJet > jets_fwd,
   std::vector< snu::KJet > jets_nolepveto,
+  std::vector< snu::KFatJet > fatjets,
   double thisweight,
   double thieweighterr
   ){
@@ -1777,6 +1924,7 @@ void DiLeptonAnalyzer::FillDiLeptonPlot(
   JSFillHist(histsuffix, "Nbjets_"+histsuffix, nbjets, thisweight, 0., 10., 10);
   JSFillHist(histsuffix, "Nbjets_nolepveto_"+histsuffix, nbjets_nolepveto, thisweight, 0., 10., 10);
   JSFillHist(histsuffix, "Nbfwdjets_"+histsuffix, nbjets_fwd, thisweight, 0., 10., 10);
+  JSFillHist(histsuffix, "Nfatjets_"+histsuffix, fatjets.size(), thisweight, 0., 10., 10);
   JSFillHist(histsuffix, "Nvtx_"+histsuffix, n_vtx, thisweight, 0., 100., 100);
 
   JSFillHist(histsuffix, "HT_"+histsuffix, HT, thisweight, 0., 2000., 2000);
@@ -1790,7 +1938,7 @@ void DiLeptonAnalyzer::FillDiLeptonPlot(
 
   JSFillHist(histsuffix, "NTightLeptons_weighted_"+histsuffix,   NTightLeptons, thisweight, 0., 5., 5);
   JSFillHist(histsuffix, "NTightLeptons_unweighted_"+histsuffix, NTightLeptons, 1., 0., 5., 5);
-  for(int i=0; i<leptons.size(); i++){
+  for(unsigned int i=0; i<leptons.size(); i++){
     if(i==4) break;
     JSFillHist(histsuffix, leporder[i]+"Lepton_Pt_"+histsuffix,  leptons.at(i).Pt(), thisweight, 0., 2000., 2000);
     JSFillHist(histsuffix, leporder[i]+"Lepton_Eta_"+histsuffix, leptons.at(i).Eta(), thisweight, -3., 3., 60);
@@ -1810,20 +1958,37 @@ void DiLeptonAnalyzer::FillDiLeptonPlot(
     JSFillHist(histsuffix, leporder[i]+"Lepton_Pt_cone_"+histsuffix, CorrPt(leptons.at(i), TightIso), thisweight, 0., 2000., 2000);
 
   }
-  for(int i=0; i<jets.size(); i++){
+  for(unsigned int i=0; i<jets.size(); i++){
     if(i==4) break;
     JSFillHist(histsuffix, leporder[i]+"Jet_Pt_"+histsuffix,  jets.at(i).Pt(), thisweight, 0., 2000., 2000);
     JSFillHist(histsuffix, leporder[i]+"Jet_Eta_"+histsuffix, jets.at(i).Eta(), thisweight, -3., 3., 60);
   }
-  for(int i=0; i<jets_fwd.size(); i++){
+  for(unsigned int i=0; i<jets_fwd.size(); i++){
     if(i==4) break;
     JSFillHist(histsuffix, leporder[i]+"ForwardJet_Pt_"+histsuffix,  jets_fwd.at(i).Pt(), thisweight, 0., 2000., 2000);
     JSFillHist(histsuffix, leporder[i]+"ForwardJet_Eta_"+histsuffix, jets_fwd.at(i).Eta(), thisweight, -5., 5., 100);
   }
-  for(int i=0; i<jets_nolepveto.size(); i++){
+  for(unsigned int i=0; i<jets_nolepveto.size(); i++){
     if(i==4) break;
     JSFillHist(histsuffix, leporder[i]+"NoLepVetoJet_Pt_"+histsuffix, jets_nolepveto.at(i).Pt(), thisweight, 0., 2000., 2000);
     JSFillHist(histsuffix, leporder[i]+"NoLepVetoJet_Eta_"+histsuffix, jets_nolepveto.at(i).Eta(), thisweight, -3., 3., 60);
+  }
+  for(unsigned int i=0; i<fatjets.size(); i++){
+    if(i==index_fjW){
+      JSFillHist(histsuffix, "WClosest_FatJet_Pt_"+histsuffix, fatjets.at(i).Pt(), thisweight, 0., 2000., 2000);
+      JSFillHist(histsuffix, "WClosest_FatJet_Eta_"+histsuffix, fatjets.at(i).Eta(), thisweight, -3., 3., 60);
+      JSFillHist(histsuffix, "WClosest_FatJet_Mass_"+histsuffix, fatjets.at(i).M(), thisweight, 0., 2000., 2000);
+      JSFillHist(histsuffix, "WClosest_FatJet_PrunedMass_"+histsuffix, fatjets.at(i).PrunedMass(), thisweight, 0., 2000., 2000);
+      JSFillHist(histsuffix, "WClosest_FatJet_Tau2_"+histsuffix, fatjets.at(i).Tau2(), thisweight, 0., 1., 100);
+      JSFillHist(histsuffix, "WClosest_FatJet_Tau21_"+histsuffix, fatjets.at(i).Tau2()/fatjets.at(i).Tau1(), thisweight, 0., 1., 100);
+    }
+    if(i==4) break;
+    JSFillHist(histsuffix, leporder[i]+"FatJet_Pt_"+histsuffix, fatjets.at(i).Pt(), thisweight, 0., 2000., 2000);
+    JSFillHist(histsuffix, leporder[i]+"FatJet_Eta_"+histsuffix, fatjets.at(i).Eta(), thisweight, -3., 3., 60);
+    JSFillHist(histsuffix, leporder[i]+"FatJet_Mass_"+histsuffix, fatjets.at(i).M(), thisweight, 0., 2000., 2000);
+    JSFillHist(histsuffix, leporder[i]+"FatJet_PrunedMass_"+histsuffix, fatjets.at(i).PrunedMass(), thisweight, 0., 2000., 2000);
+    JSFillHist(histsuffix, leporder[i]+"FatJet_Tau2_"+histsuffix, fatjets.at(i).Tau2(), thisweight, 0., 1., 100);
+    JSFillHist(histsuffix, leporder[i]+"FatJet_Tau21_"+histsuffix, fatjets.at(i).Tau2()/fatjets.at(i).Tau1(), thisweight, 0., 1., 100);
   }
 
   if(jets.size() >= 2){
@@ -1849,6 +2014,7 @@ void DiLeptonAnalyzer::FillDiLeptonPlot(
     JSFillHist(histsuffix, "DeltaRLeadl_SubLeadllljjWclosest_"+histsuffix, leptons.at(0).DeltaR( leptons.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2) ), thisweight, 0., 10., 100);
     JSFillHist(histsuffix, "DeltaRSubLeadl_LeadllljjWclosest_"+histsuffix, leptons.at(1).DeltaR( leptons.at(0)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2) ), thisweight, 0., 10., 100);
 
+    //==== ptorder
     JSFillHist(histsuffix, "DeltaRjjptorder_"+histsuffix, jets.at(0).DeltaR( jets.at(1) ), thisweight, 0., 10., 100);
     JSFillHist(histsuffix, "m_jjptorder_"+histsuffix, (jets.at(0)+jets.at(1)).M(), thisweight, 0., 2000., 2000);
     JSFillHist(histsuffix, "m_Leadljjptorder_"+histsuffix, (leptons.at(0)+jets.at(0)+jets.at(1)).M(), thisweight, 0., 2000., 2000);
@@ -1856,20 +2022,32 @@ void DiLeptonAnalyzer::FillDiLeptonPlot(
     JSFillHist(histsuffix, "m_lljjptorder_"+histsuffix, (leptons.at(0)+leptons.at(1)+jets.at(0)+jets.at(1)).M(), thisweight, 0., 2000., 2000);
   }
 
+  if(fatjets.size() > 0){
+    //==== Leading
+    JSFillHist(histsuffix, "m_Leadlfj_ptorder_"+histsuffix, (leptons.at(0)+fatjets.at(0)).M(), thisweight, 0., 2000., 2000);
+    JSFillHist(histsuffix, "m_SubLeadlfj_ptorder_"+histsuffix, (leptons.at(1)+fatjets.at(0)).M(), thisweight, 0., 2000., 2000);
+    JSFillHist(histsuffix, "m_llfj_ptorder_"+histsuffix, (leptons.at(0)+leptons.at(1)+fatjets.at(0)).M(), thisweight, 0., 2000., 2000);
+
+    //==== fjWclosest
+    JSFillHist(histsuffix, "m_Leadlfj_fjWclosest_"+histsuffix, (leptons.at(0)+fatjets.at(index_fjW)).M(), thisweight, 0., 2000., 2000);
+    JSFillHist(histsuffix, "m_SubLeadlfj_fjWclosest_"+histsuffix, (leptons.at(1)+fatjets.at(index_fjW)).M(), thisweight, 0., 2000., 2000);
+    JSFillHist(histsuffix, "m_llfj_fjWclosest_"+histsuffix, (leptons.at(0)+leptons.at(1)+fatjets.at(index_fjW)).M(), thisweight, 0., 2000., 2000);
+  }
+
   if(thieweighterr!=0.){
-    FillDiLeptonPlot(histsuffix+"_up",   leptons, jets, jets_fwd, jets_nolepveto, thisweight + thieweighterr, 0.);
-    FillDiLeptonPlot(histsuffix+"_down", leptons, jets, jets_fwd, jets_nolepveto, thisweight - thieweighterr, 0.);
+    FillDiLeptonPlot(histsuffix+"_up",   leptons, jets, jets_fwd, jets_nolepveto, fatjets, thisweight + thieweighterr, 0.);
+    FillDiLeptonPlot(histsuffix+"_down", leptons, jets, jets_fwd, jets_nolepveto, fatjets, thisweight - thieweighterr, 0.);
 
     //==== Check Single/Double Fake
 
     //==== 1) LL : thisweight = -e^2
     if(NTightLeptons==0){
-      FillDiLeptonPlot(histsuffix+"_SingleFake", leptons, jets, jets_fwd, jets_nolepveto, 2.*thisweight, 0.);
-      FillDiLeptonPlot(histsuffix+"_DoubleFake", leptons, jets, jets_fwd, jets_nolepveto, -1.*thisweight, 0.);
+      FillDiLeptonPlot(histsuffix+"_SingleFake", leptons, jets, jets_fwd, jets_nolepveto, fatjets, 2.*thisweight, 0.);
+      FillDiLeptonPlot(histsuffix+"_DoubleFake", leptons, jets, jets_fwd, jets_nolepveto, fatjets, -1.*thisweight, 0.);
     }
     //==== 2) TL : thisweight = e
     if(NTightLeptons==1){
-      FillDiLeptonPlot(histsuffix+"_SingleFake", leptons, jets, jets_fwd, jets_nolepveto, thisweight, 0.);
+      FillDiLeptonPlot(histsuffix+"_SingleFake", leptons, jets, jets_fwd, jets_nolepveto, fatjets, thisweight, 0.);
     }
 
   }
@@ -2201,6 +2379,16 @@ void DiLeptonAnalyzer::get_eventweight(std::vector<snu::KMuon> muons, std::vecto
 
 }
 
+bool DiLeptonAnalyzer::JSFatJetID(snu::KFatJet fatjet){
+
+  if( !(fatjet.PrunedMass() > 65) ) return false;
+  if( !(fatjet.PrunedMass() < 105) ) return false;
+  if( !( fatjet.Tau2()/fatjet.Tau1() < 0.45 ) ) return false;
+  if( !( fatjet.Pt() > 200. ) ) return false;
+
+  return true;
+
+}
 
 
 

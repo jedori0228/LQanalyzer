@@ -28,6 +28,7 @@ class DiLeptonAnalyzer : public AnalyzerCore {
     std::vector< snu::KJet > jets,
     std::vector< snu::KJet > jets_fwd,
     std::vector< snu::KJet > jets_nolepveto,
+    std::vector< snu::KFatJet > fatjets,
     double thisweight,
     double thieweighterr
   );
@@ -73,6 +74,9 @@ class DiLeptonAnalyzer : public AnalyzerCore {
   int n_vtx;
   int index_jjW_j1, index_jjW_j2;
   int index_lljjW_j1, index_lljjW_j2;
+  int index_fjW;
+
+  bool JSFatJetID(snu::KFatJet fatjet);
 
   bool RunNtp;
 
