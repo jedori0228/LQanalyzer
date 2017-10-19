@@ -77,6 +77,7 @@ class DiLeptonAnalyzer : public AnalyzerCore {
   int index_fjW;
 
   bool JSFatJetID(snu::KFatJet fatjet);
+  bool IsAwayFromFatjet(snu::KJet jet, vector<snu::KFatJet> fatjets);
 
   bool RunNtp;
 

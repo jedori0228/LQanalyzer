@@ -382,9 +382,10 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
   //==== Jets
   std::vector<snu::KJet> jets_eta5_nolepveto_loosest = GetJets("JET_HN_eta5_nolepveto_loosest", 10., 5.);
+  //std::vector<snu::KJet> jets_eta5_nolepveto_loosest = GetJetsWFT("JET_HN_eta5_nolepveto_loosest", 10., 5.);
 
   //==== Fatjets
-  std::vector<snu::KFatJet> fatjets_loosest = GetFatJets("FATJET_NOCUT");
+  std::vector<snu::KFatJet> fatjets_loosest = GetFatJets("FATJET_HN_loosest");
 
 /*
   //==== jet HadFlavour vs BTagging
@@ -746,6 +747,44 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       //==== AnalyzerCore::JSCorrectedMETRochester(std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi)
       JSCorrectedMETRochester(muons, MET, METphi);
 
+      //==================
+      //==== Make Fatjet
+      //==================
+
+      vector<snu::KFatJet> fatjets;
+      if( (this_syst == "_JetEn_up") || (this_syst == "_JetRes_up") ){
+        for(unsigned int j=0; j<fatjets_loosest.size(); j++){
+          snu::KFatJet this_jet = fatjets_loosest.at(j);
+
+          double this_scaling = 1.;
+          if(this_syst == "_JetEn_up") this_scaling = this_jet.ScaledUpEnergy();
+          if(this_syst == "_JetRes_up") this_scaling = this_jet.SmearedResUp()/this_jet.SmearedRes();
+          this_jet *= this_scaling;
+
+          if(JSFatJetID(this_jet)) fatjets.push_back(this_jet);
+        }
+      }
+      else if( (this_syst == "_JetEn_down") || (this_syst == "_JetRes_down") ){
+        for(unsigned int j=0; j<fatjets_loosest.size(); j++){
+          snu::KFatJet this_jet = fatjets_loosest.at(j);
+
+          double this_scaling = 1.;
+          if(this_syst == "_JetEn_down") this_scaling = this_jet.ScaledDownEnergy();
+          if(this_syst == "_JetRes_down") this_scaling = this_jet.SmearedResDown()/this_jet.SmearedRes();;
+          this_jet *= this_scaling;
+
+          if(JSFatJetID(this_jet)) fatjets.push_back(this_jet);
+        }
+      }
+      else{
+        for(unsigned int j=0; j<fatjets_loosest.size(); j++){
+          snu::KFatJet this_jet = fatjets_loosest.at(j);
+
+          if(JSFatJetID(this_jet)) fatjets.push_back(this_jet);
+        }
+      }
+      //cout << "fatjets.size() = " << fatjets.size() << endl;
+
       //===============
       //==== Make Jet
       //===============
@@ -794,7 +833,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         }
       }
 
-      std::vector<snu::KJet> jets; // eta < 2.5, lepton-veto
+      std::vector<snu::KJet> jets; // eta < 2.5, lepton-veto, away from fatjets
       std::vector<snu::KJet> jets_nolepveto; // eta < 2.5, NO lepton-veto
       std::vector<snu::KJet> jets_fwd; // 2.5 < eta < 5, lepton-veto => to make forward
 
@@ -804,8 +843,9 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         bool IsNormalJet = fabs( this_jet.Eta() ) < 2.5;
         bool IsForwardJet = fabs( this_jet.Eta() ) >= 2.5;
         bool lepinside = HasLeptonInsideJet(this_jet, muons_veto, electrons_veto);
+        bool awayfromfatjet = IsAwayFromFatjet(this_jet, fatjets);
 
-        if(IsNormalJet && !lepinside) jets.push_back( this_jet );
+        if(IsNormalJet && !lepinside && awayfromfatjet) jets.push_back( this_jet );
         if(IsNormalJet) jets_nolepveto.push_back( this_jet );
         if(IsForwardJet && !lepinside) jets_fwd.push_back( this_jet );
 
@@ -837,62 +877,6 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
           nbjets_fwd++;
         }
       }
-
-      //==== Remove FatJet with jet inside
-      //cout << "fatjets_loosest.size() = " << fatjets_loosest.size() << endl;
-      vector<snu::KFatJet> fatjets_loosest_jetremoved;
-      for(unsigned int j=0; j<fatjets_loosest.size(); j++){
-        snu::KFatJet this_fatjet = fatjets_loosest.at(j);
-
-        //==== Remove jet
-        bool JetInsideFatjet = false;
-        for(unsigned int k=0; k<jets.size(); k++){
-          if( this_fatjet.DeltaR( jets.at(k) ) < 0.8 ){
-            JetInsideFatjet = true;
-            break;
-          }
-        }
-        if(JetInsideFatjet) continue;
-
-        fatjets_loosest_jetremoved.push_back(this_fatjet);
-      }
-      //cout << "fatjets_loosest_jetremoved.size() = " << fatjets_loosest_jetremoved.size() << endl;
-
-      //==== Do Up Down //TODO
-      //==== Also apply ID cuts!
-      vector<snu::KFatJet> fatjets;
-      if( (this_syst == "_JetEn_up") || (this_syst == "_JetRes_up") ){
-        for(unsigned int j=0; j<fatjets_loosest_jetremoved.size(); j++){
-          snu::KFatJet this_jet = fatjets_loosest_jetremoved.at(j);
-
-          double this_scaling = 1.;
-          if(this_syst == "_JetEn_up") this_scaling = this_jet.ScaledUpEnergy();
-          if(this_syst == "_JetRes_up") this_scaling = this_jet.SmearedResUp()/this_jet.SmearedRes();
-          this_jet *= this_scaling;
-
-          if(JSFatJetID(this_jet)) fatjets.push_back(this_jet);
-        }
-      }
-      else if( (this_syst == "_JetEn_down") || (this_syst == "_JetRes_down") ){
-        for(unsigned int j=0; j<fatjets_loosest_jetremoved.size(); j++){
-          snu::KFatJet this_jet = fatjets_loosest_jetremoved.at(j);
-
-          double this_scaling = 1.;
-          if(this_syst == "_JetEn_down") this_scaling = this_jet.ScaledDownEnergy();
-          if(this_syst == "_JetRes_down") this_scaling = this_jet.SmearedResDown()/this_jet.SmearedRes();;
-          this_jet *= this_scaling;
-
-          if(JSFatJetID(this_jet)) fatjets.push_back(this_jet);
-        }
-      }
-      else{
-        for(unsigned int j=0; j<fatjets_loosest_jetremoved.size(); j++){
-          snu::KFatJet this_jet = fatjets_loosest_jetremoved.at(j);
-          
-          if(JSFatJetID(this_jet)) fatjets.push_back(this_jet);
-        }
-      }
-      //cout << "fatjets.size() = " << fatjets.size() << endl;
 
       //==== Lepton Numbers
 
@@ -1300,17 +1284,11 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       for(unsigned int ij=0; ij <jets.size(); ij++){
         ST += jets.at(ij).Pt();
       }
-      for(unsigned int ij=0; ij <fatjets.size(); ij++){
-        ST += fatjets.at(ij).Pt();
-      }
 
       //==== HT = jet
       HT = 0.;
       for(unsigned int ij=0; ij <jets.size(); ij++){
         HT += jets.at(ij).Pt();
-      }
-      for(unsigned int ij=0; ij <fatjets.size(); ij++){
-        HT += fatjets.at(ij).Pt();
       }
 
       //==== LT = lepton
@@ -1350,10 +1328,11 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
       //==== Preselection
 
-      bool TwoJet_NoFatJet = (jets.size()>=2) && (fatjets.size()==0);
+      bool TwoJet_NoFatjet = (jets.size()>=2) && (fatjets.size()==0);
+      bool OneJet = (jets.size()==1)&&( (lep.at(0)+lep.at(1)).M() < 80 ); // has m(ll) < 80 GeV
       bool OneFatJet = (fatjets.size()>=1);
 
-      map_Region_to_Bool[Suffix+"_Preselection"] = TwoJet_NoFatJet || OneFatJet;
+      map_Region_to_Bool[Suffix+"_Preselection"] = TwoJet_NoFatjet || OneJet || OneFatJet;
       map_Region_to_Bool[Suffix+"_Preselection_secondptge20"] = map_Region_to_Bool[Suffix+"_Preselection"] && (lep.at(1).Pt() >= 20.);
       //==== For DiElectron, remove Z peak (CF)
       if(Suffix.Contains("DiElectron")){
@@ -1365,41 +1344,62 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       if(map_Region_to_Bool[Suffix+"_Preselection"]){
 
         //==== Low Mass
-        //==== Only using TwoJet_NoFatJet
-        map_Region_to_Bool[Suffix+"_Low"] = TwoJet_NoFatJet &&
+        //==== 1) TwoJet_NoFatJet
+        //==== 2) OneJet (has mll<80GeV cut)
+
+        double mlljj_low = -999.;
+        if(TwoJet_NoFatjet) mlljj_low = (lep.at(0)+lep.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M();
+        else if(OneJet) mlljj_low = (lep.at(0)+lep.at(1)+jets.at(0)).M();
+
+        map_Region_to_Bool[Suffix+"_Low"] = (TwoJet_NoFatjet || OneJet) &&
                                             (nbjets_nolepveto == 0) &&
-                                            ( (lep.at(0)+lep.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M() < 300. ) &&
+                                            ( mlljj_low < 300.);
                                             (MET < 80.);
-        map_Region_to_Bool[Suffix+"_LowCR"] = TwoJet_NoFatJet &&
+        map_Region_to_Bool[Suffix+"_LowCR"] = (TwoJet_NoFatjet || OneJet) &&
                                               ( (nbjets_nolepveto >= 1) || (MET > 100.) ) &&
-                                              ( (lep.at(0)+lep.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M() < 300. );
+                                              ( mlljj_low < 300.);
+
+        map_Region_to_Bool[Suffix+"_Low_TwoJet_NoFatjet"] = TwoJet_NoFatjet &&
+                                                            (nbjets_nolepveto == 0) &&
+                                                            ( mlljj_low < 300.) &&
+                                                            (MET < 80.);
+        map_Region_to_Bool[Suffix+"_LowCR_TwoJet_NoFatjet"] = TwoJet_NoFatjet &&
+                                                              ( (nbjets_nolepveto >= 1) || (MET > 100.) ) &&
+                                                              ( mlljj_low < 300.);
+
+        map_Region_to_Bool[Suffix+"_Low_OneJet"] = OneJet &&
+                                                   (nbjets_nolepveto == 0) &&
+                                                   ( mlljj_low < 300.);
+                                                   (MET < 80.);
+        map_Region_to_Bool[Suffix+"_LowCR_OneJet"] = OneJet &&
+                                                     ( (nbjets_nolepveto >= 1) || (MET > 100.) ) &&
+                                                     ( mlljj_low < 300.);
 
         //==== High Mass
-        //==== 1) TwoJet_NoFatJet
+        //==== 1) TwoJet_NoFatjet
         //==== 2) OneFatJet
 
         double mjj_high = -999.;
-        if(TwoJet_NoFatJet){
+        if(TwoJet_NoFatjet){
           mjj_high = (jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M();
         }
         else if(OneFatJet){
           mjj_high = fatjets.at(index_fjW).PrunedMass();
         }
         else{
-          cout << "WTF" << endl;
-          exit(EXIT_FAILURE);
+          
         }
 
-        map_Region_to_Bool[Suffix+"_High"] = map_Region_to_Bool[Suffix+"_Preselection"] &&
+        map_Region_to_Bool[Suffix+"_High"] = ( TwoJet_NoFatjet || OneFatJet ) &&
                                              (nbjets_nolepveto == 0) &&
                                              ( mjj_high < 150. ) &&
                                              ( MET*MET/ST < 15. );
-        map_Region_to_Bool[Suffix+"_HighCR"] = map_Region_to_Bool[Suffix+"_Preselection"] &&
+        map_Region_to_Bool[Suffix+"_HighCR"] = ( TwoJet_NoFatjet || OneFatJet ) &&
                                                ( (nbjets_nolepveto >= 1) || (MET*MET/ST > 20.) ) &&
                                                ( mjj_high < 150. );
 
-        map_Region_to_Bool[Suffix+"_High_TwoJet_NoFatJet"]   = map_Region_to_Bool[Suffix+"_High"] && TwoJet_NoFatJet;
-        map_Region_to_Bool[Suffix+"_HighCR_TwoJet_NoFatJet"] = map_Region_to_Bool[Suffix+"_HighCR"] && TwoJet_NoFatJet;
+        map_Region_to_Bool[Suffix+"_High_TwoJet_NoFatjet"]   = map_Region_to_Bool[Suffix+"_High"] && TwoJet_NoFatjet;
+        map_Region_to_Bool[Suffix+"_HighCR_TwoJet_NoFatjet"] = map_Region_to_Bool[Suffix+"_HighCR"] && TwoJet_NoFatjet;
 
         map_Region_to_Bool[Suffix+"_High_OneFatJet"]   = map_Region_to_Bool[Suffix+"_High"] && OneFatJet;
         map_Region_to_Bool[Suffix+"_HighCR_OneFatJet"] = map_Region_to_Bool[Suffix+"_HighCR"] && OneFatJet;
@@ -1496,8 +1496,8 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         cutop[10] = jets_fwd.size();
         cutop[11] = nbjets_fwd;
 
-        //==== Two Jets
-        if(jets.size() >= 2){
+        //==== Two Jets no Fatjet
+        if(TwoJet_NoFatjet){
 
           //==== pt order
           cutop[12] = jets.at(0).Pt();
@@ -1536,7 +1536,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
         }
         //==== fatjet
-        else{
+        else if(OneFatJet){
           for(int j=12;j<=40;j++) cutop[j] = -999.;
 
           //==== pt order
@@ -1561,6 +1561,21 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
           cutop[28] = lep.at(0).DeltaR( lep.at(1)+fatjets.at(index_fjW) );
           cutop[29] = lep.at(1).DeltaR( lep.at(0)+fatjets.at(index_fjW) );
 
+        }
+        else if(OneJet){
+          for(int j=12;j<=40;j++) cutop[j] = -999.;
+
+          cutop[12] = jets.at(0).Pt();
+          cutop[13] = -999;
+          cutop[14] = -999.;
+          cutop[15] = (jets.at(0)).M();
+          cutop[16] = (lep.at(0)+jets.at(0)).M();
+          cutop[17] = (lep.at(1)+jets.at(0)).M();
+          cutop[18] = (lep.at(0)+lep.at(1)+jets.at(0)).M();
+
+        }
+        else{
+          for(int j=12;j<=40;j++) cutop[j] = -999.;
         }
 
         //==== Two Forward Jets
@@ -1979,7 +1994,6 @@ void DiLeptonAnalyzer::FillDiLeptonPlot(
       JSFillHist(histsuffix, "WClosest_FatJet_Eta_"+histsuffix, fatjets.at(i).Eta(), thisweight, -3., 3., 60);
       JSFillHist(histsuffix, "WClosest_FatJet_Mass_"+histsuffix, fatjets.at(i).M(), thisweight, 0., 2000., 2000);
       JSFillHist(histsuffix, "WClosest_FatJet_PrunedMass_"+histsuffix, fatjets.at(i).PrunedMass(), thisweight, 0., 2000., 2000);
-      JSFillHist(histsuffix, "WClosest_FatJet_Tau2_"+histsuffix, fatjets.at(i).Tau2(), thisweight, 0., 1., 100);
       JSFillHist(histsuffix, "WClosest_FatJet_Tau21_"+histsuffix, fatjets.at(i).Tau2()/fatjets.at(i).Tau1(), thisweight, 0., 1., 100);
     }
     if(i==4) break;
@@ -1991,6 +2005,11 @@ void DiLeptonAnalyzer::FillDiLeptonPlot(
     JSFillHist(histsuffix, leporder[i]+"FatJet_Tau21_"+histsuffix, fatjets.at(i).Tau2()/fatjets.at(i).Tau1(), thisweight, 0., 1., 100);
   }
 
+  if(jets.size() == 1){
+    JSFillHist(histsuffix, "m_Leadlj_"+histsuffix, (leptons.at(0)+jets.at(0)).M(), thisweight, 0., 2000., 2000);
+    JSFillHist(histsuffix, "m_SubLeadlj_"+histsuffix, (leptons.at(1)+jets.at(0)).M(), thisweight, 0., 2000., 2000);
+    JSFillHist(histsuffix, "m_llj_"+histsuffix, (leptons.at(0)+leptons.at(1)+jets.at(0)).M(), thisweight, 0., 2000., 2000);
+  }
   if(jets.size() >= 2){
     //==== m(jj) closeset to m(W) : high mass scenario
     JSFillHist(histsuffix, "m_jj_jjWclosest_"+histsuffix, (jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M(), thisweight, 0., 2000., 2000);
@@ -2381,16 +2400,25 @@ void DiLeptonAnalyzer::get_eventweight(std::vector<snu::KMuon> muons, std::vecto
 
 bool DiLeptonAnalyzer::JSFatJetID(snu::KFatJet fatjet){
 
-  if( !(fatjet.PrunedMass() > 65) ) return false;
-  if( !(fatjet.PrunedMass() < 105) ) return false;
-  if( !( fatjet.Tau2()/fatjet.Tau1() < 0.45 ) ) return false;
-  if( !( fatjet.Pt() > 200. ) ) return false;
+  if( !(fatjet.PrunedMass() > 40) ) return false;
+  if( !(fatjet.PrunedMass() < 130) ) return false;
+  if( !( fatjet.Tau2()/fatjet.Tau1() < 0.60 ) ) return false;
+  if( !( fatjet.Pt() > 100. ) ) return false;
 
   return true;
 
 }
 
+bool DiLeptonAnalyzer::IsAwayFromFatjet(snu::KJet jet, vector<snu::KFatJet> fatjets){
 
+  for(unsigned int i=0; i<fatjets.size(); i++){
+    if( jet.DeltaR( fatjets.at(i) ) < 0.8 ) return false;
+  }
+
+  return true;
+
+
+}
 
 
 
