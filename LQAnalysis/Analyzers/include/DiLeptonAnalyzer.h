@@ -77,13 +77,13 @@ class DiLeptonAnalyzer : public AnalyzerCore {
   int index_fjW;
 
   bool JSFatJetID(snu::KFatJet fatjet);
-  bool IsAwayFromFatjet(snu::KJet jet, vector<snu::KFatJet> fatjets);
+  bool IsAwayFromFatJet(snu::KJet jet, vector<snu::KFatJet> fatjets);
 
   bool RunNtp;
 
   double GetDijetMassClosest(std::vector<snu::KJet> js, double mass, int& m, int& n);
   double GetDileptonDijetMassClosest(std::vector<KLepton> leps, std::vector<snu::KJet> js, double mass, int& m, int& n);
-  double GetFatjetMassClosest(std::vector<snu::KFatJet> fjs, double mass, int& m);
+  double GetFatJetMassClosest(std::vector<snu::KFatJet> fjs, double mass, int& m);
 
   //==== PDFs
   vector<float> *ForTree_PdfWeights;
