@@ -452,21 +452,21 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
 
   nbjets = 0;
   for(int j=0; j<jets.size(); j++){
-    if( IsBTagged(jets.at(j), snu::KJet::CSVv2, snu::KJet::Medium) ){
+    if( IsBTagged(jets.at(j), snu::KJet::CSVv2, snu::KJet::Medium) && fabs(jets.at(j).Eta())<2.4 ){
       nbjets++;
     }
   }
 
   nbjets_nolepveto = 0;
   for(int j=0; j<jets_nolepveto.size(); j++){
-    if( IsBTagged(jets_nolepveto.at(j), snu::KJet::CSVv2, snu::KJet::Medium) ){
+    if( IsBTagged(jets_nolepveto.at(j), snu::KJet::CSVv2, snu::KJet::Medium) && fabs(jets_nolepveto.at(j).Eta())<2.4 ){
       nbjets_nolepveto++;
     }
   }
 
   nbjets_fwd = 0;
   for(int j=0; j<jets_fwd.size(); j++){
-    if( IsBTagged(jets_fwd.at(j), snu::KJet::CSVv2, snu::KJet::Medium) ){
+    if( IsBTagged(jets_fwd.at(j), snu::KJet::CSVv2, snu::KJet::Medium) && fabs(jets_fwd.at(j).Eta())<2.4 ){
       nbjets_fwd++;
     }
   }
@@ -924,16 +924,21 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
     if(Suffix.Contains("Three")){
 
       bool OSSF_ZGveto = (WithOSSF_OnZ) && ( (lep.at(0)+lep.at(1)+lep.at(2)).M() - m_Z  > 15. ) && (nbjets_nolepveto==0);
-      map_Region_to_Bool[Suffix+"_WZ"]                   = OSSF_ZGveto && (MET > 50.);
-      map_Region_to_Bool[Suffix+"_WZ_NotAllSameFlavour"] = OSSF_ZGveto && (MET > 50.) && !AllSameFlavour;
-      map_Region_to_Bool[Suffix+"_WZ_AllSameFlavour"]    = OSSF_ZGveto && (MET > 50.) && AllSameFlavour;
+      map_Region_to_Bool[Suffix+"_WZ"]                   = OSSF_ZGveto && (MET > 50.); // eee, eem, emm, mmm
+      map_Region_to_Bool[Suffix+"_WZ_NotAllSameFlavour"] = OSSF_ZGveto && (MET > 50.) && !AllSameFlavour; // eem, emm
+      map_Region_to_Bool[Suffix+"_WZ_AllSameFlavour"]    = OSSF_ZGveto && (MET > 50.) && AllSameFlavour; // eee, mmm
 
       map_Region_to_Bool[Suffix+"_ZGamma"] = (WithOS_lll_OnZ) && (!WithOSSF_OnZ) && (MET < 50.) && (nbjets_nolepveto==0);
     }
     if(Suffix.Contains("Four")){
-      map_Region_to_Bool[Suffix+"_ZZ"] = WithTwoZPair && (nbjets_nolepveto==0);
-      map_Region_to_Bool[Suffix+"_ZZ_NotAllSameFlavour"] = WithTwoZPair && (nbjets_nolepveto==0) && !AllSameFlavour;
-      map_Region_to_Bool[Suffix+"_ZZ_AllSameFlavour"] = WithTwoZPair && (nbjets_nolepveto==0) && AllSameFlavour;
+      map_Region_to_Bool[Suffix+"_ZZ"] = WithTwoZPair && (nbjets_nolepveto==0); // eeee, eemm, mmmm
+      map_Region_to_Bool[Suffix+"_ZZ_NotAllSameFlavour"] = WithTwoZPair && (nbjets_nolepveto==0) && !AllSameFlavour; // eemm
+      if(Suffix=="DiElectron_FourLepton"){
+        if(PassTriggerOR(triggerlist_DiMuon)){
+          map_Region_to_Bool[Suffix+"_ZZ_NotAllSameFlavour"] = false;
+        }
+      }
+      map_Region_to_Bool[Suffix+"_ZZ_AllSameFlavour"] = WithTwoZPair && (nbjets_nolepveto==0) && AllSameFlavour; // eeee, mmmm
     }
 
     //==== ST = lepton + jet + MET
