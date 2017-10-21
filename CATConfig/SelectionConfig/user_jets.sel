@@ -6,3 +6,8 @@ webpage https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID
 | LPJET_HN_PU1          | 20.     | 5.     | Loose  | true     |  false  |  false         | MUON_HN_VETO         | ELECTRON_HN_FAKELOOSEST        |
 | LPJET_HN_PU2          | 20.     | 5.     | Medium  | true     |  false  |  false         | MUON_HN_VETO         | ELECTRON_HN_FAKELOOSEST        |
 | LPJET_HN_PU3          | 20.     | 5.     | Tight  | true     |  false  |  false         | MUON_HN_VETO         | ELECTRON_HN_FAKELOOSEST        |
+| JET_HN_eta5                     | 20.     | 5.      | false  | true     |  false  |  false         | MUON_HN_VETO                 | ELECTRON_HN_VETO                    |
+| JET_HN_eta5_nolepveto           | 20.     | 5.      | false  | true     |  false  |  false         | NONE                 | NONE                    |
+| JET_HN_eta5_loosest             | 10.     | 5.      | false  | true     |  false  |  false         | MUON_HN_VETO                 | ELECTRON_HN_VETO                    |
+| JET_HN_eta5_nolepveto_loosest   | 10.     | 5.      | false  | true     |  false  |  false         | NONE                 | NONE                    |
+

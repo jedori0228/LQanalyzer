@@ -430,12 +430,24 @@ Bool_t KElectron::PassTrigMVAHNLoose() const{
   if((fabs(this->SCEta())  < 2.5) &&(fabs(this->SCEta())  > 1.479) && k_mva > 0.37) return true;
 */
 
+
   //==== ELECTRON_HN_FAKELOOSEv7 opti
   //==== Iso 0.6 Opti
   //==== Based on light-haevy min diff
   if((fabs(this->SCEta()) < 0.8) && k_mva > -0.35) return true;
   if((fabs(this->SCEta())  > 0.8) &&(fabs(this->SCEta())  < 1.479)  && k_mva > -0.34) return true;
   if((fabs(this->SCEta())  < 2.5) &&(fabs(this->SCEta())  > 1.479) && k_mva > 0.43) return true;
+
+
+/*
+  //==== ELECTRON_HN_FAKELOOSEv8 opti
+  //==== Iso 0.6 Opti
+  //==== min pt 15 GeV is used
+  //==== Based on light-haevy min diff
+  if((fabs(this->SCEta()) < 0.8) && k_mva > -0.45) return true;
+  if((fabs(this->SCEta())  > 0.8) &&(fabs(this->SCEta())  < 1.479)  && k_mva > -0.49) return true;
+  if((fabs(this->SCEta())  < 2.5) &&(fabs(this->SCEta())  > 1.479) && k_mva > 0.35) return true;
+*/
 
 /*
   //==== ELECTRON_HN_FAKELOOSEv2 opti

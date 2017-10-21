@@ -101,6 +101,8 @@ class HNCommonLeptonFakes {
   void AddToTotals(float w,std::pair<float,float> err, bool mu1tight, bool mu2tight);
 
 
+  double k_weight, k_weight_err;
+
  private:
 
   /// path to root file

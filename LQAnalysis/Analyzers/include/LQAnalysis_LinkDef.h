@@ -22,5 +22,19 @@
 #pragma link C++ class HNEMu+;
 #pragma link C++ class GetFakeSF+;
 #pragma link C++ class PileupValidation+;
+#pragma link C++ class trilepton_mumumu+;
+#pragma link C++ class trilepton_mumumu_FR_method+;
+#pragma link C++ class FakeRateCalculator_Mu_dxysig+;
+#pragma link C++ class FRCalculator_Mu_dxysig_DILEP+;
+#pragma link C++ class FRCalculator_El_dxysig_DILEP+;
+#pragma link C++ class trilepton_mumumu_CR+;
+#pragma link C++ class trilepton_mumumu_CR_FR_method+;
+#pragma link C++ class Validation_trilepton+;
+#pragma link C++ class trilepton_mumumu_syst_FR+;
+#pragma link C++ class trilepton_mumumu_ntp+;
+#pragma link C++ class trilepton_mumumu_ntp_FR_method+;
+#pragma link C++ class trilepton_mumumu_MCClosure+;
+#pragma link C++ class DiLeptonAnalyzer+;
+#pragma link C++ class DiLeptonAnalyzer_CR+;
 
 #endif // __CINT__
