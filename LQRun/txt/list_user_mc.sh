@@ -1,7 +1,14 @@
 #!/bin/sh
 
 declare -a tmp=(
-'WpWpEWK' 'WpWpQCD'
+'HNMoriondLLMumMum_1100'
+'HNMoriondLLMupMup_1100'
+'HNMoriondLLMumMum_500'
+'HNMoriondLLMupMup_500'
+'HNMoriondLLEmEm_1100'
+'HNMoriondLLEpEp_1100'
+'HNMoriondLLEmEm_500'
+'HNMoriondLLEpEp_500'
 )
 
 declare -a nonprompt=(
@@ -270,12 +277,20 @@ declare -a dilep_analysisCR_bkg=(
 
 ## HNEmEm_250
 declare -a DiMuSig_Moriond=(
+'HNMoriondLLMumMum_1100'
+'HNMoriondLLMupMup_1100'
+'HNMoriondLLMumMum_500'
+'HNMoriondLLMupMup_500'
 'HNMoriondLLMumMum_200'
 'HNMoriondLLMupMup_200'
 'HNMoriondLLMumMum_100'
 'HNMoriondLLMupMup_100'
 'HNMoriondLLMumMum_50'
 'HNMoriondLLMupMup_50'
+'HNMoriondLLEmEm_1100'
+'HNMoriondLLEpEp_1100'
+'HNMoriondLLEmEm_500'
+'HNMoriondLLEpEp_500'
 'HNMoriondLLEmEm_200'
 'HNMoriondLLEpEp_200'
 'HNMoriondLLEmEm_100'
