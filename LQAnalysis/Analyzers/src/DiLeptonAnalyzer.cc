@@ -30,7 +30,7 @@ nbjets(-999), nbjets_fwd(-999), nbjets_nolepveto(-999), n_vtx(-999),
 index_jjW_j1(-999), index_jjW_j2(-999),
 index_lljjW_j1(-999), index_lljjW_j2(-999),
 index_fjW(-999),
-RunNtp(false)
+RunNtp(false),NowRunningCentral(true)
 {
   
   // To have the correct name in the log:                                                                                                                            
@@ -495,7 +495,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
     int N_sys = 2*11+1;
     int it_sys_start = 0;
     if(!RunNtp){
-      it_sys_start = 8;
+      it_sys_start = 0;
       N_sys = it_sys_start+1;
     }
 
@@ -507,39 +507,39 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       METphi = Evt.METPhi();
       TString this_syst;
       if(it_sys==0){
+        this_syst = ""; //Central
+      }
+      else if(it_sys==1){
         this_syst = "_MuonEn_up";
         //MET = Evt.PFMETShifted(snu::KEvent::MuonEn, snu::KEvent::up);
       }
-      else if(it_sys==1){
+      else if(it_sys==2){
         this_syst = "_MuonEn_down";
         //MET = Evt.PFMETShifted(snu::KEvent::MuonEn, snu::KEvent::down);
       }
-      else if(it_sys==2){
+      else if(it_sys==3){
         this_syst = "_JetEn_up";
         MET = Evt.PFMETShifted(snu::KEvent::JetEn, snu::KEvent::up);
       }
-      else if(it_sys==3){
+      else if(it_sys==4){
         this_syst = "_JetEn_down";
         MET = Evt.PFMETShifted(snu::KEvent::JetEn, snu::KEvent::down);
       }
-      else if(it_sys==4){
+      else if(it_sys==5){
         this_syst = "_JetRes_up";
         MET = Evt.PFMETShifted(snu::KEvent::JetRes, snu::KEvent::up);
       }
-      else if(it_sys==5){
+      else if(it_sys==6){
         this_syst = "_JetRes_down";
         MET = Evt.PFMETShifted(snu::KEvent::JetRes, snu::KEvent::down);
       }
-      else if(it_sys==6){
+      else if(it_sys==7){
         this_syst = "_Unclustered_up";
         MET = Evt.PFMETShifted(snu::KEvent::Unclustered, snu::KEvent::up);
       }
-      else if(it_sys==7){
+      else if(it_sys==8){
         this_syst = "_Unclustered_down";
         MET = Evt.PFMETShifted(snu::KEvent::Unclustered, snu::KEvent::down);
-      }
-      else if(it_sys==8){
-        this_syst = ""; //Central
       }
       else if(it_sys==9){
         this_syst = "_MuonIDSF_up";
@@ -586,6 +586,13 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       else{
         Message("it_sys out of range!" , INFO);
         return;
+      }
+
+      if(this_syst==""){
+        NowRunningCentral = true;
+      }
+      else{
+        NowRunningCentral = false;
       }
 
       TString Suffix = OriginalSuffix+this_syst;
@@ -779,6 +786,10 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       else{
         for(unsigned int j=0; j<fatjets_loosest.size(); j++){
           snu::KFatJet this_jet = fatjets_loosest.at(j);
+
+          if(k_sample_name.Contains("HN")){ //FIXME
+            FillHist(Suffix+"_"+"BeforeIDCut_FatJetPrunedMass", this_jet.PrunedMass(), 1., 0., 500., 500);
+          }
 
           if(JSFatJetID(this_jet)) fatjets.push_back(this_jet);
         }
@@ -1361,7 +1372,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
         map_Region_to_Bool[Suffix+"_Low"] = (TwoJet_NoFatJet || OneJet_NoFatJet) &&
                                             (nbjets_nolepveto == 0) &&
-                                            ( mlljj_low < 300.);
+                                            ( mlljj_low < 300.) &&
                                             (MET < 80.);
         map_Region_to_Bool[Suffix+"_LowCR"] = (TwoJet_NoFatJet || OneJet_NoFatJet) &&
                                               ( (nbjets_nolepveto >= 1) || (MET > 100.) ) &&
@@ -1377,7 +1388,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
         map_Region_to_Bool[Suffix+"_Low_OneJet_NoFatJet"] = OneJet_NoFatJet &&
                                                    (nbjets_nolepveto == 0) &&
-                                                   ( mlljj_low < 300.);
+                                                   ( mlljj_low < 300.) &&
                                                    (MET < 80.);
         map_Region_to_Bool[Suffix+"_LowCR_OneJet_NoFatJet"] = OneJet_NoFatJet &&
                                                      ( (nbjets_nolepveto >= 1) || (MET > 100.) ) &&
@@ -1557,7 +1568,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
           cutop[18] = (lep.at(0)+lep.at(1)+fatjets.at(0)).M();
 
           //==== m(fj)~W (high mass)
-          cutop[19] = fatjets.at(index_jjW_j1).Pt();
+          cutop[19] = fatjets.at(index_fjW).Pt();
           cutop[20] = -999.;
           cutop[21] = (fatjets.at(index_fjW)).PrunedMass();
           cutop[22] = (lep.at(0)+fatjets.at(index_fjW)).M();
@@ -1610,22 +1621,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         cutop[48] = lep.at(0).Eta();
         cutop[49] = lep.at(1).Eta();
 
-        double sceta_0 = -999;
-        if(lep.at(0).LeptonFlavour() == KLepton::ELECTRON){
-          cutop[50] = lep.at(0).GetElectronPtr()->SCEta();
-        }
-        else{
-          cutop[50] = -999.;
-        }
-
-        if(lep.at(1).LeptonFlavour() == KLepton::ELECTRON){
-          cutop[51] = lep.at(1).GetElectronPtr()->SCEta();
-        }
-        else{
-          cutop[51] = -999.;
-        }
-
-        cutop[52] = fatjets.size();
+        cutop[50] = fatjets.size();
 
 
         FillNtp("Ntp_"+Suffix+"_Preselection_SS",cutop);
@@ -1885,7 +1881,7 @@ void DiLeptonAnalyzer::MakeHistograms(){
   Message("Made histograms", INFO);
 
   int N_sys = 2*11+1;
-  TString systs[] = {"_MuonEn_up", "_MuonEn_down", "_JetEn_up", "_JetEn_down", "_JetRes_up", "_JetRes_down", "_Unclustered_up", "_Unclustered_down", "", "_MuonIDSF_up", "_MuonIDSF_down", "_PU_down", "_PU_up", "_TriggerSF_down", "_TriggerSF_up", "_ElectronIDSF_up", "_ElectronIDSF_down", "_ElectronEn_up", "_ElectronEn_down", "_BTagSFEff_up", "_BTagSFEff_down", "_BTagSFMiss_up", "_BTagSFMiss_down"};
+  TString systs[] = {"", "_MuonEn_up", "_MuonEn_down", "_JetEn_up", "_JetEn_down", "_JetRes_up", "_JetRes_down", "_Unclustered_up", "_Unclustered_down", "_MuonIDSF_up", "_MuonIDSF_down", "_PU_down", "_PU_up", "_TriggerSF_down", "_TriggerSF_up", "_ElectronIDSF_up", "_ElectronIDSF_down", "_ElectronEn_up", "_ElectronEn_down", "_BTagSFEff_up", "_BTagSFEff_down", "_BTagSFMiss_up", "_BTagSFMiss_down"};
 
   for(int i=0; i<N_sys; i++){
 
@@ -1937,7 +1933,7 @@ void DiLeptonAnalyzer::FillDiLeptonPlot(
   double thieweighterr
   ){
 
-  if(RunNtp) return;
+  if(!NowRunningCentral) return;
 
   TString leporder[4] = {"leading", "second", "third", "fourth"};
 

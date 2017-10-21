@@ -80,6 +80,7 @@ class DiLeptonAnalyzer : public AnalyzerCore {
   bool IsAwayFromFatJet(snu::KJet jet, vector<snu::KFatJet> fatjets);
 
   bool RunNtp;
+  bool NowRunningCentral;
 
   double GetDijetMassClosest(std::vector<snu::KJet> js, double mass, int& m, int& n);
   double GetDileptonDijetMassClosest(std::vector<KLepton> leps, std::vector<snu::KJet> js, double mass, int& m, int& n);
