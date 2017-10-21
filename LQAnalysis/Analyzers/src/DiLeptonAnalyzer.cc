@@ -385,7 +385,8 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   //std::vector<snu::KJet> jets_eta5_nolepveto_loosest = GetJetsWFT("JET_HN_eta5_nolepveto_loosest", 10., 5.);
 
   //==== FatJets
-  std::vector<snu::KFatJet> fatjets_loosest = GetFatJets("FATJET_HN_loosest");
+  std::vector<snu::KFatJet> fatjets_loosest_UnSmeared = GetFatJets("FATJET_HN_loosest");
+  std::vector<snu::KFatJet> fatjets_loosest = GetCorrectedFatJet(fatjets_loosest_UnSmeared); // JMR is applied. JER is not
 
 /*
   //==== jet HadFlavour vs BTagging
@@ -490,9 +491,11 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
     //==== 9) Electron Energy Scale
     //==== 10) BTagSF Eff
     //==== 11) BTagSF Miss 
+    //==== 12) Jet Mass Scale
+    //==== 13) Jet Mass Res
     //====================================
 
-    int N_sys = 2*11+1;
+    int N_sys = 2*13+1;
     int it_sys_start = 0;
     if(!RunNtp){
       it_sys_start = 0;
@@ -583,6 +586,19 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       else if(it_sys==22){
         this_syst = "_BTagSFMiss_down";
       }
+      else if(it_sys==23){
+        this_syst = "_JetMass_up";
+      }
+      else if(it_sys==24){
+        this_syst = "_JetMass_down";
+      }
+      else if(it_sys==25){
+        this_syst = "_JetMassRes_up";
+      }
+      else if(it_sys==26){
+        this_syst = "_JetMassRes_down";
+      }
+
       else{
         Message("it_sys out of range!" , INFO);
         return;
@@ -759,26 +775,34 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       //==================
 
       vector<snu::KFatJet> fatjets;
-      if( (this_syst == "_JetEn_up") || (this_syst == "_JetRes_up") ){
+      if( (this_syst == "_JetEn_up") || (this_syst == "_JetRes_up") || (this_syst == "_JetMass_up") || (this_syst == "_JetMassRes_up") ){
         for(unsigned int j=0; j<fatjets_loosest.size(); j++){
           snu::KFatJet this_jet = fatjets_loosest.at(j);
 
           double this_scaling = 1.;
+          double this_mass_scaling = 1.;
           if(this_syst == "_JetEn_up") this_scaling = this_jet.ScaledUpEnergy();
-          if(this_syst == "_JetRes_up") this_scaling = this_jet.SmearedResUp()/this_jet.SmearedRes();
+          if(this_syst == "_JetRes_up") this_scaling = this_jet.SmearedResUp(); // ak8jet "Energy" is not smeard by default now, so no need to divide SmearedRes()
+          if(this_syst == "_JetMass_up") this_mass_scaling = this_jet.ScaledMassUp();
+          if(this_syst == "_JetMassRes_up") this_mass_scaling = this_jet.SmearedMassResUp()/this_jet.SmearedMassRes();
           this_jet *= this_scaling;
+          this_jet.SetPrunedMass(this_jet.PrunedMass()*this_mass_scaling);
 
           if(JSFatJetID(this_jet)) fatjets.push_back(this_jet);
         }
       }
-      else if( (this_syst == "_JetEn_down") || (this_syst == "_JetRes_down") ){
+      else if( (this_syst == "_JetEn_down") || (this_syst == "_JetRes_down") || (this_syst == "_JetMass_down") || (this_syst == "_JetMassRes_down") ){
         for(unsigned int j=0; j<fatjets_loosest.size(); j++){
           snu::KFatJet this_jet = fatjets_loosest.at(j);
 
           double this_scaling = 1.;
+          double this_mass_scaling = 1.;
           if(this_syst == "_JetEn_down") this_scaling = this_jet.ScaledDownEnergy();
-          if(this_syst == "_JetRes_down") this_scaling = this_jet.SmearedResDown()/this_jet.SmearedRes();;
+          if(this_syst == "_JetRes_down") this_scaling = this_jet.SmearedResDown(); // ak8jet "Energy" is not smeard by default now, so no need to divide SmearedRes()
+          if(this_syst == "_JetMass_down") this_mass_scaling = this_jet.ScaledMassDown();
+          if(this_syst == "_JetMassRes_down") this_mass_scaling = this_jet.SmearedMassResDown()/this_jet.SmearedMassRes();
           this_jet *= this_scaling;
+          this_jet.SetPrunedMass(this_jet.PrunedMass()*this_mass_scaling);
 
           if(JSFatJetID(this_jet)) fatjets.push_back(this_jet);
         }
@@ -786,6 +810,9 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       else{
         for(unsigned int j=0; j<fatjets_loosest.size(); j++){
           snu::KFatJet this_jet = fatjets_loosest.at(j);
+
+          //==== ak8jet "Energy" is not smeard by default now, so we have to multiply SmearedRes()
+          this_jet *= this_jet.SmearedRes();
 
           if(k_sample_name.Contains("HN")){ //FIXME
             FillHist(Suffix+"_"+"BeforeIDCut_FatJetPrunedMass", this_jet.PrunedMass(), 1., 0., 500., 500);
@@ -795,6 +822,11 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         }
       }
       //cout << "fatjets.size() = " << fatjets.size() << endl;
+      double FatJetTau21_SF = 1.;
+      for(unsigned int j=0; j<fatjets.size(); j++){
+        FatJetTau21_SF *= GetFatJetSF(fatjets.at(j), 0.6, 0);
+      }
+      JSCorrectedMETFatJet(fatjets, MET, METphi);
 
       //===============
       //==== Make Jet
@@ -845,6 +877,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       }
 
       std::vector<snu::KJet> jets; // eta < 2.5, lepton-veto, away from fatjets
+      std::vector<snu::KJet> jets_InSideFatJet; // If jets inside fatjet, remove it's smearing from MET. Because FatJet smearing is already propagted to MET
       std::vector<snu::KJet> jets_nolepveto; // eta < 2.5, NO lepton-veto
       std::vector<snu::KJet> jets_fwd; // 2.5 < eta < 5, lepton-veto => to make forward
 
@@ -857,10 +890,12 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         bool awayfromfatjet = IsAwayFromFatJet(this_jet, fatjets);
 
         if(IsNormalJet && !lepinside && awayfromfatjet) jets.push_back( this_jet );
+        if(IsNormalJet && !lepinside && !awayfromfatjet) jets_InSideFatJet.push_back( this_jet );
         if(IsNormalJet) jets_nolepveto.push_back( this_jet );
         if(IsForwardJet && !lepinside) jets_fwd.push_back( this_jet );
 
       }
+      JSCorrectedMETJetInsideFatJet(jets_InSideFatJet, MET, METphi);
 
       int BTagSFDir = 0;
       if(this_syst == "_BTagSFEff_up") BTagSFDir = +1;
@@ -1063,7 +1098,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       if(Suffix.Contains("EMu")) trigger_ps_weight = EMu_MCTriggerWeight;
       else              trigger_ps_weight = WeightByTrigger(Triggers.at(i), TargetLumi);
 
-      double this_weight = weight*trigger_ps_weight;
+      double this_weight = weight*trigger_ps_weight*FatJetTau21_SF;
 
       //double muon_id_iso_sf = mcdata_correction->MuonScaleFactor(MuonTightID, muons, 0); //FIXME
       double muon_id_iso_sf = mcdata_correction->MuonScaleFactor("MUON_HN_TIGHT", muons, 0);
@@ -1880,8 +1915,8 @@ void DiLeptonAnalyzer::MakeHistograms(){
   AnalyzerCore::MakeHistograms();
   Message("Made histograms", INFO);
 
-  int N_sys = 2*11+1;
-  TString systs[] = {"", "_MuonEn_up", "_MuonEn_down", "_JetEn_up", "_JetEn_down", "_JetRes_up", "_JetRes_down", "_Unclustered_up", "_Unclustered_down", "_MuonIDSF_up", "_MuonIDSF_down", "_PU_down", "_PU_up", "_TriggerSF_down", "_TriggerSF_up", "_ElectronIDSF_up", "_ElectronIDSF_down", "_ElectronEn_up", "_ElectronEn_down", "_BTagSFEff_up", "_BTagSFEff_down", "_BTagSFMiss_up", "_BTagSFMiss_down"};
+  int N_sys = 2*13+1;
+  TString systs[] = {"", "_MuonEn_up", "_MuonEn_down", "_JetEn_up", "_JetEn_down", "_JetRes_up", "_JetRes_down", "_Unclustered_up", "_Unclustered_down", "_MuonIDSF_up", "_MuonIDSF_down", "_PU_down", "_PU_up", "_TriggerSF_down", "_TriggerSF_up", "_ElectronIDSF_up", "_ElectronIDSF_down", "_ElectronEn_up", "_ElectronEn_down", "_BTagSFEff_up", "_BTagSFEff_down", "_BTagSFMiss_up", "_BTagSFMiss_down", "_JetMass_up", "_JetMass_down", "_JetMassRes_up", "_JetMassRes_down"};
 
   for(int i=0; i<N_sys; i++){
 

@@ -439,6 +439,8 @@ class AnalyzerCore : public LQCycleBase {
   void JSCorrectedMETRochester(std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi);
   void JSCorrectedMETMuon(int sys, std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi);
   void JSCorrectedMETElectron(int sys, std::vector<snu::KElectron> elall, double& OrignialMET, double& OriginalMETPhi);
+  void JSCorrectedMETFatJet(std::vector<snu::KFatJet> fjets ,double& OrignialMET, double& OriginalMETPhi);
+  void JSCorrectedMETJetInsideFatJet(std::vector<snu::KJet> jets ,double& OrignialMET, double& OriginalMETPhi);
   void FillUpDownLeptonKinematicPlot(std::vector<KLepton> lep, TString suffix, double w, double w_err);
   void SetPlotHNTriLepMetInfo(double met, double metphi);
   void SetPlotHNTriLepParticleInfo(snu::KParticle* hn, snu::KParticle w_pri_lowmass, snu::KParticle w_pri_highmass, snu::KParticle w_sec);

@@ -4779,6 +4779,59 @@ void AnalyzerCore::JSCorrectedMETElectron(int sys, std::vector<snu::KElectron> e
 
 }
 
+void AnalyzerCore::JSCorrectedMETFatJet(std::vector<snu::KFatJet> fjetall, double& OrignialMET, double& OriginalMETPhi){
+
+  float met_x = OrignialMET*TMath::Cos(OriginalMETPhi);
+  float met_y = OrignialMET*TMath::Sin(OriginalMETPhi);
+
+  float px_orig(0.), py_orig(0.),px_shifted(0.), py_shifted(0.);
+  for(unsigned int ij=0; ij < fjetall.size() ; ij++){
+
+    px_orig += fjetall.at(ij).MiniAODPt()*TMath::Cos(fjetall.at(ij).Phi());
+    py_orig += fjetall.at(ij).MiniAODPt()*TMath::Sin(fjetall.at(ij).Phi());
+
+    px_shifted += fjetall.at(ij).Px();
+    py_shifted += fjetall.at(ij).Py();
+
+  }
+
+  met_x = met_x + px_orig - px_shifted;
+  met_y = met_y + py_orig - py_shifted;
+
+  OrignialMET =  sqrt(met_x*met_x + met_y*met_y);
+  OriginalMETPhi = TMath::ATan2(met_y,met_x);
+
+}
+
+void AnalyzerCore::JSCorrectedMETJetInsideFatJet(std::vector<snu::KJet> jets ,double& OrignialMET, double& OriginalMETPhi){
+
+  float met_x = OrignialMET*TMath::Cos(OriginalMETPhi);
+  float met_y = OrignialMET*TMath::Sin(OriginalMETPhi);
+
+  float px_orig(0.), py_orig(0.),px_shifted(0.), py_shifted(0.);
+  for(unsigned int ij=0; ij < jets.size() ; ij++){
+
+    //==== pt which is used to calculate current MET
+    px_orig += jets.at(ij).Px();
+    py_orig += jets.at(ij).Py();
+
+    //==== Now we want to unsmear this jet
+    px_shifted += jets.at(ij).Px()/jets.at(ij).SmearedRes();
+    py_shifted += jets.at(ij).Py()/jets.at(ij).SmearedRes();
+
+
+
+
+  }
+
+  met_x = met_x + px_orig - px_shifted;
+  met_y = met_y + py_orig - py_shifted;
+
+  OrignialMET =  sqrt(met_x*met_x + met_y*met_y);
+  OriginalMETPhi = TMath::ATan2(met_y,met_x);
+
+}
+
 void AnalyzerCore::FillUpDownLeptonKinematicPlot(std::vector<KLepton> lep, TString suffix, double w, double w_err){
 
   FillLeptonKinematicPlot(lep, suffix+"_up", w+w_err);
