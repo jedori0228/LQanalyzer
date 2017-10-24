@@ -386,7 +386,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
   //==== FatJets
   std::vector<snu::KFatJet> fatjets_loosest_UnSmeared = GetFatJets("FATJET_HN_loosest");
-  std::vector<snu::KFatJet> fatjets_loosest = GetCorrectedFatJet(fatjets_loosest_UnSmeared); // JMR is applied. JER is not
+  std::vector<snu::KFatJet> fatjets_loosest = GetCorrectedFatJet(fatjets_loosest_UnSmeared); // Smear both energy and mass
 
 /*
   //==== jet HadFlavour vs BTagging
@@ -404,7 +404,6 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 */
 
   if(!isData){
-    weight*=pileup_reweight;
     weight*=GetKFactor();
   }
 
@@ -778,11 +777,10 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       if( (this_syst == "_JetEn_up") || (this_syst == "_JetRes_up") || (this_syst == "_JetMass_up") || (this_syst == "_JetMassRes_up") ){
         for(unsigned int j=0; j<fatjets_loosest.size(); j++){
           snu::KFatJet this_jet = fatjets_loosest.at(j);
-
           double this_scaling = 1.;
           double this_mass_scaling = 1.;
           if(this_syst == "_JetEn_up") this_scaling = this_jet.ScaledUpEnergy();
-          if(this_syst == "_JetRes_up") this_scaling = this_jet.SmearedResUp(); // ak8jet "Energy" is not smeard by default now, so no need to divide SmearedRes()
+          if(this_syst == "_JetRes_up") this_scaling = this_jet.SmearedResUp()/this_jet.SmearedRes();
           if(this_syst == "_JetMass_up") this_mass_scaling = this_jet.ScaledMassUp();
           if(this_syst == "_JetMassRes_up") this_mass_scaling = this_jet.SmearedMassResUp()/this_jet.SmearedMassRes();
           this_jet *= this_scaling;
@@ -798,7 +796,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
           double this_scaling = 1.;
           double this_mass_scaling = 1.;
           if(this_syst == "_JetEn_down") this_scaling = this_jet.ScaledDownEnergy();
-          if(this_syst == "_JetRes_down") this_scaling = this_jet.SmearedResDown(); // ak8jet "Energy" is not smeard by default now, so no need to divide SmearedRes()
+          if(this_syst == "_JetRes_down") this_scaling = this_jet.SmearedResDown()/this_jet.SmearedRes();
           if(this_syst == "_JetMass_down") this_mass_scaling = this_jet.ScaledMassDown();
           if(this_syst == "_JetMassRes_down") this_mass_scaling = this_jet.SmearedMassResDown()/this_jet.SmearedMassRes();
           this_jet *= this_scaling;
@@ -810,9 +808,6 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       else{
         for(unsigned int j=0; j<fatjets_loosest.size(); j++){
           snu::KFatJet this_jet = fatjets_loosest.at(j);
-
-          //==== ak8jet "Energy" is not smeard by default now, so we have to multiply SmearedRes()
-          this_jet *= this_jet.SmearedRes();
 
           if(k_sample_name.Contains("HN")){ //FIXME
             FillHist(Suffix+"_"+"BeforeIDCut_FatJetPrunedMass", this_jet.PrunedMass(), 1., 0., 500., 500);
@@ -1100,13 +1095,22 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
       double this_weight = weight*trigger_ps_weight*FatJetTau21_SF;
 
-      //double muon_id_iso_sf = mcdata_correction->MuonScaleFactor(MuonTightID, muons, 0); //FIXME
-      double muon_id_iso_sf = mcdata_correction->MuonScaleFactor("MUON_HN_TIGHT", muons, 0);
+      int MuonIDDir = 0;
+      if(this_syst=="_MuonIDSF_up") MuonIDDir = +1;
+      else if(this_syst=="_MuonIDSF_down") MuonIDDir = -1;
+      else MuonIDDir = 0;
+
+      double muon_id_iso_sf = mcdata_correction->MuonScaleFactor("MUON_HN_TIGHT", muons, MuonIDDir);
       double MuTrkEffSF =  mcdata_correction->MuonTrackingEffScaleFactor(muons);
       //muon_id_iso_sf = 1.; //FIXME
       this_weight *= muon_id_iso_sf*MuTrkEffSF;
 
-      double electron_sf = mcdata_correction->ElectronScaleFactor(ElectronTightID, electrons, 0);
+      int ElectronIDDir = 0;
+      if(this_syst=="_ElectronIDSF_up") ElectronIDDir = +1;
+      else if(this_syst=="_ElectronIDSF_down") ElectronIDDir = -1;
+      else ElectronIDDir = 0;
+
+      double electron_sf = mcdata_correction->ElectronScaleFactor(ElectronTightID, electrons, ElectronIDDir);
       //electron_sf = 1.; //FIXME
       double electron_RecoSF =  mcdata_correction->ElectronRecoScaleFactor(electrons);
       this_weight *= electron_sf*electron_RecoSF;
@@ -1122,7 +1126,6 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       else{
         TriggerSFDir = 0;
       }
-
 
       if(!isData && Suffix.Contains("DiMuon")){
         //double trigger_eff_Data = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, "", muons, MuonTightID, 0, 0, TriggerSFDir); //FIXME
@@ -1149,6 +1152,39 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       //trigger_sf = 1.;//FIXME
 
       this_weight *= trigger_sf;
+
+/*
+      if(fabs(this_weight*pileup_reweight) < 1){
+       //WTF
+        cout << "FatJetTau21_SF = " << FatJetTau21_SF << endl;
+        cout << "trigger_sf = " << trigger_sf << endl;
+        cout << "electron_sf = " << electron_sf << endl;
+        cout << "electron_RecoSF = " << electron_RecoSF << endl;
+        cout << "muon_id_iso_sf = " << muon_id_iso_sf << endl;
+        cout << "MuTrkEffSF = " << MuTrkEffSF << endl;
+        cout << "trigger_ps_weight = " << trigger_ps_weight << endl;
+        cout << "pileup_reweight = " << pileup_reweight << endl;
+        cout << "n_vtx = " << n_vtx << endl;
+        cout << "pu_up = " << mcdata_correction->CatPileupWeight(eventbase->GetEvent(),+1) << endl;
+        cout << "pu_down = " << mcdata_correction->CatPileupWeight(eventbase->GetEvent(),-1) << endl;
+        cout << "=> weight = " << this_weight << endl;
+      }
+*/
+
+      //==== pileup reweight
+      double purew = 1.;
+      if(!isData){
+        if(this_syst=="_PU_up"){
+          purew = mcdata_correction->CatPileupWeight(eventbase->GetEvent(),+1);
+        }
+        else if(this_syst=="_PU_down"){
+          purew = mcdata_correction->CatPileupWeight(eventbase->GetEvent(),-1);
+        }
+        else{
+          purew = mcdata_correction->CatPileupWeight(eventbase->GetEvent(),0);
+        }
+      }
+      this_weight *= purew;
 
       std::vector<KLepton> lep;
       for(unsigned int j=0; j<muons.size(); j++){
@@ -1312,6 +1348,9 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       //==== Default Variation
       //==== 1) OnZ/OffZ/All
       //==== 2) OS/SS/All
+
+      //==== SS-dilepton
+      map_Region_to_Bool[Suffix] = true;
 
       //==== # of jets
       map_Region_to_Bool[Suffix+"_0jets"] = (jets.size()==0);
