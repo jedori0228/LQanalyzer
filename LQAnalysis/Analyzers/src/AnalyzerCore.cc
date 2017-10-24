@@ -847,13 +847,14 @@ vector<snu::KFatJet>  AnalyzerCore::GetCorrectedFatJet(vector<snu::KFatJet>   fj
   for(unsigned int ifj=0; ifj < fjets.size(); ifj++){
     snu::KFatJet fjet = fjets[ifj];
     float L1corr = fjet.L1JetCorr();
+    if(L1corr==0) L1corr = 0.95; // FIXME TEMP CORRECTION FOR NOW
     
     TLorentzVector v;
     v.SetPtEtaPhiM(fjet.Pt(), fjet.Eta(), fjet.Phi(), fjet.M());
     
     /// remove L1 correction (only L2L3 used)
     v=v* (1./L1corr);
-    
+
     /// smear mass with JMR central
     v=v*fjet.SmearedRes();
     fjet.SetPrunedMass(fjet.PrunedMass() * fjet.SmearedMassRes());
