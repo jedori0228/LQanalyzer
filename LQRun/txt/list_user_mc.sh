@@ -1,14 +1,39 @@
 #!/bin/sh
 
+declare -a newTchannel=(
+'HNDilepton_MuMu_Tchannel_M300'
+'HNDilepton_MuMu_Tchannel_M600'
+'HNDilepton_MuMu_Tchannel_M800'
+'HNDilepton_MuMu_Tchannel_M1000'
+'HNDilepton_MuMu_Tchannel_M1200'
+'HNDilepton_EE_Tchannel_M300'
+'HNDilepton_EE_Tchannel_M600'
+'HNDilepton_EE_Tchannel_M800'
+'HNDilepton_EE_Tchannel_M1000'
+'HNDilepton_EE_Tchannel_M1200'
+'HNDilepton_MuE_Tchannel_M300'
+'HNDilepton_MuE_Tchannel_M600'
+'HNDilepton_MuE_Tchannel_M800'
+'HNDilepton_MuE_Tchannel_M1000'
+'HNDilepton_MuE_Tchannel_M1200'
+'HNDilepton_EMu_Tchannel_M300'
+'HNDilepton_EMu_Tchannel_M600'
+'HNDilepton_EMu_Tchannel_M800'
+'HNDilepton_EMu_Tchannel_M1000'
+'HNDilepton_EMu_Tchannel_M1200'
+)
+
 declare -a tmp=(
-'HNMoriondLLMumMum_1100'
-'HNMoriondLLMupMup_1100'
-'HNMoriondLLMumMum_500'
-'HNMoriondLLMupMup_500'
-'HNMoriondLLEmEm_1100'
-'HNMoriondLLEpEp_1100'
-'HNMoriondLLEmEm_500'
-'HNMoriondLLEpEp_500'
+'HNDilepton_MuE_Tchannel_M300'
+'HNDilepton_MuE_Tchannel_M600'
+'HNDilepton_MuE_Tchannel_M800'
+'HNDilepton_MuE_Tchannel_M1000'
+'HNDilepton_MuE_Tchannel_M1200'
+'HNDilepton_EMu_Tchannel_M300'
+'HNDilepton_EMu_Tchannel_M600'
+'HNDilepton_EMu_Tchannel_M800'
+'HNDilepton_EMu_Tchannel_M1000'
+'HNDilepton_EMu_Tchannel_M1200'
 )
 
 declare -a nonprompt=(
