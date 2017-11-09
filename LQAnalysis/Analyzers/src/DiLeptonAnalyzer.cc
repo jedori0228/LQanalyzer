@@ -1354,17 +1354,16 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
       //==== # of jets
       map_Region_to_Bool[Suffix+"_0jets"] = (jets.size()==0);
-      map_Region_to_Bool[Suffix+"_1jets"] = (jets.size()==1);
-      map_Region_to_Bool[Suffix+"_Inclusive2jets"] = (jets.size()>=2);
-      map_Region_to_Bool[Suffix+"_1jets_0nlbjets"] = (jets.size()==1) && (nbjets_nolepveto==0);
-      map_Region_to_Bool[Suffix+"_1jets_0nlbjets_METge50"] = (jets.size()==1) && (nbjets_nolepveto==0) && (MET>50.);
-      map_Region_to_Bool[Suffix+"_1jets_0nlbjets_mllge110"] = (jets.size()==1) && (nbjets_nolepveto==0) && (( lep.at(0)+lep.at(1) ).M() >= 110.);
-      map_Region_to_Bool[Suffix+"_Inclusive1fatjets"] = (fatjets.size()>=1);
+      map_Region_to_Bool[Suffix+"_0jets_0nlbjets_dRllge2p5"] = (jets.size()==0) && (nbjets_nolepveto==0) && ( lep.at(0).DeltaR(lep.at(1)) > 2.5 );
 
-      //==== # of forward b jet
+      map_Region_to_Bool[Suffix+"_1jets"] = (jets.size()==1);
+      map_Region_to_Bool[Suffix+"_1jets_0nlbjets"] = (jets.size()==1) && (nbjets_nolepveto==0);
+      map_Region_to_Bool[Suffix+"_1jets_0nlbjets_mllge110"] = (jets.size()==1) && (nbjets_nolepveto==0) && (( lep.at(0)+lep.at(1) ).M() >= 110.);
+
+      //==== # of b jet
       map_Region_to_Bool[Suffix+"_0nlbjets"] = (nbjets_nolepveto==0);
       map_Region_to_Bool[Suffix+"_Inclusive1nlbjets"] = (nbjets_nolepveto>=1);
-      map_Region_to_Bool[Suffix+"_Inclusive1nlbjets_METge50"] = (nbjets_nolepveto>=1) && (MET>50.); // control region
+
 
       //==== ST = lepton + jet + MET
       ST = lep.at(0).Pt() + lep.at(1).Pt() + MET;
@@ -1553,14 +1552,20 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       //==== Test 3) If MCClosure, only save Preselection
       if(DoMCClosure){
         bool tempbool_presel = map_Region_to_Bool[Suffix+"_Preselection"];
-        bool tempbool_alljets = true;
-        bool tempbool_0jets = map_Region_to_Bool[Suffix+"_0jets"];
-        bool tempbool_1jets = map_Region_to_Bool[Suffix+"_1jets"];
+        bool tempbool_low = map_Region_to_Bool[Suffix+"_Low"];
+        bool tempbool_low_twojet = map_Region_to_Bool[Suffix+"_Low_TwoJet_NoFatJet"];
+        bool tempbool_low_onejet = map_Region_to_Bool[Suffix+"_Low_OneJet_NoFatJet"];
+        bool tempbool_high = map_Region_to_Bool[Suffix+"_High"];
+        bool tempbool_high_twojet = map_Region_to_Bool[Suffix+"_High_TwoJet_NoFatJet"];
+        bool tempbool_high_fatjet = map_Region_to_Bool[Suffix+"_High_OneFatJet"];
         map_Region_to_Bool.clear();
         map_Region_to_Bool[Suffix+"_Preselection"] = tempbool_presel;
-        map_Region_to_Bool[Suffix+"_alljets"] = tempbool_alljets;
-        map_Region_to_Bool[Suffix+"_0jets"] = tempbool_0jets;
-        map_Region_to_Bool[Suffix+"_1jets"] = tempbool_1jets;
+        map_Region_to_Bool[Suffix+"_Low"] = tempbool_low;
+        map_Region_to_Bool[Suffix+"_Low_TwoJet_NoFatJet"] = tempbool_low_twojet;
+        map_Region_to_Bool[Suffix+"_Low_OneJet_NoFatJet"] = tempbool_low_onejet;
+        map_Region_to_Bool[Suffix+"_High"] = tempbool_high;
+        map_Region_to_Bool[Suffix+"_High_TwoJet_NoFatJet"] = tempbool_high_twojet;
+        map_Region_to_Bool[Suffix+"_High_OneFatJet"] = tempbool_high_fatjet;
         bool PositiveMCWeight = std::find(k_flags.begin(), k_flags.end(), "PositiveMCWeight") != k_flags.end();
         if(PositiveMCWeight) this_weight *= MCweight;
 
@@ -1724,23 +1729,33 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
               FillHist("LeptonType_"+this_suffix+"_SS", lep.at(1).GetType(), 1., 0., 50., 50);
             }
 
-            if(isOffZ){
-              //==== OffZ / SS
-              if(isSS){
-                FillDiLeptonPlot(this_suffix+"_OffZ_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
-              }
-              if(isAboveZ){
-                //==== AboveZ / SS
+            if(DoMCClosure && k_sample_name.Contains("WJets")){
+              FillDiLeptonPlot(this_suffix+"_AllCharge", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
+              FillHist("LeptonType_"+this_suffix+"_AllCharge", lep.at(0).GetType(), 1., 0., 50., 50);
+              FillHist("LeptonType_"+this_suffix+"_AllCharge", lep.at(1).GetType(), 1., 0., 50., 50);
+            }
+
+            if(Suffix.Contains("DiElectron")){
+
+              if(isOffZ){
+                //==== OffZ / SS
                 if(isSS){
-                  FillDiLeptonPlot(this_suffix+"_AboveZ_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
+                  FillDiLeptonPlot(this_suffix+"_OffZ_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
+                }
+                if(isAboveZ){
+                  //==== AboveZ / SS
+                  if(isSS){
+                    //FillDiLeptonPlot(this_suffix+"_AboveZ_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
+                  }
                 }
               }
-            }
-            else{
-              //==== OnZ / SS
-              if(isSS){
-                FillDiLeptonPlot(this_suffix+"_OnZ_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
+              else{
+                //==== OnZ / SS
+                if(isSS){
+                  FillDiLeptonPlot(this_suffix+"_OnZ_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
+                }
               }
+
             }
 
 /*
@@ -1833,7 +1848,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
           else{
             //==== using OS event, weight CF and estimate SS
-            if(Suffix=="DiElectron" && !isSS){
+            if(Suffix.Contains("DiElectron") && !isSS){
 
               //=========================
               //==== Filling Histograms
