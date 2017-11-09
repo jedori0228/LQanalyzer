@@ -287,6 +287,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv1_LoosenSIP");
   //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv2");
   std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv7");
+  //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_LOOSE_8TeV");
   //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv7_pt15");
   //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv8");
 
@@ -465,6 +466,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
         double weight_by_pt = GetTriggerWeightByPtRange(it->first, it->second, HLT_ptmin[it->first], hnloose, For_PFJet30_v);
 
         bool IsThisTight = PassID( electron, "ELECTRON_HN_TIGHTv4" );
+        //bool IsThisTight = PassID( electron, "ELECTRON_HN_TIGHT_8TeV" );
 
         if(DijetFake){
 

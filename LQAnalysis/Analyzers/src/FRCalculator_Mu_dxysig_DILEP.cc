@@ -181,7 +181,8 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
     if(DoSmallHighdXY) LooseID = "MUON_HN_Loose_HighdXY_Small";
     else               LooseID = "MUON_HN_Loose_HighdXY";
   }
-  cout << "LooseID = " << LooseID << endl;
+  //cout << "LooseID = " << LooseID << endl;
+  //LooseID = "MUON_HN_LOOSE_8TeV";
 
   std::vector<snu::KMuon> hnloose_raw = GetMuons(LooseID, true);
 
@@ -486,22 +487,12 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   return;
 */
 
-                cout << "##################" << endl;
-                cout << "RunNumber = " << eventbase->GetEvent().RunNumber() << endl;
-                cout << "EventNumber = " << eventbase->GetEvent().EventNumber() << endl;
-                cout << "-> MET = " << METauto << ", METphi = " << METphiauto << endl;
-
   double AwayjetPts[] = {20, 30, 40, 60};
 
   if( PassTriggerOR(AllHLTs) ){
 
-    cout << "HLT PASS" << endl;
-    cout << "hnloose_raw.size() = " << hnloose_raw.size() << endl;
-    cout << "hnloose.size() = " << hnloose.size() << endl;
-    cout << "muons_veto.size() = " << muons_veto.size() << endl;
     if( (hnloose_raw.size() == 1) && (hnloose.size() == 1) && (muons_veto.size() == 1) ){
 
-      cout << "Only one Lepton" << endl;
       snu::KMuon muon = hnloose.at(0);
 
       double dr = 0.5;
@@ -526,6 +517,9 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
         TString TightID = "MUON_HN_TIGHT";
         if(DoHighdXY && !DoSmallHighdXY) TightID = "MUON_HN_Tight_HighdXY";
+
+        //TightID = "MUON_HN_TIGHT_8TeV";
+
         bool IsThisTight = PassID( muon, TightID );
 
         if(DijetFake){

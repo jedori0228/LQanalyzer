@@ -1,5 +1,48 @@
 #!/bin/sh
 
+declare -a dilepton_Moriond=(
+'HNMoriondLLMumMum_50'
+'HNMoriondLLMupMum_50'
+'HNMoriondLLEmEm_50'
+'HNMoriondLLEpEp_50'
+'HNMoriondLLMumEm_50'
+'HNMoriondLLMupEp_50'
+'HNMoriondLLEmMum_50'
+'HNMoriondLLEpMup_50'
+'HNMoriondLLMumMum_100'
+'HNMoriondLLMupMum_100'
+'HNMoriondLLEmEm_100'
+'HNMoriondLLEpEp_100'
+'HNMoriondLLMumEm_100'
+'HNMoriondLLMupEp_100'
+'HNMoriondLLEmMum_100'
+'HNMoriondLLEpMup_100'
+'HNMoriondLLMumMum_200'
+'HNMoriondLLMupMum_200'
+'HNMoriondLLEmEm_200'
+'HNMoriondLLEpEp_200'
+'HNMoriondLLMumEm_200'
+'HNMoriondLLMupEp_200'
+'HNMoriondLLEmMum_200'
+'HNMoriondLLEpMup_200'
+'HNMoriondLLMumMum_500'
+'HNMoriondLLMupMum_500'
+'HNMoriondLLEmEm_500'
+'HNMoriondLLEpEp_500'
+'HNMoriondLLMumEm_500'
+'HNMoriondLLMupEp_500'
+'HNMoriondLLEmMum_500'
+'HNMoriondLLEpMup_500'
+'HNMoriondLLMumMum_1100'
+'HNMoriondLLMupMum_1100'
+'HNMoriondLLEmEm_1100'
+'HNMoriondLLEpEp_1100'
+'HNMoriondLLMumEm_1100'
+'HNMoriondLLMupEp_1100'
+'HNMoriondLLEmMum_1100'
+'HNMoriondLLEpMup_1100'
+)
+
 declare -a newTchannel=(
 'HNDilepton_MuMu_Tchannel_M300'
 'HNDilepton_MuMu_Tchannel_M600'
@@ -24,16 +67,26 @@ declare -a newTchannel=(
 )
 
 declare -a tmp=(
-'HNDilepton_MuE_Tchannel_M300'
-'HNDilepton_MuE_Tchannel_M600'
-'HNDilepton_MuE_Tchannel_M800'
-'HNDilepton_MuE_Tchannel_M1000'
-'HNDilepton_MuE_Tchannel_M1200'
-'HNDilepton_EMu_Tchannel_M300'
-'HNDilepton_EMu_Tchannel_M600'
-'HNDilepton_EMu_Tchannel_M800'
-'HNDilepton_EMu_Tchannel_M1000'
-'HNDilepton_EMu_Tchannel_M1200'
+'HNMoriondLLMumEm_50'
+'HNMoriondLLMupEp_50'
+'HNMoriondLLEmMum_50'
+'HNMoriondLLEpMup_50'
+'HNMoriondLLMumEm_100'
+'HNMoriondLLMupEp_100'
+'HNMoriondLLEmMum_100'
+'HNMoriondLLEpMup_100'
+'HNMoriondLLMumEm_200'
+'HNMoriondLLMupEp_200'
+'HNMoriondLLEmMum_200'
+'HNMoriondLLEpMup_200'
+'HNMoriondLLMumEm_500'
+'HNMoriondLLMupEp_500'
+'HNMoriondLLEmMum_500'
+'HNMoriondLLEpMup_500'
+'HNMoriondLLMumEm_1100'
+'HNMoriondLLMupEp_1100'
+'HNMoriondLLEmMum_1100'
+'HNMoriondLLEpMup_1100'
 )
 
 declare -a nonprompt=(
@@ -81,7 +134,7 @@ declare -a QCD_FR_bctoe=(
 
 ### FR MC Closure ###
 declare -a FR_MC_Closure=(
-'TT_powheg' 'DYJets' 'WJets'
+'TT_powheg'
 )
 declare -a FR_MC_Closure_amc=(
 'DYJets' 'WJets'
