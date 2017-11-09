@@ -775,9 +775,11 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
     if((n_triLoose_muons==0) || (n_triLoose_electrons==0)) AllSameFlavour = true;
 
     double m_Z = 91.1876;
+    double m_W = 80.4;
     bool WithOSSF = false;
     bool WithOSSF_OnZ = false;
     bool WithOS_lll_OnZ = false;
+    double m_OSSF_smallest = 99999.;
     vector<int> IsOSSF_OnZs;
     vector<double> m_lls;
     IsOSSF_OnZs.clear();
@@ -797,6 +799,8 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
               WithOSSF_OnZ = true;
               tmp_IsOSSF_OnZ = true;
             } // Z mass
+
+            if( (lep.at(j)+lep.at(k)).M() < m_OSSF_smallest ) m_OSSF_smallest = (lep.at(j)+lep.at(k)).M();
 
           } // OS
 
@@ -823,7 +827,7 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
       int counter(0);
       double m_ll_min = 99999999;
       for(unsigned int j=0; j<IsOSSF_OnZs.size(); j++){
-        if( IsOSSF_OnZs.at(j) && (m_lls.at(j) < m_ll_min) ){
+        if( IsOSSF_OnZs.at(j) && (fabs(m_lls.at(j)-m_Z) < m_ll_min) ){
           counter = j;
           m_ll_min = m_lls.at(j);
         }
@@ -885,7 +889,7 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
     if(isSS) FillHist("CutStudy_m_ll_SS_"+Suffix, ( lep.at(0)+lep.at(1) ).M(), 1., 0., 40., 400);
     else FillHist("CutStudy_m_ll_OS_"+Suffix, ( lep.at(0)+lep.at(1) ).M(), 1., 0., 40., 400);
     bool mll10GeV = ( lep.at(0)+lep.at(1) ).M() < 10.;
-    if(mll10GeV) continue;
+    //if(mll10GeV) continue;
     FillCutFlowByName(Suffix, "LowDileptonMass", w_cutflow[Suffix], isData);
 
     double this_weight_err(0.);
@@ -923,22 +927,30 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
 
     if(Suffix.Contains("Three")){
 
-      bool OSSF_ZGveto = (WithOSSF_OnZ) && ( (lep.at(0)+lep.at(1)+lep.at(2)).M() - m_Z  > 15. ) && (nbjets_nolepveto==0);
+      bool OSSF_ZGveto = (WithOSSF_OnZ) && ( (lep.at(0)+lep.at(1)+lep.at(2)).M() - m_Z  > 15. ) && (nbjets_nolepveto==0) && (m_OSSF_smallest > 10.);
       map_Region_to_Bool[Suffix+"_WZ"]                   = OSSF_ZGveto && (MET > 50.); // eee, eem, emm, mmm
       map_Region_to_Bool[Suffix+"_WZ_NotAllSameFlavour"] = OSSF_ZGveto && (MET > 50.) && !AllSameFlavour; // eem, emm
       map_Region_to_Bool[Suffix+"_WZ_AllSameFlavour"]    = OSSF_ZGveto && (MET > 50.) && AllSameFlavour; // eee, mmm
 
-      map_Region_to_Bool[Suffix+"_ZGamma"] = (WithOS_lll_OnZ) && (!WithOSSF_OnZ) && (MET < 50.) && (nbjets_nolepveto==0);
+      map_Region_to_Bool[Suffix+"_ZGamma"] = (WithOS_lll_OnZ) && (!WithOSSF_OnZ) && (MET < 50.) && (nbjets_nolepveto==0) && (m_OSSF_smallest > 10.);
+
+      //==== WG
+      snu::KParticle lll = lep.at(0)+lep.at(1)+lep.at(2);
+      TLorentzVector METvec;
+      METvec.SetPtEtaPhiE(MET, 0, METphi, MET);
+      double MT_lll = MT(lll, METvec);
+      map_Region_to_Bool[Suffix+"_WGamma"] = WithOSSF && (MT_lll > 30.) && (MET > 30) && (nbjets_nolepveto==0) && (m_OSSF_smallest < 4.);
+
     }
     if(Suffix.Contains("Four")){
-      map_Region_to_Bool[Suffix+"_ZZ"] = WithTwoZPair && (nbjets_nolepveto==0); // eeee, eemm, mmmm
-      map_Region_to_Bool[Suffix+"_ZZ_NotAllSameFlavour"] = WithTwoZPair && (nbjets_nolepveto==0) && !AllSameFlavour; // eemm
+      map_Region_to_Bool[Suffix+"_ZZ"] = WithTwoZPair && (nbjets_nolepveto==0) && (m_OSSF_smallest > 10.); // eeee, eemm, mmmm
+      map_Region_to_Bool[Suffix+"_ZZ_NotAllSameFlavour"] = WithTwoZPair && (nbjets_nolepveto==0) && !AllSameFlavour && (m_OSSF_smallest > 10.); // eemm
       if(Suffix=="DiElectron_FourLepton"){
         if(PassTriggerOR(triggerlist_DiMuon)){
           map_Region_to_Bool[Suffix+"_ZZ_NotAllSameFlavour"] = false;
         }
       }
-      map_Region_to_Bool[Suffix+"_ZZ_AllSameFlavour"] = WithTwoZPair && (nbjets_nolepveto==0) && AllSameFlavour; // eeee, mmmm
+      map_Region_to_Bool[Suffix+"_ZZ_AllSameFlavour"] = WithTwoZPair && (nbjets_nolepveto==0) && AllSameFlavour && (m_OSSF_smallest > 10.); // eeee, mmmm
     }
 
     //==== ST = lepton + jet + MET
@@ -961,19 +973,9 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
       if(it->second){
         FillDiLeptonPlot(this_suffix, lep, jets, jets_fwd, jets_nolepveto, this_weight, this_weight_err);
 
-/*
-        int counter(0);
-        for(unsigned int j=0; j<lep.size()-1; j++){
-          for(unsigned int k=j+1; k<lep.size(); k++){
-            if(IsOSSF_OnZs.at(counter)){
-              JSFillHist(this_suffix, "m_ll_OnZ_"+this_suffix, (lep.at(j)+lep.at(k)).M(), this_weight, 70., 120., 50);
-              JSFillHist(this_suffix+"_up", "m_ll_OnZ_"+this_suffix+"_up", (lep.at(j)+lep.at(k)).M(), this_weight+this_weight_err, 70., 120., 50);
-              JSFillHist(this_suffix+"_down", "m_ll_OnZ_"+this_suffix+"_down", (lep.at(j)+lep.at(k)).M(), this_weight-this_weight_err, 70., 120., 50);
-            }
-            counter++;
-          }
-        }
-*/
+        JSFillHist(this_suffix,         "m_OSSF_smallest_"+this_suffix,         m_OSSF_smallest, this_weight, 0., 100., 1000);
+        JSFillHist(this_suffix+"_up",   "m_OSSF_smallest_"+this_suffix+"_up",   m_OSSF_smallest, this_weight+this_weight_err, 0., 100., 1000);
+        JSFillHist(this_suffix+"_down", "m_OSSF_smallest_"+this_suffix+"_down", m_OSSF_smallest, this_weight-this_weight_err, 0., 100., 1000);
 
         if(this_suffix.Contains("WZ")){
           JSFillHist(this_suffix,         "MT_"+this_suffix,         MT_extralepton, this_weight, 0., 2000., 2000);
@@ -995,6 +997,18 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
           JSFillHist(this_suffix,         "MZcand_"+this_suffix,         Z_candidate.M(), this_weight, 70., 120., 50);
           JSFillHist(this_suffix+"_up",   "MZcand_"+this_suffix+"_up",   Z_candidate.M(), this_weight+this_weight_err, 70., 120., 50);
           JSFillHist(this_suffix+"_down", "MZcand_"+this_suffix+"_down", Z_candidate.M(), this_weight-this_weight_err, 70., 120., 50);
+        }
+
+        if(this_suffix.Contains("WGamma")){
+
+          snu::KParticle lll = lep.at(0)+lep.at(1)+lep.at(2);
+          TLorentzVector METvec;
+          METvec.SetPtEtaPhiE(MET, 0, METphi, MET);
+          double MT_lll = MT(lll, METvec);
+
+          JSFillHist(this_suffix,         "MT_"+this_suffix,         MT_lll, this_weight, 0., 2000., 2000);
+          JSFillHist(this_suffix+"_up",   "MT_"+this_suffix+"_up",   MT_lll, this_weight+this_weight_err, 0., 2000., 2000);
+          JSFillHist(this_suffix+"_down", "MT_"+this_suffix+"_down", MT_lll, this_weight-this_weight_err, 0., 2000., 2000);
 
         }
 
