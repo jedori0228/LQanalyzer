@@ -81,6 +81,8 @@ class DiLeptonAnalyzer : public AnalyzerCore {
 
   bool RunNtp;
   bool NowRunningCentral;
+  int AUTO_N_syst, AUTO_it_syst;
+  TString AUTO_syst_type, RegionNameForSyst;
 
   double GetDijetMassClosest(std::vector<snu::KJet> js, double mass, int& m, int& n);
   double GetDileptonDijetMassClosest(std::vector<KLepton> leps, std::vector<snu::KJet> js, double mass, int& m, int& n);

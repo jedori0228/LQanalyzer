@@ -30,7 +30,8 @@ nbjets(-999), nbjets_fwd(-999), nbjets_nolepveto(-999), n_vtx(-999),
 index_jjW_j1(-999), index_jjW_j2(-999),
 index_lljjW_j1(-999), index_lljjW_j2(-999),
 index_fjW(-999),
-RunNtp(false),NowRunningCentral(true)
+RunNtp(false),NowRunningCentral(true),
+AUTO_N_syst(0), AUTO_it_syst(0), AUTO_syst_type("")
 {
   
   // To have the correct name in the log:                                                                                                                            
@@ -496,10 +497,11 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
     int N_sys = 2*13+1;
     int it_sys_start = 0;
-    if(!RunNtp){
-      it_sys_start = 0;
-      N_sys = it_sys_start+1;
-    }
+
+    //if(!RunNtp){
+    //  it_sys_start = 0;
+    //  N_sys = it_sys_start+1;
+    //}
 
     for(int it_sys=it_sys_start; it_sys<N_sys; it_sys++){
 
@@ -597,11 +599,14 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       else if(it_sys==26){
         this_syst = "_JetMassRes_down";
       }
-
       else{
         Message("it_sys out of range!" , INFO);
         return;
       }
+
+      AUTO_N_syst = N_sys;
+      AUTO_it_syst = it_sys;
+      AUTO_syst_type = this_syst;
 
       if(this_syst==""){
         NowRunningCentral = true;
@@ -610,7 +615,8 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         NowRunningCentral = false;
       }
 
-      TString Suffix = OriginalSuffix+this_syst;
+      //TString Suffix = OriginalSuffix+this_syst;
+      TString Suffix = OriginalSuffix;
 
       //================
       //==== Make Muon
@@ -871,6 +877,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         }
       }
 
+      std::vector<snu::KJet> jets_eta5; // eta < 5.0, lepton-veto, away from fatjets
       std::vector<snu::KJet> jets; // eta < 2.5, lepton-veto, away from fatjets
       std::vector<snu::KJet> jets_InSideFatJet; // If jets inside fatjet, remove it's smearing from MET. Because FatJet smearing is already propagted to MET
       std::vector<snu::KJet> jets_nolepveto; // eta < 2.5, NO lepton-veto
@@ -884,6 +891,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         bool lepinside = HasLeptonInsideJet(this_jet, muons_veto, electrons_veto);
         bool awayfromfatjet = IsAwayFromFatJet(this_jet, fatjets);
 
+        if(!lepinside && awayfromfatjet) jets_eta5.push_back( this_jet );
         if(IsNormalJet && !lepinside && awayfromfatjet) jets.push_back( this_jet );
         if(IsNormalJet && !lepinside && !awayfromfatjet) jets_InSideFatJet.push_back( this_jet );
         if(IsNormalJet) jets_nolepveto.push_back( this_jet );
@@ -1034,6 +1042,11 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
         bool PtOkay = false;
 
+        if(isTT){
+        }
+        else{
+        }
+
         if(PassTriggerOR(triggerlist_EMu_Mu8Ele23)){
 
           MuMinPt = 10.;
@@ -1066,15 +1079,19 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
       }
 
+/*
       FillCutFlowByName(Suffix, "TwoLeptons", w_cutflow[Suffix], isData);
+
+      if(isSSForCF) FillCutFlowByName(Suffix, "SS", w_cutflow[Suffix], isData);
 
       //==== No Extra lepton
       if(!isNoExtra) continue;
-      FillCutFlowByName(Suffix, "NoExtraLepton", w_cutflow[Suffix], isData);
+      if(isSSForCF) FillCutFlowByName(Suffix, "NoExtraLepton", w_cutflow[Suffix], isData);
 
       //==== No Extra different flavour lepton
       if(!isNoExtraOtherFlavour) continue;
-      FillCutFlowByName(Suffix, "NoExtraFlavourLepton", w_cutflow[Suffix], isData);
+      if(isSSForCF) FillCutFlowByName(Suffix, "NoExtraFlavourLepton", w_cutflow[Suffix], isData);
+*/
 
       //==== DiMuon-DoubleMuon PD / ...
       if(isData && k_channel != "DoubleMuon_CF"){
@@ -1283,8 +1300,10 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
       }
       bool mll10GeV = ( lep.at(0)+lep.at(1) ).M() < 10.;
+/*
       if(mll10GeV) continue;
-      FillCutFlowByName(Suffix, "LowDileptonMass", w_cutflow[Suffix], isData);
+      if(isSSForCF) FillCutFlowByName(Suffix, "LowDileptonMass", w_cutflow[Suffix], isData);
+*/
 
       double this_weight_err(0.);
       vector<double> FRweights;
@@ -1342,6 +1361,23 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       //==== If MCClosure, keep ordering as Muon-Electron (to see type)
       if(!DoMCClosure) std::sort(lep.begin(), lep.end(), LeptonPtComparing);
 
+      //==== Do CutFlow here..
+      FillCutFlowByName(Suffix, "TwoLeptons", this_weight, isData);
+      if(isSSForCF) FillCutFlowByName(Suffix, "SS", this_weight, isData);
+
+      //==== No Extra lepton
+      if(!isNoExtra) continue;
+      if(isSSForCF) FillCutFlowByName(Suffix, "NoExtraLepton", this_weight, isData);
+
+      //==== No Extra different flavour lepton
+      if(!isNoExtraOtherFlavour) continue;
+      if(isSSForCF) FillCutFlowByName(Suffix, "NoExtraFlavourLepton", this_weight, isData);
+
+      if(mll10GeV) continue;
+      if(isSSForCF) FillCutFlowByName(Suffix, "LowDileptonMass", this_weight, isData);
+
+
+
       std::map< TString, bool > map_Region_to_Bool;
       map_Region_to_Bool.clear();
 
@@ -1363,6 +1399,26 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       //==== # of b jet
       map_Region_to_Bool[Suffix+"_0nlbjets"] = (nbjets_nolepveto==0);
       map_Region_to_Bool[Suffix+"_Inclusive1nlbjets"] = (nbjets_nolepveto>=1);
+
+      //==== W+W+ CR
+      if(jets_eta5.size() >= 2){
+        snu::KJet j1 = jets_eta5.at(0);
+        snu::KJet j2 = jets_eta5.at(1);
+        double dEtajj = fabs(j1.Eta()-j2.Eta());
+        double MeanEtajj = (j1.Eta()+j2.Eta())/2.;
+
+        map_Region_to_Bool[Suffix+"_WpWp_CR"] = (j1.Pt() > 30.) && (j2.Pt() > 30.)
+                                                && (( lep.at(0)+lep.at(1) ).M() >= 20.) && (MET>40.)
+                                                && (nbjets_nolepveto==0)
+                                                && ((j1+j2).M() > 500.)
+                                                && (dEtajj>2.5)
+                                                && ( (lep.at(0).Eta()-MeanEtajj)/dEtajj < 0.75 )
+                                                && ( (lep.at(1).Eta()-MeanEtajj)/dEtajj < 0.75 );
+        if(Suffix.Contains("DiElectron")){
+          map_Region_to_Bool[Suffix+"_WpWp_CR"] = map_Region_to_Bool[Suffix+"_WpWp_CR"] && isOffZ;
+        }
+
+      }
 
 
       //==== ST = lepton + jet + MET
@@ -1394,32 +1450,12 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         index_lljjW_j1 = 0;
         index_lljjW_j2 = 1;
         double mlljj = GetDileptonDijetMassClosest(lep, jets, 80.4, index_lljjW_j1, index_lljjW_j2);
-
-        //==== More CutFlows
-        if( jets.size()>=2 ){
-          FillCutFlowByName(Suffix, "InclusiveTwoJets", w_cutflow[Suffix], isData);
-          if( MET < 50. ){
-            FillCutFlowByName(Suffix, "MET50", w_cutflow[Suffix], isData);
-            if( mjj < 200. ){
-              FillCutFlowByName(Suffix, "Mjj200", w_cutflow[Suffix], isData);
-              if( nbjets == 0 ){
-                FillCutFlowByName(Suffix, "NoBJet", w_cutflow[Suffix], isData);
-                if( nbjets_nolepveto == 0 ){
-                  FillCutFlowByName(Suffix, "NoBJet_nolepveto", w_cutflow[Suffix], isData);
-                }
-              }
-            }
-          }
-        }
-
       }
       if( fatjets.size()>=1 ){
         double mfatjet = GetFatJetMassClosest(fatjets, 80.4, index_fjW);
       }
 
-
       //==== Preselection
-
       bool TwoJet_NoFatJet = (jets.size()>=2) && (fatjets.size()==0);
       bool OneJet_NoFatJet = (jets.size()==1) && (fatjets.size()==0) && ( (lep.at(0)+lep.at(1)).M() < 80 ); // has m(ll) < 80 GeV
       bool OneFatJet       =                     (fatjets.size()>=1);
@@ -1429,6 +1465,15 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       //==== For DiElectron, remove Z peak (CF)
       if(Suffix.Contains("DiElectron")){
         map_Region_to_Bool[Suffix+"_Preselection"] = map_Region_to_Bool[Suffix+"_Preselection"] && isOffZ;
+      }
+
+      if(isSSForCF){
+        if(TwoJet_NoFatJet || OneJet_NoFatJet || OneFatJet){
+          FillCutFlowByName(Suffix, "JetRequirements", this_weight, isData);
+          if(isOffZ){
+            FillCutFlowByName(Suffix, "OffZ", this_weight, isData);
+          }
+        }
       }
 
       //==== If Preselection, then define Low/High
@@ -1725,16 +1770,12 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
             //==== All m(ll) / SS
             if(isSS){
               FillDiLeptonPlot(this_suffix+"_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
-              FillHist("LeptonType_"+this_suffix+"_SS", lep.at(0).GetType(), 1., 0., 50., 50);
-              FillHist("LeptonType_"+this_suffix+"_SS", lep.at(1).GetType(), 1., 0., 50., 50);
+            }
+            else{
+              FillDiLeptonPlot(this_suffix+"_OS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
             }
 
-            if(DoMCClosure && k_sample_name.Contains("WJets")){
-              FillDiLeptonPlot(this_suffix+"_AllCharge", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
-              FillHist("LeptonType_"+this_suffix+"_AllCharge", lep.at(0).GetType(), 1., 0., 50., 50);
-              FillHist("LeptonType_"+this_suffix+"_AllCharge", lep.at(1).GetType(), 1., 0., 50., 50);
-            }
-
+            //==== If Dielectron channel, fill OffZ and OnZ too
             if(Suffix.Contains("DiElectron")){
 
               if(isOffZ){
@@ -1742,11 +1783,8 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
                 if(isSS){
                   FillDiLeptonPlot(this_suffix+"_OffZ_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
                 }
-                if(isAboveZ){
-                  //==== AboveZ / SS
-                  if(isSS){
-                    //FillDiLeptonPlot(this_suffix+"_AboveZ_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
-                  }
+                else{
+                  FillDiLeptonPlot(this_suffix+"_OffZ_OS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
                 }
               }
               else{
@@ -1754,87 +1792,17 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
                 if(isSS){
                   FillDiLeptonPlot(this_suffix+"_OnZ_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
                 }
-              }
-
-            }
-
-/*
-            //==== All m(ll) / SS+OS
-            FillDiLeptonPlot(this_suffix+"_AllCharge", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
-            //==== All m(ll) / SS
-            if(isSS){
-              FillDiLeptonPlot(this_suffix+"_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
-              FillHist("LeptonType_"+this_suffix+"_SS", lep.at(0).GetType(), 1., 0., 50., 50);
-              FillHist("LeptonType_"+this_suffix+"_SS", lep.at(1).GetType(), 1., 0., 50., 50);
-            }
-            //==== All m(ll) / OS
-            else{
-              FillDiLeptonPlot(this_suffix+"_OS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
-            }
-
-            if(isOffZ){
-
-              //==== OffZ / SS+OS
-              FillDiLeptonPlot(this_suffix+"_OffZ_AllCharge", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
-
-              //==== OffZ / SS
-              if(isSS){
-                FillDiLeptonPlot(this_suffix+"_OffZ_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
-              }
-              //==== OffZ / OS
-              else{
-                FillDiLeptonPlot(this_suffix+"_OffZ_OS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
-              }
-
-              if(isAboveZ){
-
-                //==== AboveZ / SS+OS
-                FillDiLeptonPlot(this_suffix+"_AboveZ_AllCharge", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
-
-                //==== AboveZ / SS
-                if(isSS){
-                  FillDiLeptonPlot(this_suffix+"_AboveZ_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
-                }
-                //==== AboveZ / OS
                 else{
-                  FillDiLeptonPlot(this_suffix+"_AboveZ_OS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
+                  FillDiLeptonPlot(this_suffix+"_OnZ_OS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
                 }
-
-              }
-
-              if(isBelowZ){
-
-                //==== BelowZ / SS+OS
-                FillDiLeptonPlot(this_suffix+"_BelowZ_AllCharge", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
-
-                //==== BelowZ / SS
-                if(isSS){
-                  FillDiLeptonPlot(this_suffix+"_BelowZ_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
-                }
-                //==== BelowZ / OS
-                else{
-                  FillDiLeptonPlot(this_suffix+"_BelowZ_OS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
-                }
-
               }
 
             }
-            else{
 
-              //==== OnZ / SS+OS
-              FillDiLeptonPlot(this_suffix+"_OnZ_AllCharge", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
-
-              //==== OnZ / SS
-              if(isSS){
-                FillDiLeptonPlot(this_suffix+"_OnZ_SS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
-              }
-              //==== OnZ /OS
-              else{
-                FillDiLeptonPlot(this_suffix+"_OnZ_OS", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
-              }
-
+            //==== For WJet MC Closure, fill OS and SS together
+            if(DoMCClosure && k_sample_name.Contains("WJets")){
+              FillDiLeptonPlot(this_suffix+"_AllCharge", lep, jets, jets_fwd, jets_nolepveto, fatjets, this_weight, this_weight_err);
             }
-*/
 
 
           }
@@ -1946,6 +1914,8 @@ void DiLeptonAnalyzer::FillCutFlow(TString cut, float w){
 
 void DiLeptonAnalyzer::FillCutFlowByName(TString histname, TString cut, float w, bool IsDATA){
 
+  if(AUTO_syst_type!="") return;
+
   TString this_histname = "Cutflow_"+histname;
 
   FillHist(this_histname+"_"+cut, 0., w, 0., 1., 1);
@@ -2021,6 +1991,8 @@ void DiLeptonAnalyzer::FillDiLeptonPlot(
   double thisweight,
   double thieweighterr
   ){
+
+  JSFillHist("Systematics", "Yields_"+histsuffix, 1.*AUTO_it_syst, thisweight, 0., 1.*AUTO_N_syst, AUTO_N_syst);
 
   if(!NowRunningCentral) return;
 

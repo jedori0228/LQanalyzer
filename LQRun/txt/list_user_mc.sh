@@ -1,46 +1,18 @@
 #!/bin/sh
 
 declare -a dilepton_Moriond=(
-'HNMoriondLLMumMum_50'
-'HNMoriondLLMupMum_50'
-'HNMoriondLLEmEm_50'
-'HNMoriondLLEpEp_50'
-'HNMoriondLLMumEm_50'
-'HNMoriondLLMupEp_50'
-'HNMoriondLLEmMum_50'
-'HNMoriondLLEpMup_50'
-'HNMoriondLLMumMum_100'
-'HNMoriondLLMupMum_100'
-'HNMoriondLLEmEm_100'
-'HNMoriondLLEpEp_100'
-'HNMoriondLLMumEm_100'
-'HNMoriondLLMupEp_100'
-'HNMoriondLLEmMum_100'
-'HNMoriondLLEpMup_100'
-'HNMoriondLLMumMum_200'
-'HNMoriondLLMupMum_200'
-'HNMoriondLLEmEm_200'
-'HNMoriondLLEpEp_200'
-'HNMoriondLLMumEm_200'
-'HNMoriondLLMupEp_200'
-'HNMoriondLLEmMum_200'
-'HNMoriondLLEpMup_200'
-'HNMoriondLLMumMum_500'
-'HNMoriondLLMupMum_500'
-'HNMoriondLLEmEm_500'
-'HNMoriondLLEpEp_500'
-'HNMoriondLLMumEm_500'
-'HNMoriondLLMupEp_500'
-'HNMoriondLLEmMum_500'
-'HNMoriondLLEpMup_500'
-'HNMoriondLLMumMum_1100'
-'HNMoriondLLMupMum_1100'
-'HNMoriondLLEmEm_1100'
-'HNMoriondLLEpEp_1100'
-'HNMoriondLLMumEm_1100'
-'HNMoriondLLMupEp_1100'
-'HNMoriondLLEmMum_1100'
-'HNMoriondLLEpMup_1100'
+'HNMoriondLLMupMup_50' 'HNMoriondLLMupMup_100' 'HNMoriondLLMupMup_200' 'HNMoriondLLMupMup_500' 'HNMoriondLLMupMup_1100' 
+'HNMoriondLLMumMum_50' 'HNMoriondLLMumMum_100' 'HNMoriondLLMumMum_200' 'HNMoriondLLMumMum_500' 'HNMoriondLLMumMum_1100' 
+'HNMoriondLLEpEp_50' 'HNMoriondLLEpEp_100' 'HNMoriondLLEpEp_200' 'HNMoriondLLEpEp_500' 'HNMoriondLLEpEp_1100' 
+'HNMoriondLLEmEm_50' 'HNMoriondLLEmEm_100' 'HNMoriondLLEmEm_200' 'HNMoriondLLEmEm_500' 'HNMoriondLLEmEm_1100' 
+'HNMoriondLLMupEp_50' 'HNMoriondLLMupEp_100' 'HNMoriondLLMupEp_200' 'HNMoriondLLMupEp_500' 'HNMoriondLLMupEp_1100' 
+'HNMoriondLLMumEm_50' 'HNMoriondLLMumEm_100' 'HNMoriondLLMumEm_200' 'HNMoriondLLMumEm_500' 'HNMoriondLLMumEm_1100' 
+'HNMoriondLLEpMup_50' 'HNMoriondLLEpMup_100' 'HNMoriondLLEpMup_200' 'HNMoriondLLEpMup_500' 'HNMoriondLLEpMup_1100' 
+'HNMoriondLLEmMum_50' 'HNMoriondLLEmMum_100' 'HNMoriondLLEmMum_200' 'HNMoriondLLEmMum_500' 'HNMoriondLLEmMum_1100' 
+)
+
+declare -a tmp=(
+'WWTo2L2Nu_DS' 'WpWpEWK' 'WpWpQCD'
 )
 
 declare -a newTchannel=(
@@ -64,29 +36,6 @@ declare -a newTchannel=(
 'HNDilepton_EMu_Tchannel_M800'
 'HNDilepton_EMu_Tchannel_M1000'
 'HNDilepton_EMu_Tchannel_M1200'
-)
-
-declare -a tmp=(
-'HNMoriondLLMumEm_50'
-'HNMoriondLLMupEp_50'
-'HNMoriondLLEmMum_50'
-'HNMoriondLLEpMup_50'
-'HNMoriondLLMumEm_100'
-'HNMoriondLLMupEp_100'
-'HNMoriondLLEmMum_100'
-'HNMoriondLLEpMup_100'
-'HNMoriondLLMumEm_200'
-'HNMoriondLLMupEp_200'
-'HNMoriondLLEmMum_200'
-'HNMoriondLLEpMup_200'
-'HNMoriondLLMumEm_500'
-'HNMoriondLLMupEp_500'
-'HNMoriondLLEmMum_500'
-'HNMoriondLLEpMup_500'
-'HNMoriondLLMumEm_1100'
-'HNMoriondLLMupEp_1100'
-'HNMoriondLLEmMum_1100'
-'HNMoriondLLEpMup_1100'
 )
 
 declare -a nonprompt=(
@@ -406,44 +355,22 @@ declare -a EMuSig_all=(
 'HNMoriondLL_Tchannel_EmMum_100'  'HNMoriondLL_Tchannel_EmMum_200'  'HNMoriondLL_Tchannel_EmMum_500'  'HNMoriondLL_Tchannel_EmMum_1100'  
 )
 
-declare -a DiLepSig_ALL=(
-'HNEpEp_40'  'HNEpEp_50'  'HNEpEp_60'  'HNEpEp_70'  'HNEpEp_80'  'HNEpEp_90'  'HNEpEp_100'  'HNEpEp_125'  'HNEpEp_150'  'HNEpEp_200'  'HNEpEp_250'  'HNEpEp_300'  'HNEpEp_400'  'HNEpEp_500'  'HNEpEp_600'  'HNEpEp_700'  'HNEpEp_800'  'HNEpEp_900'  'HNEpEp_1000'  'HNEpEp_1100'  'HNEpEp_1200'  'HNEpEp_1300'  'HNEpEp_1400'  'HNEpEp_1500'
-'HNEmEm_40'  'HNEmEm_50'  'HNEmEm_60'  'HNEmEm_70'  'HNEmEm_80'  'HNEmEm_90'  'HNEmEm_100'  'HNEmEm_125'  'HNEmEm_150'  'HNEmEm_200' 'HNEmEm_250' 'HNEmEm_300'  'HNEmEm_400'  'HNEmEm_500'  'HNEmEm_600'  'HNEmEm_700'  'HNEmEm_800'  'HNEmEm_900'  'HNEmEm_1000'  'HNEmEm_1100'  'HNEmEm_1200'  'HNEmEm_1300'  'HNEmEm_1400'  'HNEmEm_1500'
-'HNEpEp_Tchannel_300'  'HNEpEp_Tchannel_400'  'HNEpEp_Tchannel_600'  'HNEpEp_Tchannel_700'  'HNEpEp_Tchannel_800'  'HNEpEp_Tchannel_900'  'HNEpEp_Tchannel_1000'  'HNEpEp_Tchannel_1200'  'HNEpEp_Tchannel_1300'  'HNEpEp_Tchannel_1400'  'HNEpEp_Tchannel_1500' 'HNMoriondLL_Tchannel_EpEp_100'  'HNMoriondLL_Tchannel_EpEp_200'  'HNMoriondLL_Tchannel_EpEp_500'  'HNMoriondLL_Tchannel_EpEp_1100'
-'HNEmEm_Tchannel_300'  'HNEmEm_Tchannel_400'  'HNEmEm_Tchannel_600'  'HNEmEm_Tchannel_700'  'HNEmEm_Tchannel_800'  'HNEmEm_Tchannel_900'  'HNEmEm_Tchannel_1000'  'HNEmEm_Tchannel_1200'  'HNEmEm_Tchannel_1300'  'HNEmEm_Tchannel_1400'  'HNEmEm_Tchannel_1500' 'HNMoriondLL_Tchannel_EmEm_100'  'HNMoriondLL_Tchannel_EmEm_200'  'HNMoriondLL_Tchannel_EmEm_500'  'HNMoriondLL_Tchannel_EmEm_1100'
-'HNMupMup_40'  'HNMupMup_50'  'HNMupMup_60'  'HNMupMup_70'  'HNMupMup_80'  'HNMupMup_90'  'HNMupMup_100'  'HNMupMup_125'  'HNMupMup_150'  'HNMupMup_200'  'HNMupMup_250'  'HNMupMup_300'  'HNMupMup_400'  'HNMupMup_500'  'HNMupMup_600'  'HNMupMup_700'  'HNMupMup_800'  'HNMupMup_900'  'HNMupMup_1000'  'HNMupMup_1100'  'HNMupMup_1200'  'HNMupMup_1300'  'HNMupMup_1400'  'HNMupMup_1500'
-'HNMumMum_40'  'HNMumMum_50'  'HNMumMum_60'  'HNMumMum_70'  'HNMumMum_80'  'HNMumMum_90'  'HNMumMum_100'  'HNMumMum_125'  'HNMumMum_150'  'HNMumMum_200'  'HNMumMum_250'  'HNMumMum_300'  'HNMumMum_400'  'HNMumMum_500'  'HNMumMum_600'  'HNMumMum_700'  'HNMumMum_800'  'HNMumMum_900'  'HNMumMum_1000'  'HNMumMum_1100'  'HNMumMum_1200'  'HNMumMum_1300'  'HNMumMum_1400'  'HNMumMum_1500'
-'HNMupMup_Tchannel_300'  'HNMupMup_Tchannel_400'  'HNMupMup_Tchannel_600'  'HNMupMup_Tchannel_700'  'HNMupMup_Tchannel_800'  'HNMupMup_Tchannel_900'  'HNMupMup_Tchannel_1000'  'HNMupMup_Tchannel_1200'  'HNMupMup_Tchannel_1300'  'HNMupMup_Tchannel_1400'  'HNMupMup_Tchannel_1500' 'HNMoriondLL_Tchannel_MupMup_100'  'HNMoriondLL_Tchannel_MupMup_200'  'HNMoriondLL_Tchannel_MupMup_500'  'HNMoriondLL_Tchannel_MupMup_1100'
-'HNMumMum_Tchannel_300'  'HNMumMum_Tchannel_400'  'HNMumMum_Tchannel_600'  'HNMumMum_Tchannel_700'  'HNMumMum_Tchannel_800'  'HNMumMum_Tchannel_900'  'HNMumMum_Tchannel_1000'  'HNMumMum_Tchannel_1200'  'HNMumMum_Tchannel_1300'  'HNMumMum_Tchannel_1400'  'HNMumMum_Tchannel_1500' 'HNMoriondLL_Tchannel_MumMum_100'  'HNMoriondLL_Tchannel_MumMum_200'  'HNMoriondLL_Tchannel_MumMum_500'  'HNMoriondLL_Tchannel_MumMum_1100'
+declare -a EMuSig_mue=(
 'HNMupEp_40'  'HNMupEp_50'  'HNMupEp_60'  'HNMupEp_70'  'HNMupEp_80'  'HNMupEp_90'  'HNMupEp_100'  'HNMupEp_125'  'HNMupEp_150'  'HNMupEp_200'  'HNMupEp_250'  'HNMupEp_300'  'HNMupEp_400'  'HNMupEp_500'  'HNMupEp_600'  'HNMupEp_700'  'HNMupEp_800'  'HNMupEp_900'  'HNMupEp_1000'  'HNMupEp_1100'  'HNMupEp_1200'  'HNMupEp_1300'  'HNMupEp_1400'  'HNMupEp_1500'  
 'HNMumEm_40'  'HNMumEm_50'  'HNMumEm_60'  'HNMumEm_70'  'HNMumEm_80'  'HNMumEm_90'  'HNMumEm_100'  'HNMumEm_125'  'HNMumEm_150'  'HNMumEm_200'  'HNMumEm_250'  'HNMumEm_300'  'HNMumEm_400'  'HNMumEm_500'  'HNMumEm_600'  'HNMumEm_700'  'HNMumEm_800'  'HNMumEm_900'  'HNMumEm_1000'  'HNMumEm_1100'  'HNMumEm_1200'  'HNMumEm_1300'  'HNMumEm_1400'  'HNMumEm_1500'  
-'HNEpMup_40'  'HNEpMup_50'  'HNEpMup_60'  'HNEpMup_70'  'HNEpMup_80'  'HNEpMup_90'  'HNEpMup_100'  'HNEpMup_125'  'HNEpMup_150'  'HNEpMup_200'  'HNEpMup_250'  'HNEpMup_300'  'HNEpMup_400'  'HNEpMup_500'  'HNEpMup_600'  'HNEpMup_700'  'HNEpMup_800'  'HNEpMup_900'  'HNEpMup_1000'  'HNEpMup_1100'  'HNEpMup_1200'  'HNEpMup_1300'  'HNEpMup_1400'  'HNEpMup_1500'  
-'HNEmMum_40'  'HNEmMum_50'  'HNEmMum_60'  'HNEmMum_70'  'HNEmMum_80'  'HNEmMum_90'  'HNEmMum_100'  'HNEmMum_125'  'HNEmMum_150'  'HNEmMum_200'  'HNEmMum_250'  'HNEmMum_300'  'HNEmMum_400'  'HNEmMum_500'  'HNEmMum_600'  'HNEmMum_700'  'HNEmMum_800'  'HNEmMum_900'  'HNEmMum_1000'  'HNEmMum_1100'  'HNEmMum_1200'  'HNEmMum_1300'  'HNEmMum_1400'  'HNEmMum_1500'
 'HNMupEp_Tchannel_300'  'HNMupEp_Tchannel_400'  'HNMupEp_Tchannel_600'  'HNMupEp_Tchannel_700'  'HNMupEp_Tchannel_800'  'HNMupEp_Tchannel_900'  'HNMupEp_Tchannel_1000'  'HNMupEp_Tchannel_1200'  'HNMupEp_Tchannel_1300'  'HNMupEp_Tchannel_1400'  'HNMupEp_Tchannel_1500'  
 'HNMoriondLL_Tchannel_MupEp_100'  'HNMoriondLL_Tchannel_MupEp_200'  'HNMoriondLL_Tchannel_MupEp_500'  'HNMoriondLL_Tchannel_MupEp_1100'  
 'HNMumEm_Tchannel_300'  'HNMumEm_Tchannel_400'  'HNMumEm_Tchannel_600'  'HNMumEm_Tchannel_700'  'HNMumEm_Tchannel_800'  'HNMumEm_Tchannel_900'  'HNMumEm_Tchannel_1000'  'HNMumEm_Tchannel_1200'  'HNMumEm_Tchannel_1300'  'HNMumEm_Tchannel_1400'  'HNMumEm_Tchannel_1500'  
 'HNMoriondLL_Tchannel_MumEm_100'  'HNMoriondLL_Tchannel_MumEm_200'  'HNMoriondLL_Tchannel_MumEm_500'  'HNMoriondLL_Tchannel_MumEm_1100'  
+)
+
+declare -a EMuSig_emu=(
+'HNEpMup_40'  'HNEpMup_50'  'HNEpMup_60'  'HNEpMup_70'  'HNEpMup_80'  'HNEpMup_90'  'HNEpMup_100'  'HNEpMup_125'  'HNEpMup_150'  'HNEpMup_200'  'HNEpMup_250'  'HNEpMup_300'  'HNEpMup_400'  'HNEpMup_500'  'HNEpMup_600'  'HNEpMup_700'  'HNEpMup_800'  'HNEpMup_900'  'HNEpMup_1000'  'HNEpMup_1100'  'HNEpMup_1200'  'HNEpMup_1300'  'HNEpMup_1400'  'HNEpMup_1500'  
+'HNEmMum_40'  'HNEmMum_50'  'HNEmMum_60'  'HNEmMum_70'  'HNEmMum_80'  'HNEmMum_90'  'HNEmMum_100'  'HNEmMum_125'  'HNEmMum_150'  'HNEmMum_200'  'HNEmMum_250'  'HNEmMum_300'  'HNEmMum_400'  'HNEmMum_500'  'HNEmMum_600'  'HNEmMum_700'  'HNEmMum_800'  'HNEmMum_900'  'HNEmMum_1000'  'HNEmMum_1100'  'HNEmMum_1200'  'HNEmMum_1300'  'HNEmMum_1400'  'HNEmMum_1500'
 'HNEpMup_Tchannel_300'  'HNEpMup_Tchannel_400'  'HNEpMup_Tchannel_600'  'HNEpMup_Tchannel_700'  'HNEpMup_Tchannel_800'  'HNEpMup_Tchannel_900'  'HNEpMup_Tchannel_1000'  'HNEpMup_Tchannel_1200'  'HNEpMup_Tchannel_1300'  'HNEpMup_Tchannel_1400'  'HNEpMup_Tchannel_1500'  
 'HNMoriondLL_Tchannel_EpMup_100'  'HNMoriondLL_Tchannel_EpMup_200'  'HNMoriondLL_Tchannel_EpMup_500'  'HNMoriondLL_Tchannel_EpMup_1100'  
 'HNEmMum_Tchannel_300'  'HNEmMum_Tchannel_400'  'HNEmMum_Tchannel_600'  'HNEmMum_Tchannel_700'  'HNEmMum_Tchannel_800'  'HNEmMum_Tchannel_900'  'HNEmMum_Tchannel_1000'  'HNEmMum_Tchannel_1200'  'HNEmMum_Tchannel_1300'  'HNEmMum_Tchannel_1400'  'HNEmMum_Tchannel_1500'  
-'HNMoriondLL_Tchannel_EmMum_100'  'HNMoriondLL_Tchannel_EmMum_200'  'HNMoriondLL_Tchannel_EmMum_500'  'HNMoriondLL_Tchannel_EmMum_1100'
-'HNMoriondLLMumMum_200'
-'HNMoriondLLMupMup_200'
-'HNMoriondLLMumMum_100'
-'HNMoriondLLMupMup_100'
-'HNMoriondLLMumMum_50'
-'HNMoriondLLMupMup_50'
-'HNMoriondLLEmEm_200'
-'HNMoriondLLEpEp_200'
-'HNMoriondLLEmEm_100'
-'HNMoriondLLEpEp_100'
-'HNMoriondLLEmEm_50'
-'HNMoriondLLEpEp_50'
-)
-
-declare -a DiMuSig_OS=(
-'HNEpEm_40'  'HNEpEm_50'  'HNEpEm_60'  'HNEpEm_70'  'HNEpEm_80'  'HNEpEm_90'  'HNEpEm_100'  'HNEpEm_125'  'HNEpEm_150'  'HNEpEm_200'  'HNEpEm_250'  'HNEpEm_300'  'HNEpEm_400'  'HNEpEm_500'  'HNEpEm_600'  'HNEpEm_700'  'HNEpEm_800'  'HNEpEm_900'  'HNEpEm_1000'  'HNEpEm_1100'  'HNEpEm_1200'  'HNEpEm_1300'  'HNEpEm_1400'  'HNEpEm_1500' 
-'HNEmEp_40'  'HNEmEp_50'  'HNEmEp_60'  'HNEmEp_70'  'HNEmEp_80'  'HNEmEp_90'  'HNEmEp_100'  'HNEmEp_125'  'HNEmEp_150'  'HNEmEp_200'  'HNEmEp_250'  'HNEmEp_300'  'HNEmEp_400'  'HNEmEp_500'  'HNEmEp_600'  'HNEmEp_700'  'HNEmEp_800'  'HNEmEp_900'  'HNEmEp_1000'  'HNEmEp_1100'  'HNEmEp_1200'  'HNEmEp_1300'  'HNEmEp_1400'  'HNEmEp_1500'
+'HNMoriondLL_Tchannel_EmMum_100'  'HNMoriondLL_Tchannel_EmMum_200'  'HNMoriondLL_Tchannel_EmMum_500'  'HNMoriondLL_Tchannel_EmMum_1100'  
 )
 
 declare -a trilep_signal_mme=(
