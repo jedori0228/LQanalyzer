@@ -332,20 +332,29 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   triggerlist_DiElectron.clear();
   triggerlist_EMu.clear();
 
+  //==== DiMuon Trigger
+
   triggerlist_DiMuon.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
   triggerlist_DiMuon.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
-
-/*
-  //FIXME singleor
-  vector<TString> testtriggers_di, testtriggers_si;
-  testtriggers_di.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
-  testtriggers_di.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
-  testtriggers_si.push_back("HLT_IsoMu24_v");
   triggerlist_DiMuon.push_back("HLT_IsoMu24_v");
-*/
+  triggerlist_DiMuon.push_back("HLT_IsoTkMu24_v");
+
+  vector<TString> triggerlist_DiMuon_Mu17Mu8, triggerlist_DiMuon_Mu24;
+  triggerlist_DiMuon_Mu17Mu8.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
+  triggerlist_DiMuon_Mu17Mu8.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
+  triggerlist_DiMuon_Mu24.push_back("HLT_IsoMu24_v");
+  triggerlist_DiMuon_Mu24.push_back("HLT_IsoTkMu24_v");
+
+  //==== DiElectron Trigger
 
   triggerlist_DiElectron.push_back("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v");
-  //triggerlist_DiElectron.push_back("HLT_Ele27_WPTight_Gsf_v");
+  triggerlist_DiElectron.push_back("HLT_Ele27_WPTight_Gsf_v");
+
+  vector<TString> triggerlist_DiElectron_Ele23Ele12, triggerlist_DiElectron_Ele27;
+  triggerlist_DiElectron_Ele23Ele12.push_back("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v");
+  triggerlist_DiElectron_Ele27.push_back("HLT_Ele27_WPTight_Gsf_v");
+
+  //==== EMu Trigger
 
   triggerlist_EMu.push_back("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v");
   triggerlist_EMu.push_back("HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_v");
@@ -830,7 +839,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       //==== Make FatJet
       //==================
 
-      vector<snu::KFatJet> fatjets;
+      vector<snu::KFatJet> fatjets, fatjets_NoTagCut;
       if( (this_syst == "_JetEn_up") || (this_syst == "_JetRes_up") || (this_syst == "_JetMass_up") || (this_syst == "_JetMassRes_up") ){
         for(unsigned int j=0; j<fatjets_loosest.size(); j++){
           snu::KFatJet this_jet = fatjets_loosest.at(j);
@@ -843,7 +852,8 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
           this_jet *= this_scaling;
           this_jet.SetPrunedMass(this_jet.PrunedMass()*this_mass_scaling);
 
-          if(JSFatJetID(this_jet)) fatjets.push_back(this_jet);
+          if(this_jet.Pt() >= 200.) fatjets_NoTagCut.push_back(this_jet);
+          if(JSFatJetID(this_jet) && this_jet.Pt() >= 200.) fatjets.push_back(this_jet);
         }
       }
       else if( (this_syst == "_JetEn_down") || (this_syst == "_JetRes_down") || (this_syst == "_JetMass_down") || (this_syst == "_JetMassRes_down") ){
@@ -859,7 +869,8 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
           this_jet *= this_scaling;
           this_jet.SetPrunedMass(this_jet.PrunedMass()*this_mass_scaling);
 
-          if(JSFatJetID(this_jet)) fatjets.push_back(this_jet);
+          if(this_jet.Pt() >= 200.) fatjets_NoTagCut.push_back(this_jet);
+          if(JSFatJetID(this_jet) && this_jet.Pt() >= 200.) fatjets.push_back(this_jet);
         }
       }
       else{
@@ -870,7 +881,8 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
             FillHist(Suffix+"_"+"BeforeIDCut_FatJetPrunedMass", this_jet.PrunedMass(), 1., 0., 500., 500);
           }
 
-          if(JSFatJetID(this_jet)) fatjets.push_back(this_jet);
+          if(this_jet.Pt() >= 200.) fatjets_NoTagCut.push_back(this_jet);
+          if(JSFatJetID(this_jet) && this_jet.Pt() >= 200.) fatjets.push_back(this_jet);
         }
       }
       //cout << "fatjets.size() = " << fatjets.size() << endl;
@@ -878,7 +890,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       for(unsigned int j=0; j<fatjets.size(); j++){
         FatJetTau21_SF *= GetFatJetSF(fatjets.at(j), 0.6, 0);
       }
-      JSCorrectedMETFatJet(fatjets, MET, METphi);
+      JSCorrectedMETFatJet(fatjets_NoTagCut, MET, METphi);
 
       //===============
       //==== Make Jet
@@ -940,7 +952,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         bool IsNormalJet = fabs( this_jet.Eta() ) < 2.5;
         bool IsForwardJet = fabs( this_jet.Eta() ) >= 2.5;
         bool lepinside = HasLeptonInsideJet(this_jet, muons_veto, electrons_veto);
-        bool awayfromfatjet = IsAwayFromFatJet(this_jet, fatjets);
+        bool awayfromfatjet = IsAwayFromFatJet(this_jet, fatjets_NoTagCut);
 
         if(!lepinside && awayfromfatjet) jets_eta5.push_back( this_jet );
         if(IsNormalJet && !lepinside && awayfromfatjet) jets.push_back( this_jet );
@@ -1077,20 +1089,78 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         //==== muons.at(0).Pt() = 51.8417 => isTight = 0
         //==== muons.at(1).Pt() = 27.8285 => isTight = 1
         //==== muons.at(2).Pt() = 8.72782 => isTight = 1
+
+/*
         if(isTT){
           if((muons_tight.at(0).Pt() < 20.) || (muons_tight.at(1).Pt() < 10.)) continue;
         }
         else{
           if((muons.at(0).Pt() < 20.) || (muons.at(1).Pt() < 10.)) continue;
         }
+*/
+
+        bool PtOkay = false;
+
+        if(PassTriggerOR(triggerlist_DiMuon_Mu17Mu8)){
+
+          if(isTT){
+            if((muons_tight.at(0).Pt() > 20.) && (muons_tight.at(1).Pt() > 10.)) PtOkay = true;
+          }
+          else{
+            if((muons.at(0).Pt() > 20.) && (muons.at(1).Pt() > 10.)) PtOkay = true;
+          }
+
+        }
+        if(PassTriggerOR(triggerlist_DiMuon_Mu24)){
+
+          if(isTT){
+            if( (muons_tight.at(0).Pt() > 26.) ) PtOkay = true;
+          }
+          else{
+            if( (muons.at(0).Pt() > 26.) ) PtOkay = true;
+          }
+
+
+        }
+
+        if( !PtOkay ) continue;
+
+
       }
       if(Suffix.Contains("DiElectron")){
+
+/*
         if(isTT){
           if(electrons_tight.at(0).Pt() < 25. || electrons_tight.at(1).Pt() < 15.) continue;
         }
         else{
           if(electrons.at(0).Pt() < 25. || electrons.at(1).Pt() < 15.) continue;
         }
+*/
+
+        bool PtOkay = false;
+
+        if(PassTriggerOR(triggerlist_DiElectron_Ele23Ele12)){
+
+          if(isTT){
+            if((electrons_tight.at(0).Pt() > 25.) && (electrons_tight.at(1).Pt() > 15.)) PtOkay = true;
+          }
+          else{
+            if((electrons.at(0).Pt() > 25.) && (electrons.at(1).Pt() > 15.)) PtOkay = true;
+          }
+
+        }
+        if(PassTriggerOR(triggerlist_DiElectron_Ele27)){
+
+          if(isTT){
+            if( (electrons_tight.at(0).Pt() > 30.) ) PtOkay = true;
+          }
+          else{
+            if( (electrons.at(0).Pt() > 30.) ) PtOkay = true;
+          }
+
+        }
+
       }
       if(Suffix.Contains("EMu")){
         double MuMinPt = 9999., ElMinPt = 9999.;
@@ -1198,8 +1268,8 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         //double trigger_eff_Data = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, "", muons, MuonTightID, 0, 0, TriggerSFDir); //FIXME
         //double trigger_eff_MC = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, "", muons, MuonTightID, 0, 1, -1*TriggerSFDir);
 
-        double trigger_eff_Data = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, "", muons, "MUON_HN_TIGHT", 0, 0, TriggerSFDir);
-        double trigger_eff_MC   = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, "", muons, "MUON_HN_TIGHT", 0, 1, -1*TriggerSFDir);
+        double trigger_eff_Data = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, "", muons, "MUON_HN_TIGHT", 3, 0, TriggerSFDir);
+        double trigger_eff_MC   = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, "", muons, "MUON_HN_TIGHT", 3, 1, -1*TriggerSFDir);
         trigger_sf = trigger_eff_Data/trigger_eff_MC;
       }
       if(!isData && Suffix.Contains("DiElectron")){
@@ -1438,9 +1508,15 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       //==== SS-dilepton
       map_Region_to_Bool[Suffix] = true;
 
-/*
+
       //FIXME singleor
-      map_Region_to_Bool[Suffix+"_SingleButNotDouble"] = !PassTriggerOR(testtriggers_di) && PassTriggerOR(testtriggers_si);
+      if(Suffix.Contains("DiMuon")){
+        map_Region_to_Bool[Suffix+"_SingleButNotDouble"] = !PassTriggerOR(triggerlist_DiMuon_Mu17Mu8) && PassTriggerOR(triggerlist_DiMuon_Mu24);
+      }
+      else if(Suffix.Contains("DiElectron")){
+        map_Region_to_Bool[Suffix+"_SingleButNotDouble"] = !PassTriggerOR(triggerlist_DiElectron_Ele23Ele12) && PassTriggerOR(triggerlist_DiElectron_Ele27);
+      }
+/*
       if(this_syst=="" && map_Region_to_Bool[Suffix+"_SingleButNotDouble"]){
         cout << "###########" << endl;
         cout << "## Event ##" << endl;
@@ -1546,8 +1622,8 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       }
 
       //==== Preselection
-      bool TwoJet_NoFatJet = (jets.size()>=2) && (fatjets.size()==0);
-      bool OneJet_NoFatJet = (jets.size()==1) && (fatjets.size()==0) && ( (lep.at(0)+lep.at(1)).M() < 80 ); // has m(ll) < 80 GeV
+      bool TwoJet_NoFatJet = (jets.size()>=2) && (fatjets_NoTagCut.size()==0);
+      bool OneJet_NoFatJet = (jets.size()==1) && (fatjets_NoTagCut.size()==0) && ( (lep.at(0)+lep.at(1)).M() < 80 ); // has m(ll) < 80 GeV
       bool OneFatJet       =                     (fatjets.size()>=1);
 
       map_Region_to_Bool[Suffix+"_Preselection"] = TwoJet_NoFatJet || OneJet_NoFatJet || OneFatJet;
@@ -1836,6 +1912,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         cutop[49] = lep.at(1).Eta();
 
         cutop[50] = fatjets.size();
+        cutop[51] = fatjets_NoTagCut.size();
 
 
         FillNtp("Ntp_"+Suffix+"_Preselection_SS",cutop);
@@ -2034,11 +2111,11 @@ void DiLeptonAnalyzer::MakeHistograms(){
 
   for(int i=0; i<N_sys; i++){
 
-  MakeNtp("Ntp_DiMuon"+systs[i]+"_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:leadingLepton_Eta:secondLepton_Eta:Nfatjets");
+  MakeNtp("Ntp_DiMuon"+systs[i]+"_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:leadingLepton_Eta:secondLepton_Eta:Nfatjets:Nfatjets_NoTagCut");
 
-  MakeNtp("Ntp_DiElectron"+systs[i]+"_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:leadingLepton_Eta:secondLepton_Eta:Nfatjets");
+  MakeNtp("Ntp_DiElectron"+systs[i]+"_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:leadingLepton_Eta:secondLepton_Eta:Nfatjets:Nfatjets_NoTagCut");
 
-  MakeNtp("Ntp_EMu"+systs[i]+"_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:leadingLepton_Eta:secondLepton_Eta:Nfatjets");
+  MakeNtp("Ntp_EMu"+systs[i]+"_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:leadingLepton_Eta:secondLepton_Eta:Nfatjets:Nfatjets_NoTagCut");
 
 
     GetNtp("Ntp_DiMuon"+systs[i]+"_Preselection_SS")->Branch("PdfWeights", "vector<float>",&ForTree_PdfWeights);
@@ -2561,7 +2638,6 @@ bool DiLeptonAnalyzer::JSFatJetID(snu::KFatJet fatjet){
   if( !(fatjet.PrunedMass() > 40) ) return false;
   if( !(fatjet.PrunedMass() < 130) ) return false;
   if( !( fatjet.Tau2()/fatjet.Tau1() < 0.60 ) ) return false;
-  if( !( fatjet.Pt() > 100. ) ) return false;
 
   return true;
 
