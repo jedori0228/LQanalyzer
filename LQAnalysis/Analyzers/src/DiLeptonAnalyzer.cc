@@ -190,6 +190,29 @@ void DiLeptonAnalyzer::InitialiseAnalysis() throw( LQError ) {
 void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
 /*
+  //==== Single Trigger OR
+
+  vector<TString> trig_di, trig_si;
+  trig_di.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
+  trig_di.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
+  trig_si.push_back("HLT_IsoMu24_v");
+
+  bool Pass_trig_di = PassTriggerOR(trig_di);
+  bool Pass_trig_si = PassTriggerOR(trig_si);
+
+  if(Pass_trig_di){
+    FillHist("TriggerPass", 0., 1., 0., 10., 10);
+  }
+  if(Pass_trig_si){
+    FillHist("TriggerPass", 1., 1., 0., 10., 10);
+  }
+  if(Pass_trig_di || Pass_trig_si){
+    FillHist("TriggerPass", 2., 1., 0., 10., 10);
+  }
+*/
+
+/*
+  //==== Isolation check for muon
   std::vector< snu::KMuon > testmuons = GetMuons("MUON_HN_NOCUT", true);
   std::vector<snu::KTruth> truthColl;
   eventbase->GetTruthSel()->Selection(truthColl);
@@ -220,6 +243,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   return;
 */
 /*
+   //==== Isolation check for electron
    std::vector< snu::KElectron > testelectrons = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv1");
    for(unsigned int i=0; i<testelectrons.size(); i++){
      if( TruthMatched(testelectrons.at(i),false) ) continue;
@@ -239,26 +263,28 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
    return;
 */
 /*
-  std::vector< snu::KElectron > testelectrons = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv2");
+  //==== Lepton Fake vs Type
+  std::vector< snu::KElectron > testelectrons = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv7");
   //==== FRTEST
   for(unsigned int i=0; i<testelectrons.size(); i++){
+
+    double ptcone = CorrPt(testelectrons.at(i), 0.08);
+
     FillHist("TEST_ELECTRON_FR_TYPE_F0", testelectrons.at(i).GetType(), 1., 0., 50., 50);
     if(PassID(testelectrons.at(i), "ELECTRON_HN_TIGHTv4")){
       FillHist("TEST_ELECTRON_FR_TYPE_F", testelectrons.at(i).GetType(), 1., 0., 50., 50);
     }
-
-    TString EtaRegion = "InnerBarrel";
-    if(fabs(testelectrons.at(i).SCEta()) > 1.479) EtaRegion = "EndCap";
-    else if(fabs(testelectrons.at(i).SCEta()) > 0.8) EtaRegion = "OuterBarrel";
-    else EtaRegion = "InnerBarrel";
-
-    if(!TruthMatched(testelectrons.at(i), false)){
-      FillHist("TEST_ELECTRON_FAKE_MVA_"+EtaRegion, testelectrons.at(i).MVA(), 1., -1., 1., 200);
+    if(testelectrons.at(i).GetType()==16){
+      FillHist("TEST_ELECTRON_FR_pt_F0", testelectrons.at(i).Pt(), 1., 0., 100., 100);
+      FillHist("TEST_ELECTRON_FR_ptcone_F0", ptcone, 1., 0., 100., 100);
+      if(PassID(testelectrons.at(i), "ELECTRON_HN_TIGHTv4")){
+        FillHist("TEST_ELECTRON_FR_pt_F", testelectrons.at(i).Pt(), 1., 0., 100., 100);
+        FillHist("TEST_ELECTRON_FR_ptcone_F", ptcone, 1., 0., 100., 100);
+      }
     }
   }
 
-  std::vector< snu::KMuon > testmuons = GetMuons("MUON_HN_LOOSEv3", true);
-  //std::vector< snu::KMuon > testmuons = GetMuons("MUON_HN_LOOSE", true);
+  std::vector< snu::KMuon > testmuons = GetMuons("MUON_HN_LOOSEv7_SIP3", true);
   //==== FRTEST
   for(unsigned int i=0; i<testmuons.size(); i++){
     FillHist("TEST_MUON_FR_TYPE_F0", testmuons.at(i).GetType(), 1., 0., 50., 50);
@@ -268,6 +294,12 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   }
   return;
 */
+
+  //==== Initializing
+
+  AUTO_N_syst = 0;
+  AUTO_it_syst = 0;
+  AUTO_syst_type = "";
 
   //============================================
   //==== Apply the gen weight (for NLO, +1,-1)
@@ -291,8 +323,8 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   //======================
 
   std::map< TString, double > w_cutflow;
-  std::vector<TString> triggerlist_DiMuon, triggerlist_DiElectron;
 
+  std::vector<TString> triggerlist_DiMuon, triggerlist_DiElectron;
   std::vector<TString> triggerlist_EMu, triggerlist_EMu_PeriodBtoG, triggerlist_EMu_PeriodH, triggerlist_EMu_Mu8Ele23, triggerlist_EMu_Mu23Ele8;
 
   w_cutflow.clear();
@@ -302,6 +334,15 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
   triggerlist_DiMuon.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
   triggerlist_DiMuon.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
+
+/*
+  //FIXME singleor
+  vector<TString> testtriggers_di, testtriggers_si;
+  testtriggers_di.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
+  testtriggers_di.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
+  testtriggers_si.push_back("HLT_IsoMu24_v");
+  triggerlist_DiMuon.push_back("HLT_IsoMu24_v");
+*/
 
   triggerlist_DiElectron.push_back("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v");
   //triggerlist_DiElectron.push_back("HLT_Ele27_WPTight_Gsf_v");
@@ -346,6 +387,10 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   if(!PassMETFilter()) return;     /// Initial event cuts : 
   FillCutFlow("EventCut", 1.);
 
+  FillCutFlowByName("DiMuon", "MET", w_cutflow["DiMuon"], isData);
+  FillCutFlowByName("DiElectron", "MET", w_cutflow["DiElectron"], isData);
+  FillCutFlowByName("EMu", "MET", w_cutflow["EMu"], isData);
+
   //=======================
   //==== [CUT] Vertex cut
   //=======================
@@ -357,6 +402,10 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   //====   ( (maxd0 <=0 ) || std::abs(vtx.position().rho()) <= 2 ) &&
   //====   !(vtx.isFake() ) )
   FillCutFlow("VertexCut", 1.);
+
+  FillCutFlowByName("DiMuon", "PV", w_cutflow["DiMuon"], isData);
+  FillCutFlowByName("DiElectron", "PV", w_cutflow["DiElectron"], isData);
+  FillCutFlowByName("EMu", "PV", w_cutflow["EMu"], isData);
 
   bool DoMCClosure = std::find(k_flags.begin(), k_flags.end(), "DoMCClosure") != k_flags.end();
   bool AllLepton = std::find(k_flags.begin(), k_flags.end(), "AllLepton") != k_flags.end();
@@ -446,6 +495,8 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   for(unsigned int i=0; i<Suffixs.size(); i++){
 
     TString OriginalSuffix = Suffixs.at(i);
+
+    FillCutFlowByName(OriginalSuffix, "MET_PV", w_cutflow[OriginalSuffix], isData);
 
     //==== Trigger pass
     if(!PassTriggerOR( Triggers.at(i) )) continue;
@@ -998,17 +1049,21 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         isNoExtra = n_veto_muons == 2;
         isNoExtraOtherFlavour = n_veto_electrons == 0;
       }
-      if(Suffix.Contains("DiElectron")){
+      else if(Suffix.Contains("DiElectron")){
         isTT = isTwoElectron_TT && !RunningNonPromptData;
         isLOOSE = isTwoElectron_Loose && RunningNonPromptData;
         isNoExtra = n_veto_electrons == 2;
         isNoExtraOtherFlavour = n_veto_muons == 0;
       }
-      if(Suffix.Contains("EMu")){
+      else if(Suffix.Contains("EMu")){
         isTT = isEMu_TT && !RunningNonPromptData;
         isLOOSE = isEMu_Loose && RunningNonPromptData;
         isNoExtra = (n_veto_muons == 1) && (n_veto_electrons == 1);
         isNoExtraOtherFlavour = true;
+      }
+      else{
+        cout << "Suffix Wrong" << endl;
+        exit(EXIT_FAILURE);
       }
       
       //==== Two leptons
@@ -1041,11 +1096,6 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         double MuMinPt = 9999., ElMinPt = 9999.;
 
         bool PtOkay = false;
-
-        if(isTT){
-        }
-        else{
-        }
 
         if(PassTriggerOR(triggerlist_EMu_Mu8Ele23)){
 
@@ -1387,6 +1437,46 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
       //==== SS-dilepton
       map_Region_to_Bool[Suffix] = true;
+
+/*
+      //FIXME singleor
+      map_Region_to_Bool[Suffix+"_SingleButNotDouble"] = !PassTriggerOR(testtriggers_di) && PassTriggerOR(testtriggers_si);
+      if(this_syst=="" && map_Region_to_Bool[Suffix+"_SingleButNotDouble"]){
+        cout << "###########" << endl;
+        cout << "## Event ##" << endl;
+        cout << "###########" << endl << endl;
+
+        cout << "leading :" << endl;
+        cout << "  pt = " << lep.at(0).Pt() << endl;
+        cout << "  eta = " << lep.at(0).Eta() << endl;
+        cout << "  phi = " << lep.at(0).Phi() << endl;
+        cout << "  reliso = " << lep.at(0).RelIso() << endl;
+        cout << "  dXY = " << lep.at(0).dXY() << endl;
+        cout << "  dZ = " << lep.at(0).dZ() << endl;
+        TString lep0_trigmatch = (lep.at(0).GetMuonPtr())->TrigMatch();
+        cout << "  HLT_Mu17_TrkIsoVVL_v = " << lep0_trigmatch.Contains("HLT_Mu17_TrkIsoVVL_v") << endl;
+        cout << "  HLT_Mu17_v = " << lep0_trigmatch.Contains("HLT_Mu17_v") << endl;
+        cout << "  HLT_Mu8_TrkIsoVVL_v = " << lep0_trigmatch.Contains("HLT_Mu8_TrkIsoVVL_v") << endl;
+        cout << "  HLT_Mu8_v = " << lep0_trigmatch.Contains("HLT_Mu8_v") << endl;
+        cout << "  HLT_IsoMu24_v = " << lep0_trigmatch.Contains("HLT_IsoMu24_v") << endl;
+
+
+        cout << "subleading :" << endl;
+        cout << "  pt = " << lep.at(1).Pt() << endl;
+        cout << "  eta = " << lep.at(1).Eta() << endl;
+        cout << "  phi = " << lep.at(1).Phi() << endl;
+        cout << "  reliso = " << lep.at(1).RelIso() << endl;
+        cout << "  dXY = " << lep.at(1).dXY() << endl;
+        cout << "  dZ = " << lep.at(1).dZ() << endl;
+        TString lep1_trigmatch = (lep.at(1).GetMuonPtr())->TrigMatch();
+        cout << "  HLT_Mu17_TrkIsoVVL_v = " << lep1_trigmatch.Contains("HLT_Mu17_TrkIsoVVL_v") << endl;
+        cout << "  HLT_Mu17_v = " << lep1_trigmatch.Contains("HLT_Mu17_v") << endl;
+        cout << "  HLT_Mu8_TrkIsoVVL_v = " << lep1_trigmatch.Contains("HLT_Mu8_TrkIsoVVL_v") << endl;
+        cout << "  HLT_Mu8_v = " << lep1_trigmatch.Contains("HLT_Mu8_v") << endl;
+        cout << "  HLT_IsoMu24_v = " << lep1_trigmatch.Contains("HLT_IsoMu24_v") << endl;
+
+      }
+*/
 
       //==== # of jets
       map_Region_to_Bool[Suffix+"_0jets"] = (jets.size()==0);
