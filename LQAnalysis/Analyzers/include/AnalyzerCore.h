@@ -207,7 +207,6 @@ class AnalyzerCore : public LQCycleBase {
   void CorrectedMETJER(int syst,std::vector<snu::KJet> jets ,std::vector<snu::KFatJet> fjets , double& OrignialMET, double& OriginalMETPhi);
   void CorrectedMETJMR(int syst,std::vector<snu::KFatJet> jets , double& OrignialMET, double& OriginalMETPhi);
 
-
   void CorrectMuonMomentum(vector<snu::KMuon>& k_muons);
   void SetCorrectedMomentum(vector<snu::KMuon>& k_muons);
   void SetCorrectedMomentum(vector<snu::KMuon>& k_muons, vector<snu::KTruth> truth);
@@ -261,6 +260,7 @@ class AnalyzerCore : public LQCycleBase {
 
   TDirectory *Dir;
   map<TString, TH1*> maphist;
+  map< TString, map<TString, TH1*> > JSmaphist;
   map<TString, TH2*> maphist2D;
   map<TString, TH3*> maphist3D;
   map<TString, TNtupleD*> mapntp;
@@ -384,6 +384,7 @@ class AnalyzerCore : public LQCycleBase {
   void FillHist(TString histname, float value1, float value2, float w , float x[], int nbinsx, float y[], int nbinsy , TString label="",TString labely="");
   void FillHist(TString histname, float value1,  float value2, float w , float xmin, float xmax, int nbinsx,  float ymin, float ymax, int nbinsy , TString label="",TString labely="");
   void FillHist(TString histname, float value1,  float value2, float value3, float w , float xmin, float xmax, int nbinsx,  float ymin, float ymax, int nbinsy , float zmin, float zmax, int nbinz,TString label="");
+  void FillUpDownHist(TString histname, float value, float w , float w_err, float xmin, float xmax, int nbins=0, TString label="");
 
   /// Fills clever hists
   void FillCLHist(histtype type, TString hist, snu::KEvent ev,vector<snu::KMuon> muons, vector<snu::KElectron> electrons, vector<snu::KJet> jets,double weight);
@@ -430,11 +431,48 @@ class AnalyzerCore : public LQCycleBase {
   void PutNuPz(snu::KParticle *nu, double Pz);
   double solveqdeq(double W_mass, TLorentzVector l1l2l3, double MET, double METphi, TString pm);
   int find_mlmet_closest_to_W(snu::KParticle  lep[], snu::KParticle  MET, int n_lep=3);
+  int find_mlmet_closest_to_W(std::vector<KLepton> lep, snu::KParticle  MET);
   double MT(TLorentzVector a, TLorentzVector b);
   bool GenMatching(snu::KParticle a, snu::KParticle b, double maxDeltaR, double maxPtDiff);
-  std::vector<snu::KMuon> GetHNTriMuonsByLooseRelIso(double LooseRelIsoMax, bool keepfake);
+  std::vector<snu::KMuon> GetHNTriMuonsByLooseRelIso(double LooseRelIsoMax, bool keepfake, float ptcut=-999., float etacut = -999.);
   void PrintTruth();
+  void FillLeptonKinematicPlot(std::vector<KLepton> lep, TString suffix, double w);
+  void JSCorrectedMETRochester(std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi);
+  void JSCorrectedMETMuon(int sys, std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi);
+  void JSCorrectedMETElectron(int sys, std::vector<snu::KElectron> elall, double& OrignialMET, double& OriginalMETPhi);
+  void JSCorrectedMETFatJet(std::vector<snu::KFatJet> fjets ,double& OrignialMET, double& OriginalMETPhi);
+  void JSCorrectedMETJetInsideFatJet(std::vector<snu::KJet> jets ,double& OrignialMET, double& OriginalMETPhi);
+  void FillUpDownLeptonKinematicPlot(std::vector<KLepton> lep, TString suffix, double w, double w_err);
+  void SetPlotHNTriLepMetInfo(double met, double metphi);
+  void SetPlotHNTriLepParticleInfo(snu::KParticle* hn, snu::KParticle w_pri_lowmass, snu::KParticle w_pri_highmass, snu::KParticle w_sec);
+  void SetPlotHNTriLepChargeSign(double os, double ss0, double ss1);
+  void SetPlotHNTriBJet(int nbjet);
   std::vector<snu::KMuon> sort_muons_ptorder(std::vector<snu::KMuon> muons);
+  std::vector<snu::KElectron> sort_electrons_ptorder(std::vector<snu::KElectron> electrons);
+  inline static bool MuonPtComparing(const snu::KMuon& m1, const snu::KMuon& m2){ return (m1.Pt() > m2.Pt()); }
+  inline static bool ElectronPtComparing(const snu::KElectron& e1, const snu::KElectron& e2){ return (e1.Pt() > e2.Pt()); }
+  inline static bool LeptonPtComparing(const KLepton& l1, const KLepton& l2){ return (l1.Pt() > l2.Pt()); }
+  std::vector<KLepton> sort_leptons_ptorder(std::vector<KLepton> leptons);
+  int find_genmatching(snu::KTruth gen, std::vector<KLepton> recos, std::vector<int>& used_index);
+  double MuonConePt(snu::KMuon muon, double tightiso);
+  double ElectronConePt(snu::KElectron electron, double tightiso);
+  bool LeptonInsideFatJet(snu::KFatJet fj, double dr, std::vector<KLepton> lep);
+  int HasCloseBjet(KLepton lep, std::vector<snu::KJet> jets, snu::KJet::WORKING_POINT wp);
+
+  std::map< TString, double > map_HNTriChannl_cutop; // key : <channel>_<mass>_<var>
+  void SetHNTriCutOp(TString filepath);
+  bool PassOptimizedCut(
+    TString channel, int sig_mass,
+    double first_pt, double second_pt, double third_pt,
+    double W_pri_mass, double HN_mass,
+    double deltaR_OS_min, double gamma_star_mass,
+    double PFMET
+  );
+
+  TH1* JSGetHist(TString suffix, TString hname);
+  void JSFillHist(TString suffix, TString histname, float value, float w, float xmin, float xmax, int nbins);
+  void JSMakeHistograms(TString suffix, TString hname, int nbins, float xmin, float xmax);
+  bool HasLeptonInsideJet(snu::KJet jet, std::vector<snu::KMuon> mus, std::vector<snu::KElectron> els);
 
 
   //==== (Trilepton) H+->WA stuffs

@@ -431,18 +431,18 @@ float AnalyzerCore::MC_CR_Correction(int syst){
 
   ///  updated 2 Oct
 
-  if(k_sample_name.Contains("WZTo3LNu_powheg")) return 0.988021 +  fsyst*0.0652167;
-  if(k_sample_name.Contains("ZGto2LG")) return  0.83069 + fsyst*0.174719;
+  if(k_sample_name.Contains("WZTo3LNu_powheg")) return 0.974439  + fsyst*0.061763;
+  if(k_sample_name.Contains("ZGto2LG")) return  0.822969 + fsyst*0.141269;
   if(k_sample_name.Contains("WGtoLNuG")) return 1.;
-  if(k_sample_name.Contains("ZZTo4L_powheg")) return 0.94117 + fsyst*0.105665;
-  if(k_sample_name.Contains("ggZZto2e2mu")) return 0.94117 + fsyst*0.105665;
-  if(k_sample_name.Contains("ggZZto2e2nu")) return 0.94117 + fsyst*0.105665;
-  if(k_sample_name.Contains("ggZZto2e2tau")) return 0.94117 + fsyst*0.105665;
-  if(k_sample_name.Contains("ggZZto2mu2nu")) return 0.94117 + fsyst*0.105665;
-  if(k_sample_name.Contains("ggZZto2mu2tau")) return 0.94117 + fsyst*0.105665;
-  if(k_sample_name.Contains("ggZZto4e")) return 0.94117 + fsyst*0.105665;
-  if(k_sample_name.Contains("ggZZto4mu")) return 0.94117 + fsyst*0.105665;
-  if(k_sample_name.Contains("ggZZto4tau")) return 0.94117 + fsyst*0.105665;
+  if(k_sample_name.Contains("ZZTo4L_powheg")) return 0.922148 + fsyst*0.0859548;
+  if(k_sample_name.Contains("ggZZto2e2mu")) return 0.922148 + fsyst*0.0859548;
+  if(k_sample_name.Contains("ggZZto2e2nu")) return 0.922148 + fsyst*0.0859548;
+  if(k_sample_name.Contains("ggZZto2e2tau")) return 0.922148 + fsyst*0.0859548;
+  if(k_sample_name.Contains("ggZZto2mu2nu")) return 0.922148 + fsyst*0.0859548;
+  if(k_sample_name.Contains("ggZZto2mu2tau")) return 0.922148 + fsyst*0.0859548;
+  if(k_sample_name.Contains("ggZZto4e")) return 0.922148 + fsyst*0.0859548;
+  if(k_sample_name.Contains("ggZZto4mu")) return 0.922148 + fsyst*0.0859548;
+  if(k_sample_name.Contains("ggZZto4tau")) return 0.922148 + fsyst*0.0859548;
   
   return 1.;
 }
@@ -847,14 +847,14 @@ vector<snu::KFatJet>  AnalyzerCore::GetCorrectedFatJet(vector<snu::KFatJet>   fj
   for(unsigned int ifj=0; ifj < fjets.size(); ifj++){
     snu::KFatJet fjet = fjets[ifj];
     float L1corr = fjet.L1JetCorr();
+    if(L1corr==0) L1corr = 0.95; // FIXME TEMP CORRECTION FOR NOW
     
     TLorentzVector v;
     v.SetPtEtaPhiM(fjet.Pt(), fjet.Eta(), fjet.Phi(), fjet.M());
     
-    if(L1corr==0.) L1corr = 0.95;
     /// remove L1 correction (only L2L3 used)
     v=v* (1./L1corr);
-    
+
     /// smear mass with JMR central
     v=v*fjet.SmearedRes();
     fjet.SetPrunedMass(fjet.PrunedMass() * fjet.SmearedMassRes()/L1corr);
@@ -1635,102 +1635,10 @@ float AnalyzerCore::GetDiLepMass(std::vector<snu::KMuon> muons){
   return p.M();
 }
 
-
-
-float AnalyzerCore::GetMasses(TString svariable, std::vector<snu::KElectron> electrons, std::vector<snu::KJet> jets,  std::vector<snu::KFatJet> fatjets, vector<int> ijets, bool lowmass){
-  if(electrons.size() != 2) return 0.;
-
-
-  // variable 1 = lljj                                                                                                                                                               
-  // variable 2 = l1jj                                                                                                                                                               
-  // variable 3 = l2jj                                                                                                                                                               
-  // variable 4 = llj                                                                                                                                                                
-  // variable 5 = jj                                                                                                                                                                 
-  // variable 6 = contra JJ mass                                                                                                                                                     
-
-  int variable (-1);
-  if(svariable == "lljj") variable = 1;
-  else if(svariable == "l1jj") variable = 2;
-  else if(svariable == "l2jj") variable = 3;
-  else if(svariable == "llj") variable = 4;
-  else if(svariable == "l1j") variable = 7;
-  else if(svariable == "l2j") variable = 8;
-  else if(svariable == "jj") variable = 5;
-  else if(svariable == "contMT") variable = 6;
-  else if(svariable == "llfj") variable = -1;
-  else if(svariable == "l1fj") variable = -2;
-  else if(svariable == "l2fj") variable = -3;
-  else if(svariable == "fj") variable = -4;
-  else return -999.;
-
-  snu::KFatJet fatjet;
-  float dMFatJet=9999.;
-  for(UInt_t emme=0; emme<fatjets.size(); emme++){
-    if(fabs(fatjets[emme].PrunedMass() -  80.4) < dMFatJet){
-      dMFatJet=fatjets[emme].PrunedMass();
-      fatjet=fatjets[emme];
-    }
-  }
-
-  if(variable==-1) return (electrons[0] + electrons[1] + fatjet).M();
-  if(variable==-2) return (electrons[0] + fatjet).M();
-  if(variable==-3) return (electrons[1] + fatjet).M();
-  if(variable==-4) return fatjet.PrunedMass();
-
-  if(jets.size() == 1){
-    if(variable==4) return (electrons[0] + electrons[1] + jets[0]).M();
-    if(variable==7) return (electrons[0]  + jets[0]).M();
-    if(variable==8) return (electrons[1] + jets[0]).M();
-
-  }
-  if(jets.size() < 2) return -999.;
-
-
-  float dijetmass_tmp=999.;
-  float dijetmass=9990000.;
-  int m=-999;
-  int n=-999;
-  for(UInt_t emme=0; emme<jets.size(); emme++){
-    for(UInt_t enne=1; enne<jets.size(); enne++) {
-      if(emme == enne) continue;
-      if(lowmass)   dijetmass_tmp = (jets[emme]+jets[enne]+electrons[0] + electrons[1]).M();
-      else dijetmass_tmp = (jets[emme]+jets[enne]).M();
-      if ( fabs(dijetmass_tmp-80.4) < fabs(dijetmass-80.4) ) {
-        dijetmass = dijetmass_tmp;
-        m = emme;
-        n = enne;
-      }
-    }
-  }
-
-  if(ijets.size() ==2){
-    if(ijets[0] != 0){
-      ijets.push_back(m);
-      ijets.push_back(n);
-    }
-  }
-
-  if(variable==1) return (electrons[0] + electrons[1] + jets[m]+jets[n]).M();
-  if(variable==2) return (electrons[0]  + jets[m]+jets[n]).M();
-  if(variable==3) return (electrons[1] + jets[m]+jets[n]).M();
-  if(variable==5) return (jets[m]+jets[n]).M();
-  if(variable==6) {
-    float dPhi = fabs(TVector2::Phi_mpi_pi(jets[m].Phi() - jets[n].Phi()));
-    float contramass=2*jets[m].Pt()*jets[n].Pt()*(1+cos(dPhi));
-    contramass=sqrt(contramass);
-    return contramass;
-  }
-
-  return 0.;
-
-
-
-}
-
-float AnalyzerCore::GetMasses(TString svariable, std::vector<snu::KMuon> muons, std::vector<snu::KJet> jets,  std::vector<snu::KFatJet> fatjets, vector<int> ijets, bool lowmass){
+float AnalyzerCore::GetMasses(TString svariable, std::vector<snu::KMuon> muons, std::vector<snu::KJet> jets, vector<int> ijets, bool lowmass){
   
   if(muons.size() != 2) return 0.;
-
+  if(jets.size() == 0) return 0.;
 
   // variable 1 = lljj
   // variable 2 = l1jj
@@ -1744,36 +1652,12 @@ float AnalyzerCore::GetMasses(TString svariable, std::vector<snu::KMuon> muons, 
   else if(svariable == "l1jj") variable = 2;
   else if(svariable == "l2jj") variable = 3;
   else if(svariable == "llj") variable = 4;
-  else if(svariable == "l1j") variable = 7;
-  else if(svariable == "l2j") variable = 8;
   else if(svariable == "jj") variable = 5;
   else if(svariable == "contMT") variable = 6;
-  else if(svariable == "llfj") variable = -1;
-  else if(svariable == "l1fj") variable = -2;
-  else if(svariable == "l2fj") variable = -3;
-  else if(svariable == "fj") variable = -4;
   else return -999.;
 
-  snu::KFatJet fatjet;
-  float dMFatJet=9999.;
-  for(UInt_t emme=0; emme<fatjets.size(); emme++){
-    if(fabs(fatjets[emme].PrunedMass() -  80.4) < dMFatJet){
-      dMFatJet=fatjets[emme].PrunedMass();
-      fatjet=fatjets[emme];
-    }
-  }
+  if(variable==4) return (muons[0] + muons[1] + jets[0]).M();
 
-  if(variable==-1) return (muons[0] + muons[1] + fatjet).M();
-  if(variable==-2) return (muons[0] + fatjet).M();
-  if(variable==-3) return (muons[1] + fatjet).M();
-  if(variable==-4) return fatjet.PrunedMass();
-
-  if(jets.size() == 1){
-    if(variable==4) return (muons[0] + muons[1] + jets[0]).M();
-    if(variable==7) return (muons[0]  + jets[0]).M();
-    if(variable==8) return (muons[1] + jets[0]).M();
-    
-  }
   if(jets.size() < 2) return -999.;
 
 
@@ -2338,6 +2222,13 @@ AnalyzerCore::~AnalyzerCore(){
   }
   maphist.clear();
 
+  for(map< TString, map<TString, TH1*> >::iterator it = JSmaphist.begin(); it!= JSmaphist.end(); it++){
+    for(map<TString, TH1*>::iterator itit = (it->second).begin(); itit != (it->second).end(); itit++){
+      delete itit->second;
+    }
+  }
+  JSmaphist.clear();
+
   for(map<TString, TH2*>::iterator it = maphist2D.begin(); it!= maphist2D.end(); it++){
     delete it->second;
   }
@@ -2751,14 +2642,9 @@ int AnalyzerCore::AssignnNumberOfTruth(){
 
 
 bool AnalyzerCore::IsSignal(){
-
-  if(isData) return false;
-  if(k_sample_name.Contains("Majornana")) return true;
-  if(k_sample_name.Contains("HNE")) return true;
-  if(k_sample_name.Contains("HNM")) return true;
-  if(k_sample_name.Contains("HNDilepton"))  return false;
-  if(k_sample_name.Contains("MM")) return true;
   
+  if(k_sample_name.Contains("Majornana")) return true;
+  if(k_sample_name.Contains("HN")) return true;
   return false;
 }
 
@@ -2955,14 +2841,7 @@ float AnalyzerCore::GetVirtualMass(int pdg, bool includenu, bool includeph){
     
     if(fabs(eventbase->GetTruth().at(ig).PdgId()) == pdg){
       if(eventbase->GetTruth().at(ig).GenStatus() ==1){
-	int index_m=eventbase->GetTruth().at(ig).IndexMother() ;
-	while(fabs(eventbase->GetTruth().at(index_m).PdgId()) == pdg){
-	  index_m=eventbase->GetTruth().at(index_m).IndexMother();
-
-	}
-	if(eventbase->GetTruth().at(index_m).PdgId() == 23 || eventbase->GetTruth().at(index_m).PdgId() ==22){
-	  es1.push_back(eventbase->GetTruth().at(ig));
-	}
+        es1.push_back(eventbase->GetTruth().at(ig));
       }
     }
     else   if(includenu){
@@ -2982,14 +2861,13 @@ float AnalyzerCore::GetVirtualMass(int pdg, bool includenu, bool includeph){
 
   if(!includeph){
     if(!includenu){
+      //==== Two OSSF status 1 lepton pair 
       if(es1.size()==2){
-	snu::KParticle ll = es1[0]  + es1[1];
-	return ll.M();
+        if(es1[0].PdgId() * es1[1].PdgId() <0){
+	        snu::KParticle ll = es1[0]  + es1[1];
+	        return ll.M();
+        }
       }
-    }
-    else  if(es1.size()==2){
-      snu::KParticle ll = es1[0]  + es1[1];
-      return ll.M();
     }
   }
   else{
@@ -3283,6 +3161,26 @@ int AnalyzerCore::find_mlmet_closest_to_W(snu::KParticle lep[], snu::KParticle M
   
 }
 
+int AnalyzerCore::find_mlmet_closest_to_W(std::vector<KLepton> lep, snu::KParticle  MET){
+
+  int n_lep = lep.size();
+
+  double m_diff[n_lep];
+  double m_diff_min = 999999999.;
+  int outindex = 0;
+  for(int i=0; i<n_lep; i++){
+    double dphi = lep[i].DeltaPhi(MET);
+    double mt2 = 2.*lep[i].Pt()*MET.Pt()*(1.-TMath::Cos(dphi));
+    m_diff[i] = fabs( sqrt(mt2) - 80.385 );
+    if( m_diff[i] < m_diff_min ){
+      m_diff_min = m_diff[i];
+      outindex = i;
+    }
+  }
+  return outindex;
+
+}
+
 double AnalyzerCore::MT(TLorentzVector a, TLorentzVector b){
   double dphi = a.DeltaPhi(b);
   return TMath::Sqrt( 2.*a.Pt()*b.Pt()*(1.- TMath::Cos(dphi) ) );
@@ -3300,9 +3198,9 @@ bool AnalyzerCore::GenMatching(snu::KParticle gen, snu::KParticle reco, double m
   
 }
 
-std::vector<snu::KMuon> AnalyzerCore::GetHNTriMuonsByLooseRelIso(double LooseRelIsoMax, bool keepfake){
+std::vector<snu::KMuon> AnalyzerCore::GetHNTriMuonsByLooseRelIso(double LooseRelIsoMax, bool keepfake, float ptcut, float etacut){
  
-  std::vector<snu::KMuon> muontriLooseColl_raw = GetMuons("MUON_HN_TRI_VLOOSE", keepfake);
+  std::vector<snu::KMuon> muontriLooseColl_raw = GetMuons("MUON_HN_TRI_VLOOSE", keepfake, ptcut, etacut);
   std::vector<snu::KMuon> muontriLooseColl;
   muontriLooseColl.clear();
   for(unsigned int j=0; j<muontriLooseColl_raw.size(); j++){
@@ -3319,9 +3217,9 @@ void AnalyzerCore::PrintTruth(){
   
   cout << "=========================================================" << endl;
   cout << "truth size = " << truthColl.size() << endl;
-  cout << "index" << '\t' << "pdgid" << '\t' << "mother" << '\t' << "mother pid" << endl;
+  cout << "index" << '\t' << "pdgid" << '\t' << "status" << '\t' << "mother" << '\t' << "mother pid" << "\t" << "pt" << "\t" << "eta" << "\t" << "mass" << endl;
   for(int i=2; i<truthColl.size(); i++){
-    cout << i << '\t' << truthColl.at(i).PdgId() << '\t' << truthColl.at(i).IndexMother() << '\t' << truthColl.at( truthColl.at(i).IndexMother() ).PdgId() << endl;
+    cout << i << '\t' << truthColl.at(i).PdgId() << '\t' << truthColl.at(i).GenStatus() << '\t' << truthColl.at(i).IndexMother() << '\t' << truthColl.at( truthColl.at(i).IndexMother() ).PdgId() << "\t" << truthColl.at(i).Pt() << "\t" << truthColl.at(i).Eta() << "\t" << truthColl.at(i).M() << endl;
   }
 
 }
@@ -3375,6 +3273,7 @@ void AnalyzerCore::MakeCleverHistograms(histtype type, TString clhistname ){
 void AnalyzerCore::MakeHistograms(){
   //// Additional plots to make                                                                                
   maphist.clear();
+  JSmaphist.clear();
   maphist2D.clear();
   maphist3D.clear();
 
@@ -3393,12 +3292,17 @@ void AnalyzerCore::MakeHistograms(TString hname, int nbins, float xmin, float xm
   maphist[hname]->GetXaxis()->SetTitle(label);
 }
 
+void AnalyzerCore::JSMakeHistograms(TString suffix, TString hname, int nbins, float xmin, float xmax){
 
-void AnalyzerCore::MakeHistograms2D(TString hname, int nbinsx, float xmin, float xmax, int nbinsy, float ymin, float ymax, TString label, TString labely) {
+  (JSmaphist[suffix])[hname] = new TH1D(hname.Data(),hname.Data(),nbins,xmin,xmax);
+
+}
+
+
+void AnalyzerCore::MakeHistograms2D(TString hname, int nbinsx, float xmin, float xmax, int nbinsy, float ymin, float ymax, TString label) {
 
   maphist2D[hname] =  new TH2D(hname.Data(),hname.Data(),nbinsx,xmin,xmax, nbinsy,ymin,ymax);
   maphist2D[hname]->GetXaxis()->SetTitle(label);
-  maphist2D[hname]->GetYaxis()->SetTitle(labely);
 }
 
 
@@ -3408,11 +3312,10 @@ void AnalyzerCore::MakeHistograms3D(TString hname, int nbinsx, float xmin, float
   maphist3D[hname]->GetXaxis()->SetTitle(label);
 }
 
-void AnalyzerCore::MakeHistograms2D(TString hname, int nbinsx,  float xbins[], int nbinsy,  float ybins[], TString label, TString labely) {
+void AnalyzerCore::MakeHistograms2D(TString hname, int nbinsx,  float xbins[], int nbinsy,  float ybins[], TString label) {
 
   maphist2D[hname] =  new TH2D(hname.Data(),hname.Data(),nbinsx , xbins, nbinsy,ybins);
   maphist2D[hname]->GetXaxis()->SetTitle(label);
-  maphist2D[hname]->GetYaxis()->SetTitle(labely);
 }
 
 
@@ -3497,7 +3400,23 @@ void AnalyzerCore::FillHist(TString histname, float value, float w, float xmin, 
   
 }
 
-void AnalyzerCore::FillHist(TString histname, float value1, float value2, float w, float xmin, float xmax, int nbinsx, float ymin, float ymax, int nbinsy , TString label, TString labely){
+void AnalyzerCore::JSFillHist(TString suffix, TString histname, float value, float w, float xmin, float xmax, int nbins){
+
+  m_logger << DEBUG << "JSFillHist : " << suffix << "\t" << histname << LQLogger::endmsg;
+  if(JSGetHist(suffix, histname)) JSGetHist(suffix,histname)->Fill(value, w);
+  else{
+    if (nbins < 0) {
+      m_logger << ERROR << histname << " was NOT found. Nbins was not set also... please configure histogram maker correctly" << LQLogger::endmsg;
+      exit(0);
+    }
+    m_logger << DEBUG << "Making the histogram" << LQLogger::endmsg;
+    JSMakeHistograms(suffix, histname, nbins, xmin, xmax);
+    if(JSGetHist(suffix, histname)) JSGetHist(suffix, histname)->Fill(value, w);
+  }
+
+}
+
+void AnalyzerCore::FillHist(TString histname, float value1, float value2, float w, float xmin, float xmax, int nbinsx, float ymin, float ymax, int nbinsy , TString label){
 
   m_logger << DEBUG << "FillHist : " << histname << LQLogger::endmsg;
   if(GetHist2D(histname)) GetHist2D(histname)->Fill(value1,value2, w);
@@ -3507,15 +3426,14 @@ void AnalyzerCore::FillHist(TString histname, float value1, float value2, float 
       exit(0);
     }
     m_logger << DEBUG << "Making the histogram" << LQLogger::endmsg;
-    MakeHistograms2D(histname, nbinsx, xmin, xmax,nbinsy, ymin, ymax , label, labely);
+    MakeHistograms2D(histname, nbinsx, xmin, xmax,nbinsy, ymin, ymax , label);
     if(GetHist2D(histname)) GetHist2D(histname)->GetXaxis()->SetTitle(label);
-    if(GetHist2D(histname)) GetHist2D(histname)->GetYaxis()->SetTitle(labely);
     if(GetHist2D(histname)) GetHist2D(histname)->Fill(value1,value2, w);
   }
 
 }
 
-void AnalyzerCore::FillHist(TString histname, float valuex, float valuey, float w, float xbins[], int nxbins, float ybins[], int nybins , TString label, TString labely){
+void AnalyzerCore::FillHist(TString histname, float valuex, float valuey, float w, float xbins[], int nxbins, float ybins[], int nybins , TString label){
   m_logger << DEBUG << "FillHist : " << histname << LQLogger::endmsg;
   if(GetHist2D(histname)) GetHist2D(histname)->Fill(valuex,valuey, w);
 
@@ -3525,7 +3443,7 @@ void AnalyzerCore::FillHist(TString histname, float valuex, float valuey, float 
       exit(0);
     }
     m_logger << DEBUG << "Making the histogram" << LQLogger::endmsg;
-    MakeHistograms2D(histname, nxbins, xbins, nybins, ybins , label,labely);
+    MakeHistograms2D(histname, nxbins, xbins, nybins, ybins , label);
     if(GetHist2D(histname)) GetHist2D(histname)->GetXaxis()->SetTitle(label);
     
     if(GetHist2D(histname)) GetHist2D(histname)->Fill(valuex, valuey, w);
@@ -3563,6 +3481,14 @@ void AnalyzerCore::FillHist(TString histname, float value, float w , TString lab
   
   
   return;
+}
+
+void AnalyzerCore::FillUpDownHist(TString histname, float value, float w, float w_err, float xmin, float xmax, int nbins , TString label){
+
+  FillHist(histname+"_up", value, w+w_err, xmin, xmax, nbins, label);
+  FillHist(histname+"_down", value, w-w_err, xmin, xmax, nbins, label);
+  FillHist(histname, value, w, xmin, xmax, nbins, label);
+
 }
 
 void AnalyzerCore::FillCLHist(histtype type, TString hist, vector<snu::KMuon> muons, double w){
@@ -3843,11 +3769,12 @@ void AnalyzerCore::WriteHists(){
   m_outputFile->cd();
 
   for(map<TString, TH1*>::iterator mapit = maphist.begin(); mapit != maphist.end(); mapit++){
-    
+/*    
     if(mapit->first.Contains("cutflow")){
       mapit->second->Write();
     }
     else{
+
       TDirectory *dir = m_outputFile->GetDirectory("Hists");
    
       if (dir) {
@@ -3862,9 +3789,35 @@ void AnalyzerCore::WriteHists(){
 	m_outputFile->cd();
       }
     }
+*/
+
+    mapit->second->Write();
+
   }
+
+  for(map< TString, map<TString, TH1*> >::iterator it = JSmaphist.begin(); it!= JSmaphist.end(); it++){
+
+    TString this_suffix = it->first;
+    map<TString, TH1*> this_histmap = it->second;
+
+    TDirectory *dir = m_outputFile->GetDirectory(this_suffix);
+    if(!dir){
+      Dir = m_outputFile->mkdir(this_suffix);
+    }
+    m_outputFile->cd(this_suffix);
+
+    for(map<TString, TH1*>::iterator itit = this_histmap.begin(); itit!=this_histmap.end(); itit++){
+
+      itit->second->Write();
+
+    }
+
+    m_outputFile->cd();
+
+  }
+
   for(map<TString, TH2*>::iterator mapit = maphist2D.begin(); mapit != maphist2D.end(); mapit++){
-    
+/*
     TDirectory *dir = m_outputFile->GetDirectory("Hists2D");
 
     if (dir) {
@@ -3878,6 +3831,10 @@ void AnalyzerCore::WriteHists(){
       mapit->second->Write();
       m_outputFile->cd();
     }
+*/
+
+    mapit->second->Write();
+
   }
   
   for(map<TString, TH3*>::iterator mapit = maphist3D.begin(); mapit != maphist3D.end(); mapit++){
@@ -3912,6 +3869,37 @@ TH1* AnalyzerCore::GetHist(TString hname){
   else m_logger << DEBUG  << hname << " was not found in map" << LQLogger::endmsg;
 
   return h;
+}
+
+TH1* AnalyzerCore::JSGetHist(TString suffix, TString hname){
+
+  TH1* h = NULL;
+  std::map< TString, std::map<TString, TH1*> >::iterator it = JSmaphist.find(suffix);
+  if(it == JSmaphist.end()) m_logger << DEBUG << "Suffix:"<<suffix << " was not found in JSmaphist" << LQLogger::endmsg;
+  else{
+
+    std::map<TString, TH1*> this_maphist = it->second;
+    std::map<TString, TH1*>::iterator itit = this_maphist.find(hname);
+    if(itit != this_maphist.end()) return itit->second;
+    else m_logger << DEBUG  << hname << " was not found in JSmaphist" << LQLogger::endmsg;
+
+  }
+
+  return h;
+}
+
+bool AnalyzerCore::HasLeptonInsideJet(snu::KJet jet, std::vector<snu::KMuon> mus, std::vector<snu::KElectron> els){
+
+
+  for(unsigned int i=0; i<mus.size(); i++){
+    if( jet.DeltaR( mus.at(i) ) < 0.4 ) return true;
+  }
+  for(unsigned int i=0; i<els.size(); i++){
+    if( jet.DeltaR( els.at(i) ) < 0.4 ) return true;
+  }
+
+  return false;
+
 }
 
 
@@ -4620,6 +4608,272 @@ TNtupleD* AnalyzerCore::GetNtp(TString hname){
   return n;
 }
 
+void AnalyzerCore::FillLeptonKinematicPlot(std::vector<KLepton> lep, TString suffix, double w){
+
+  //==== prefix : "ZLepton"
+  //==== suffix : "WZ"
+
+  TString OrderStr[5] = {"leading", "second", "third", "fourth", "fifth"};
+
+  int counter_muon(0), counter_electron(0);
+
+  for(unsigned int i=0; i<lep.size(); i++){
+
+    //==== return more than 5 leptons
+    if(i>=5) break;
+
+    //==== if lepton flavour is not set, return
+    if(lep.at(i).LeptonFlavour()==KLepton::NOTSET){
+      m_logger << INFO << "lepton flavour not set" << LQLogger::endmsg;
+      continue;
+    }
+
+
+    //==== Lepton plot
+
+    TString this_order = OrderStr[i];
+
+    FillHist(this_order+"Lepton_Pt_"+suffix, lep.at(i).Pt(), w, 0., 200., 200);
+    FillHist(this_order+"Lepton_Eta_"+suffix, lep.at(i).Eta(), w, -3., 3., 60);
+    FillHist(this_order+"Lepton_RelIso_"+suffix, lep.at(i).RelIso(), w, 0., 1.0, 100);
+    FillHist(this_order+"Lepton_dXY_"+suffix, fabs(lep.at(i).dXY()), w, 0., 0.01, 100);
+    FillHist(this_order+"Lepton_dXYSig_"+suffix, fabs(lep.at(i).dXYSig()), w, 0., 8., 80);
+    FillHist(this_order+"Lepton_dZ_"+suffix, fabs(lep.at(i).dZ()), w, 0., 0.5, 500);
+
+    //==== Muon plot
+
+    if(lep.at(i).LeptonFlavour()==KLepton::MUON){
+
+      const snu::KMuon* this_muon = lep.at(i).GetMuonPtr();
+      TString this_muon_order = OrderStr[counter_muon];
+
+      FillHist(this_muon_order+"Muon_Pt_"+suffix, this_muon->Pt(), w, 0., 200., 200);
+      FillHist(this_muon_order+"Muon_Eta_"+suffix, this_muon->Eta(), w, -3., 3., 60);
+      FillHist(this_muon_order+"Muon_RelIso_"+suffix, this_muon->RelIso04(), w, 0., 1.0, 100);
+      FillHist(this_muon_order+"Muon_dXY_"+suffix, fabs(this_muon->dXY()), w, 0., 0.01, 100);
+      FillHist(this_muon_order+"Muon_dXYSig_"+suffix, fabs(this_muon->dXYSig()), w, 0., 8., 80);
+      FillHist(this_muon_order+"Muon_dZ_"+suffix, fabs(this_muon->dZ()), w, 0., 0.5, 500);
+      FillHist(this_muon_order+"Muon_GlobalChi2_"+suffix, this_muon->GlobalChi2(), w, 0., 100., 100);
+
+      counter_muon++;
+    }
+
+    //==== Electron plot
+
+    else if(lep.at(i).LeptonFlavour()==KLepton::ELECTRON){
+
+      const snu::KElectron* this_electron = lep.at(i).GetElectronPtr();
+      TString this_electron_order = OrderStr[counter_electron];
+
+      FillHist(this_electron_order+"Electron_Pt_"+suffix, this_electron->Pt(), w, 0., 200., 200);
+      FillHist(this_electron_order+"Electron_Eta_"+suffix, this_electron->Eta(), w, -3., 3., 60);
+      FillHist(this_electron_order+"Electron_RelIso_"+suffix, this_electron->PFRelIso(0.3), w, 0., 1.0, 100);
+      FillHist(this_electron_order+"Electron_dXY_"+suffix, fabs(this_electron->dxy()), w, 0., 0.01, 100);
+      FillHist(this_electron_order+"Electron_dXYSig_"+suffix, fabs(this_electron->dxySig()), w, 0., 8., 80);
+      FillHist(this_electron_order+"Electron_dZ_"+suffix, fabs(this_electron->dz()), w, 0., 0.5, 500);
+
+      counter_electron++;
+
+    }
+
+    else{
+
+    }
+
+  }
+
+}
+
+void AnalyzerCore::JSCorrectedMETRochester(std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi){
+
+  //cout << "[AnalyzerCore::CorrectedMETRochester] OrignialMET = " << OrignialMET << endl;
+  //cout << "[AnalyzerCore::CorrectedMETRochester] OriginalMETPhi = " << OriginalMETPhi << endl;
+
+  float met_x = OrignialMET*TMath::Cos(OriginalMETPhi);
+  float met_y = OrignialMET*TMath::Sin(OriginalMETPhi);
+
+  //cout << "[AnalyzerCore::CorrectedMETRochester] met_x = " << met_x << endl;
+  //cout << "[AnalyzerCore::CorrectedMETRochester] met_y = " << met_y << endl;
+
+  float px_orig(0.), py_orig(0.),px_corrected(0.), py_corrected(0.);
+  for(unsigned int im=0; im < muall.size() ; im++){
+
+      px_orig+= muall.at(im).MiniAODPt()*TMath::Cos(muall.at(im).Phi());
+      py_orig+= muall.at(im).MiniAODPt()*TMath::Sin(muall.at(im).Phi());
+
+      px_corrected += muall.at(im).Px();
+      py_corrected += muall.at(im).Py();
+
+    //cout << "[AnalyzerCore::CorrectedMETRochester] px_orig = " << px_orig << endl;
+    //cout << "[AnalyzerCore::CorrectedMETRochester] py_orig = " << py_orig << endl;
+    //cout << "[AnalyzerCore::CorrectedMETRochester] px_corrected = " << px_corrected << endl;
+    //cout << "[AnalyzerCore::CorrectedMETRochester] py_corrected = " << py_corrected << endl;
+
+
+  }
+  met_x = met_x + px_orig - px_corrected;
+  met_y = met_y + py_orig - py_corrected;
+
+  OrignialMET =  sqrt(met_x*met_x + met_y*met_y);
+  OriginalMETPhi = TMath::ATan2(met_y,met_x);
+
+  //cout << "[AnalyzerCore::CorrectedMETRochester] New MET = " << OrignialMET << endl;
+  //cout << "[AnalyzerCore::CorrectedMETRochester] New METPhi = " << OriginalMETPhi << endl;
+
+}
+
+void AnalyzerCore::JSCorrectedMETMuon(int sys, std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi){
+
+  if(sys==0) return;
+
+  float met_x = OrignialMET*TMath::Cos(OriginalMETPhi);
+  float met_y = OrignialMET*TMath::Sin(OriginalMETPhi);
+
+  float px_orig(0.), py_orig(0.),px_shifted(0.), py_shifted(0.);
+  for(unsigned int imu=0; imu < muall.size() ; imu++){
+
+    px_orig+= muall.at(imu).Px();
+    py_orig+= muall.at(imu).Py();
+    if(sys==1){
+      px_shifted += muall.at(imu).Px()*muall.at(imu).PtShiftedUp();
+      py_shifted += muall.at(imu).Py()*muall.at(imu).PtShiftedUp();
+    }
+    if(sys==-1){
+      px_shifted += muall.at(imu).Px()*muall.at(imu).PtShiftedDown();
+      py_shifted += muall.at(imu).Py()*muall.at(imu).PtShiftedDown();
+    }
+  }
+  met_x = met_x + px_orig - px_shifted;
+  met_y = met_y + py_orig - py_shifted;
+
+  OrignialMET =  sqrt(met_x*met_x + met_y*met_y);
+  OriginalMETPhi = TMath::ATan2(met_y,met_x);
+
+}
+
+void AnalyzerCore::JSCorrectedMETElectron(int sys, std::vector<snu::KElectron> elall, double& OrignialMET, double& OriginalMETPhi){
+
+  if(sys==0) return;
+
+  float met_x = OrignialMET*TMath::Cos(OriginalMETPhi);
+  float met_y = OrignialMET*TMath::Sin(OriginalMETPhi);
+
+  float px_orig(0.), py_orig(0.),px_shifted(0.), py_shifted(0.);
+  for(unsigned int imu=0; imu < elall.size() ; imu++){
+
+    px_orig+= elall.at(imu).Px();
+    py_orig+= elall.at(imu).Py();
+    if(sys==1){
+      px_shifted += elall.at(imu).Px()*elall.at(imu).PtShiftedUp();
+      py_shifted += elall.at(imu).Py()*elall.at(imu).PtShiftedUp();
+    }
+    if(sys==-1){
+      px_shifted += elall.at(imu).Px()*elall.at(imu).PtShiftedDown();
+      py_shifted += elall.at(imu).Py()*elall.at(imu).PtShiftedDown();
+    }
+  }
+  met_x = met_x + px_orig - px_shifted;
+  met_y = met_y + py_orig - py_shifted;
+
+  OrignialMET =  sqrt(met_x*met_x + met_y*met_y);
+  OriginalMETPhi = TMath::ATan2(met_y,met_x);
+
+}
+
+void AnalyzerCore::JSCorrectedMETFatJet(std::vector<snu::KFatJet> fjetall, double& OrignialMET, double& OriginalMETPhi){
+
+  float met_x = OrignialMET*TMath::Cos(OriginalMETPhi);
+  float met_y = OrignialMET*TMath::Sin(OriginalMETPhi);
+
+  float px_orig(0.), py_orig(0.),px_shifted(0.), py_shifted(0.);
+  for(unsigned int ij=0; ij < fjetall.size() ; ij++){
+
+    px_orig += fjetall.at(ij).MiniAODPt()*TMath::Cos(fjetall.at(ij).Phi());
+    py_orig += fjetall.at(ij).MiniAODPt()*TMath::Sin(fjetall.at(ij).Phi());
+
+    px_shifted += fjetall.at(ij).Px();
+    py_shifted += fjetall.at(ij).Py();
+
+  }
+
+  met_x = met_x + px_orig - px_shifted;
+  met_y = met_y + py_orig - py_shifted;
+
+  OrignialMET =  sqrt(met_x*met_x + met_y*met_y);
+  OriginalMETPhi = TMath::ATan2(met_y,met_x);
+
+}
+
+void AnalyzerCore::JSCorrectedMETJetInsideFatJet(std::vector<snu::KJet> jets ,double& OrignialMET, double& OriginalMETPhi){
+
+  float met_x = OrignialMET*TMath::Cos(OriginalMETPhi);
+  float met_y = OrignialMET*TMath::Sin(OriginalMETPhi);
+
+  float px_orig(0.), py_orig(0.),px_shifted(0.), py_shifted(0.);
+  for(unsigned int ij=0; ij < jets.size() ; ij++){
+
+    //==== pt which is used to calculate current MET
+    px_orig += jets.at(ij).Px();
+    py_orig += jets.at(ij).Py();
+
+    //==== Now we want to unsmear this jet
+    px_shifted += jets.at(ij).Px()/jets.at(ij).SmearedRes();
+    py_shifted += jets.at(ij).Py()/jets.at(ij).SmearedRes();
+
+
+
+
+  }
+
+  met_x = met_x + px_orig - px_shifted;
+  met_y = met_y + py_orig - py_shifted;
+
+  OrignialMET =  sqrt(met_x*met_x + met_y*met_y);
+  OriginalMETPhi = TMath::ATan2(met_y,met_x);
+
+}
+
+void AnalyzerCore::FillUpDownLeptonKinematicPlot(std::vector<KLepton> lep, TString suffix, double w, double w_err){
+
+  FillLeptonKinematicPlot(lep, suffix+"_up", w+w_err);
+  FillLeptonKinematicPlot(lep, suffix+"_down", w-w_err);
+  FillLeptonKinematicPlot(lep, suffix, w);
+
+}
+
+
+void AnalyzerCore::SetPlotHNTriLepMetInfo(double met, double metphi){
+
+  for(map<TString, HNTriLeptonPlots*>::iterator it = mapCLhistHNTriLep.begin(); it != mapCLhistHNTriLep.end(); it++){
+    it->second->SetMetInfo(met,metphi);
+  }
+
+}
+
+void AnalyzerCore::SetPlotHNTriLepParticleInfo(snu::KParticle *hn, snu::KParticle w_pri_lowmass, snu::KParticle w_pri_highmass, snu::KParticle w_sec){
+
+  for(map<TString, HNTriLeptonPlots*>::iterator it = mapCLhistHNTriLep.begin(); it != mapCLhistHNTriLep.end(); it++){
+    it->second->SetParticleInfo(hn, w_pri_lowmass, w_pri_highmass, w_sec);
+  }
+
+}
+
+void AnalyzerCore::SetPlotHNTriLepChargeSign(double os, double ss0, double ss1){
+
+  for(map<TString, HNTriLeptonPlots*>::iterator it = mapCLhistHNTriLep.begin(); it != mapCLhistHNTriLep.end(); it++){
+    it->second->SetChargeSign(os, ss0, ss1);
+  }
+
+}
+
+void AnalyzerCore::SetPlotHNTriBJet(int nbjet){
+
+  for(map<TString, HNTriLeptonPlots*>::iterator it = mapCLhistHNTriLep.begin(); it != mapCLhistHNTriLep.end(); it++){
+    it->second->SetBJet(nbjet);
+  }
+
+}
+
 std::vector<snu::KMuon> AnalyzerCore::sort_muons_ptorder(std::vector<snu::KMuon> muons){
 
   std::vector<snu::KMuon> outmuon;
@@ -4684,6 +4938,264 @@ int AnalyzerCore::GenMatchedIdx(snu::KMuon Mu, std::vector<snu::KTruth>& truthCo
 
   return MatchedIdx;
 }
+
+std::vector<snu::KElectron> AnalyzerCore::sort_electrons_ptorder(std::vector<snu::KElectron> electrons){
+
+  std::vector<snu::KElectron> outelectron;
+  while(outelectron.size() != electrons.size()){
+    double this_maxpt = 0.;
+    int index(0);
+    for(unsigned int i=0; i<electrons.size(); i++){
+      bool isthisused = std::find( outelectron.begin(), outelectron.end(), electrons.at(i) ) != outelectron.end();
+      if(isthisused) continue;
+      if( electrons.at(i).Pt() > this_maxpt ){
+        index = i;
+        this_maxpt = electrons.at(i).Pt();
+      }
+    }
+    outelectron.push_back( electrons.at(index) );
+  }
+  return outelectron;
+
+
+
+}
+
+std::vector<KLepton> AnalyzerCore::sort_leptons_ptorder(std::vector<KLepton> leptons){
+
+  std::vector<KLepton> outlepton;
+  while(outlepton.size() != leptons.size()){
+    double this_maxpt = 0.;
+    int index(0);
+    for(unsigned int i=0; i<leptons.size(); i++){
+      bool isthisused = std::find( outlepton.begin(), outlepton.end(), leptons.at(i) ) != outlepton.end();
+      if(isthisused) continue;
+      if( leptons.at(i).Pt() > this_maxpt ){
+        index = i;
+        this_maxpt = leptons.at(i).Pt();
+      }
+    }
+    outlepton.push_back( leptons.at(index) );
+  }
+  return outlepton;
+
+
+}
+
+int AnalyzerCore::find_genmatching(snu::KTruth gen, std::vector<KLepton> recos, std::vector<int>& used_index){
+
+  double mindr = 0.1;
+  double maxPtDiff = 9999.;
+  int found=-1;
+  for(unsigned int i=0; i<recos.size(); i++){
+    if(abs(gen.PdgId())==13){
+      if(recos.at(i).LeptonFlavour() != KLepton::MUON) continue;
+    }
+    else if(abs(gen.PdgId())==11){
+      if(recos.at(i).LeptonFlavour() != KLepton::ELECTRON) continue;
+    }
+    else{
+      cout << "HNGenMatched lepton is not lepton?!" << endl;
+      cout << "  gen.PdgId() = " << gen.PdgId() << endl;
+    }
+    
+    //cout << "["<<i<<"th reco] : pt = " << recos.at(i).Pt() << ", eta = " << recos.at(i).Eta() << endl;
+    double dr = gen.DeltaR(recos.at(i));
+    bool ptmatched(true);
+    //if( fabs(gen.Pt() - recos.at(i).Pt()) / TMath::Min( gen.Pt(), recos.at(i).Pt() ) >= maxPtDiff ) ptmatched = false;
+    bool isthisused = std::find(used_index.begin(), used_index.end(), i) != used_index.end();
+    if(dr < mindr && ptmatched && !isthisused){
+      mindr = dr;
+      found = i;
+    }
+  }
+  used_index.push_back(found);
+  return found;
+}
+
+
+double AnalyzerCore::MuonConePt(snu::KMuon muon, double tightiso){
+
+  double mu_pt_corr = muon.Pt()*(1+max(0.,(muon.RelIso04()-tightiso))) ;
+
+  return mu_pt_corr;
+
+}
+
+double AnalyzerCore::ElectronConePt(snu::KElectron electron, double tightiso){
+
+  double el_pt_corr = electron.Pt()*(1+max(0.,(electron.PFRelIso(0.3)-tightiso))) ;
+
+  return el_pt_corr;
+
+}
+
+bool AnalyzerCore::LeptonInsideFatJet(snu::KFatJet fj, double dr, std::vector<KLepton> lep){
+
+  for(unsigned int i=0; i<lep.size(); i++){
+    if( fj.DeltaR( lep.at(i) ) < dr ) return true;
+  }
+
+  return false;
+
+}
+
+int AnalyzerCore::HasCloseBjet(KLepton lep, std::vector<snu::KJet> jets, snu::KJet::WORKING_POINT wp){
+
+  double dr = 0.5;
+  bool HasCloseBjet=false;
+  for(unsigned int j=0; j<jets.size(); j++){
+
+    snu::KJet jet = jets.at(j);
+    if( lep.DeltaR( jet ) < dr ){
+      if(IsBTagged(jet, snu::KJet::CSVv2, wp)){
+        HasCloseBjet = true;
+      }
+    }
+  }
+
+
+  return HasCloseBjet;
+
+}
+
+
+
+
+
+
+
+
+
+
+void AnalyzerCore::SetHNTriCutOp(TString filepath){
+
+  string cutline;
+  ifstream in(filepath);
+  while(getline(in,cutline)){
+    std::istringstream is( cutline );
+    TString channel;
+    TString mass;
+    TString var;
+    double value;
+    is >> channel;
+    is >> mass;
+    is >> var;
+    is >> value;
+
+    TString thiskey = channel+"_"+mass+"_"+var;
+
+    map_HNTriChannl_cutop[thiskey] = value;
+  }
+
+}
+
+bool AnalyzerCore::PassOptimizedCut( 
+  TString channel, int sig_mass,
+  double first_pt, double second_pt, double third_pt,
+  double W_pri_mass, double HN_mass, 
+  double deltaR_OS_min, double gamma_star_mass,
+  double PFMET){
+
+  double cut_first_pt(0.), cut_second_pt(0.), cut_third_pt(0.),
+         cut_W_pri_mass(0.), cut_HN_mass(0.), 
+         cut_deltaR_OS_min(0.), cut_gamma_star_mass(0.),
+         cut_PFMET(0.);
+
+  TString thiskey_prefix = channel+"_"+TString::Itoa(sig_mass,10);
+
+  std::vector<TString> variables;
+
+  variables.push_back("first_pt");
+  variables.push_back("second_pt");
+  variables.push_back("third_pt");
+  variables.push_back("W_pri_mass");
+  variables.push_back("HN_mass");
+  variables.push_back("deltaR_OS_min");
+  variables.push_back("gamma_star_mass");
+  variables.push_back("PFMET");
+
+  std::map< TString, double > cut_variables;
+
+  for(unsigned int i=0; i<variables.size(); i++){
+    TString key = thiskey_prefix+"_"+variables.at(i);
+    //cout << "[filling] "<<key<<endl;
+
+    std::map< TString, double >::const_iterator mapit;
+    mapit = map_HNTriChannl_cutop.find(key);
+    bool valuefound = (mapit!=map_HNTriChannl_cutop.end());
+
+    if(valuefound){
+      cut_variables[variables.at(i)] = map_HNTriChannl_cutop[key];
+    }
+    else{
+      cerr << "Did not find optimized cut value for "<<key << endl;
+      exit(EXIT_FAILURE);
+    }
+  }
+
+  bool pass = true;
+
+//  for(int i=0; i<n_var; i++){
+//    cout << channel << "\t" << sig_mass << "\t" << variables[i] << "\t" << cut_variables[i] << endl;
+//  }
+
+  cut_first_pt =  cut_variables["first_pt"];
+  cut_second_pt = cut_variables["second_pt"];
+  cut_third_pt = cut_variables["third_pt"];
+  cut_W_pri_mass = cut_variables["W_pri_mass"];
+  cut_HN_mass = cut_variables["HN_mass"];
+  cut_deltaR_OS_min = cut_variables["deltaR_OS_min"];
+  cut_gamma_star_mass = cut_variables["gamma_star_mass"];
+  cut_PFMET = cut_variables["PFMET"];
+
+  if(channel == "MuMuMu"){
+    if(sig_mass < 80){
+      if( ! (first_pt < cut_first_pt) ) pass = false;
+      if( ! (second_pt < cut_second_pt) ) pass = false;
+      if( ! (third_pt < cut_third_pt) ) pass = false;
+      if( ! (W_pri_mass < cut_W_pri_mass) ) pass = false;
+      if( ! (HN_mass < cut_HN_mass ) ) pass = false;
+      if( ! (deltaR_OS_min > cut_deltaR_OS_min) ) pass = false;
+      if( ! (gamma_star_mass > cut_gamma_star_mass) ) pass = false;
+    }
+    else{
+      if( ! (first_pt > cut_first_pt) ) pass = false;
+      if( ! (second_pt > cut_second_pt) ) pass = false;
+      if( ! (third_pt > cut_third_pt) ) pass = false;
+      if( ! (W_pri_mass > cut_W_pri_mass) ) pass = false;
+      if( ! (PFMET > cut_PFMET) ) pass = false;
+      if( ! (deltaR_OS_min > cut_deltaR_OS_min) ) pass = false;
+    }
+  }
+
+  if(channel == "SSSF_MuMuE"){
+    if(sig_mass < 80){
+      if( ! (first_pt < cut_first_pt) ) pass = false;
+      if( ! (second_pt < cut_second_pt) ) pass = false;
+      if( ! (third_pt < cut_third_pt) ) pass = false;
+      if( ! (W_pri_mass < cut_W_pri_mass) ) pass = false;
+      //if( ! (HN_mass < cut_HN_mass ) ) pass = false;
+      if( ! (PFMET < cut_PFMET) ) pass = false;
+    }
+    else{
+      if( ! (first_pt > cut_first_pt) ) pass = false;
+      if( ! (second_pt > cut_second_pt) ) pass = false;
+      if( ! (third_pt > cut_third_pt) ) pass = false;
+      if( ! (W_pri_mass > cut_W_pri_mass) ) pass = false;
+      if( ! (PFMET > cut_PFMET) ) pass = false;
+    }
+  }
+
+  return pass;
+
+}
+
+
+
+
+
+
 
 
 int AnalyzerCore::GetNearPhotonIdx(snu::KElectron Ele, std::vector<snu::KTruth>& TruthColl, TString Option){//1)
