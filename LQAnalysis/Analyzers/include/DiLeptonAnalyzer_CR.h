@@ -32,6 +32,10 @@ class DiLeptonAnalyzer_CR : public AnalyzerCore {
     double thieweighterr
   );
 
+  TString MuonTightID, ElectronTightID;
+  TString MuonLooseID_loosest, ElectronLooseID_loosest;
+  TString MuonVetoID_loosest, ElectronVetoID_loosest;
+
   //==== FR
   double weight_fr, weight_err_fr;
   int NTightLeptons;
@@ -71,6 +75,9 @@ class DiLeptonAnalyzer_CR : public AnalyzerCore {
   int index_lljjW_j1, index_lljjW_j2;
 
   bool RunNtp;
+  bool NowRunningCentral;
+  int AUTO_N_syst, AUTO_it_syst;
+  TString AUTO_syst_type, RegionNameForSyst;
 
   double GetDijetMassClosest(std::vector<snu::KJet> js, double mass, int& m, int& n);
   double GetDileptonDijetMassClosest(std::vector<KLepton> leps, std::vector<snu::KJet> js, double mass, int& m, int& n);

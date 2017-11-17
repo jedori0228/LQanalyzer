@@ -12,7 +12,7 @@ declare -a dilepton_Moriond=(
 )
 
 declare -a tmp=(
-'WWTo2L2Nu_DS' 'WpWpEWK' 'WpWpQCD'
+'ZGto2LG' 'WGtoLNuG'
 )
 
 declare -a newTchannel=(
