@@ -332,34 +332,88 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   triggerlist_DiElectron.clear();
   triggerlist_EMu.clear();
 
-  //==== DiMuon Trigger
+  //==== DiMuon channel Trigger
 
-  triggerlist_DiMuon.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
-  triggerlist_DiMuon.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
-  triggerlist_DiMuon.push_back("HLT_IsoMu24_v");
-  triggerlist_DiMuon.push_back("HLT_IsoTkMu24_v");
+  if(isData){
+    if(k_channel.Contains("DoubleMuon")){
+      triggerlist_DiMuon.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v");
+      triggerlist_DiMuon.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v");
+      triggerlist_DiMuon.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
+      triggerlist_DiMuon.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
+    }
+    if(k_channel.Contains("SingleMuon")){
+      triggerlist_DiMuon.push_back("HLT_IsoMu24_v");
+      triggerlist_DiMuon.push_back("HLT_IsoTkMu24_v");
+    }
+  }
+  else{
+    triggerlist_DiMuon.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v");
+    triggerlist_DiMuon.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v");
+    triggerlist_DiMuon.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
+    triggerlist_DiMuon.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
+    triggerlist_DiMuon.push_back("HLT_IsoMu24_v");
+    triggerlist_DiMuon.push_back("HLT_IsoTkMu24_v");
+  }
 
   vector<TString> triggerlist_DiMuon_Mu17Mu8, triggerlist_DiMuon_Mu24;
+  triggerlist_DiMuon_Mu17Mu8.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v");
+  triggerlist_DiMuon_Mu17Mu8.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v");
   triggerlist_DiMuon_Mu17Mu8.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
   triggerlist_DiMuon_Mu17Mu8.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
   triggerlist_DiMuon_Mu24.push_back("HLT_IsoMu24_v");
   triggerlist_DiMuon_Mu24.push_back("HLT_IsoTkMu24_v");
 
-  //==== DiElectron Trigger
+  //==== DiElectron channel Trigger
 
-  triggerlist_DiElectron.push_back("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v");
-  triggerlist_DiElectron.push_back("HLT_Ele27_WPTight_Gsf_v");
+  if(isData){
+    if(k_channel.Contains("DoubleEG")){
+      triggerlist_DiElectron.push_back("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v");
+    }
+    if(k_channel.Contains("SingleElectron")){
+      triggerlist_DiElectron.push_back("HLT_Ele27_WPTight_Gsf_v");
+    }
+  }
+  else{
+    triggerlist_DiElectron.push_back("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v");
+    triggerlist_DiElectron.push_back("HLT_Ele27_WPTight_Gsf_v");
+  }
 
   vector<TString> triggerlist_DiElectron_Ele23Ele12, triggerlist_DiElectron_Ele27;
   triggerlist_DiElectron_Ele23Ele12.push_back("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v");
   triggerlist_DiElectron_Ele27.push_back("HLT_Ele27_WPTight_Gsf_v");
 
-  //==== EMu Trigger
+  //==== EMu channel Trigger
 
-  triggerlist_EMu.push_back("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v");
-  triggerlist_EMu.push_back("HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_v");
-  triggerlist_EMu.push_back("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v");
-  triggerlist_EMu.push_back("HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_DZ_v");
+  if(isData){
+    if(k_channel.Contains("MuonEG")){
+      triggerlist_EMu.push_back("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v");
+      triggerlist_EMu.push_back("HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_v");
+      triggerlist_EMu.push_back("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v");
+      triggerlist_EMu.push_back("HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_DZ_v");
+    }
+    if(k_channel.Contains("SingleMuon")){
+      triggerlist_EMu.push_back("HLT_IsoMu24_v");
+      triggerlist_EMu.push_back("HLT_IsoTkMu24_v");
+    }
+    if(k_channel.Contains("SingleElectron")){
+      triggerlist_EMu.push_back("HLT_Ele27_WPTight_Gsf_v");
+    }
+  }
+  else{
+    triggerlist_EMu.push_back("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v");
+    triggerlist_EMu.push_back("HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_v");
+    triggerlist_EMu.push_back("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v");
+    triggerlist_EMu.push_back("HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_DZ_v");
+    triggerlist_EMu.push_back("HLT_IsoMu24_v");
+    triggerlist_EMu.push_back("HLT_IsoTkMu24_v");
+    triggerlist_EMu.push_back("HLT_Ele27_WPTight_Gsf_v");
+  }
+
+  vector<TString> triggerlist_EMu_EMu;
+  triggerlist_EMu_EMu.push_back("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v");
+  triggerlist_EMu_EMu.push_back("HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_v");
+  triggerlist_EMu_EMu.push_back("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v");
+  triggerlist_EMu_EMu.push_back("HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_DZ_v");
 
   triggerlist_EMu_PeriodBtoG.push_back("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v");
   triggerlist_EMu_PeriodBtoG.push_back("HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_v");
@@ -517,23 +571,42 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
         EMu_MCTriggerWeight = 1.;
 
-        //==== Period BCDEFG
-        if(1 <= GetDataPeriod() && GetDataPeriod() <= 6){
-          if(!PassTriggerOR( triggerlist_EMu_PeriodBtoG )) continue;
+        //==== If single lepton triggers were fired, it's okay for all periods
+        //==== But, if ony EMu triggers were fired,
+        //==== periodBtoG : nonDZ must be fired. (DZ were off in this period)
+        //==== periodH : DZ must be fired. (nonDZ were off in this period)
+        if(!PassTriggerOR(triggerlist_DiMuon_Mu24)&&!PassTriggerOR(triggerlist_DiElectron_Ele27)){
+          //==== Period BCDEFG
+          if(1 <= GetDataPeriod() && GetDataPeriod() <= 6){
+            if(!PassTriggerOR( triggerlist_EMu_PeriodBtoG )) continue;
+          }
+          //==== Period H
+          else if(GetDataPeriod() == 7){
+            if(!PassTriggerOR( triggerlist_EMu_PeriodH )) continue;
+          }
+          else{
+            cout << "GetDataPeriod() Wrong... return" << endl;
+            return;
+          }
         }
-        //==== Period H
-        else if(GetDataPeriod() == 7){
-          if(!PassTriggerOR( triggerlist_EMu_PeriodH )) continue;
-        }
-        else{
-          cout << "GetDataPeriod() Wrong... return" << endl;
-          return;
-        }
+
       }
       //==== MC
       else{
-        if(PassTriggerOR( triggerlist_EMu_PeriodBtoG )) EMu_MCTriggerWeight += 27261.369;
-        if(PassTriggerOR( triggerlist_EMu_PeriodH )) EMu_MCTriggerWeight += 8605.69;
+
+        //==== If single lepton triggers were fired,
+        //==== Use full lumi.
+        //==== But, if ony EMu triggers were fired,
+        //==== nonDZ fired : add lumi of periodBtoG
+        //==== DZ fired : add lumi of periodH
+        if(!PassTriggerOR(triggerlist_DiMuon_Mu24)&&!PassTriggerOR(triggerlist_DiElectron_Ele27)){
+          if(PassTriggerOR( triggerlist_EMu_PeriodBtoG )) EMu_MCTriggerWeight += 27261.369;
+          if(PassTriggerOR( triggerlist_EMu_PeriodH )) EMu_MCTriggerWeight += 8605.69;
+        }
+        else{
+          EMu_MCTriggerWeight = 35863.308;
+        }
+
       }
     }
     FillCutFlowByName(OriginalSuffix, "MET_PV_Trig", w_cutflow[OriginalSuffix], isData);
@@ -1090,37 +1163,23 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         //==== muons.at(1).Pt() = 27.8285 => isTight = 1
         //==== muons.at(2).Pt() = 8.72782 => isTight = 1
 
-/*
-        if(isTT){
-          if((muons_tight.at(0).Pt() < 20.) || (muons_tight.at(1).Pt() < 10.)) continue;
-        }
-        else{
-          if((muons.at(0).Pt() < 20.) || (muons.at(1).Pt() < 10.)) continue;
-        }
-*/
-
         bool PtOkay = false;
 
         if(PassTriggerOR(triggerlist_DiMuon_Mu17Mu8)){
-
           if(isTT){
             if((muons_tight.at(0).Pt() > 20.) && (muons_tight.at(1).Pt() > 10.)) PtOkay = true;
           }
           else{
             if((muons.at(0).Pt() > 20.) && (muons.at(1).Pt() > 10.)) PtOkay = true;
           }
-
         }
         if(PassTriggerOR(triggerlist_DiMuon_Mu24)){
-
           if(isTT){
             if( (muons_tight.at(0).Pt() > 26.) ) PtOkay = true;
           }
           else{
             if( (muons.at(0).Pt() > 26.) ) PtOkay = true;
           }
-
-
         }
 
         if( !PtOkay ) continue;
@@ -1129,37 +1188,26 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       }
       if(Suffix.Contains("DiElectron")){
 
-/*
-        if(isTT){
-          if(electrons_tight.at(0).Pt() < 25. || electrons_tight.at(1).Pt() < 15.) continue;
-        }
-        else{
-          if(electrons.at(0).Pt() < 25. || electrons.at(1).Pt() < 15.) continue;
-        }
-*/
-
         bool PtOkay = false;
 
         if(PassTriggerOR(triggerlist_DiElectron_Ele23Ele12)){
-
           if(isTT){
             if((electrons_tight.at(0).Pt() > 25.) && (electrons_tight.at(1).Pt() > 15.)) PtOkay = true;
           }
           else{
             if((electrons.at(0).Pt() > 25.) && (electrons.at(1).Pt() > 15.)) PtOkay = true;
           }
-
         }
         if(PassTriggerOR(triggerlist_DiElectron_Ele27)){
-
           if(isTT){
             if( (electrons_tight.at(0).Pt() > 30.) ) PtOkay = true;
           }
           else{
             if( (electrons.at(0).Pt() > 30.) ) PtOkay = true;
           }
-
         }
+
+        if( !PtOkay ) continue;
 
       }
       if(Suffix.Contains("EMu")){
@@ -1178,7 +1226,6 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
           else{
             if( (muons.at(0).Pt() > MuMinPt) && (electrons.at(0).Pt() > ElMinPt) ) PtOkay = true;
           }
-
         }
         if(PassTriggerOR(triggerlist_EMu_Mu23Ele8)){
 
@@ -1191,8 +1238,24 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
           else{ 
             if( (muons.at(0).Pt() > MuMinPt) && (electrons.at(0).Pt() > ElMinPt) ) PtOkay = true;
           }
+        }
+        if(PassTriggerOR(triggerlist_DiMuon_Mu24)){
+          
+          if(isTT){
+            if( (muons_tight.at(0).Pt() > 26.) ) PtOkay = true;
+          }
+          else{ 
+            if( (muons.at(0).Pt() > 26.) ) PtOkay = true;
+          }
+        }
+        if(PassTriggerOR(triggerlist_DiElectron_Ele27)){
 
-
+          if(isTT){
+            if( (electrons_tight.at(0).Pt() > 30.) ) PtOkay = true;
+          }
+          else{
+            if( (electrons.at(0).Pt() > 30.) ) PtOkay = true;
+          }
         }
 
         if( !PtOkay ) continue;
@@ -1214,17 +1277,62 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 */
 
       //==== DiMuon-DoubleMuon PD / ...
-      if(isData && k_channel != "DoubleMuon_CF"){
-        if(Suffix.Contains("DiMuon")){
-          if(k_channel != "DoubleMuon") continue;
+      if(isData && k_channel.Contains("DoubleMuon_CF")){
+
+        //==== DoubleMuon PD
+        if(k_channel.Contains("DoubleMuon")){
+          if(!Suffix.Contains("DiMuon")) continue;
         }
-        if(Suffix.Contains("DiElectron")){
-          if(k_channel != "DoubleEG") continue;
+        //==== DoubleEG PD
+        if(k_channel.Contains("DoubleEG")){
+          if(!Suffix.Contains("DiElectron")) continue;
         }
-        if(Suffix.Contains("EMu")){
-          if(k_channel != "MuonEG") continue;
+        //===== MuonEG PD
+        if(k_channel.Contains("MuonEG")){
+          if(!Suffix.Contains("EMu")) continue;
         }
-      }
+
+        //==== SingleMuon PD
+        if(k_channel.Contains("SingleMuon")){
+
+          //==== For DiMuon channel
+          //==== veto Mu17Mu8 fired event
+          if(Suffix.Contains("DiMuon")){
+            if(PassTriggerOR(triggerlist_DiMuon_Mu17Mu8)) continue;
+          }
+
+          //=== Do not fill DiElectron channel
+          if(Suffix.Contains("DiElectron")) continue;
+
+          //==== For EMu channel
+          //==== veto Mu23Ele8 fired event
+          if(Suffix.Contains("EMu")){
+            if(PassTriggerOR(triggerlist_EMu_EMu)) continue;
+          }
+
+        }
+
+        //==== SingleElectron PD
+        if(k_channel.Contains("SingleElectron")){
+
+          //==== Do not fill DiMuon channel
+          if(Suffix.Contains("DiMuon")) continue;
+
+          //==== For DiElectron channel
+          //==== veto Ele23Ele12 fired event
+          if(Suffix.Contains("DiElectron")){
+            if(PassTriggerOR(triggerlist_DiElectron_Ele23Ele12)) continue;
+          }
+
+          //==== For EMu channel
+          //==== veto Mu23Ele8 fired event
+          //==== veto Mu24 fired event
+          if(Suffix.Contains("EMu")){
+            if(PassTriggerOR(triggerlist_EMu_EMu)||PassTriggerOR(triggerlist_DiMuon_Mu24)) continue;
+          }
+        }
+
+      } // isData
 
       double trigger_ps_weight(1.);
       if(Suffix.Contains("EMu")) trigger_ps_weight = EMu_MCTriggerWeight;
@@ -1274,8 +1382,8 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       }
       if(!isData && Suffix.Contains("DiElectron")){
 
-        double trigger_eff_Data = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, "", muons, MuonTightID, 1, 0, TriggerSFDir);
-        double trigger_eff_MC   = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, "", muons, MuonTightID, 1, 1, -1*TriggerSFDir);
+        double trigger_eff_Data = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, "", muons, MuonTightID, 4, 0, TriggerSFDir);
+        double trigger_eff_MC   = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, "", muons, MuonTightID, 4, 1, -1*TriggerSFDir);
         trigger_sf = trigger_eff_Data/trigger_eff_MC;
 
         //cout << "## Calculating DiElectron Trigger SF ##" << endl;
@@ -1286,6 +1394,13 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         //cout << "=> sf = " << trigger_sf << endl;
 
       }
+      if(!isData && Suffix.Contains("EMu")){
+
+        double trigger_eff_Data = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, "", muons, "MUON_HN_TIGHT", 5, 0, TriggerSFDir);
+        double trigger_eff_MC   = mcdata_correction->TriggerEfficiencyLegByLeg(electrons, "", muons, "MUON_HN_TIGHT", 5, 1, -1*TriggerSFDir);
+        trigger_sf = trigger_eff_Data/trigger_eff_MC;
+      }
+
       //trigger_sf = 1.;//FIXME
 
       this_weight *= trigger_sf;
@@ -1508,7 +1623,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       //==== SS-dilepton
       map_Region_to_Bool[Suffix] = true;
 
-
+/*
       //FIXME singleor
       if(Suffix.Contains("DiMuon")){
         map_Region_to_Bool[Suffix+"_SingleButNotDouble"] = !PassTriggerOR(triggerlist_DiMuon_Mu17Mu8) && PassTriggerOR(triggerlist_DiMuon_Mu24);
@@ -1516,7 +1631,10 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       else if(Suffix.Contains("DiElectron")){
         map_Region_to_Bool[Suffix+"_SingleButNotDouble"] = !PassTriggerOR(triggerlist_DiElectron_Ele23Ele12) && PassTriggerOR(triggerlist_DiElectron_Ele27);
       }
-/*
+      else if(Suffix.Contains("EMu")){
+        map_Region_to_Bool[Suffix+"_SingleButNotDouble"] = !PassTriggerOR(triggerlist_EMu_EMu) && (PassTriggerOR(triggerlist_DiMuon_Mu24) || PassTriggerOR(triggerlist_DiElectron_Ele27) );
+      }
+
       if(this_syst=="" && map_Region_to_Bool[Suffix+"_SingleButNotDouble"]){
         cout << "###########" << endl;
         cout << "## Event ##" << endl;
