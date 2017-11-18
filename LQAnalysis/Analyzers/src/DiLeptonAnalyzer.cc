@@ -1277,7 +1277,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 */
 
       //==== DiMuon-DoubleMuon PD / ...
-      if(isData && k_channel.Contains("DoubleMuon_CF")){
+      if(isData && !k_channel.Contains("DoubleMuon_CF")){
 
         //==== DoubleMuon PD
         if(k_channel.Contains("DoubleMuon")){
