@@ -216,8 +216,8 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
   const int n_eta = 3;
   float etaarray[n_eta+1] = {0.0, 0.8, 1.479, 2.5};
-  const int n_pt = 7;
-  float ptarray[n_pt+1] = {5., 10., 20., 30., 40., 50., 60., 70.};
+  const int n_pt = 9;
+  float ptarray[n_pt+1] = {5., 10., 15., 20., 25, 30., 40., 50., 60., 70.};
 
   float etaarray_2 [] = {0.0, 1.479, 2.5};
   float ptarray_2 [] = {10.,15.,40.,200.};
@@ -570,6 +570,31 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
           double this_weight = weight_by_pt_cone*weight;
 
+          double pu_reweight = 1.;
+          double trigger_additional_sf = 1.;
+          double muon_scale_sf = 1.;
+          if(!k_isdata){
+            pu_reweight = mcdata_correction->GetVtxReweight(it->first, eventbase->GetEvent().nVertices());
+
+            if((it->first).Contains("HLT_Mu17")){
+              trigger_additional_sf = 0.975082;
+            }
+            else if((it->first).Contains("HLT_Mu8")){
+              trigger_additional_sf = 0.961195;
+            }
+            else if((it->first).Contains("HLT_Mu3")){
+              trigger_additional_sf = 1.0166;
+            }
+
+            double MuTrkEffSF =  mcdata_correction->MuonTrackingEffScaleFactor(hnloose);
+            muon_scale_sf *= MuTrkEffSF;
+
+            if(IsThisTight) muon_scale_sf *= mcdata_correction->MuonScaleFactor("MUON_HN_TIGHT", hnloose, 0);
+          }
+
+          this_weight *= pu_reweight*trigger_additional_sf*muon_scale_sf;
+
+
           TLorentzVector metvec;
           metvec.SetPtEtaPhiE( METauto, 0, METphiauto, METauto );
           double MTval = AnalyzerCore::MT( muon, metvec );
@@ -596,10 +621,10 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
                 if( jet.Pt() < AwayjetPt ) continue;
                 double dPhi = muon.DeltaPhi( jet );
                 //==== If QCD, don't have to require MET/MT
-                if( DijetFake )        UseEvent = (dPhi > 2.5) && (jet.Pt()/muon.Pt() > 1.);
+                if( DijetFake )        UseEvent = (dPhi > 2.5) && (jet.Pt()/muon.Pt() > 1.0);
                 //==== If not, use it to remove W events
                 else if( DijetPrompt ){
-                  UseEvent = (dPhi > 2.5) && (jet.Pt()/muon.Pt() > 1.) && (METauto < 20.) && (MTval < 25.);
+                  UseEvent = (dPhi > 2.5) && (jet.Pt()/muon.Pt() > 1.0) && (METauto < 20.) && (MTval < 25.);
 /*
                   cout << "trigger = " << it->first << endl;
                   cout << "muon.Pt() = " << muon.Pt() << endl;
@@ -1357,8 +1382,8 @@ void FRCalculator_Mu_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KMuon muon
 
   const int n_eta = 3;
   float etaarray[n_eta+1] = {0.0, 0.8, 1.479, 2.5};
-   const int n_pt = 7;
-  float ptarray[n_pt+1] = {5., 10., 20., 30., 40., 50., 60., 70.};
+  const int n_pt = 9;
+  float ptarray[n_pt+1] = {5., 10., 15., 20., 25., 30., 40., 50., 60., 70.};
 
   double TightISO = 0.07;
   double conept = MuonConePt(muon,TightISO);
@@ -1422,14 +1447,14 @@ float FRCalculator_Mu_dxysig_DILEP::JSWeightByTrigger(TString triggername, float
   if(isData) return 1.;
 
   double NormSF(1.);
-
+/*
   if(triggername=="HLT_Mu3_PFJet40_v"){
     NormSF = 0.72799;
   }
   if(triggername=="HLT_Mu8_TrkIsoVVL_v"){
     NormSF = 1.39876;
   }
-
+*/
   return NormSF*WeightByTrigger(triggername, tlumi);
 
 

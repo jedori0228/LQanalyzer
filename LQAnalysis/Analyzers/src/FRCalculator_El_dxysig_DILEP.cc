@@ -177,8 +177,8 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
   const int n_eta = 3;
   float etaarray[n_eta+1] = {0.0, 0.8, 1.479, 2.5};
-  const int n_pt = 6;
-  float ptarray[n_pt+1] = {10., 15., 23., 35., 45., 60., 70.};
+  const int n_pt = 8;
+  float ptarray[n_pt+1] = {10., 15., 20., 23., 30., 35., 45., 60., 70.};
 
   float etaarray_2 [] = {0.0, 1.479, 2.5};
   float ptarray_2 [] = {10.,15.,40.,200.};
@@ -514,6 +514,33 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
           double this_weight = weight_by_pt*weight;
 
+          double pu_reweight = 1.;
+          double trigger_additional_sf = 1.;
+          double electron_scale_sf = 1.;
+          if(!k_isdata){
+            pu_reweight = mcdata_correction->GetVtxReweight(it->first, eventbase->GetEvent().nVertices());
+
+						if((it->first).Contains("HLT_Ele8")){
+							trigger_additional_sf = 1.15394;
+						}
+						else if((it->first).Contains("HLT_Ele12")){
+							trigger_additional_sf = 1.0894;
+						}
+						else if((it->first).Contains("HLT_Ele17")){
+							trigger_additional_sf = 1.02244;
+						}
+						else if((it->first).Contains("HLT_Ele23")){
+							trigger_additional_sf = 1.01567;
+						}
+
+            double electron_RecoSF =  mcdata_correction->ElectronRecoScaleFactor(hnloose);
+            electron_scale_sf *= electron_RecoSF;
+            
+            if(IsThisTight) electron_scale_sf *= mcdata_correction->ElectronScaleFactor("ELECTRON_HN_TIGHTv4", hnloose, 0);
+          }
+
+          this_weight *= pu_reweight*trigger_additional_sf*electron_scale_sf;
+
           TLorentzVector metvec;
           metvec.SetPtEtaPhiE( METauto, 0, METphiauto, METauto );
           double MTval = AnalyzerCore::MT( electron, metvec );
@@ -535,7 +562,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
               //==== If QCD, don't have to require MET/MT
               if( DijetFake )        UseEvent = (dPhi > 2.5) && (jet.ChargedEMEnergyFraction() < 0.65);
               //==== If not, use it to remove W events
-              else if( DijetPrompt ) UseEvent = (dPhi > 2.5) && (jet.ChargedEMEnergyFraction() < 0.65) && (METauto < 20.) && (MTval < 25.);
+              else if( DijetPrompt ) UseEvent = (dPhi > 2.5) && (jet.ChargedEMEnergyFraction() < 0.65) && (jet.Pt()/electron.Pt() > 1.0) && (METauto < 20.) && (MTval < 25.);
 
               if( UseEvent ){
 
@@ -1262,8 +1289,8 @@ void FRCalculator_El_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KElectron 
 
   const int n_eta = 3;
   float etaarray[n_eta+1] = {0.0, 0.8, 1.479, 2.5};
-  const int n_pt = 6;
-  float ptarray[n_pt+1] = {10., 15., 23., 35., 45., 60., 70.};
+  const int n_pt = 8;
+  float ptarray[n_pt+1] = {10., 15., 20., 23., 30., 35., 45., 60., 70.};
 
   double TightISO = 0.08;
   double conept = ElectronConePt(electron,TightISO);
