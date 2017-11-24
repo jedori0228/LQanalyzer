@@ -12,7 +12,19 @@ declare -a dilepton_Moriond=(
 )
 
 declare -a tmp=(
-'ZGto2LG' 'WGtoLNuG'
+'HNDilepton_EE_Tchannel_M800'
+'HNDilepton_EE_Tchannel_M1000'
+'HNDilepton_EE_Tchannel_M1200'
+'HNDilepton_MuE_Tchannel_M300'
+'HNDilepton_MuE_Tchannel_M600'
+'HNDilepton_MuE_Tchannel_M800'
+'HNDilepton_MuE_Tchannel_M1000'
+'HNDilepton_MuE_Tchannel_M1200'
+'HNDilepton_EMu_Tchannel_M300'
+'HNDilepton_EMu_Tchannel_M600'
+'HNDilepton_EMu_Tchannel_M800'
+'HNDilepton_EMu_Tchannel_M1000'
+'HNDilepton_EMu_Tchannel_M1200'
 )
 
 declare -a newTchannel=(
@@ -57,12 +69,12 @@ declare -a trilep_fake_bkg=(
 'ZGto2LG' 'WGtoLNuG'
 )
 declare -a trilep_fake_bkg_short=(
+'SingleTbar_t' 'SingleTop_tW' 'SingleTbar_tW' 'SingleTop_s'
 'DYJets_10to50'
-'SingleTop_s' 'SingleTop_t' 'SingleTbar_t' 'SingleTop_tW' 'SingleTbar_tW'
 'WZ' 'ZZ' 'WW'
-'ZGto2LG' 'WGtoLNuG'
 )
 declare -a trilep_fake_bkg_long=(
+'SingleTop_t'
 'DYJets'
 'WJets'
 'TT_powheg'
@@ -75,6 +87,10 @@ declare -a QCD_FR_EM=(
 'QCD_Pt-20to30_EMEnriched' 'QCD_Pt-30to50_EMEnriched' 'QCD_Pt-50to80_EMEnriched' 'QCD_Pt-80to120_EMEnriched'
 'QCD_Pt-120to170_EMEnriched' 'QCD_Pt-170to300_EMEnriched' 'QCD_Pt-300toInf_EMEnriched'
 'qcd_15to20_bctoe' 'qcd_170to250_bctoe' 'qcd_20to30_bctoe' 'qcd_250toinf_bctoe' 'qcd_30to80_bctoe' 'qcd_80to170_bctoe'
+)
+declare -a QCD_FR_EMEnriched=(
+'QCD_Pt-20to30_EMEnriched' 'QCD_Pt-30to50_EMEnriched' 'QCD_Pt-50to80_EMEnriched' 'QCD_Pt-80to120_EMEnriched'
+'QCD_Pt-120to170_EMEnriched' 'QCD_Pt-170to300_EMEnriched' 'QCD_Pt-300toInf_EMEnriched'
 )
 declare -a QCD_FR_bctoe=(
 'qcd_15to20_bctoe' 'qcd_170to250_bctoe' 'qcd_20to30_bctoe' 'qcd_250toinf_bctoe' 'qcd_30to80_bctoe' 'qcd_80to170_bctoe'

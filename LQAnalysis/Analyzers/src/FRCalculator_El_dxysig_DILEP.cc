@@ -177,8 +177,8 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
   const int n_eta = 3;
   float etaarray[n_eta+1] = {0.0, 0.8, 1.479, 2.5};
-  const int n_pt = 8;
-  float ptarray[n_pt+1] = {10., 15., 20., 23., 30., 35., 45., 60., 70.};
+  const int n_pt = 9;
+  float ptarray[n_pt+1] = {10., 15., 20., 23., 30., 35., 40., 50., 60., 70.};
 
   float etaarray_2 [] = {0.0, 1.479, 2.5};
   float ptarray_2 [] = {10.,15.,40.,200.};
@@ -192,24 +192,22 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   // HLT_Ele17_CaloIdL_TrackIdL_IsoVL_v 30.397
   // HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v 16.43
 
-  //   float ptarray [] = {0., 10., 15., 25., 35., 50., 70.};
-
   std::map< TString, std::vector<double> > HLT_ptrange;
   std::map< TString, double > HLT_ptmin;
 
   HLT_ptrange["HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v"].push_back(10.); // 6.992
   HLT_ptrange["HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v"].push_back(23.);
-  HLT_ptmin["HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v"] = 9.5; // -> can go upto 14.44
+  HLT_ptmin["HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v"] = 10.; // -> can go upto 15.20
 
   HLT_ptrange["HLT_Ele12_CaloIdL_TrackIdL_IsoVL_PFJet30_v"].push_back(23.); // 6.162
   HLT_ptrange["HLT_Ele12_CaloIdL_TrackIdL_IsoVL_PFJet30_v"].push_back(35.);
   HLT_ptmin["HLT_Ele12_CaloIdL_TrackIdL_IsoVL_PFJet30_v"] = 15.; // -> can go upto 22.8 GeV
 
   HLT_ptrange["HLT_Ele17_CaloIdL_TrackIdL_IsoVL_PFJet30_v"].push_back(35.); // 30.397
-  HLT_ptrange["HLT_Ele17_CaloIdL_TrackIdL_IsoVL_PFJet30_v"].push_back(45.); 
+  HLT_ptrange["HLT_Ele17_CaloIdL_TrackIdL_IsoVL_PFJet30_v"].push_back(40.); 
   HLT_ptmin["HLT_Ele17_CaloIdL_TrackIdL_IsoVL_PFJet30_v"] = 20.; // -> can go upto 30.4 GeV
 
-  HLT_ptrange["HLT_Ele23_CaloIdL_TrackIdL_IsoVL_PFJet30_v"].push_back(45.); // 16.43
+  HLT_ptrange["HLT_Ele23_CaloIdL_TrackIdL_IsoVL_PFJet30_v"].push_back(40.); // 16.43
   HLT_ptrange["HLT_Ele23_CaloIdL_TrackIdL_IsoVL_PFJet30_v"].push_back(9999.);
   HLT_ptmin["HLT_Ele23_CaloIdL_TrackIdL_IsoVL_PFJet30_v"] = 25.; // -> can go upto 38 GeV
 
@@ -254,12 +252,14 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
             FillHist(ThisTrigger+"_ZPeak_mll", mll, this_weight, 0., 200., 200);
             FillHist(ThisTrigger+"_ZPeak_leadpt", tightelectrons.at(0).Pt(), this_weight, 0., 500., 500);
             FillHist(ThisTrigger+"_ZPeak_subleadpt", tightelectrons.at(1).Pt(), this_weight, 0., 500., 500);
+            FillHist(ThisTrigger+"_ZPeak_PFMET", METauto, this_weight, 0., 500., 500);
           }
         }
         //==== 2) W
         if(tightelectrons.size()==1){
           double MTval = AnalyzerCore::MT( tightelectrons.at(0), metvec );
-          if( (METauto>50.) && (MTval>50.) && (tightelectrons.at(0).Pt() > 25.) ){
+          //if( (METauto>50.) && (MTval>50.) && (tightelectrons.at(0).Pt() > 25.) ){
+          if( (METauto>40.) && (tightelectrons.at(0).Pt() > 25.) ){
             FillHist(ThisTrigger+"_W_PFMET", METauto, this_weight, 0., 500., 500);
             FillHist(ThisTrigger+"_W_MT", MTval, this_weight, 0., 500., 500);
             FillHist(ThisTrigger+"_W_leadpt", tightelectrons.at(0).Pt(), this_weight, 0., 500., 500);
@@ -470,7 +470,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
         if(DijetFake){
 
-          double this_weight = weight_by_pt;
+          double this_weight = weight*weight_by_pt*MCweight;
 
           double AwayjetPt = 40; // just using central value..
 
@@ -518,25 +518,27 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
           double trigger_additional_sf = 1.;
           double electron_scale_sf = 1.;
           if(!k_isdata){
-            pu_reweight = mcdata_correction->GetVtxReweight(it->first, eventbase->GetEvent().nVertices());
-
-						if((it->first).Contains("HLT_Ele8")){
-							trigger_additional_sf = 1.15394;
-						}
-						else if((it->first).Contains("HLT_Ele12")){
-							trigger_additional_sf = 1.0894;
-						}
-						else if((it->first).Contains("HLT_Ele17")){
-							trigger_additional_sf = 1.02244;
-						}
-						else if((it->first).Contains("HLT_Ele23")){
-							trigger_additional_sf = 1.01567;
-						}
+            //pu_reweight = mcdata_correction->GetVtxReweight(it->first, eventbase->GetEvent().nVertices());
 
             double electron_RecoSF =  mcdata_correction->ElectronRecoScaleFactor(hnloose);
             electron_scale_sf *= electron_RecoSF;
             
-            if(IsThisTight) electron_scale_sf *= mcdata_correction->ElectronScaleFactor("ELECTRON_HN_TIGHTv4", hnloose, 0);
+            if(IsThisTight){
+              if((it->first).Contains("HLT_Ele8")){
+                trigger_additional_sf = 1.10772;
+              }
+              else if((it->first).Contains("HLT_Ele12")){
+                trigger_additional_sf = 1.01992;
+              }
+              else if((it->first).Contains("HLT_Ele17")){
+                trigger_additional_sf = 0.942631;
+              }
+              else if((it->first).Contains("HLT_Ele23")){
+                trigger_additional_sf = 0.940177;
+              }
+
+              electron_scale_sf *= mcdata_correction->ElectronScaleFactor("ELECTRON_HN_TIGHTv4", hnloose, 0);
+            }
           }
 
           this_weight *= pu_reweight*trigger_additional_sf*electron_scale_sf;
@@ -574,7 +576,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
                 else                   FillDenAndNum(HISTPREFIX+"_withoutbjet_Loose", electron, this_weight, IsThisTight);
 
                 double ptweight = WeightByTrigger(it->first, TargetLumi);
-                ptweight *= weight;
+                ptweight *= weight*pu_reweight*trigger_additional_sf*electron_scale_sf;
                 if( !PassTrigger(it->first) ) ptweight = 0.;
                 if( electron.Pt() < HLT_ptmin[it->first] ) ptweight = 0.;
                 if( (it->first).Contains("PFJet30") ){
@@ -1289,8 +1291,8 @@ void FRCalculator_El_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KElectron 
 
   const int n_eta = 3;
   float etaarray[n_eta+1] = {0.0, 0.8, 1.479, 2.5};
-  const int n_pt = 8;
-  float ptarray[n_pt+1] = {10., 15., 20., 23., 30., 35., 45., 60., 70.};
+  const int n_pt = 9;
+  float ptarray[n_pt+1] = {10., 15., 20., 23., 30., 35., 40., 50., 60., 70.};
 
   double TightISO = 0.08;
   double conept = ElectronConePt(electron,TightISO);
@@ -1302,8 +1304,8 @@ void FRCalculator_El_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KElectron 
   FillHist(prefix+"_eta_F0", electron.Eta(), thisweight, -3., 3., 30);
   FillHist(prefix+"_pt_F0", electron.Pt(), thisweight, 0., 200., 200);
   FillHist(prefix+"_pt_cone_F0", conept, thisweight, 0., 200., 200);
-  FillHist(prefix+"_pt_cone_FRbinned_F0", conept, thisweight, ptarray, 6);
-  FillHist(prefix+"_pt_cone_FRbinned_w1_F0", conept, 1., ptarray, 6);
+  FillHist(prefix+"_pt_cone_FRbinned_F0", conept, thisweight, ptarray, n_pt);
+  FillHist(prefix+"_pt_cone_FRbinned_w1_F0", conept, 1., ptarray, n_pt);
   FillHist(prefix+"_RelIso_F0", electron.PFRelIso(0.3), thisweight, 0., 1., 100);
   FillHist(prefix+"_MVA_F0", electron.MVA(), thisweight, -1., 1., 200);
   FillHist(prefix+"_dXY_F0", fabs(electron.dXY()), thisweight, 0., 1., 1000);
@@ -1311,8 +1313,8 @@ void FRCalculator_El_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KElectron 
   FillHist(prefix+"_dZ_F0", fabs(electron.dZ()), thisweight, 0., 0.5, 50);
   FillHist(prefix+"_Type_F0", electron.GetType(), thisweight, 0., 50., 50);
   FillHist(prefix+"_onebin_F0", 0., thisweight, 0., 1., 1);
-  FillHist(prefix+"_events_pt_vs_eta_F0", electron.Pt(), fabs(electron.Eta()), thisweight, ptarray, 6, etaarray, 3);
-  FillHist(prefix+"_events_pt_cone_vs_eta_F0", conept, fabs(electron.Eta()), thisweight, ptarray, 6, etaarray, 3);
+  FillHist(prefix+"_events_pt_vs_eta_F0", electron.Pt(), fabs(electron.Eta()), thisweight, ptarray, n_pt, etaarray, n_eta);
+  FillHist(prefix+"_events_pt_cone_vs_eta_F0", conept, fabs(electron.Eta()), thisweight, ptarray, n_pt, etaarray, n_eta);
   FillHist(prefix+"_PFMET_F0", METauto, thisweight, 0., 1000., 1000);
   FillHist(prefix+"_MT_F0", this_mt, thisweight, 0., 1000., 1000);
   FillHist(prefix+"_MET_vs_MT_F0", METauto, this_mt, thisweight, 0., 1000., 1000, 0., 1000., 1000);
@@ -1321,8 +1323,8 @@ void FRCalculator_El_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KElectron 
     FillHist(prefix+"_eta_F", electron.Eta(), thisweight, -3., 3., 30);
     FillHist(prefix+"_pt_F", electron.Pt(), thisweight, 0., 200., 200);
     FillHist(prefix+"_pt_cone_F", conept, thisweight, 0., 200., 200);
-    FillHist(prefix+"_pt_cone_FRbinned_F", conept, thisweight, ptarray, 6);
-    FillHist(prefix+"_pt_cone_FRbinned_w1_F", conept, 1., ptarray, 6);
+    FillHist(prefix+"_pt_cone_FRbinned_F", conept, thisweight, ptarray, n_pt);
+    FillHist(prefix+"_pt_cone_FRbinned_w1_F", conept, 1., ptarray, n_pt);
     FillHist(prefix+"_RelIso_F", electron.PFRelIso(0.3), thisweight, 0., 1., 100);
     FillHist(prefix+"_MVA_F", electron.MVA(), thisweight, -1., 1., 200);
     FillHist(prefix+"_dXY_F", fabs(electron.dXY()), thisweight, 0., 1., 1000);
@@ -1330,8 +1332,8 @@ void FRCalculator_El_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KElectron 
     FillHist(prefix+"_dZ_F", fabs(electron.dZ()), thisweight, 0., 0.5, 50);
     FillHist(prefix+"_Type_F", electron.GetType(), thisweight, 0., 50., 50);
     FillHist(prefix+"_onebin_F", 0., thisweight, 0., 1., 1);
-    FillHist(prefix+"_events_pt_vs_eta_F", electron.Pt(), fabs(electron.Eta()), thisweight, ptarray, 6, etaarray, 3);
-    FillHist(prefix+"_events_pt_cone_vs_eta_F", conept, fabs(electron.Eta()), thisweight, ptarray, 6, etaarray, 3);
+    FillHist(prefix+"_events_pt_vs_eta_F", electron.Pt(), fabs(electron.Eta()), thisweight, ptarray, n_pt, etaarray, n_eta);
+    FillHist(prefix+"_events_pt_cone_vs_eta_F", conept, fabs(electron.Eta()), thisweight, ptarray, n_pt, etaarray, n_eta);
     FillHist(prefix+"_PFMET_F", METauto, thisweight, 0., 1000., 1000);
     FillHist(prefix+"_MT_F", this_mt, thisweight, 0., 1000., 1000);
     FillHist(prefix+"_MET_vs_MT_F", METauto, this_mt, thisweight, 0., 1000., 1000, 0., 1000., 1000);

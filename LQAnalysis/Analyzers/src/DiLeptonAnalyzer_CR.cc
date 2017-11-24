@@ -296,11 +296,23 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
   triggerlist_DiElectron.clear();
   triggerlist_EMu.clear();
 
+  //==== DiMuon channel Trigger
+
+  triggerlist_DiMuon.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v");
+  triggerlist_DiMuon.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v");
   triggerlist_DiMuon.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
   triggerlist_DiMuon.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
 
+  vector<TString> triggerlist_DiMuon_PeriodH;
+  triggerlist_DiMuon_PeriodH.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
+  triggerlist_DiMuon_PeriodH.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
+
+  //==== DiElectron channel Trigger
+
   triggerlist_DiElectron.push_back("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v");
   //triggerlist_DiElectron.push_back("HLT_Ele27_WPTight_Gsf_v");
+
+  //==== EMu channel Trigger
 
   triggerlist_EMu.push_back("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v");
   triggerlist_EMu.push_back("HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_v");
@@ -417,479 +429,531 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
   Suffixs.push_back("DiElectron_FourLepton");
   Triggers.push_back(triggerlist_DiElectron);
 
-  for(unsigned int i=0; i<Suffixs.size(); i++){
+  //====================================
+  //==== Systematic source loop starts
+  //==== 1) Muon Energy Scale
+  //==== 2) Jet Energy Scale
+  //==== 3) Jet Energy Resolution
+  //==== 4) Unclustered Energy
+  //==== 5) Muon ID Scale Factor
+  //==== 6) Pileup
+  //==== 7) Trigger SF
+  //==== 8) Electron ID Scale Factor
+  //==== 9) Electron Energy Scale
+  //==== 10) BTagSF Eff
+  //==== 11) BTagSF Miss 
+  //====================================
 
-    TString OriginalSuffix = Suffixs.at(i);
+  int N_sys = 2*11+1;
+  int it_sys_start = 0;
 
-    //==== Trigger pass
-    if(!PassTriggerOR( Triggers.at(i) )) continue;
+  for(int it_sys=it_sys_start; it_sys<N_sys; it_sys++){
 
-    double EMu_MCTriggerWeight = 0.;
-    if(OriginalSuffix.Contains("EMu")){
-      //==== Data
-      if(isData){
+    //==== MET
+    //==== also set string for this systematic type
+    MET = Evt.MET();
+    METphi = Evt.METPhi();
+    TString this_syst;
+    if(it_sys==0){
+      this_syst = ""; //Central
+    }
+    else if(it_sys==1){
+      this_syst = "_MuonEn_up";
+      //MET = Evt.PFMETShifted(snu::KEvent::MuonEn, snu::KEvent::up);
+    }
+    else if(it_sys==2){
+      this_syst = "_MuonEn_down";
+      //MET = Evt.PFMETShifted(snu::KEvent::MuonEn, snu::KEvent::down);
+    }
+    else if(it_sys==3){
+      this_syst = "_JetEn_up";
+      MET = Evt.PFMETShifted(snu::KEvent::JetEn, snu::KEvent::up);
+    }
+    else if(it_sys==4){
+      this_syst = "_JetEn_down";
+      MET = Evt.PFMETShifted(snu::KEvent::JetEn, snu::KEvent::down);
+    }
+    else if(it_sys==5){
+      this_syst = "_JetRes_up";
+      MET = Evt.PFMETShifted(snu::KEvent::JetRes, snu::KEvent::up);
+    }
+    else if(it_sys==6){
+      this_syst = "_JetRes_down";
+      MET = Evt.PFMETShifted(snu::KEvent::JetRes, snu::KEvent::down);
+    }
+    else if(it_sys==7){
+      this_syst = "_Unclustered_up";
+      MET = Evt.PFMETShifted(snu::KEvent::Unclustered, snu::KEvent::up);
+    }
+    else if(it_sys==8){
+      this_syst = "_Unclustered_down";
+      MET = Evt.PFMETShifted(snu::KEvent::Unclustered, snu::KEvent::down);
+    }
+    else if(it_sys==9){
+      this_syst = "_MuonIDSF_up";
+    }
+    else if(it_sys==10){
+      this_syst = "_MuonIDSF_down";
+    }
+    else if(it_sys==11){
+      this_syst = "_PU_down";
+    }
+    else if(it_sys==12){
+      this_syst = "_PU_up";
+    }
+    else if(it_sys==13){
+      this_syst = "_TriggerSF_down";
+    }
+    else if(it_sys==14){
+      this_syst = "_TriggerSF_up";
+    }
+    else if(it_sys==15){
+      this_syst = "_ElectronIDSF_up";
+    }
+    else if(it_sys==16){
+      this_syst = "_ElectronIDSF_down";
+    }
+    else if(it_sys==17){
+      this_syst = "_ElectronEn_up";
+    }
+    else if(it_sys==18){
+      this_syst = "_ElectronEn_down";
+    }
+    else if(it_sys==19){
+      this_syst = "_BTagSFEff_up";
+    }
+    else if(it_sys==20){
+      this_syst = "_BTagSFEff_down";
+    }
+    else if(it_sys==21){
+      this_syst = "_BTagSFMiss_up";
+    }
+    else if(it_sys==22){
+      this_syst = "_BTagSFMiss_down";
+    }
+    else{
+      Message("it_sys out of range!" , INFO);
+      return;
+    }
 
-        EMu_MCTriggerWeight = 1.;
+    AUTO_N_syst = N_sys;
+    AUTO_it_syst = it_sys;
+    AUTO_syst_type = this_syst;
 
-        //==== Period BCDEFG
-        if(1 <= GetDataPeriod() && GetDataPeriod() <= 6){
-          if(!PassTriggerOR( triggerlist_EMu_PeriodBtoG )) continue;
-        }
-        //==== Period H
-        else if(GetDataPeriod() == 7){
-          if(!PassTriggerOR( triggerlist_EMu_PeriodH )) continue;
-        }
-        else{
-          cout << "GetDataPeriod() Wrong... return" << endl;
-          return;
-        }
+    if(this_syst==""){
+      NowRunningCentral = true;
+    }
+    else{
+      NowRunningCentral = false;
+    }
+
+    //================
+    //==== Make Muon
+    //================
+
+    double this_MuonLooseRelIso = 0.4;
+    double this_MuonVetoRelIso = 0.6;
+    std::vector<snu::KMuon> muons, muons_veto;
+    if(this_syst == "_MuonEn_up"){
+      //==== Signal Leptons
+      for(unsigned int j=0; j<muons_loosest.size(); j++){
+        snu::KMuon this_muon = muons_loosest.at(j);
+        this_muon.SetPtEtaPhiM( this_muon.Pt()*this_muon.PtShiftedUp(), this_muon.Eta(), this_muon.Phi(), this_muon.M() );
+        double new_RelIso = this_muon.RelIso04()/this_muon.PtShiftedUp();
+        this_muon.SetRelIso(0.4, new_RelIso);
+        if( this_muon.Pt() >= 10. && new_RelIso < this_MuonLooseRelIso ) muons.push_back( this_muon );
       }
-      //==== MC
-      else{
-        if(PassTriggerOR( triggerlist_EMu_PeriodBtoG )) EMu_MCTriggerWeight += 27261.369;
-        if(PassTriggerOR( triggerlist_EMu_PeriodH )) EMu_MCTriggerWeight += 8605.69;
+      //==== Veto Leptons
+      for(unsigned int j=0; j<muons_veto_loosest.size(); j++){
+        snu::KMuon this_muon = muons_veto_loosest.at(j);
+        this_muon.SetPtEtaPhiM( this_muon.Pt()*this_muon.PtShiftedUp(), this_muon.Eta(), this_muon.Phi(), this_muon.M() );
+        double new_RelIso = this_muon.RelIso04()/this_muon.PtShiftedUp();
+        this_muon.SetRelIso(0.4, new_RelIso);
+        if( this_muon.Pt() >= 5. && new_RelIso < this_MuonVetoRelIso ) muons_veto.push_back( this_muon );
+      }
+    }
+    else if(this_syst == "_MuonEn_down"){
+      //==== Signal Leptons
+      for(unsigned int j=0; j<muons_loosest.size(); j++){
+        snu::KMuon this_muon = muons_loosest.at(j);
+        this_muon.SetPtEtaPhiM( this_muon.Pt()*this_muon.PtShiftedDown(), this_muon.Eta(), this_muon.Phi(), this_muon.M() );
+        double new_RelIso = this_muon.RelIso04()/this_muon.PtShiftedDown();
+        this_muon.SetRelIso(0.4, new_RelIso);
+        if( this_muon.Pt() >= 10. && new_RelIso < this_MuonLooseRelIso ) muons.push_back( this_muon );
+      }
+      //==== Veto Leptons
+      for(unsigned int j=0; j<muons_veto_loosest.size(); j++){
+        snu::KMuon this_muon = muons_veto_loosest.at(j);
+        this_muon.SetPtEtaPhiM( this_muon.Pt()*this_muon.PtShiftedDown(), this_muon.Eta(), this_muon.Phi(), this_muon.M() );
+        double new_RelIso = this_muon.RelIso04()/this_muon.PtShiftedDown();
+        this_muon.SetRelIso(0.4, new_RelIso);
+        if( this_muon.Pt() >= 5. && new_RelIso < this_MuonVetoRelIso ) muons_veto.push_back( this_muon );
+      }
+    }
+    //==== normal muons
+    else{
+      //==== Signal Leptons
+      for(unsigned int j=0; j<muons_loosest.size(); j++){
+        snu::KMuon this_muon = muons_loosest.at(j);
+        if( this_muon.Pt() >= 10. && this_muon.RelIso04() < this_MuonLooseRelIso ) muons.push_back( this_muon );
+      }
+      //==== Veto Leptons
+      for(unsigned int j=0; j<muons_veto_loosest.size(); j++){
+        snu::KMuon this_muon = muons_veto_loosest.at(j);
+        if( this_muon.Pt() >= 5. && this_muon.RelIso04() < this_MuonVetoRelIso ) muons_veto.push_back( this_muon );
+      }
+    }
+    std::sort(muons.begin(), muons.end(), MuonPtComparing);
+
+    //====================
+    //==== Make Electron
+    //====================
+
+    std::vector<snu::KElectron> electrons, electrons_veto;
+    std::vector<snu::KElectron> electrons_notshifted;
+    double this_ElectronLooseRelIso = 0.6;
+    double this_ElectronVetoRelIso = 0.6;
+    int ElEnDir = 0;
+    if(this_syst == "_ElectronEn_up"){
+      ElEnDir = 1;
+      //==== Signal Leptons
+      for(unsigned int j=0; j<electrons_loosest.size(); j++){
+        snu::KElectron this_electron = electrons_loosest.at(j);
+        this_electron.SetPtEtaPhiM( this_electron.Pt()*this_electron.PtShiftedUp(), this_electron.Eta(), this_electron.Phi(), this_electron.M() );
+        double new_RelIso = this_electron.PFRelIso(0.3)/this_electron.PtShiftedUp();
+        this_electron.SetPFRelIso(0.3, new_RelIso);
+        if( this_electron.Pt() >= 10. && new_RelIso < this_ElectronLooseRelIso ) electrons.push_back( this_electron );
+      }
+      //==== Veto Leptons
+      for(unsigned int j=0; j<electrons_veto_loosest.size(); j++){
+        snu::KElectron this_electron = electrons_veto_loosest.at(j);
+        this_electron.SetPtEtaPhiM( this_electron.Pt()*this_electron.PtShiftedUp(), this_electron.Eta(), this_electron.Phi(), this_electron.M() );
+        double new_RelIso = this_electron.PFRelIso(0.3)/this_electron.PtShiftedUp();
+        this_electron.SetPFRelIso(0.3, new_RelIso);
+        if( this_electron.Pt() >= 10. && new_RelIso < this_ElectronVetoRelIso ) electrons_veto.push_back( this_electron );
+      }
+    }
+    else if(this_syst == "_ElectronEn_down"){
+      ElEnDir = -1;
+      //==== Signal Leptons
+      for(unsigned int j=0; j<electrons_loosest.size(); j++){
+        snu::KElectron this_electron = electrons_loosest.at(j);
+        this_electron.SetPtEtaPhiM( this_electron.Pt()*this_electron.PtShiftedDown(), this_electron.Eta(), this_electron.Phi(), this_electron.M() );
+        double new_RelIso = this_electron.PFRelIso(0.3)/this_electron.PtShiftedDown();
+        this_electron.SetPFRelIso(0.3, new_RelIso);
+        if( this_electron.Pt() >= 10. && new_RelIso < this_ElectronLooseRelIso ) electrons.push_back( this_electron );
+      }
+      //==== Veto Leptons
+      for(unsigned int j=0; j<electrons_veto_loosest.size(); j++){
+        snu::KElectron this_electron = electrons_veto_loosest.at(j);
+        this_electron.SetPtEtaPhiM( this_electron.Pt()*this_electron.PtShiftedDown(), this_electron.Eta(), this_electron.Phi(), this_electron.M() );
+        double new_RelIso = this_electron.PFRelIso(0.3)/this_electron.PtShiftedDown();
+        this_electron.SetPFRelIso(0.3, new_RelIso);
+        if( this_electron.Pt() >= 10. && new_RelIso < this_ElectronVetoRelIso ) electrons_veto.push_back( this_electron );
+      }
+    }
+    //==== normal electrons
+    else{
+      //==== Signal Leptons
+      for(unsigned int j=0; j<electrons_loosest.size(); j++){
+        snu::KElectron this_electron = electrons_loosest.at(j);
+        if( this_electron.Pt() >= 10. && this_electron.PFRelIso(0.3) < this_ElectronLooseRelIso ) electrons.push_back( this_electron );
+      }
+      //==== Veto Leptons
+      for(unsigned int j=0; j<electrons_veto_loosest.size(); j++){
+        snu::KElectron this_electron = electrons_veto_loosest.at(j);
+        if( this_electron.Pt() >= 10. && this_electron.PFRelIso(0.3) < this_ElectronVetoRelIso ) electrons_veto.push_back( this_electron );
       }
     }
 
-    //====================================
-    //==== Systematic source loop starts
-    //==== 1) Muon Energy Scale
-    //==== 2) Jet Energy Scale
-    //==== 3) Jet Energy Resolution
-    //==== 4) Unclustered Energy
-    //==== 5) Muon ID Scale Factor
-    //==== 6) Pileup
-    //==== 7) Trigger SF
-    //==== 8) Electron ID Scale Factor
-    //==== 9) Electron Energy Scale
-    //==== 10) BTagSF Eff
-    //==== 11) BTagSF Miss 
-    //====================================
+    //==== If Chargeflip, then shift down electron, and replace electrons with it
+    //==== To get correct CF rate, we save original (OS event) electron to electrons_before_shift
+    std::vector< snu::KElectron > electrons_before_shift;
+    electrons_before_shift.clear();
+    if(RunningChargeFlipData){
+      for(unsigned int j=0; j<electrons.size(); j++){
+        electrons_before_shift.push_back( electrons.at(j) );
+        snu::KElectron tmp_el = electrons.at(j);
+        double shift_ = 1.-0.015;
+        tmp_el.SetPtEtaPhiM(shift_*tmp_el.Pt(), tmp_el.Eta(), tmp_el.Phi(), tmp_el.M());
+        //tmp_el.SetPxPyPzE(shift_*tmp_el.Px(), shift_*tmp_el.Py(), shift_*tmp_el.Pz(), shift_*tmp_el.E());
+        electrons.at(j) = tmp_el;
+      }
+    }
 
-    int N_sys = 2*11+1;
-    int it_sys_start = 0;
+    //==== We don't have MiniAODPt for electorn..
 
-    for(int it_sys=it_sys_start; it_sys<N_sys; it_sys++){
+    if(ElEnDir!=0){
+      for(unsigned int j=0; j<electrons.size(); j++){
+        snu::KElectron new_electron = electrons.at(j);
+        if(ElEnDir>0) new_electron.SetPtEtaPhiM( new_electron.Pt()/new_electron.PtShiftedUp(), new_electron.Eta(), new_electron.Phi(), new_electron.M() );
+        else new_electron.SetPtEtaPhiM( new_electron.Pt()/new_electron.PtShiftedDown(), new_electron.Eta(), new_electron.Phi(), new_electron.M() );
+        electrons_notshifted.push_back(new_electron);
+      }
+    }
 
-      //==== MET
-      //==== also set string for this systematic type
-      MET = Evt.MET();
-      METphi = Evt.METPhi();
-      TString this_syst;
-      if(it_sys==0){
-        this_syst = ""; //Central
-      }
-      else if(it_sys==1){
-        this_syst = "_MuonEn_up";
-        //MET = Evt.PFMETShifted(snu::KEvent::MuonEn, snu::KEvent::up);
-      }
-      else if(it_sys==2){
-        this_syst = "_MuonEn_down";
-        //MET = Evt.PFMETShifted(snu::KEvent::MuonEn, snu::KEvent::down);
-      }
-      else if(it_sys==3){
-        this_syst = "_JetEn_up";
-        MET = Evt.PFMETShifted(snu::KEvent::JetEn, snu::KEvent::up);
-      }
-      else if(it_sys==4){
-        this_syst = "_JetEn_down";
-        MET = Evt.PFMETShifted(snu::KEvent::JetEn, snu::KEvent::down);
-      }
-      else if(it_sys==5){
-        this_syst = "_JetRes_up";
-        MET = Evt.PFMETShifted(snu::KEvent::JetRes, snu::KEvent::up);
-      }
-      else if(it_sys==6){
-        this_syst = "_JetRes_down";
-        MET = Evt.PFMETShifted(snu::KEvent::JetRes, snu::KEvent::down);
-      }
-      else if(it_sys==7){
-        this_syst = "_Unclustered_up";
-        MET = Evt.PFMETShifted(snu::KEvent::Unclustered, snu::KEvent::up);
-      }
-      else if(it_sys==8){
-        this_syst = "_Unclustered_down";
-        MET = Evt.PFMETShifted(snu::KEvent::Unclustered, snu::KEvent::down);
-      }
-      else if(it_sys==9){
-        this_syst = "_MuonIDSF_up";
-      }
-      else if(it_sys==10){
-        this_syst = "_MuonIDSF_down";
-      }
-      else if(it_sys==11){
-        this_syst = "_PU_down";
-      }
-      else if(it_sys==12){
-        this_syst = "_PU_up";
-      }
-      else if(it_sys==13){
-        this_syst = "_TriggerSF_down";
-      }
-      else if(it_sys==14){
-        this_syst = "_TriggerSF_up";
-      }
-      else if(it_sys==15){
-        this_syst = "_ElectronIDSF_up";
-      }
-      else if(it_sys==16){
-        this_syst = "_ElectronIDSF_down";
-      }
-      else if(it_sys==17){
-        this_syst = "_ElectronEn_up";
-      }
-      else if(it_sys==18){
-        this_syst = "_ElectronEn_down";
-      }
-      else if(it_sys==19){
-        this_syst = "_BTagSFEff_up";
-      }
-      else if(it_sys==20){
-        this_syst = "_BTagSFEff_down";
-      }
-      else if(it_sys==21){
-        this_syst = "_BTagSFMiss_up";
-      }
-      else if(it_sys==22){
-        this_syst = "_BTagSFMiss_down";
-      }
-      else{
-        Message("it_sys out of range!" , INFO);
-        return;
-      }
+    JSCorrectedMETElectron(ElEnDir, electrons_notshifted, MET, METphi);
+    std::sort(electrons.begin(), electrons.end(), ElectronPtComparing);
 
-      AUTO_N_syst = N_sys;
-      AUTO_it_syst = it_sys;
-      AUTO_syst_type = this_syst;
+    //==== MET is calculated with No-Rochestor-Corrected Muons
+    //==== In this step, muons are 
+    //==== 1) Rochestor corrected & Up/Down
+    //==== 2) Rochestor corrected
+    //==== 3) If non-prompt run, now pt is pt-cone. So this will be also corrected
+    //==== Both cases, we can correct MET (w.r.t. muon) using
+    //==== AnalyzerCore::JSCorrectedMETRochester(std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi)
+    JSCorrectedMETRochester(muons, MET, METphi);
 
-      if(this_syst==""){
-        NowRunningCentral = true;
-      }
-      else{
-        NowRunningCentral = false;
-      }
+    //===============
+    //==== Make Jet
+    //===============
 
-      TString Suffix = OriginalSuffix;
+    std::vector<snu::KJet> jets_eta5_nolepveto; // eta < 5, NO lepton-veto
+    if( (this_syst == "_JetEn_up") || (this_syst == "_JetRes_up") ){
+      for(unsigned int j=0; j<jets_eta5_nolepveto_loosest.size(); j++){
+        snu::KJet this_jet = jets_eta5_nolepveto_loosest.at(j);
 
-      //================
-      //==== Make Muon
-      //================
+        double this_scaling = 1.;
+        if(this_syst == "_JetEn_up") this_scaling = this_jet.ScaledUpEnergy();
+        if(this_syst == "_JetRes_up") this_scaling = this_jet.SmearedResUp()/this_jet.SmearedRes();
 
-      double this_MuonLooseRelIso = 0.4;
-      double this_MuonVetoRelIso = 0.6;
-      std::vector<snu::KMuon> muons, muons_veto;
-      if(this_syst == "_MuonEn_up"){
-        //==== Signal Leptons
-        for(unsigned int j=0; j<muons_loosest.size(); j++){
-          snu::KMuon this_muon = muons_loosest.at(j);
-          this_muon.SetPtEtaPhiM( this_muon.Pt()*this_muon.PtShiftedUp(), this_muon.Eta(), this_muon.Phi(), this_muon.M() );
-          double new_RelIso = this_muon.RelIso04()/this_muon.PtShiftedUp();
-          this_muon.SetRelIso(0.4, new_RelIso);
-          if( this_muon.Pt() >= 10. && new_RelIso < this_MuonLooseRelIso ) muons.push_back( this_muon );
-        }
-        //==== Veto Leptons
-        for(unsigned int j=0; j<muons_veto_loosest.size(); j++){
-          snu::KMuon this_muon = muons_veto_loosest.at(j);
-          this_muon.SetPtEtaPhiM( this_muon.Pt()*this_muon.PtShiftedUp(), this_muon.Eta(), this_muon.Phi(), this_muon.M() );
-          double new_RelIso = this_muon.RelIso04()/this_muon.PtShiftedUp();
-          this_muon.SetRelIso(0.4, new_RelIso);
-          if( this_muon.Pt() >= 5. && new_RelIso < this_MuonVetoRelIso ) muons_veto.push_back( this_muon );
-        }
+        //double this_E = this_jet.E()*this_scaling;
+        //double this_3p = sqrt(this_E*this_E-this_jet.M()*this_jet.M());
+        //double this_3p_sf = this_3p/this_jet.P();
+        //this_jet.SetPxPyPzE( this_3p_sf*this_jet.Px(), this_3p_sf*this_jet.Py(), this_3p_sf*this_jet.Pz(), this_E);
+
+        this_jet *= this_scaling;
+
+        if(this_jet.Pt() >= 20.) jets_eta5_nolepveto.push_back(this_jet);
       }
-      else if(this_syst == "_MuonEn_down"){
-        //==== Signal Leptons
-        for(unsigned int j=0; j<muons_loosest.size(); j++){
-          snu::KMuon this_muon = muons_loosest.at(j);
-          this_muon.SetPtEtaPhiM( this_muon.Pt()*this_muon.PtShiftedDown(), this_muon.Eta(), this_muon.Phi(), this_muon.M() );
-          double new_RelIso = this_muon.RelIso04()/this_muon.PtShiftedDown();
-          this_muon.SetRelIso(0.4, new_RelIso);
-          if( this_muon.Pt() >= 10. && new_RelIso < this_MuonLooseRelIso ) muons.push_back( this_muon );
-        }
-        //==== Veto Leptons
-        for(unsigned int j=0; j<muons_veto_loosest.size(); j++){
-          snu::KMuon this_muon = muons_veto_loosest.at(j);
-          this_muon.SetPtEtaPhiM( this_muon.Pt()*this_muon.PtShiftedDown(), this_muon.Eta(), this_muon.Phi(), this_muon.M() );
-          double new_RelIso = this_muon.RelIso04()/this_muon.PtShiftedDown();
-          this_muon.SetRelIso(0.4, new_RelIso);
-          if( this_muon.Pt() >= 5. && new_RelIso < this_MuonVetoRelIso ) muons_veto.push_back( this_muon );
-        }
+    }
+    else if( (this_syst == "_JetEn_down") || (this_syst == "_JetRes_down") ){
+      for(unsigned int j=0; j<jets_eta5_nolepveto_loosest.size(); j++){
+        snu::KJet this_jet = jets_eta5_nolepveto_loosest.at(j);
+
+        double this_scaling = 1.;
+        if(this_syst == "_JetEn_down") this_scaling = this_jet.ScaledDownEnergy();
+        if(this_syst == "_JetRes_down") this_scaling = this_jet.SmearedResDown()/this_jet.SmearedRes();;
+
+        //double this_E = this_jet.E()*this_scaling;
+        //double this_3p = sqrt(this_E*this_E-this_jet.M()*this_jet.M());
+        //double this_3p_sf = this_3p/this_jet.P();
+        //this_jet.SetPxPyPzE( this_3p_sf*this_jet.Px(), this_3p_sf*this_jet.Py(), this_3p_sf*this_jet.Pz(), this_E);
+
+        this_jet *= this_scaling;
+
+        if(this_jet.Pt() >= 20.) jets_eta5_nolepveto.push_back(this_jet);
       }
-      //==== normal muons
-      else{
-        //==== Signal Leptons
-        for(unsigned int j=0; j<muons_loosest.size(); j++){
-          snu::KMuon this_muon = muons_loosest.at(j);
-          if( this_muon.Pt() >= 10. && this_muon.RelIso04() < this_MuonLooseRelIso ) muons.push_back( this_muon );
-        }
-        //==== Veto Leptons
-        for(unsigned int j=0; j<muons_veto_loosest.size(); j++){
-          snu::KMuon this_muon = muons_veto_loosest.at(j);
-          if( this_muon.Pt() >= 5. && this_muon.RelIso04() < this_MuonVetoRelIso ) muons_veto.push_back( this_muon );
-        }
+    }
+    else{
+      for(unsigned int j=0; j<jets_eta5_nolepveto_loosest.size(); j++){
+        snu::KJet this_jet = jets_eta5_nolepveto_loosest.at(j);
+        if(this_jet.Pt() >= 20.) jets_eta5_nolepveto.push_back(this_jet);
+      }
+    }
+
+    std::vector<snu::KJet> jets_eta5; // eta < 5.0, lepton-veto, away from fatjets
+    std::vector<snu::KJet> jets; // eta < 2.5, lepton-veto, away from fatjets
+    std::vector<snu::KJet> jets_InSideFatJet; // If jets inside fatjet, remove it's smearing from MET. Because FatJet smearing is already propagted to MET
+    std::vector<snu::KJet> jets_nolepveto; // eta < 2.5, NO lepton-veto
+    std::vector<snu::KJet> jets_fwd; // 2.5 < eta < 5, lepton-veto => to make forward
+
+    for(unsigned int j=0; j<jets_eta5_nolepveto.size(); j++){
+
+      snu::KJet this_jet = jets_eta5_nolepveto.at(j);
+      bool IsNormalJet = fabs( this_jet.Eta() ) < 2.5;
+      bool IsForwardJet = fabs( this_jet.Eta() ) >= 2.5;
+      bool lepinside = HasLeptonInsideJet(this_jet, muons_veto, electrons_veto);
+      bool awayfromfatjet = true;
+
+      if(!lepinside && awayfromfatjet) jets_eta5.push_back( this_jet );
+      if(IsNormalJet && !lepinside && awayfromfatjet) jets.push_back( this_jet );
+      if(IsNormalJet && !lepinside && !awayfromfatjet) jets_InSideFatJet.push_back( this_jet );
+      if(IsNormalJet) jets_nolepveto.push_back( this_jet );
+      if(IsForwardJet && !lepinside) jets_fwd.push_back( this_jet );
+
+    }
+
+    int BTagSFDir = 0;
+    if(this_syst == "_BTagSFEff_up") BTagSFDir = +1;
+    if(this_syst == "_BTagSFEff_down") BTagSFDir = -1;
+    if(this_syst == "_BTagSFMiss_up") BTagSFDir = +3;
+    if(this_syst == "_BTagSFMiss_down") BTagSFDir = -3;
+
+    nbjets = 0;
+    for(int j=0; j<jets.size(); j++){
+      if( IsBTagged(jets.at(j), snu::KJet::CSVv2, snu::KJet::Medium, -1, BTagSFDir) && fabs(jets.at(j).Eta())<2.4 ){
+        nbjets++;
+      }
+    }
+
+    nbjets_nolepveto = 0;
+    for(int j=0; j<jets_nolepveto.size(); j++){
+      if( IsBTagged(jets_nolepveto.at(j), snu::KJet::CSVv2, snu::KJet::Medium, -1, BTagSFDir) && fabs(jets_nolepveto.at(j).Eta())<2.4 ){
+        nbjets_nolepveto++;
+      }
+    }
+
+    nbjets_fwd = 0;
+    for(int j=0; j<jets_fwd.size(); j++){
+      if( IsBTagged(jets_fwd.at(j), snu::KJet::CSVv2, snu::KJet::Medium, -1, BTagSFDir) && fabs(jets_fwd.at(j).Eta())<2.4 ){
+        nbjets_fwd++;
+      }
+    }
+
+    //==== Non-prompt, change pt to pt-cone
+    if(NonPromptRun){
+
+      for(unsigned int j=0; j<muons.size(); j++){
+        snu::KMuon this_muon = muons.at(j);
+        this_muon.SetPtEtaPhiM( CorrPt(this_muon, 0.07), this_muon.Eta(), this_muon.Phi(), this_muon.M() );
+        muons.at(j) = this_muon;
       }
       std::sort(muons.begin(), muons.end(), MuonPtComparing);
 
-      //====================
-      //==== Make Electron
-      //====================
-
-      std::vector<snu::KElectron> electrons, electrons_veto;
-      std::vector<snu::KElectron> electrons_notshifted;
-      double this_ElectronLooseRelIso = 0.6;
-      double this_ElectronVetoRelIso = 0.6;
-      int ElEnDir = 0;
-      if(this_syst == "_ElectronEn_up"){
-        ElEnDir = 1;
-        //==== Signal Leptons
-        for(unsigned int j=0; j<electrons_loosest.size(); j++){
-          snu::KElectron this_electron = electrons_loosest.at(j);
-          this_electron.SetPtEtaPhiM( this_electron.Pt()*this_electron.PtShiftedUp(), this_electron.Eta(), this_electron.Phi(), this_electron.M() );
-          double new_RelIso = this_electron.PFRelIso(0.3)/this_electron.PtShiftedUp();
-          this_electron.SetPFRelIso(0.3, new_RelIso);
-          if( this_electron.Pt() >= 10. && new_RelIso < this_ElectronLooseRelIso ) electrons.push_back( this_electron );
-        }
-        //==== Veto Leptons
-        for(unsigned int j=0; j<electrons_veto_loosest.size(); j++){
-          snu::KElectron this_electron = electrons_veto_loosest.at(j);
-          this_electron.SetPtEtaPhiM( this_electron.Pt()*this_electron.PtShiftedUp(), this_electron.Eta(), this_electron.Phi(), this_electron.M() );
-          double new_RelIso = this_electron.PFRelIso(0.3)/this_electron.PtShiftedUp();
-          this_electron.SetPFRelIso(0.3, new_RelIso);
-          if( this_electron.Pt() >= 10. && new_RelIso < this_ElectronVetoRelIso ) electrons_veto.push_back( this_electron );
-        }
+      for(unsigned int j=0; j<electrons.size(); j++){
+        snu::KElectron this_electron = electrons.at(j);
+        this_electron.SetPtEtaPhiM( CorrPt(this_electron, 0.08), this_electron.Eta(), this_electron.Phi(), this_electron.M() );
+        electrons.at(j) = this_electron;
       }
-      else if(this_syst == "_ElectronEn_down"){
-        ElEnDir = -1;
-        //==== Signal Leptons
-        for(unsigned int j=0; j<electrons_loosest.size(); j++){
-          snu::KElectron this_electron = electrons_loosest.at(j);
-          this_electron.SetPtEtaPhiM( this_electron.Pt()*this_electron.PtShiftedDown(), this_electron.Eta(), this_electron.Phi(), this_electron.M() );
-          double new_RelIso = this_electron.PFRelIso(0.3)/this_electron.PtShiftedDown();
-          this_electron.SetPFRelIso(0.3, new_RelIso);
-          if( this_electron.Pt() >= 10. && new_RelIso < this_ElectronLooseRelIso ) electrons.push_back( this_electron );
-        }
-        //==== Veto Leptons
-        for(unsigned int j=0; j<electrons_veto_loosest.size(); j++){
-          snu::KElectron this_electron = electrons_veto_loosest.at(j);
-          this_electron.SetPtEtaPhiM( this_electron.Pt()*this_electron.PtShiftedDown(), this_electron.Eta(), this_electron.Phi(), this_electron.M() );
-          double new_RelIso = this_electron.PFRelIso(0.3)/this_electron.PtShiftedDown();
-          this_electron.SetPFRelIso(0.3, new_RelIso);
-          if( this_electron.Pt() >= 10. && new_RelIso < this_ElectronVetoRelIso ) electrons_veto.push_back( this_electron );
-        }
-      }
-      //==== normal electrons
-      else{
-        //==== Signal Leptons
-        for(unsigned int j=0; j<electrons_loosest.size(); j++){
-          snu::KElectron this_electron = electrons_loosest.at(j);
-          if( this_electron.Pt() >= 10. && this_electron.PFRelIso(0.3) < this_ElectronLooseRelIso ) electrons.push_back( this_electron );
-        }
-        //==== Veto Leptons
-        for(unsigned int j=0; j<electrons_veto_loosest.size(); j++){
-          snu::KElectron this_electron = electrons_veto_loosest.at(j);
-          if( this_electron.Pt() >= 10. && this_electron.PFRelIso(0.3) < this_ElectronVetoRelIso ) electrons_veto.push_back( this_electron );
-        }
-      }
-
-      //==== If Chargeflip, then shift down electron, and replace electrons with it
-      //==== To get correct CF rate, we save original (OS event) electron to electrons_before_shift
-      std::vector< snu::KElectron > electrons_before_shift;
-      electrons_before_shift.clear();
-      if(RunningChargeFlipData){
-        for(unsigned int j=0; j<electrons.size(); j++){
-          electrons_before_shift.push_back( electrons.at(j) );
-          snu::KElectron tmp_el = electrons.at(j);
-          double shift_ = 1.-0.015;
-          tmp_el.SetPtEtaPhiM(shift_*tmp_el.Pt(), tmp_el.Eta(), tmp_el.Phi(), tmp_el.M());
-          //tmp_el.SetPxPyPzE(shift_*tmp_el.Px(), shift_*tmp_el.Py(), shift_*tmp_el.Pz(), shift_*tmp_el.E());
-          electrons.at(j) = tmp_el;
-        }
-      }
-
-      //==== We don't have MiniAODPt for electorn..
-
-      if(ElEnDir!=0){
-        for(unsigned int j=0; j<electrons.size(); j++){
-          snu::KElectron new_electron = electrons.at(j);
-          if(ElEnDir>0) new_electron.SetPtEtaPhiM( new_electron.Pt()/new_electron.PtShiftedUp(), new_electron.Eta(), new_electron.Phi(), new_electron.M() );
-          else new_electron.SetPtEtaPhiM( new_electron.Pt()/new_electron.PtShiftedDown(), new_electron.Eta(), new_electron.Phi(), new_electron.M() );
-          electrons_notshifted.push_back(new_electron);
-        }
-      }
-
-      JSCorrectedMETElectron(ElEnDir, electrons_notshifted, MET, METphi);
       std::sort(electrons.begin(), electrons.end(), ElectronPtComparing);
 
-      //==== MET is calculated with No-Rochestor-Corrected Muons
-      //==== In this step, muons are 
-      //==== 1) Rochestor corrected & Up/Down
-      //==== 2) Rochestor corrected
-      //==== Both cases, we can correct MET (w.r.t. muon) using
-      //==== AnalyzerCore::JSCorrectedMETRochester(std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi)
-      JSCorrectedMETRochester(muons, MET, METphi);
+    }
 
-      //===============
-      //==== Make Jet
-      //===============
+    //==== Lepton Numbers
 
-      std::vector<snu::KJet> jets_eta5_nolepveto; // eta < 5, NO lepton-veto
-      if( (this_syst == "_JetEn_up") || (this_syst == "_JetRes_up") ){
-        for(unsigned int j=0; j<jets_eta5_nolepveto_loosest.size(); j++){
-          snu::KJet this_jet = jets_eta5_nolepveto_loosest.at(j);
+    std::vector<snu::KMuon> muons_tight; muons_tight.clear();
+    std::vector<snu::KElectron> electrons_tight; electrons_tight.clear();
+    std::vector<bool> isT;
+    std::vector<int> NearBjet;
 
-          double this_scaling = 1.;
-          if(this_syst == "_JetEn_up") this_scaling = this_jet.ScaledUpEnergy();
-          if(this_syst == "_JetRes_up") this_scaling = this_jet.SmearedResUp()/this_jet.SmearedRes();
+    int NPromptTight(0);
 
-          //double this_E = this_jet.E()*this_scaling;
-          //double this_3p = sqrt(this_E*this_E-this_jet.M()*this_jet.M());
-          //double this_3p_sf = this_3p/this_jet.P();
-          //this_jet.SetPxPyPzE( this_3p_sf*this_jet.Px(), this_3p_sf*this_jet.Py(), this_3p_sf*this_jet.Pz(), this_E);
+    int n_veto_muons = muons_veto.size();
+    int n_triLoose_muons = muons.size();
+    int n_triTight_muons(0);
+    for(unsigned int j=0; j<muons.size(); j++){
 
-          this_jet *= this_scaling;
+      if(DoFRBJET) NearBjet.push_back( HasCloseBjet(muons.at(j), jets_nolepveto, btag_wp) );
+      else NearBjet.push_back( -1 );
 
-          if(this_jet.Pt() >= 20.) jets_eta5_nolepveto.push_back(this_jet);
-        }
-      }
-      else if( (this_syst == "_JetEn_down") || (this_syst == "_JetRes_down") ){
-        for(unsigned int j=0; j<jets_eta5_nolepveto_loosest.size(); j++){
-          snu::KJet this_jet = jets_eta5_nolepveto_loosest.at(j);
-
-          double this_scaling = 1.;
-          if(this_syst == "_JetEn_down") this_scaling = this_jet.ScaledDownEnergy();
-          if(this_syst == "_JetRes_down") this_scaling = this_jet.SmearedResDown()/this_jet.SmearedRes();;
-
-          //double this_E = this_jet.E()*this_scaling;
-          //double this_3p = sqrt(this_E*this_E-this_jet.M()*this_jet.M());
-          //double this_3p_sf = this_3p/this_jet.P();
-          //this_jet.SetPxPyPzE( this_3p_sf*this_jet.Px(), this_3p_sf*this_jet.Py(), this_3p_sf*this_jet.Pz(), this_E);
-
-          this_jet *= this_scaling;
-
-          if(this_jet.Pt() >= 20.) jets_eta5_nolepveto.push_back(this_jet);
-        }
+      if(TruthMatched(muons.at(j))) NPromptTight++;
+      if(PassID(muons.at(j), MuonTightID)){
+        isT.push_back(true);
+        muons_tight.push_back(muons.at(j));
+        n_triTight_muons++;
       }
       else{
-        for(unsigned int j=0; j<jets_eta5_nolepveto_loosest.size(); j++){
-          snu::KJet this_jet = jets_eta5_nolepveto_loosest.at(j);
-          if(this_jet.Pt() >= 20.) jets_eta5_nolepveto.push_back(this_jet);
-        }
+        isT.push_back(false);
       }
+    }
 
-      std::vector<snu::KJet> jets_eta5; // eta < 5.0, lepton-veto, away from fatjets
-      std::vector<snu::KJet> jets; // eta < 2.5, lepton-veto, away from fatjets
-      std::vector<snu::KJet> jets_InSideFatJet; // If jets inside fatjet, remove it's smearing from MET. Because FatJet smearing is already propagted to MET
-      std::vector<snu::KJet> jets_nolepveto; // eta < 2.5, NO lepton-veto
-      std::vector<snu::KJet> jets_fwd; // 2.5 < eta < 5, lepton-veto => to make forward
+    int n_veto_electrons = electrons_veto.size();
+    int n_triLoose_electrons = electrons.size();
+    int n_triTight_electrons(0);
+    for(unsigned int j=0; j<electrons.size(); j++){
 
-      for(unsigned int j=0; j<jets_eta5_nolepveto.size(); j++){
+      if(DoFRBJET) NearBjet.push_back( HasCloseBjet(electrons.at(j), jets_nolepveto, btag_wp) );
+      else NearBjet.push_back( -1 );
 
-        snu::KJet this_jet = jets_eta5_nolepveto.at(j);
-        bool IsNormalJet = fabs( this_jet.Eta() ) < 2.5;
-        bool IsForwardJet = fabs( this_jet.Eta() ) >= 2.5;
-        bool lepinside = HasLeptonInsideJet(this_jet, muons_veto, electrons_veto);
-        bool awayfromfatjet = true;
-
-        if(!lepinside && awayfromfatjet) jets_eta5.push_back( this_jet );
-        if(IsNormalJet && !lepinside && awayfromfatjet) jets.push_back( this_jet );
-        if(IsNormalJet && !lepinside && !awayfromfatjet) jets_InSideFatJet.push_back( this_jet );
-        if(IsNormalJet) jets_nolepveto.push_back( this_jet );
-        if(IsForwardJet && !lepinside) jets_fwd.push_back( this_jet );
-
+      if(TruthMatched(electrons.at(j), false)) NPromptTight++;
+      if(PassID(electrons.at(j), ElectronTightID)){
+        isT.push_back(true);
+        electrons_tight.push_back(electrons.at(j));
+        n_triTight_electrons++;
       }
-
-      int BTagSFDir = 0;
-      if(this_syst == "_BTagSFEff_up") BTagSFDir = +1;
-      if(this_syst == "_BTagSFEff_down") BTagSFDir = -1;
-      if(this_syst == "_BTagSFMiss_up") BTagSFDir = +3;
-      if(this_syst == "_BTagSFMiss_down") BTagSFDir = -3;
-
-      nbjets = 0;
-      for(int j=0; j<jets.size(); j++){
-        if( IsBTagged(jets.at(j), snu::KJet::CSVv2, snu::KJet::Medium, -1, BTagSFDir) && fabs(jets.at(j).Eta())<2.4 ){
-          nbjets++;
-        }
+      else{
+        isT.push_back(false);
       }
+    }
 
-      nbjets_nolepveto = 0;
-      for(int j=0; j<jets_nolepveto.size(); j++){
-        if( IsBTagged(jets_nolepveto.at(j), snu::KJet::CSVv2, snu::KJet::Medium, -1, BTagSFDir) && fabs(jets_nolepveto.at(j).Eta())<2.4 ){
-          nbjets_nolepveto++;
-        }
-      }
+    int n_triVeto_leptons = n_veto_muons+n_veto_electrons;
+    int n_triLoose_leptons = n_triLoose_muons+n_triLoose_electrons;
+    int n_triTight_leptons = n_triTight_muons+n_triTight_electrons;
+    NTightLeptons = n_triTight_leptons;
 
-      nbjets_fwd = 0;
-      for(int j=0; j<jets_fwd.size(); j++){
-        if( IsBTagged(jets_fwd.at(j), snu::KJet::CSVv2, snu::KJet::Medium, -1, BTagSFDir) && fabs(jets_fwd.at(j).Eta())<2.4 ){
-          nbjets_fwd++;
-        }
-      }
+    bool isThreeLepton_TwoMuon_TTT   = (n_triTight_leptons == 3) && (n_triTight_muons >= 2);
+    bool isThreeLepton_TwoMuon_Loose = (n_triLoose_leptons == 3) && (n_triLoose_muons >= 2) && (n_triTight_leptons != 3);
 
-      //==== Lepton Numbers
+    bool isThreeLepton_TwoElectron_TTT   = (n_triTight_leptons == 3) && (n_triTight_electrons >= 2);
+    bool isThreeLepton_TwoElectron_Loose = (n_triLoose_leptons == 3) && (n_triLoose_electrons >= 2) && (n_triTight_leptons != 3);
 
-      std::vector<snu::KMuon> muons_tight; muons_tight.clear();
-      std::vector<snu::KElectron> electrons_tight; electrons_tight.clear();
-      std::vector<bool> isT;
-      std::vector<int> NearBjet;
+    bool isFourLepton_TwoMuon_TTTT   = (n_triTight_leptons == 4) && (n_triTight_muons >= 2);
+    bool isFourLepton_TwoMuon_Loose  = (n_triLoose_leptons == 4) && (n_triLoose_muons >= 2) && (n_triTight_leptons != 4);
 
-      int NPromptTight(0);
+    bool isFourLepton_TwoElectron_TTTT   = (n_triTight_leptons == 4) && (n_triTight_electrons >= 2);
+    bool isFourLepton_TwoElectron_Loose  = (n_triLoose_leptons == 4) && (n_triLoose_electrons >= 2) && (n_triTight_leptons != 4);
 
-      int n_veto_muons = muons_veto.size();
-      int n_triLoose_muons = muons.size();
-      int n_triTight_muons(0);
-      for(unsigned int j=0; j<muons.size(); j++){
+    bool isAllTight, isLOOSE;
+    bool isNoExtra, isNoExtraOtherFlavour;
 
-        if(DoFRBJET) NearBjet.push_back( HasCloseBjet(muons.at(j), jets_nolepveto, btag_wp) );
-        else NearBjet.push_back( -1 );
+    for(unsigned int i=0; i<Suffixs.size(); i++){
 
-        if(TruthMatched(muons.at(j))) NPromptTight++;
-        if(PassID(muons.at(j), MuonTightID)){
-          isT.push_back(true);
-          muons_tight.push_back(muons.at(j));
-          n_triTight_muons++;
+      TString Suffix = Suffixs.at(i);
+
+      //==== Trigger pass
+      if(!PassTriggerOR( Triggers.at(i) )) continue;
+
+      double DiMuon_MCTriggerWeight = 0.;
+      double EMu_MCTriggerWeight = 0.;
+      if(Suffix.Contains("DiMuon")){
+        //==== Data
+        if(isData){
+
+          DiMuon_MCTriggerWeight = 1.;
+
+          //==== periodH : DZ must be fired. (nonDZ were off in this period)
+
+          //==== Period H
+          if(GetDataPeriod() == 7){
+            if(!PassTriggerOR( triggerlist_DiMuon_PeriodH )) continue;
+          }
         }
         else{
-          isT.push_back(false);
+
+          //==== If single lepton triggers were fired,
+          //==== Use full lumi.
+          //==== But, if ony EMu triggers were fired,
+          //==== nonDZ fired : add lumi of periodBtoG
+          //==== DZ fired : add lumi of periodH
+          if(PassTriggerOR( triggerlist_DiMuon )) DiMuon_MCTriggerWeight += 27257.617;
+          if(PassTriggerOR( triggerlist_DiMuon_PeriodH )) DiMuon_MCTriggerWeight += 8605.69;
+
         }
       }
+      if(Suffix.Contains("EMu")){
+        //==== Data
+        if(isData){
 
-      int n_veto_electrons = electrons_veto.size();
-      int n_triLoose_electrons = electrons.size();
-      int n_triTight_electrons(0);
-      for(unsigned int j=0; j<electrons.size(); j++){
+          EMu_MCTriggerWeight = 1.;
 
-        if(DoFRBJET) NearBjet.push_back( HasCloseBjet(electrons.at(j), jets_nolepveto, btag_wp) );
-        else NearBjet.push_back( -1 );
+          //==== periodBtoG : nonDZ must be fired. (DZ were off in this period)
+          //==== periodH : DZ must be fired. (nonDZ were off in this period)
 
-        if(TruthMatched(electrons.at(j), false)) NPromptTight++;
-        if(PassID(electrons.at(j), ElectronTightID)){
-          isT.push_back(true);
-          electrons_tight.push_back(electrons.at(j));
-          n_triTight_electrons++;
+          //==== Period BCDEFG
+          if(1 <= GetDataPeriod() && GetDataPeriod() <= 6){
+            if(!PassTriggerOR( triggerlist_EMu_PeriodBtoG )) continue;
+          }
+          //==== Period H
+          else if(GetDataPeriod() == 7){
+            if(!PassTriggerOR( triggerlist_EMu_PeriodH )) continue;
+          }
+          else{
+            cout << "GetDataPeriod() Wrong... return" << endl;
+            return;
+          }
         }
+        //==== MC
         else{
-          isT.push_back(false);
+
+          //==== nonDZ fired : add lumi of periodBtoG
+          //==== DZ fired : add lumi of periodH
+
+          if(PassTriggerOR( triggerlist_EMu_PeriodBtoG )) EMu_MCTriggerWeight += 27261.369;
+          if(PassTriggerOR( triggerlist_EMu_PeriodH )) EMu_MCTriggerWeight += 8605.69;
+
         }
       }
-
-      int n_triVeto_leptons = n_veto_muons+n_veto_electrons;
-      int n_triLoose_leptons = n_triLoose_muons+n_triLoose_electrons;
-      int n_triTight_leptons = n_triTight_muons+n_triTight_electrons;
-      NTightLeptons = n_triTight_leptons;
-
-      bool isThreeLepton_TwoMuon_TTT   = (n_triTight_leptons == 3) && (n_triTight_muons >= 2);
-      bool isThreeLepton_TwoMuon_Loose = (n_triLoose_leptons == 3) && (n_triLoose_muons >= 2) && (n_triTight_leptons != 3);
-
-      bool isThreeLepton_TwoElectron_TTT   = (n_triTight_leptons == 3) && (n_triTight_electrons >= 2);
-      bool isThreeLepton_TwoElectron_Loose = (n_triLoose_leptons == 3) && (n_triLoose_electrons >= 2) && (n_triTight_leptons != 3);
-
-      bool isFourLepton_TwoMuon_TTTT   = (n_triTight_leptons == 4) && (n_triTight_muons >= 2);
-      bool isFourLepton_TwoMuon_Loose  = (n_triLoose_leptons == 4) && (n_triLoose_muons >= 2) && (n_triTight_leptons != 4);
-
-      bool isFourLepton_TwoElectron_TTTT   = (n_triTight_leptons == 4) && (n_triTight_electrons >= 2);
-      bool isFourLepton_TwoElectron_Loose  = (n_triLoose_leptons == 4) && (n_triLoose_electrons >= 2) && (n_triTight_leptons != 4);
-
-      bool isAllTight, isLOOSE;
-      bool isNoExtra, isNoExtraOtherFlavour;
 
 
       if(Suffix.Contains("DiMuon_ThreeLepton")){
@@ -991,7 +1055,7 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
       if(!isNoExtraOtherFlavour) continue;
 
       //==== DiMuon-DoubleMuon PD / ...
-      if(isData && k_channel != "DoubleMuon_CF"){
+      if(isData && !k_channel.Contains("DoubleMuon_CF")){
         if(Suffix.Contains("DiMuon")){
           if(k_channel != "DoubleMuon") continue;
         }
@@ -1471,12 +1535,6 @@ void DiLeptonAnalyzer_CR::MakeHistograms(){
   AnalyzerCore::MakeHistograms();
   Message("Made histograms", INFO);
 
-  MakeNtp("Ntp_DiMuon_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:leadingLepton_Eta:secondLepton_Eta");
-
-  MakeNtp("Ntp_DiElectron_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:leadingLepton_Eta:secondLepton_Eta");
-
-  MakeNtp("Ntp_EMu_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:leadingLepton_Eta:secondLepton_Eta");
-
   /**
    *  Remove//Overide this DiLeptonAnalyzer_CRCore::MakeHistograms() to make new hists for your analysis
    **/
@@ -1833,12 +1891,12 @@ void DiLeptonAnalyzer_CR::get_eventweight(std::vector<snu::KMuon> muons, std::ve
   vector<float> lep_pt, lep_eta;
   vector<bool> ismuon;
   for(unsigned int i=0; i<muons.size(); i++){
-    lep_pt.push_back( CorrPt(muons.at(i), 0.07) );
+    lep_pt.push_back( muons.at(i).Pt() );
     lep_eta.push_back(muons.at(i).Eta());
     ismuon.push_back(true);
   }
   for(unsigned int i=0; i<electrons.size(); i++){
-    lep_pt.push_back( CorrPt(electrons.at(i), 0.08) );
+    lep_pt.push_back( electrons.at(i).Pt() );
     lep_eta.push_back(electrons.at(i).Eta());
     ismuon.push_back(false);
 

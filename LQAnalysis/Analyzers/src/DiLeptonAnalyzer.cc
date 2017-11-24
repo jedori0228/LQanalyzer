@@ -183,6 +183,9 @@ void DiLeptonAnalyzer::InitialiseAnalysis() throw( LQError ) {
   ForTree_PdfWeights = new vector<float>();
   ForTree_ScaleWeights = new vector<float>();
 
+  //cout << "Muon, 17,0.4 = " << hist_Muon_FR->GetBinContent(hist_Muon_FR->FindBin(17,0.4)) << endl;
+  //cout << "Electron, 17,0.4 = " << hist_Electron_FR->GetBinContent(hist_Electron_FR->FindBin(17,0.4)) << endl;
+
   return;
 }
 
@@ -579,7 +582,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   int N_sys = 2*13+1;
   int it_sys_start = 0;
 
-  if(!RunNtp && isData){
+  if( (!RunNtp && isData) || DoMCClosure ){
     it_sys_start = 0;
     N_sys = it_sys_start+1;
   }
@@ -841,7 +844,6 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       }
     }
 
-
     JSCorrectedMETElectron(ElEnDir, electrons_notshifted, MET, METphi);
     std::sort(electrons.begin(), electrons.end(), ElectronPtComparing);
 
@@ -849,6 +851,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
     //==== In this step, muons are 
     //==== 1) Rochestor corrected & Up/Down
     //==== 2) Rochestor corrected
+    //==== 3) If non-prompt run, now pt is pt-cone. So this will be also corrected
     //==== Both cases, we can correct MET (w.r.t. muon) using
     //==== AnalyzerCore::JSCorrectedMETRochester(std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi)
     JSCorrectedMETRochester(muons, MET, METphi);
@@ -959,9 +962,11 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
     for(unsigned int j=0; j<jets_eta5_nolepveto.size(); j++){
 
+      double NormalJetMaxEta = 2.7;
+
       snu::KJet this_jet = jets_eta5_nolepveto.at(j);
-      bool IsNormalJet = fabs( this_jet.Eta() ) < 2.5;
-      bool IsForwardJet = fabs( this_jet.Eta() ) >= 2.5;
+      bool IsNormalJet = fabs( this_jet.Eta() ) < NormalJetMaxEta;
+      bool IsForwardJet = fabs( this_jet.Eta() ) >= NormalJetMaxEta;
       bool lepinside = HasLeptonInsideJet(this_jet, muons_veto, electrons_veto);
       bool awayfromfatjet = IsAwayFromFatJet(this_jet, fatjets);
 
@@ -999,6 +1004,25 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       if( IsBTagged(jets_fwd.at(j), snu::KJet::CSVv2, snu::KJet::Medium, -1, BTagSFDir) && fabs(jets_fwd.at(j).Eta())<2.4 ){
         nbjets_fwd++;
       }
+    }
+
+    //==== Non-prompt, change pt to pt-cone
+    if(NonPromptRun){
+
+      for(unsigned int j=0; j<muons.size(); j++){
+        snu::KMuon this_muon = muons.at(j);
+        this_muon.SetPtEtaPhiM( CorrPt(this_muon, 0.07), this_muon.Eta(), this_muon.Phi(), this_muon.M() );
+        muons.at(j) = this_muon;
+      }
+      std::sort(muons.begin(), muons.end(), MuonPtComparing);
+
+      for(unsigned int j=0; j<electrons.size(); j++){
+        snu::KElectron this_electron = electrons.at(j);
+        this_electron.SetPtEtaPhiM( CorrPt(this_electron, 0.08), this_electron.Eta(), this_electron.Phi(), this_electron.M() );
+        electrons.at(j) = this_electron;
+      }
+      std::sort(electrons.begin(), electrons.end(), ElectronPtComparing);
+
     }
 
     //==== Lepton Numbers
@@ -1108,41 +1132,30 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
           EMu_MCTriggerWeight = 1.;
 
-          //==== If single lepton triggers were fired, it's okay for all periods
-          //==== But, if ony EMu triggers were fired,
           //==== periodBtoG : nonDZ must be fired. (DZ were off in this period)
           //==== periodH : DZ must be fired. (nonDZ were off in this period)
-          if(!PassTriggerOR(triggerlist_DiMuon_Mu24)&&!PassTriggerOR(triggerlist_DiElectron_Ele27)){
-            //==== Period BCDEFG
-            if(1 <= GetDataPeriod() && GetDataPeriod() <= 6){
-              if(!PassTriggerOR( triggerlist_EMu_PeriodBtoG )) continue;
-            }
-            //==== Period H
-            else if(GetDataPeriod() == 7){
-              if(!PassTriggerOR( triggerlist_EMu_PeriodH )) continue;
-            }
-            else{
-              cout << "GetDataPeriod() Wrong... return" << endl;
-              return;
-            }
-          }
 
+          //==== Period BCDEFG
+          if(1 <= GetDataPeriod() && GetDataPeriod() <= 6){
+            if(!PassTriggerOR( triggerlist_EMu_PeriodBtoG )) continue;
+          }
+          //==== Period H
+          else if(GetDataPeriod() == 7){
+            if(!PassTriggerOR( triggerlist_EMu_PeriodH )) continue;
+          }
+          else{
+            cout << "GetDataPeriod() Wrong... return" << endl;
+            return;
+          }
         }
         //==== MC
         else{
 
-          //==== If single lepton triggers were fired,
-          //==== Use full lumi.
-          //==== But, if ony EMu triggers were fired,
           //==== nonDZ fired : add lumi of periodBtoG
           //==== DZ fired : add lumi of periodH
-          if(!PassTriggerOR(triggerlist_DiMuon_Mu24)&&!PassTriggerOR(triggerlist_DiElectron_Ele27)){
-            if(PassTriggerOR( triggerlist_EMu_PeriodBtoG )) EMu_MCTriggerWeight += 27257.617;
-            if(PassTriggerOR( triggerlist_EMu_PeriodH )) EMu_MCTriggerWeight += 8605.69;
-          }
-          else{
-            EMu_MCTriggerWeight = 35863.308;
-          }
+
+          if(PassTriggerOR( triggerlist_EMu_PeriodBtoG )) EMu_MCTriggerWeight += 27257.617;
+          if(PassTriggerOR( triggerlist_EMu_PeriodH )) EMu_MCTriggerWeight += 8605.69;
 
         }
       }
@@ -1609,7 +1622,8 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       //==== We have to sort lepton after we get fake weight,
       //==== because isT = {muon, electron}
       //==== If MCClosure, keep ordering as Muon-Electron (to see type)
-      if(!DoMCClosure) std::sort(lep.begin(), lep.end(), LeptonPtComparing);
+      //if(!DoMCClosure) std::sort(lep.begin(), lep.end(), LeptonPtComparing); //FIXME
+      std::sort(lep.begin(), lep.end(), LeptonPtComparing);
 
       //==== Do CutFlow here..
       FillCutFlowByName(Suffix, "TwoLeptons", this_weight, isData);
@@ -1698,6 +1712,9 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       //==== # of b jet
       map_Region_to_Bool[Suffix+"_0nlbjets"] = (nbjets_nolepveto==0);
       map_Region_to_Bool[Suffix+"_Inclusive1nlbjets"] = (nbjets_nolepveto>=1);
+
+      //==== Z-seleciton
+      map_Region_to_Bool[Suffix+"_Z_CR"] = (nbjets_nolepveto==0) && (!isSSForCF) && (MET<40.);
 
       //==== W+W+ CR
       if(jets_eta5.size() >= 2){
@@ -1902,6 +1919,13 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         bool tempbool_high = map_Region_to_Bool[Suffix+"_High"];
         bool tempbool_high_twojet = map_Region_to_Bool[Suffix+"_High_TwoJet_NoFatJet"];
         bool tempbool_high_fatjet = map_Region_to_Bool[Suffix+"_High_OneFatJet"];
+        bool tempbool_presel_emu_esublead = false;
+        bool tempbool_presel_emu_msublead = false;
+        if(Suffix.Contains("EMu")){
+          tempbool_presel_emu_esublead = map_Region_to_Bool[Suffix+"_Preselection_ElectronSubLead"];
+          tempbool_presel_emu_msublead = map_Region_to_Bool[Suffix+"_Preselection_MuonSubLead"];
+        }
+
         map_Region_to_Bool.clear();
         map_Region_to_Bool[Suffix+"_Preselection"] = tempbool_presel;
         map_Region_to_Bool[Suffix+"_Low"] = tempbool_low;
@@ -1910,6 +1934,21 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         map_Region_to_Bool[Suffix+"_High"] = tempbool_high;
         map_Region_to_Bool[Suffix+"_High_TwoJet_NoFatJet"] = tempbool_high_twojet;
         map_Region_to_Bool[Suffix+"_High_OneFatJet"] = tempbool_high_fatjet;
+        map_Region_to_Bool[Suffix+"_Preselection_ElectronSubLead"] = tempbool_presel_emu_esublead;
+        map_Region_to_Bool[Suffix+"_Preselection_MuonSubLead"] = tempbool_presel_emu_msublead;
+
+        if(Suffix.Contains("EMu")){
+          if(lep.at(1).LeptonFlavour()==KLepton::ELECTRON){
+            map_Region_to_Bool[Suffix+"_Preselection_ElectronSubLead"] = true;
+          }
+          else{
+            map_Region_to_Bool[Suffix+"_Preselection_MuonSubLead"] = true;
+          }
+        }
+
+
+
+
         bool PositiveMCWeight = std::find(k_flags.begin(), k_flags.end(), "PositiveMCWeight") != k_flags.end();
         if(PositiveMCWeight) this_weight *= MCweight;
 
@@ -2046,8 +2085,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
         cutop[50] = fatjets.size();
 
-
-        FillNtp("Ntp_"+Suffix+"_Preselection_SS",cutop);
+        FillNtp("Ntp_"+Suffix+this_syst+"_Preselection_SS",cutop);
 
       }
       if(RunNtp) continue;
@@ -2334,6 +2372,15 @@ void DiLeptonAnalyzer::FillDiLeptonPlot(
     if(leptons.at(i).LeptonFlavour()==KLepton::ELECTRON){
       TightIso = 0.08;
       JSFillHist(histsuffix, leporder[i]+"Lepton_mva_"+histsuffix, leptons.at(i).GetElectronPtr()->MVA(), thisweight, -1., 1., 200);
+
+      TString EtaRegion = "InnerBarrel";
+      if(fabs(leptons.at(i).GetElectronPtr()->SCEta()) > 1.479) EtaRegion = "EndCap";
+      else if(fabs(leptons.at(i).GetElectronPtr()->SCEta()) > 0.8) EtaRegion = "OuterBarrel";
+      else EtaRegion = "InnerBarrel";
+
+      JSFillHist(histsuffix, EtaRegion+"Lepton_Pt_"+histsuffix,  leptons.at(i).Pt(), thisweight, 0., 2000., 2000);
+      JSFillHist(histsuffix, EtaRegion+"Lepton_Eta_"+histsuffix, leptons.at(i).Eta(), thisweight, -3., 3., 60);
+
     }
     else{
       JSFillHist(histsuffix, leporder[i]+"Lepton_Chi2_"+histsuffix, leptons.at(i).GetMuonPtr()->GlobalChi2(), thisweight, 0., 200., 200);
@@ -2679,12 +2726,14 @@ void DiLeptonAnalyzer::get_eventweight(std::vector<snu::KMuon> muons, std::vecto
   vector<float> lep_pt, lep_eta;
   vector<bool> ismuon;
   for(unsigned int i=0; i<muons.size(); i++){
-    lep_pt.push_back( CorrPt(muons.at(i), 0.07) );
+    //lep_pt.push_back( CorrPt(muons.at(i), 0.07) );
+    lep_pt.push_back( muons.at(i).Pt() ); // now, fake lepton pt is replaced by pt-cone
     lep_eta.push_back(muons.at(i).Eta());
     ismuon.push_back(true);
   }
   for(unsigned int i=0; i<electrons.size(); i++){
-    lep_pt.push_back( CorrPt(electrons.at(i), 0.08) );
+    //lep_pt.push_back( CorrPt(electrons.at(i), 0.08) );
+    lep_pt.push_back( electrons.at(i).Pt() ); // now, fake lepton pt is replaced by pt-cone
     lep_eta.push_back(electrons.at(i).Eta());
     ismuon.push_back(false);
 
