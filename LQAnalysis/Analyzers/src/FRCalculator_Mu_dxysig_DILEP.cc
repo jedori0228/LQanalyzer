@@ -216,16 +216,16 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
   const int n_eta = 3;
   float etaarray[n_eta+1] = {0.0, 0.8, 1.479, 2.5};
-/*
+
   //==== Data Binning
   const int n_pt = 8;
   float ptarray[n_pt+1] = {5., 10., 15., 20., 30., 40., 50., 60., 70.};
-*/
 
+/*
   //==== MC Binning
   const int n_pt = 9;
   float ptarray[n_pt+1] = {5., 10., 15., 20., 25., 30., 40., 50., 60., 70.};
-
+*/
 
   float etaarray_2 [] = {0.0, 1.479, 2.5};
   float ptarray_2 [] = {10.,15.,40.,200.};
@@ -523,7 +523,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
         if(DijetFake){
 
-          double this_weight = weight*weight_by_pt_cone*MCweight;
+          double this_weight = weight_by_pt_cone*MCweight;
 
           double AwayjetPt = 40; // just using central value..
 
@@ -537,7 +537,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
           else                   FillDenAndNum(HISTPREFIX+"_withoutbjet_Loose", muon, this_weight, IsThisTight);
 
           double ptweight = JSWeightByTrigger(it->first, TargetLumi);
-          ptweight *= weight*MCweight;
+          ptweight *= MCweight;
           if( !PassTrigger(it->first) ) ptweight = 0.;
           if( muon.MiniAODPt() < HLT_ptmin[it->first] ) ptweight = 0.;
           if( (it->first).Contains("PFJet40_v") ){
@@ -579,6 +579,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
             muon_scale_sf *= MuTrkEffSF;
 
             if(IsThisTight){
+/*
               if((it->first).Contains("HLT_Mu3_PFJet40_v")){
                 trigger_additional_sf = 0.970059;
               }
@@ -588,6 +589,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
               else if((it->first).Contains("HLT_Mu17_TrkIsoVVL_v")){
                 trigger_additional_sf = 0.942808;
               }
+*/
               muon_scale_sf *= mcdata_correction->MuonScaleFactor("MUON_HN_TIGHT", hnloose, 0);
             }
           }
@@ -624,8 +626,11 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
                 if( DijetFake )        UseEvent = (dPhi > 2.5) && (jet.Pt()/muon.Pt() > 1.0);
                 //==== If not, use it to remove W events
                 else if( DijetPrompt ){
-                  UseEvent = (dPhi > 2.5) && (jet.Pt()/muon.Pt() > 1.0) && (METauto < 20.) && (MTval < 25.);
+                  UseEvent = (dPhi > 2.5) && (jet.Pt()/muon.Pt() > 1.0) && (METauto < 80.) && (MTval < 25.);
 /*
+                  if(UseEvent && IsThisTight){
+                  cout << "RunNumber = " << Evt.RunNumber() << endl;
+                  cout << "EventNumber = " << Evt.EventNumber() << endl;
                   cout << "trigger = " << it->first << endl;
                   cout << "muon.Pt() = " << muon.Pt() << endl;
                   cout << "muon.RelIso04() = " << muon.RelIso04() << endl;
@@ -636,7 +641,14 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
                   cout << "jet.Pt()/muon.Pt() = " << jet.Pt()/muon.Pt() << endl;
                   cout << "METauto = " << METauto << endl;
                   cout << "MTval = " << MTval << endl;
-                  cout << "--> UseEvent = " << UseEvent << endl;
+                  cout << "this_weight = " << this_weight << endl;
+                  cout << "pu_reweight = " << pu_reweight << endl;
+                  cout << "trigger_additional_sf = " << trigger_additional_sf << endl;
+                  cout << "muon_scale_sf = " << muon_scale_sf << endl;
+                  cout << "weight_by_pt_cone = " << weight_by_pt_cone << endl;
+                  cout << "weight = " << weight << endl;
+                  cout << "--> UseEvent = " << UseEvent << endl << endl;
+                  }
 */
                 }
               }
@@ -1382,16 +1394,16 @@ void FRCalculator_Mu_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KMuon muon
 
   const int n_eta = 3;
   float etaarray[n_eta+1] = {0.0, 0.8, 1.479, 2.5};
-/*
+
   //==== Data Binning
   const int n_pt = 8;
   float ptarray[n_pt+1] = {5., 10., 15., 20., 30., 40., 50., 60., 70.};
-*/
 
+/*
   //==== MC Binning
   const int n_pt = 9;
   float ptarray[n_pt+1] = {5., 10., 15., 20., 25., 30., 40., 50., 60., 70.};
-
+*/
 
   double TightISO = 0.07;
   double conept = MuonConePt(muon,TightISO);

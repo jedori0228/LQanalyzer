@@ -119,9 +119,12 @@ void DiLeptonAnalyzer_CR::InitialiseAnalysis() throw( LQError ) {
 
   //==== Read rootfiles
 
-  TFile *file_Muon_FR         = new TFile( lqdir+"/JskimData/FR/Muon_Data_"+MuonFRType_Data+"FR.root");
-  TFile *file_Muon_FR_QCD     = new TFile( lqdir+"/JskimData/FR/Muon_QCD_" +MuonFRType_QCD+"FR.root"); 
-  TFile *file_Electron_FR     = new TFile( lqdir+"/JskimData/FR/Electron_Data_"+ElectronFRType_Data+"FR.root");
+  //TFile *file_Muon_FR         = new TFile( lqdir+"/JskimData/FR/Muon_Data_"+MuonFRType_Data+"FR.root");
+  TFile *file_Muon_FR         = new TFile( lqdir+"/JskimData/FR/Muon_Data_fake_Rate_syst.root");
+  TFile *file_Muon_FR_QCD     = new TFile( lqdir+"/JskimData/FR/Muon_QCD_" +MuonFRType_QCD+"FR.root");
+
+  //TFile *file_Electron_FR     = new TFile( lqdir+"/JskimData/FR/Electron_Data_"+ElectronFRType_Data+"FR.root");
+  TFile *file_Electron_FR     = new TFile( lqdir+"/JskimData/FR/Electron_Data_fake_Rate_syst.root");
   TFile *file_Electron_FR_QCD = new TFile( lqdir+"/JskimData/FR/Electron_QCD_" +ElectronFRType_QCD+"FR.root");
 
   gROOT->cd();
@@ -446,6 +449,11 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
 
   int N_sys = 2*11+1;
   int it_sys_start = 0;
+
+  if( isData || DoMCClosure ){
+    it_sys_start = 0;
+    N_sys = it_sys_start+1;
+  }
 
   for(int it_sys=it_sys_start; it_sys<N_sys; it_sys++){
 

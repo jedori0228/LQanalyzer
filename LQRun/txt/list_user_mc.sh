@@ -50,6 +50,33 @@ declare -a newTchannel=(
 'HNDilepton_EMu_Tchannel_M1200'
 )
 
+declare -a newTchannel1=(
+'HNDilepton_MuMu_Tchannel_M300'
+'HNDilepton_MuMu_Tchannel_M600'
+'HNDilepton_MuMu_Tchannel_M800'
+'HNDilepton_MuMu_Tchannel_M1000'
+)
+declare -a newTchannel2=(
+'HNDilepton_MuMu_Tchannel_M1200'
+'HNDilepton_EE_Tchannel_M300'
+'HNDilepton_EE_Tchannel_M600'
+'HNDilepton_EE_Tchannel_M800'
+)
+declare -a newTchannel3=(
+'HNDilepton_EE_Tchannel_M1000'
+'HNDilepton_EE_Tchannel_M1200'
+'HNDilepton_MuE_Tchannel_M300'
+'HNDilepton_MuE_Tchannel_M600'
+'HNDilepton_MuE_Tchannel_M800'
+'HNDilepton_MuE_Tchannel_M1000'
+'HNDilepton_MuE_Tchannel_M1200'
+'HNDilepton_EMu_Tchannel_M300'
+'HNDilepton_EMu_Tchannel_M600'
+'HNDilepton_EMu_Tchannel_M800'
+'HNDilepton_EMu_Tchannel_M1000'
+'HNDilepton_EMu_Tchannel_M1200'
+)
+
 declare -a nonprompt=(
 'TT_powheg' 'WJets' 'DYJets'
 )

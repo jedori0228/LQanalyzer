@@ -450,11 +450,8 @@ float AnalyzerCore::MC_CR_Correction(int syst){
 float AnalyzerCore::GetTriggerPrescaleCorrection(TString triggername){
   float corr_trig=1.;
 
-  //if(triggername.Contains( "HLT_Mu3_PFJet40_v")) corr_trig = 0.728;
-  //if(triggername.Contains("HLT_Mu8_TrkIsoVVL_v")) corr_trig = 1.399;
-
-  if(triggername.Contains( "HLT_Mu3_PFJet40_v")) corr_trig = 0.743608;
-  if(triggername.Contains("HLT_Mu8_TrkIsoVVL_v")) corr_trig = 1.41471;
+  if(triggername.Contains( "HLT_Mu3_PFJet40_v")) corr_trig = 0.728;
+  if(triggername.Contains("HLT_Mu8_TrkIsoVVL_v")) corr_trig = 1.399;
 
   return corr_trig;
 

@@ -286,7 +286,8 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv1");
   //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv1_LoosenSIP");
   //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv2");
-  std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv7");
+  //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv7");
+  std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv7_2"); //SAME but MVA changed..
   //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_LOOSE_8TeV");
   //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv7_pt15");
   //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv8");
@@ -324,8 +325,8 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //std::vector<snu::KElectron> nocutel_raw = GetElectrons(false, true, "ELECTRON_HN_NOCUT");
   //std::vector<snu::KElectron> nocutel_raw = GetElectrons(false, true, "ELECTRON_HN_NOCUT_LoosenSIP");
   //std::vector<snu::KElectron> nocutel_raw = GetElectrons(false, true, "ELECTRON_HN_NOCUT_v7_LoosenSIP");
-  //std::vector<snu::KElectron> nocutel_raw = GetElectrons(false, true, "ELECTRON_HN_NOCUT_v7");
-  std::vector<snu::KElectron> nocutel_raw = GetElectrons(false, true, "ELECTRON_HN_NOCUT_v8");
+  std::vector<snu::KElectron> nocutel_raw = GetElectrons(false, true, "ELECTRON_HN_NOCUT_v7");
+  //std::vector<snu::KElectron> nocutel_raw = GetElectrons(false, true, "ELECTRON_HN_NOCUT_v8");
   std::vector<snu::KElectron> nocutel;
   nocutel.clear();
 
@@ -470,7 +471,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
         if(DijetFake){
 
-          double this_weight = weight*weight_by_pt*MCweight;
+          double this_weight = weight_by_pt*MCweight;
 
           double AwayjetPt = 40; // just using central value..
 
@@ -482,7 +483,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
           else                   FillDenAndNum(HISTPREFIX+"_withoutbjet_Loose", electron, this_weight, IsThisTight);
 
           double ptweight = WeightByTrigger(it->first, TargetLumi);
-          ptweight *= weight*MCweight;
+          ptweight *= MCweight;
           if( !PassTrigger(it->first) ) ptweight = 0.;
           if( electron.Pt() < HLT_ptmin[it->first] ) ptweight = 0.;
           if( (it->first).Contains("PFJet30") ){
@@ -524,6 +525,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
             electron_scale_sf *= electron_RecoSF;
             
             if(IsThisTight){
+/*
               if((it->first).Contains("HLT_Ele8")){
                 trigger_additional_sf = 1.10772;
               }
@@ -536,7 +538,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
               else if((it->first).Contains("HLT_Ele23")){
                 trigger_additional_sf = 0.940177;
               }
-
+*/
               electron_scale_sf *= mcdata_correction->ElectronScaleFactor("ELECTRON_HN_TIGHTv4", hnloose, 0);
             }
           }
@@ -564,7 +566,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
               //==== If QCD, don't have to require MET/MT
               if( DijetFake )        UseEvent = (dPhi > 2.5) && (jet.ChargedEMEnergyFraction() < 0.65);
               //==== If not, use it to remove W events
-              else if( DijetPrompt ) UseEvent = (dPhi > 2.5) && (jet.ChargedEMEnergyFraction() < 0.65) && (jet.Pt()/electron.Pt() > 1.0) && (METauto < 20.) && (MTval < 25.);
+              else if( DijetPrompt ) UseEvent = (dPhi > 2.5) && (jet.ChargedEMEnergyFraction() < 0.65) && (jet.Pt()/electron.Pt() > 1.0) && (METauto < 80.) && (MTval < 25.);
 
               if( UseEvent ){
 
