@@ -1355,9 +1355,7 @@ double MCDataCorrections::TriggerEfficiency_EMu_passing_EMuTrigger(snu::KMuon mu
   //cout << "[MCDataCorrections::TriggerEfficiency_EMu_passing_EMuTrigger] tag = " << tag << ", sample = " << sample << endl;
   //cout << "[MCDataCorrections::TriggerEfficiency_EMu_passing_EMuTrigger] leg1 = " << leg1 << ", leg2 = " << leg2 << endl;
 
-  if(leg2=="ELE8") leg2 = "ELE12"; //FIXME ELE12 to ELE8
-
-  if( (leg1=="MU23" && leg2=="ELE12") || (leg1=="MU8" && leg2=="ELE23") ){ //FIXME ELE12 to ELE8
+  if( (leg1=="MU23" && leg2=="ELE8") || (leg1=="MU8" && leg2=="ELE23") ){
 
     //cout << "[MCDataCorrections::TriggerEfficiency_EMu_passing_EMuTrigger] MUON_"+leg1+"_TRIGGER"+tag+"_"+labelkey_mu+"_"+sample << endl;
     //cout << "[MCDataCorrections::TriggerEfficiency_EMu_passing_EMuTrigger] ELECTRON_"+leg2+"_TRIGGER"+tag+"_"+labelkey_el+sample << endl;
@@ -1481,25 +1479,27 @@ double MCDataCorrections::ElectronScaleFactor( TString elid, vector<snu::KElectr
   if(elid.Contains("HN")) elid = "ELECTRON_MVA_80";
   if(elid == "ELECTRON_HN_TIGHTv4") elid = "ELECTRON_HN_TIGHTv4";
 
-  for(vector<KElectron>::iterator itel=el.begin(); itel!=el.end(); ++itel) {
-    float elpt=itel->Pt();
-    float eleta = itel->SCEta();
-    if(eleta<-2.5) eleta = -2.4;
-    if(eleta>=2.5) eleta = 2.4;
-    if(elpt>=500.) elpt= 499.;
-    if(elpt <10.) elpt= 11;
-    
-    if(CheckCorrectionHist("ID_" + elid)){
-      TH2F *this_hist = GetCorrectionHist("ID_" + elid);
+  if(CheckCorrectionHist("ID_" + elid)){
+
+    TH2F *this_hist = GetCorrectionHist("ID_" + elid);
+
+    for(vector<KElectron>::iterator itel=el.begin(); itel!=el.end(); ++itel) {
+      float elpt=itel->Pt();
+      float eleta = itel->SCEta();
+      if(eleta<-2.5) eleta = -2.4;
+      if(eleta>=2.5) eleta = 2.4;
+      if(elpt>=500.) elpt= 499.;
+      if(elpt <10.) elpt= 11;
+
       int this_bin = this_hist->FindBin(eleta, elpt);
       double this_sf = this_hist->GetBinContent(this_bin);
       double this_sf_err = this_hist->GetBinError(this_bin);
 
      	sf *= ( this_sf + double(sys)*this_sf_err );
     }
-  }
 
- 
+  } // END if file exist
+
   return sf;
 }
 

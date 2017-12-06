@@ -52,8 +52,10 @@
 ### ELECTRON_ELE27_TRIGGER_SF_GH TRIGGERFILEDIR	      TriggerSF_Run2016GH_v1.root Ele27_WPTight_Gsf
 ### ELECTRON_ELE23_TRIGGER_BCDEF TRIGGERFILEDIR ElectronTriggerEfficiency_Ele23_CaloIdL_TrackIdL_IsoVL.root EGamma_Eff TH2F
 ### ELECTRON_ELE12_TRIGGER_BCDEF TRIGGERFILEDIR ElectronTriggerEfficiency_Ele12_CaloIdL_TrackIdL_IsoVL.root EGamma_Eff TH2F
+### ELECTRON_ELE8_TRIGGER_BCDEF TRIGGERFILEDIR ElectronTriggerEfficiency_Ele8_CaloIdL_TrackIdL_IsoVL.root EGamma_Eff TH2F
 ### ELECTRON_ELE23_TRIGGER_GH TRIGGERFILEDIR ElectronTriggerEfficiency_Ele23_CaloIdL_TrackIdL_IsoVL.root EGamma_Eff TH2F
 ### ELECTRON_ELE12_TRIGGER_GH TRIGGERFILEDIR ElectronTriggerEfficiency_Ele12_CaloIdL_TrackIdL_IsoVL.root EGamma_Eff TH2F
+### ELECTRON_ELE8_TRIGGER_GH TRIGGERFILEDIR ElectronTriggerEfficiency_Ele8_CaloIdL_TrackIdL_IsoVL.root EGamma_Eff TH2F
 ### MUON_Mu17_VTXREWEIGHT  PILEUPFILEDIR Nvtx_reweight_single_muon.root  HLT_Mu17_TrkIsoVVL_v_ZPeak_Nvtx_data  TH1D
 ### MUON_Mu8_VTXREWEIGHT  PILEUPFILEDIR Nvtx_reweight_single_muon.root  HLT_Mu8_TrkIsoVVL_v_ZPeak_Nvtx_data  TH1D
 ### MUON_Mu3_VTXREWEIGHT  PILEUPFILEDIR Nvtx_reweight_single_muon.root  HLT_Mu3_PFJet40_v_ZPeak_Nvtx_data  TH1D
