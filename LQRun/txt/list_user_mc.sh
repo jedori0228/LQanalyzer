@@ -67,6 +67,8 @@ declare -a newTchannel3=(
 'HNDilepton_EE_Tchannel_M1200'
 'HNDilepton_MuE_Tchannel_M300'
 'HNDilepton_MuE_Tchannel_M600'
+)
+declare -a newTchannel4=(
 'HNDilepton_MuE_Tchannel_M800'
 'HNDilepton_MuE_Tchannel_M1000'
 'HNDilepton_MuE_Tchannel_M1200'

@@ -473,6 +473,7 @@ class AnalyzerCore : public LQCycleBase {
   void JSFillHist(TString suffix, TString histname, float value, float w, float xmin, float xmax, int nbins);
   void JSMakeHistograms(TString suffix, TString hname, int nbins, float xmin, float xmax);
   bool HasLeptonInsideJet(snu::KJet jet, std::vector<snu::KMuon> mus, std::vector<snu::KElectron> els);
+  std::vector<snu::KElectron> RemoveECElectron(std::vector<snu::KElectron> els);
 
 
   //==== (Trilepton) H+->WA stuffs

@@ -100,12 +100,12 @@ void DiLeptonAnalyzer_CR::InitialiseAnalysis() throw( LQError ) {
 
   //==== Electron
 
-  TString ElectronFRType_QCD = "v7_";
+  TString ElectronFRType_QCD = "v7_4_";
 
   //TString ElectronFRType_Data = "v7_";
   TString ElectronFRType_Data = ElectronFRType_QCD;
 
-  ElectronLooseID_loosest = "ELECTRON_HN_FAKELOOSEv7_loosest";
+  ElectronLooseID_loosest = "ELECTRON_HN_FAKELOOSEv7_4_loosest";
   ElectronVetoID_loosest = "ELECTRON_HN_VETO_loosest";
   ElectronTightID = "ELECTRON_HN_TIGHTv4";
 
@@ -119,12 +119,12 @@ void DiLeptonAnalyzer_CR::InitialiseAnalysis() throw( LQError ) {
 
   //==== Read rootfiles
 
-  //TFile *file_Muon_FR         = new TFile( lqdir+"/JskimData/FR/Muon_Data_"+MuonFRType_Data+"FR.root");
-  TFile *file_Muon_FR         = new TFile( lqdir+"/JskimData/FR/Muon_Data_fake_Rate_syst.root");
+  TFile *file_Muon_FR         = new TFile( lqdir+"/JskimData/FR/Muon_Data_"+MuonFRType_Data+"FR.root");
+  //TFile *file_Muon_FR         = new TFile( lqdir+"/JskimData/FR/Muon_Data_fake_Rate_syst.root");
   TFile *file_Muon_FR_QCD     = new TFile( lqdir+"/JskimData/FR/Muon_QCD_" +MuonFRType_QCD+"FR.root");
 
-  //TFile *file_Electron_FR     = new TFile( lqdir+"/JskimData/FR/Electron_Data_"+ElectronFRType_Data+"FR.root");
-  TFile *file_Electron_FR     = new TFile( lqdir+"/JskimData/FR/Electron_Data_fake_Rate_syst.root");
+  TFile *file_Electron_FR     = new TFile( lqdir+"/JskimData/FR/Electron_Data_"+ElectronFRType_Data+"FR.root");
+  //TFile *file_Electron_FR     = new TFile( lqdir+"/JskimData/FR/Electron_Data_fake_Rate_syst.root");
   TFile *file_Electron_FR_QCD = new TFile( lqdir+"/JskimData/FR/Electron_QCD_" +ElectronFRType_QCD+"FR.root");
 
   gROOT->cd();
@@ -242,7 +242,7 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
   //==== FRTEST
   for(unsigned int i=0; i<testelectrons.size(); i++){
     FillHist("TEST_ELECTRON_FR_TYPE_F0", testelectrons.at(i).GetType(), 1., 0., 50., 50);
-    if(PassID(testelectrons.at(i), "ELECTRON_HN_TIGHTv4")){
+    if(PassID(testelectrons.at(i), "ELECTRON_HN_TIGHTv4_2")){
       FillHist("TEST_ELECTRON_FR_TYPE_F", testelectrons.at(i).GetType(), 1., 0., 50., 50);
     }
 
@@ -630,7 +630,7 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
         this_electron.SetPtEtaPhiM( this_electron.Pt()*this_electron.PtShiftedUp(), this_electron.Eta(), this_electron.Phi(), this_electron.M() );
         double new_RelIso = this_electron.PFRelIso(0.3)/this_electron.PtShiftedUp();
         this_electron.SetPFRelIso(0.3, new_RelIso);
-        if( this_electron.Pt() >= 10. && new_RelIso < this_ElectronLooseRelIso ) electrons.push_back( this_electron );
+        if( this_electron.Pt() >= 10. && new_RelIso < this_ElectronLooseRelIso && fabs(this_electron.SCEta()) < 1.444) electrons.push_back( this_electron );
       }
       //==== Veto Leptons
       for(unsigned int j=0; j<electrons_veto_loosest.size(); j++){
@@ -649,7 +649,7 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
         this_electron.SetPtEtaPhiM( this_electron.Pt()*this_electron.PtShiftedDown(), this_electron.Eta(), this_electron.Phi(), this_electron.M() );
         double new_RelIso = this_electron.PFRelIso(0.3)/this_electron.PtShiftedDown();
         this_electron.SetPFRelIso(0.3, new_RelIso);
-        if( this_electron.Pt() >= 10. && new_RelIso < this_ElectronLooseRelIso ) electrons.push_back( this_electron );
+        if( this_electron.Pt() >= 10. && new_RelIso < this_ElectronLooseRelIso && fabs(this_electron.SCEta()) < 1.444) electrons.push_back( this_electron );
       }
       //==== Veto Leptons
       for(unsigned int j=0; j<electrons_veto_loosest.size(); j++){
@@ -665,7 +665,7 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
       //==== Signal Leptons
       for(unsigned int j=0; j<electrons_loosest.size(); j++){
         snu::KElectron this_electron = electrons_loosest.at(j);
-        if( this_electron.Pt() >= 10. && this_electron.PFRelIso(0.3) < this_ElectronLooseRelIso ) electrons.push_back( this_electron );
+        if( this_electron.Pt() >= 10. && this_electron.PFRelIso(0.3) < this_ElectronLooseRelIso && fabs(this_electron.SCEta()) < 1.444) electrons.push_back( this_electron );
       }
       //==== Veto Leptons
       for(unsigned int j=0; j<electrons_veto_loosest.size(); j++){

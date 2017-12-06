@@ -440,24 +440,47 @@ Bool_t KElectron::PassTrigMVAHNLoose() const{
   if((fabs(this->SCEta())  > 0.8) &&(fabs(this->SCEta())  < 1.479)  && k_mva > -0.34) return true;
   if((fabs(this->SCEta())  < 2.5) &&(fabs(this->SCEta())  > 1.479) && k_mva > 0.43) return true;
 */
-
+/*
   //==== ELECTRON_HN_FAKELOOSEv7_2 opti
   //==== Iso 0.6 Opti
   //==== Based on light-haevy min diff
   if((fabs(this->SCEta()) < 0.8) && k_mva > -0.35) return true;
   if((fabs(this->SCEta())  > 0.8) &&(fabs(this->SCEta())  < 1.479)  && k_mva > -0.34) return true;
   if((fabs(this->SCEta())  < 2.5) &&(fabs(this->SCEta())  > 1.479) && k_mva > -0.30) return true;
-
-/*
-  //==== ELECTRON_HN_FAKELOOSEv8 opti
-  //==== Iso 0.6 Opti
-  //==== min pt 15 GeV is used
-  //==== Based on light-haevy min diff
-  if((fabs(this->SCEta()) < 0.8) && k_mva > -0.45) return true;
-  if((fabs(this->SCEta())  > 0.8) &&(fabs(this->SCEta())  < 1.479)  && k_mva > -0.49) return true;
-  if((fabs(this->SCEta())  < 2.5) &&(fabs(this->SCEta())  > 1.479) && k_mva > 0.35) return true;
 */
 
+/*
+  //==== ELECTRON_HN_FAKELOOSEv7_3 opti
+  //==== Iso 0.6 Opti
+  //==== Based on light-haevy min diff
+  if((fabs(this->SCEta()) < 0.8) && k_mva > 0.73) return true; // 0.9
+  if((fabs(this->SCEta())  > 0.8) &&(fabs(this->SCEta())  < 1.479)  && k_mva > 0.54) return true; // 0.825
+  if((fabs(this->SCEta())  < 2.5) &&(fabs(this->SCEta())  > 1.479) && k_mva > 0.39) return true; // 0.758
+*/
+
+  //==== ELECTRON_HN_FAKELOOSEv7_4 opti
+  //==== Iso 0.6 Opti
+  //==== Based on light-haevy min diff
+  if((fabs(this->SCEta()) < 0.8) && k_mva > -0.1) return true; // 0.9
+  if((fabs(this->SCEta())  > 0.8) &&(fabs(this->SCEta())  < 1.479)  && k_mva > 0.1) return true; // 0.825
+  if((fabs(this->SCEta())  < 2.5) &&(fabs(this->SCEta())  > 1.479) && k_mva > 0.1) return true; // 0.758
+
+/*
+  //==== ELECTRON_HN_FAKELOOSEv9 opti
+  //==== Iso 0.6, same IPs as tight
+  //==== Based on light-haevy min diff
+  if((fabs(this->SCEta()) < 0.8) && k_mva > -0.32) return true;
+  if((fabs(this->SCEta())  > 0.8) &&(fabs(this->SCEta())  < 1.479)  && k_mva > -0.37) return true;
+  if((fabs(this->SCEta())  < 2.5) &&(fabs(this->SCEta())  > 1.479) && k_mva > -0.48) return true;
+*/
+/*
+  //==== ELECTRON_HN_FAKELOOSEv8 opti
+  //==== Iso 0.6 Opti, use WJets
+  //==== Based on light-haevy min diff
+  if((fabs(this->SCEta()) < 0.8) && k_mva > -0.46) return true;
+  if((fabs(this->SCEta())  > 0.8) &&(fabs(this->SCEta())  < 1.479)  && k_mva > -0.50) return true;
+  if((fabs(this->SCEta())  < 2.5) &&(fabs(this->SCEta())  > 1.479) && k_mva > -0.62) return true;
+*/
 /*
   //==== ELECTRON_HN_FAKELOOSEv2 opti
   //==== Iso 0.4 Opti

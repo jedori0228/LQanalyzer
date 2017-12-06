@@ -227,6 +227,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
     double m_Z = 91.1876;
 
     std::vector< snu::KElectron > tightelectrons = GetElectrons(false, true, "ELECTRON_HN_TIGHTv4");
+    tightelectrons = RemoveECElectron(tightelectrons);
 
     double electron_sf = mcdata_correction->ElectronScaleFactor("ELECTRON_HN_TIGHTv4", tightelectrons, 0);
     double electron_RecoSF =  mcdata_correction->ElectronRecoScaleFactor(tightelectrons);
@@ -286,8 +287,8 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv1");
   //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv1_LoosenSIP");
   //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv2");
-  //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv7");
-  std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv7_2"); //SAME but MVA changed..
+  std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv7");
+  //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv7_2"); //SAME but MVA changed..
   //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_LOOSE_8TeV");
   //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv7_pt15");
   //std::vector<snu::KElectron> hnloose_raw = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv8");
@@ -368,7 +369,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
       if(N_thisel==1){
 
         //==== find closeset jet
-        double dr = 0.4;
+        double dr = 0.6;
         bool jetfound=false;
         snu::KJet cljet;
         for(unsigned int j=0; j<jetColl_nolepveto.size(); j++){

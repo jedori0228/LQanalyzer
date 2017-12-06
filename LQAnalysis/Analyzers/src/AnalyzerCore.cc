@@ -4020,6 +4020,20 @@ bool AnalyzerCore::HasLeptonInsideJet(snu::KJet jet, std::vector<snu::KMuon> mus
 
 }
 
+std::vector<snu::KElectron> AnalyzerCore::RemoveECElectron(std::vector<snu::KElectron> els){
+
+  std::vector<snu::KElectron> outel;
+  for(unsigned int i=0; i<els.size(); i++){
+
+    snu::KElectron this_electron = els.at(i);
+    if( fabs(this_electron.SCEta()) < 1.444 ) outel.push_back( this_electron );
+
+  }
+
+  return outel;
+
+}
+
 
 
 TH2* AnalyzerCore::GetHist2D(TString hname){
