@@ -121,11 +121,11 @@ void DiLeptonAnalyzer::InitialiseAnalysis() throw( LQError ) {
   //==== Read rootfiles
 
   TFile *file_Muon_FR         = new TFile( lqdir+"/JskimData/FR/Muon_Data_"+MuonFRType_Data+"FR.root");
-  //TFile *file_Muon_FR         = new TFile( lqdir+"/JskimData/FR/Muon_Data_fake_Rate_syst.root");
+  TFile *file_Muon_FR_suoh    = new TFile( lqdir+"/JskimData/FR/Muon_Data_fake_Rate_syst.root");
   TFile *file_Muon_FR_QCD     = new TFile( lqdir+"/JskimData/FR/Muon_QCD_" +MuonFRType_QCD+"FR.root"); 
 
   TFile *file_Electron_FR     = new TFile( lqdir+"/JskimData/FR/Electron_Data_"+ElectronFRType_Data+"FR.root");
-  //TFile *file_Electron_FR     = new TFile( lqdir+"/JskimData/FR/Electron_Data_fake_Rate_syst.root");
+  TFile *file_Electron_FR_suoh= new TFile( lqdir+"/JskimData/FR/Electron_Data_fake_Rate_syst.root");
   TFile *file_Electron_FR_QCD = new TFile( lqdir+"/JskimData/FR/Electron_QCD_" +ElectronFRType_QCD+"FR.root");
 
   gROOT->cd();
@@ -167,30 +167,40 @@ void DiLeptonAnalyzer::InitialiseAnalysis() throw( LQError ) {
   //==== away pt
   TString awayjetpt[3] = {"20", "30", "60"};
   for(int i=0; i<3; i++){
-    if(!MuonFRType_Data.Contains("HighdXY")) hist_Muon_FR_syst["Awayjet_"+awayjetpt[i]]     = (TH2D*)file_Muon_FR->Get("Muon_Data_"+MuonFRType_Data+"FR_Awayjet"+awayjetpt[i])->Clone();
-    hist_Electron_FR_syst["Awayjet_"+awayjetpt[i]] = (TH2D*)file_Electron_FR->Get("Electron_Data_"+ElectronFRType_Data+"FR_Awayjet"+awayjetpt[i])->Clone();
+    cout << awayjetpt[i] << endl;
+    hist_Muon_FR_syst["Awayjet_"+awayjetpt[i]]     = (TH2D*)file_Muon_FR_suoh->Get("FR_ptcone_awayjet_pt_"+awayjetpt[i])->Clone();
+    hist_Electron_FR_syst["Awayjet_"+awayjetpt[i]] = (TH2D*)file_Electron_FR_suoh->Get("FR_ptcone_awayjet_pt_"+awayjetpt[i])->Clone();
   }
+  cout << "60" << endl;
+  hist_Muon_FR_syst["Awayjet_40"]     = (TH2D*)file_Muon_FR_suoh->Get("FR_ptcone_central")->Clone();
+  hist_Electron_FR_syst["Awayjet_40"] = (TH2D*)file_Electron_FR_suoh->Get("FR_ptcone_central")->Clone();
 
-/*
+
   TString Muon_FRsystsources[5] = {"dphi_1p5", "dphi_1", "dphi_3", "pj_over_pl_1", "pj_over_pl_2"};
   for(int i=0; i<5; i++){
-    hist_Muon_FR_syst[Muon_FRsystsources[i]] = (TH2D*)file_Muon_FR->Get("FR_ptcone_"+Muon_FRsystsources[i])->Clone();
+    cout << Muon_FRsystsources[i] << endl;
+    hist_Muon_FR_syst[Muon_FRsystsources[i]] = (TH2D*)file_Muon_FR_suoh->Get("FR_ptcone_"+Muon_FRsystsources[i])->Clone();
   }
   TString Electron_FRsystsources[5] = {"dphi_1p5", "dphi_2", "dphi_3", "pj_over_pl_0p8", "pj_over_pl_1p2"};
   for(int i=0; i<5; i++){
-    hist_Electron_FR_syst[Electron_FRsystsources[i]] = (TH2D*)file_Electron_FR->Get("FR_ptcone_"+Electron_FRsystsources[i])->Clone();
+    cout << Electron_FRsystsources[i] << endl;
+    hist_Electron_FR_syst[Electron_FRsystsources[i]] = (TH2D*)file_Electron_FR_suoh->Get("FR_ptcone_"+Electron_FRsystsources[i])->Clone();
   }
-*/
+
 
   file_Muon_FR->Close();
   file_Muon_FR_QCD->Close();
+  file_Muon_FR_suoh->Close();
   file_Electron_FR->Close();
   file_Electron_FR_QCD->Close();
+  file_Electron_FR_suoh->Close();
 
   delete file_Muon_FR;
   delete file_Muon_FR_QCD;
+  delete file_Muon_FR_suoh;
   delete file_Electron_FR;
   delete file_Electron_FR_QCD;
+  delete file_Electron_FR_suoh;
 
   origDir->cd();
 
@@ -280,6 +290,26 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
    return;
 */
 /*
+  //==== Conversion Rate
+  std::vector<snu::KTruth> truthColl;
+  eventbase->GetTruthSel()->Selection(truthColl);
+  std::vector< snu::KElectron > testelectrons = GetElectrons(true, true, "ELECTRON_HN_FAKELOOSEv7_4");
+  for(unsigned int i=0; i<testelectrons.size(); i++){
+      
+    snu::KElectron electron = testelectrons.at(i);
+    
+    int leptype =  GetLeptonType(electron, truthColl);
+    bool IsTight = PassID(testelectrons.at(i), "ELECTRON_HN_TIGHTv4");
+
+    FillHist("Type_F0", leptype, 1., 20, -10., 10.);
+    if(IsTight){
+      FillHist("Type_F", leptype, 1., 20, -10., 10.);
+    }
+
+  };
+  return;
+*/
+/*
   //==== Lepton Fake vs Type
   std::vector< snu::KElectron > testelectrons = GetElectrons(false, true, "ELECTRON_HN_FAKELOOSEv7_4");
   int testtypes[4] = {22, 26, 27, 28};
@@ -294,6 +324,9 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
     if(fabs(electron.SCEta()) > 1.479) EtaRegion = "EndCap";
     else if(fabs(electron.SCEta()) > 0.8) EtaRegion = "OuterBarrel";
     else EtaRegion = "InnerBarrel";
+
+    FillHist("Eta_vs_SCEta", electron.Eta(), electron.SCEta(), 1., -3., 3., 60, -3., 3., 60);
+    continue;
 
     double ptcone = CorrPt(testelectrons.at(i), 0.08);
 
@@ -517,6 +550,8 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   bool AllLepton = std::find(k_flags.begin(), k_flags.end(), "AllLepton") != k_flags.end();
   bool DoNoSF = std::find(k_flags.begin(), k_flags.end(), "DoNoSF") != k_flags.end();
   bool DoIDOnly = std::find(k_flags.begin(), k_flags.end(), "DoIDOnly") != k_flags.end();
+  bool DoConversion = std::find(k_flags.begin(), k_flags.end(), "DoConversion") != k_flags.end();
+  if(DoConversion) weight *= 0.5;
 
   if(DoMCClosure) DoNoSF = true;
 
@@ -1011,10 +1046,11 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       bool IsForwardJet = fabs( this_jet.Eta() ) >= NormalJetMaxEta;
       bool lepinside = HasLeptonInsideJet(this_jet, muons_veto, electrons_veto);
       bool awayfromfatjet = IsAwayFromFatJet(this_jet, fatjets);
+      bool PassPUID = this_jet.PassPileUpMVA("Loose");
 
       if(!lepinside && awayfromfatjet) jets_eta5.push_back( this_jet );
-      if(IsNormalJet && !lepinside && awayfromfatjet) jets.push_back( this_jet );
-      if(IsNormalJet && !lepinside) jets_nonfatjetveto.push_back( this_jet );
+      if(IsNormalJet && !lepinside && PassPUID && awayfromfatjet) jets.push_back( this_jet );
+      if(IsNormalJet && !lepinside && PassPUID) jets_nonfatjetveto.push_back( this_jet );
       if(IsNormalJet && !lepinside && !awayfromfatjet) jets_InSideFatJet.push_back( this_jet );
       if(IsNormalJet) jets_nolepveto.push_back( this_jet );
       if(IsForwardJet && !lepinside) jets_fwd.push_back( this_jet );
@@ -1073,7 +1109,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
     std::vector<snu::KMuon> muons_tight; muons_tight.clear();
     std::vector<snu::KElectron> electrons_tight; electrons_tight.clear();
     std::vector<bool> isT;
-    std::vector<int> NearBjet;
+    std::vector<int> NearBjet, NearBjet_TRUE;
 
     int NPromptTight(0);
 
@@ -1082,7 +1118,11 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
     int n_triTight_muons(0);
     for(unsigned int j=0; j<muons.size(); j++){
 
-      if(DoFRBJET) NearBjet.push_back( HasCloseBjet(muons.at(j), jets_nolepveto, btag_wp) );
+      int hasclosebjet = HasCloseBjet(muons.at(j), jets_nolepveto, btag_wp);
+
+      NearBjet_TRUE.push_back(hasclosebjet);
+
+      if(DoFRBJET) NearBjet.push_back( hasclosebjet );
       else NearBjet.push_back( -1 );
 
       if(TruthMatched(muons.at(j))) NPromptTight++;
@@ -1101,7 +1141,11 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
     int n_triTight_electrons(0);
     for(unsigned int j=0; j<electrons.size(); j++){
 
-      if(DoFRBJET) NearBjet.push_back( HasCloseBjet(electrons.at(j), jets_nolepveto, btag_wp) );
+      int hasclosebjet = HasCloseBjet(electrons.at(j), jets_nolepveto, btag_wp);
+
+      NearBjet_TRUE.push_back(hasclosebjet);
+
+      if(DoFRBJET) NearBjet.push_back( hasclosebjet );
       else NearBjet.push_back( -1 );
 
       if(TruthMatched(electrons.at(j), false)) NPromptTight++;
@@ -1560,10 +1604,11 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       }
 
       bool isSS = lep.at(0).Charge() == lep.at(1).Charge();
+      if(DoConversion) isSS = true;
       bool isSSForCF = isSS;
       if(RunningChargeFlipData) isSSForCF = !isSS;
 
-      //if(!isSSForCF) continue;
+      if(!DoConversion && !DoMCClosure && !isSSForCF) continue;
 
       double m_Z = 91.1876;
       bool isOffZ = fabs( (lep.at(0)+lep.at(1)).M() - m_Z ) > 10.;
@@ -1624,8 +1669,21 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
         if(DoFakeSyst){
 
+
+          ElFR_key = "";
+          MuFR_key = "";
+          get_eventweight(muons, electrons, isT, NearBjet, 0);
           FRweights.push_back(weight_fr);
           FRweights_name.push_back("Central");
+          //cout << "Central : " << weight_fr << endl;
+
+          FRweights.push_back(weight_fr+this_weight_err);
+          FRweights_name.push_back("PromptUp");
+
+          get_eventweight(muons, electrons, isT, NearBjet_TRUE, 0);
+          //cout << "-> " << NearBjet_TRUE.at(0) << "\t" << NearBjet_TRUE.at(1) << " : " << weight_fr << endl;
+          FRweights.push_back(weight_fr);
+          FRweights_name.push_back("BJet");
 
           TString Muon_FRsystsources[8] = {"Awayjet_20", "Awayjet_30", "Awayjet_60", "dphi_1p5", "dphi_1", "dphi_3", "pj_over_pl_1", "pj_over_pl_2"};
           TString Electron_FRsystsources[8] = {"Awayjet_20", "Awayjet_30", "Awayjet_60", "dphi_1p5", "dphi_2", "dphi_3", "pj_over_pl_0p8", "pj_over_pl_1p2"};
@@ -1979,23 +2037,21 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
         if(isSSForCF){
 
-          bool tempbool_presel = map_Region_to_Bool[Suffix+"_Preselection"];
-          bool tempbool_low = map_Region_to_Bool[Suffix+"_Low"];
-          bool tempbool_low_twojet = map_Region_to_Bool[Suffix+"_Low_TwoJet_NoFatJet"];
-          bool tempbool_low_onejet = map_Region_to_Bool[Suffix+"_Low_OneJet_NoFatJet"];
-          bool tempbool_high = map_Region_to_Bool[Suffix+"_High"];
-          bool tempbool_high_twojet = map_Region_to_Bool[Suffix+"_High_TwoJet_NoFatJet"];
-          bool tempbool_high_fatjet = map_Region_to_Bool[Suffix+"_High_OneFatJet"];
+          TString ToSaveRegions[] = {
+            "Preselection",
+            "Low", "High",
+          };
+          for(std::map< TString, bool >::iterator it = map_Region_to_Bool.begin(); it != map_Region_to_Bool.end(); it++){
+            TString this_suffix = it->first;
 
-          map_Region_to_Bool.clear();
-          map_Region_to_Bool[Suffix+"_Preselection"] = tempbool_presel;
-          map_Region_to_Bool[Suffix+"_Low"] = tempbool_low;
-          map_Region_to_Bool[Suffix+"_Low_TwoJet_NoFatJet"] = tempbool_low_twojet;
-          map_Region_to_Bool[Suffix+"_Low_OneJet_NoFatJet"] = tempbool_low_onejet;
-          map_Region_to_Bool[Suffix+"_High"] = tempbool_high;
-          map_Region_to_Bool[Suffix+"_High_TwoJet_NoFatJet"] = tempbool_high_twojet;
-          map_Region_to_Bool[Suffix+"_High_OneFatJet"] = tempbool_high_fatjet;
+            bool ToSave = false;
+            for(int aaa=0;aaa<3;aaa++){
+              if(this_suffix.Contains(ToSaveRegions[aaa])) ToSave = true;
+            }
 
+            if(!ToSave) it->second = false;
+
+          }
 
           for(std::map< TString, bool >::iterator it = map_Region_to_Bool.begin(); it != map_Region_to_Bool.end(); it++){
             TString this_suffix = it->first;
@@ -2018,7 +2074,13 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
         for(std::map< TString, bool >::iterator it = map_Region_to_Bool.begin(); it != map_Region_to_Bool.end(); it++){
           TString this_suffix = it->first;
-          if(!this_suffix.Contains("Preselection")) it->second = false;
+
+          bool ToSave = false;
+          if(this_suffix.Contains("Preselection")) ToSave = true;
+          if(this_suffix.Contains("Low")) ToSave = true;
+          if(this_suffix.Contains("High")) ToSave = true;
+
+          if(!ToSave) it->second = false;
         }
 
 /*
@@ -2633,24 +2695,25 @@ double DiLeptonAnalyzer::GetCF(KLepton lep, bool geterr){
 
   double invPt = 1./lep.Pt();
   double a = 999., b= 999.;
-  if(el_eta < 0.9){
-    if(invPt< 0.023){a=(-0.001381); b=(4.334e-05);}
-    else{a=(0.001010); b=(-1.146e-05);}
+  if(el_eta < 0.8){
+    if(invPt< 0.023){a=(-0.001196); b=(3.806e-05);}
+    else{a=(0.0008751); b=(-9.844e-06);}
   }
   else if(el_eta < 1.4442){
-    if(invPt< 0.015){a=(-0.04296); b=(0.0008670);}
-    else if(invPt< 0.023){a=(-0.01529); b=(0.0004522);}
-    else{a=(-0.001546); b=(0.0001272);}
+    if(invPt< 0.015){a=(-0.03537); b=(0.0007231);}
+    else if(invPt< 0.023){a=(-0.01381); b=(0.0004019);}
+    else{a=(-0.0007848); b=(0.0000972);}
   }
   else{
-    if(invPt< 0.012){a=(-0.4238); b=(0.006366);}
-    else if(invPt< 0.020){a=(-0.1040); b=(0.002550);}
-    else{a=(-0.01603); b=(0.0007672);}
+    if(invPt< 0.013){a=(-0.3296); b=(0.007796);}
+    else if(invPt< 0.021){a=(-0.1547); b=(0.005633);}
+    else{a=(-0.03164); b=(0.003191);}
   }
 
+
   double sf(1.);
-  if(el_eta < 1.4442) sf = 0.693589;
-  else sf = 0.684761;
+  if(el_eta < 1.4442) sf = 0.7112;
+  else sf = 0.684761; // previous value
 
   double sys=0.;
   double rate = (a)*invPt + (b);

@@ -568,6 +568,30 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
               if( DijetFake )        UseEvent = (dPhi > 2.5) && (jet.ChargedEMEnergyFraction() < 0.65);
               //==== If not, use it to remove W events
               else if( DijetPrompt ) UseEvent = (dPhi > 2.5) && (jet.ChargedEMEnergyFraction() < 0.65) && (jet.Pt()/electron.Pt() > 1.0) && (METauto < 80.) && (MTval < 25.);
+/*
+                  if(UseEvent && IsThisTight){
+                  cout << "RunNumber = " << Evt.RunNumber() << endl;
+                  cout << "EventNumber = " << Evt.EventNumber() << endl;
+                  cout << "trigger = " << it->first << endl;
+                  cout << "electron.Pt() = " << electron.Pt() << endl;
+                  cout << "electron.PFRelIso(0.3) = " << electron.PFRelIso(0.3) << endl;
+                  cout << "electron.dXYSig() = " << electron.dXYSig() << endl;
+                  cout << "jet.Pt() = " << jet.Pt() << endl;
+                  cout << "AwayjetPt = " << AwayjetPt << endl;
+                  cout << "dPhi = " << dPhi << endl;
+                  cout << "jet.Pt()/electron.Pt() = " << jet.Pt()/electron.Pt() << endl;
+                  cout << "jet.ChargedEMEnergyFraction() = " << jet.ChargedEMEnergyFraction() << endl;
+                  cout << "METauto = " << METauto << endl;
+                  cout << "MTval = " << MTval << endl;
+                  cout << "this_weight = " << this_weight << endl;
+                  cout << "pu_reweight = " << pu_reweight << endl;
+                  cout << "trigger_additional_sf = " << trigger_additional_sf << endl;
+                  cout << "muon_scale_sf = " << electron_scale_sf << endl;
+                  cout << "weight_by_pt = " << weight_by_pt << endl;
+                  cout << "weight = " << weight << endl;
+                  cout << "--> UseEvent = " << UseEvent << endl << endl;
+                  }
+*/
 
               if( UseEvent ){
 

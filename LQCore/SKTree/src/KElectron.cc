@@ -341,10 +341,10 @@ Bool_t KElectron::PassTrigMVAHNTightv3() const{
 
 Bool_t KElectron::PassTrigMVAHNTightv4() const{
 
-  //float mva_cut=0.93;
-  //if(fabs(this->SCEta()) > 1.479) mva_cut=0.93;
-  float mva_cut=0.758;
-  if(fabs(this->SCEta()) > 1.479) mva_cut=0.758;
+  float mva_cut=0.93;
+  if(fabs(this->SCEta()) > 1.479) mva_cut=0.93;
+  //float mva_cut=0.758;
+  //if(fabs(this->SCEta()) > 1.479) mva_cut=0.758;
   else if(fabs(this->SCEta()) > 0.8) mva_cut=0.825;
   else mva_cut=0.9;
 

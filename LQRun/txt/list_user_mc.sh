@@ -12,19 +12,9 @@ declare -a dilepton_Moriond=(
 )
 
 declare -a tmp=(
-'HNDilepton_EE_Tchannel_M800'
-'HNDilepton_EE_Tchannel_M1000'
-'HNDilepton_EE_Tchannel_M1200'
-'HNDilepton_MuE_Tchannel_M300'
-'HNDilepton_MuE_Tchannel_M600'
-'HNDilepton_MuE_Tchannel_M800'
-'HNDilepton_MuE_Tchannel_M1000'
-'HNDilepton_MuE_Tchannel_M1200'
-'HNDilepton_EMu_Tchannel_M300'
-'HNDilepton_EMu_Tchannel_M600'
-'HNDilepton_EMu_Tchannel_M800'
-'HNDilepton_EMu_Tchannel_M1000'
-'HNDilepton_EMu_Tchannel_M1200'
+'HNMupMup_40'
+'HNMupMup_100'
+'HNMupMup_200'
 )
 
 declare -a newTchannel=(
