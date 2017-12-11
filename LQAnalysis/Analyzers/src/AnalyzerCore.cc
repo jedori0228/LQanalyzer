@@ -824,16 +824,28 @@ void AnalyzerCore::CorrectedMETJMR(int sys, vector<snu::KFatJet> fjetall,   doub
 
 
 float AnalyzerCore::GetFatJetSF(snu::KFatJet fjet, float tau21cut, int sys){
-  
+
+  if(isData) return 1.;
+
   float fsys = -1;
   if(sys > 0) fsys =1;
   if(sys==0) fsys=0.;
+
   if(tau21cut == 0.45){
     if((fjet.Tau2()/fjet.Tau1())  < 0.45)     return 0.88 + fsys*0.1;
     else return 1.;
   }
-  if(tau21cut == 0.6){
-    if((fjet.Tau2()/fjet.Tau1()) < 0.6)     return 1.11 + fsys*0.08;
+
+  if(tau21cut > 0.59 && tau21cut < 0.61){
+    double sf_central = 1.11;
+
+    double sf_err_1 = 0.08;
+    double sf_err_2 = 0.041*TMath::Log(fjet.Pt()/200.);
+    double sf_err = sqrt(sf_err_1*sf_err_1+sf_err_2*sf_err_2);
+
+    //cout << fjet.Pt() << "\t" << sf_err << " : " << sf_central + fsys*sf_err << endl;
+
+    if((fjet.Tau2()/fjet.Tau1()) < 0.6)     return sf_central + fsys*sf_err;
     else return 1.;
   }
   else return 1.;
