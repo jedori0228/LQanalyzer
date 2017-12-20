@@ -12,9 +12,7 @@ declare -a dilepton_Moriond=(
 )
 
 declare -a tmp=(
-'HNMupMup_40'
-'HNMupMup_100'
-'HNMupMup_200'
+'HNEpEp_150'
 )
 
 declare -a newTchannel=(
@@ -67,6 +65,12 @@ declare -a newTchannel4=(
 'HNDilepton_EMu_Tchannel_M800'
 'HNDilepton_EMu_Tchannel_M1000'
 'HNDilepton_EMu_Tchannel_M1200'
+)
+declare -a newTchannel5=(
+'HNDilepton_EE_Tchannel_M1500'
+'HNDilepton_MuMu_Tchannel_M1500'
+'HNDilepton_MuE_Tchannel_M1500'
+'HNDilepton_EMu_Tchannel_M1500'
 )
 
 declare -a nonprompt=(
@@ -320,8 +324,16 @@ declare dilepbkg_all=(
 'WWW' 'WWZ' 'WZZ' 'ZZZ'
 )
 
+declare VVlepbkg=(
+'WZTo3LNu_powheg'
+'ZZTo4L_powheg' 'ggZZto2e2mu' 'ggZZto2e2nu' 'ggZZto2e2tau' 'ggZZto2mu2nu' 'ggZZto2mu2tau' 'ggZZto4e' 'ggZZto4mu' 'ggZZto4tau' 'ggHtoZZ'
+'TG' 'TTG' 'WGtoLNuG' 'ZGto2LG'
+'WWW' 'WWZ' 'WZZ' 'ZZZ'
+'ttW' 'ttZ' 'ttH_nonbb'
+)
+
 declare dilepbkg_SS=(
-'WZTo3LNu_powheg' 'WZTo3LNu_mllmin01'
+'WZTo3LNu_powheg'
 'ZZTo4L_powheg' 'ggZZto2e2mu' 'ggZZto2e2nu' 'ggZZto2e2tau' 'ggZZto2mu2nu' 'ggZZto2mu2tau' 'ggZZto4e' 'ggZZto4mu' 'ggZZto4tau' 'ggHtoZZ'
 'TG' 'TTG' 'WGtoLNuG' 'ZGto2LG'
 'WWW' 'WWZ' 'WZZ' 'ZZZ'

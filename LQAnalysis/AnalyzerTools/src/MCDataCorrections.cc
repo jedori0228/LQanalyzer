@@ -1474,13 +1474,12 @@ double MCDataCorrections::ElectronScaleFactor( TString elid, vector<snu::KElectr
   if(corr_isdata) return 1.;
 
   //http://fcouderc.web.cern.ch/fcouderc/EGamma/scaleFactors/Moriond17/approval/EleID/passingVeto80X/egammaEffi.txt_egammaPlots.pdf
-  std::string sid= "";
-  
-  if(elid.Contains("HN")) elid = "ELECTRON_MVA_80";
-  if(elid == "ELECTRON_HN_TIGHTv4") elid = "ELECTRON_HN_TIGHTv4";
+
+  //cout << "[MCDataCorrections::ElectronScaleFactor] elid = " << elid << endl;
 
   if(CheckCorrectionHist("ID_" + elid)){
 
+    //cout << "[MCDataCorrections::ElectronScaleFactor] hist exist : " << elid << endl;
     TH2F *this_hist = GetCorrectionHist("ID_" + elid);
 
     for(vector<KElectron>::iterator itel=el.begin(); itel!=el.end(); ++itel) {
@@ -1495,8 +1494,11 @@ double MCDataCorrections::ElectronScaleFactor( TString elid, vector<snu::KElectr
       double this_sf = this_hist->GetBinContent(this_bin);
       double this_sf_err = this_hist->GetBinError(this_bin);
 
+      //cout << elpt << "\t" << eleta << " -> sf = " << this_sf + double(sys)*this_sf_err << endl;
+
      	sf *= ( this_sf + double(sys)*this_sf_err );
     }
+    //cout << "here" << endl;
 
   } // END if file exist
 

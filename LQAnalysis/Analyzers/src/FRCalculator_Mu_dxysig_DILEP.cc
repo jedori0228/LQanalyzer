@@ -308,6 +308,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
             FillHist(ThisTrigger+"_W_John_PFMET", METauto, this_weight, 0., 500., 500);
             FillHist(ThisTrigger+"_W_John_MT", MTval, this_weight, 0., 500., 500);
             FillHist(ThisTrigger+"_W_John_leadpt", tightmuons.at(0).Pt(), this_weight, 0., 500., 500);
+            FillHist(ThisTrigger+"_W_John_leadeta", tightmuons.at(0).Eta(), this_weight, -3., 3., 60);
           }
 
         }

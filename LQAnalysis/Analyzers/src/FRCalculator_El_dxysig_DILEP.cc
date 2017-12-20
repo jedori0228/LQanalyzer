@@ -227,7 +227,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
     double m_Z = 91.1876;
 
     std::vector< snu::KElectron > tightelectrons = GetElectrons(false, true, "ELECTRON_HN_TIGHTv4");
-    tightelectrons = RemoveECElectron(tightelectrons);
+    //tightelectrons = RemoveECElectron(tightelectrons);
 
     double electron_sf = mcdata_correction->ElectronScaleFactor("ELECTRON_HN_TIGHTv4", tightelectrons, 0);
     double electron_RecoSF =  mcdata_correction->ElectronRecoScaleFactor(tightelectrons);
@@ -269,6 +269,8 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
             FillHist(ThisTrigger+"_W_John_PFMET", METauto, this_weight, 0., 500., 500);
             FillHist(ThisTrigger+"_W_John_MT", MTval, this_weight, 0., 500., 500);
             FillHist(ThisTrigger+"_W_John_leadpt", tightelectrons.at(0).Pt(), this_weight, 0., 500., 500);
+            FillHist(ThisTrigger+"_W_John_leadeta", tightelectrons.at(0).Eta(), this_weight, -3., 3., 60);
+            FillHist(ThisTrigger+"_W_John_leadsceta", tightelectrons.at(0).SCEta(), this_weight, -3., 3., 60);
           }
         }
 
@@ -574,6 +576,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
                   cout << "EventNumber = " << Evt.EventNumber() << endl;
                   cout << "trigger = " << it->first << endl;
                   cout << "electron.Pt() = " << electron.Pt() << endl;
+                  cout << "electron.SCEta() = " << electron.SCEta() << endl;
                   cout << "electron.PFRelIso(0.3) = " << electron.PFRelIso(0.3) << endl;
                   cout << "electron.dXYSig() = " << electron.dXYSig() << endl;
                   cout << "jet.Pt() = " << jet.Pt() << endl;
@@ -586,6 +589,7 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
                   cout << "this_weight = " << this_weight << endl;
                   cout << "pu_reweight = " << pu_reweight << endl;
                   cout << "trigger_additional_sf = " << trigger_additional_sf << endl;
+                  cout << "IDSF = " << mcdata_correction->ElectronScaleFactor("ELECTRON_HN_TIGHTv4", hnloose, 0) << endl;
                   cout << "muon_scale_sf = " << electron_scale_sf << endl;
                   cout << "weight_by_pt = " << weight_by_pt << endl;
                   cout << "weight = " << weight << endl;

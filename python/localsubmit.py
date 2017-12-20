@@ -601,7 +601,7 @@ output_catversion=os.getenv("CATVERSION")
 iversion=0
 
 
-if "HN" in  sample or "CHT" in sample or "TTToH" in sample:
+if "HeavyNeutrino" in sample or "Majorana" in sample or "HN" in  sample or "CHT" in sample or "TTToH" in sample:
     datasetfile="datasets_snu_sig_CAT_mc_"
 else:
     datasetfile="datasets_snu_nonsig_CAT_mc_"
@@ -1307,7 +1307,7 @@ while not JobSuccess:
                 if "Processing entry" in line:
                     if "LQCycleController" not in line:
                         entries = line.split()
-                        if len(entries)> 6:                        
+                        if len(entries)> 7:                        
                             num = entries[7]
                             lineok=False
                             if "/" in num:
