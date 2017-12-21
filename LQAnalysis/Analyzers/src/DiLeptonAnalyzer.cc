@@ -74,8 +74,8 @@ void DiLeptonAnalyzer::InitialiseAnalysis() throw( LQError ) {
   TString MuonFRType_QCD = "v7_SIP3_";
   //TString MuonFRType_QCD = "HighdXY_Large_";
 
-  //TString MuonFRType_Data = "v7_SIP3_";
-  TString MuonFRType_Data = MuonFRType_QCD;
+  TString MuonFRType_Data = "8TeV_";
+  //TString MuonFRType_Data = MuonFRType_QCD;
 
   MuonLooseID_loosest = "MUON_HN_LOOSEv7_SIP3_loosest";
   MuonVetoID_loosest = "MUON_HN_VETO_loosest";
@@ -93,7 +93,11 @@ void DiLeptonAnalyzer::InitialiseAnalysis() throw( LQError ) {
   if(MuonFRType_QCD.Contains("HighdXY") || MuonFRType_Data.Contains("HighdXY")){
     MuonLooseID_loosest = "MUON_HN_Loose_HighdXY_Small_loosest";
   }
-
+  if(MuonFRType_Data.Contains("8TeV")){
+    MuonLooseID_loosest = "MUON_HN_LOOSE_8TeV_Loosest";
+    MuonVetoID_loosest = "MUON_HN_LOOSE_8TeV_Loosest";
+    MuonTightID = "MUON_HN_TIGHT_8TeV";
+  }
   if(UesTightv2){
     MuonVetoID_loosest = "MUON_HN_VETOv2_loosest"; // chi2 loosen to 999
     MuonTightID = "MUON_HN_TIGHTv2";
@@ -103,12 +107,18 @@ void DiLeptonAnalyzer::InitialiseAnalysis() throw( LQError ) {
 
   TString ElectronFRType_QCD = "v7_5_";
 
-  //TString ElectronFRType_Data = "v7_4_";
-  TString ElectronFRType_Data = ElectronFRType_QCD;
+  TString ElectronFRType_Data = "8TeV_";
+  //TString ElectronFRType_Data = ElectronFRType_QCD;
 
   ElectronLooseID_loosest = "ELECTRON_HN_FAKELOOSEv7_5_loosest";
   ElectronVetoID_loosest = "ELECTRON_HN_VETO_loosest";
   ElectronTightID = "ELECTRON_HN_TIGHTv4";
+
+  if(ElectronFRType_Data.Contains("8TeV")){
+    ElectronLooseID_loosest = "ELECTRON_HN_LOOSE_8TeV_Loosest";
+    ElectronVetoID_loosest = "ELECTRON_HN_LOOSE_8TeV_Loosest";
+    ElectronTightID = "ELECTRON_HN_TIGHT_8TeV";
+  }
 
   //==== Summary
   cout << "## Muon Fake ##" << endl;
@@ -117,6 +127,12 @@ void DiLeptonAnalyzer::InitialiseAnalysis() throw( LQError ) {
   cout << "MuonVetoID_loosest = " << MuonVetoID_loosest << endl;
   cout << "MuonLooseID_loosest = " << MuonLooseID_loosest << endl;
   cout << "MuonTightID = " << MuonTightID << endl;
+  cout << "## Electron Fake ##" << endl;
+  cout << "ElectronFRType_QCD = " << ElectronFRType_QCD << endl;
+  cout << "ElectronFRType_Data = " << ElectronFRType_Data << endl;
+  cout << "ElectronVetoID_loosest = " << ElectronVetoID_loosest << endl;
+  cout << "ElectronLooseID_loosest = " << ElectronLooseID_loosest << endl;
+  cout << "ElectronTightID = " << ElectronTightID << endl;
 
   //==== Read rootfiles
 
@@ -1349,7 +1365,8 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
     else if(this_syst=="_ElectronIDSF_down") ElectronIDDir = -1;
     else ElectronIDDir = 0;
 
-    double electron_sf = mcdata_correction->ElectronScaleFactor(ElectronTightID, electrons, ElectronIDDir);
+    //double electron_sf = mcdata_correction->ElectronScaleFactor(ElectronTightID, electrons, ElectronIDDir); //FIXME
+    double electron_sf = mcdata_correction->ElectronScaleFactor("ELECTRON_HN_TIGHTv4", electrons, ElectronIDDir);
     if(DoNoSF) electron_sf = 1.;
     double electron_RecoSF =  mcdata_correction->ElectronRecoScaleFactor(electrons);
 
