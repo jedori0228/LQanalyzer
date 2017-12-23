@@ -87,7 +87,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   //if(!(eventbase->GetEvent().RunNumber()==273450 && eventbase->GetEvent().EventNumber()==725619133)) return;
 
   double thisdXYCut = 0.005;
-  double TightISO = 0.07;
+  double TightISO = 0.05;
 
   snu::KEvent Evt = eventbase->GetEvent();
   METauto = Evt.MET();
@@ -182,7 +182,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
     else               LooseID = "MUON_HN_Loose_HighdXY";
   }
   //cout << "LooseID = " << LooseID << endl;
-  //LooseID = "MUON_HN_LOOSE_8TeV";
+  LooseID = "MUON_HN_LOOSE_8TeV";
 
   std::vector<snu::KMuon> hnloose_raw = GetMuons(LooseID, true);
 
@@ -260,6 +260,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
   bool DijetFake = std::find(k_flags.begin(), k_flags.end(), "DijetFake") != k_flags.end();
   bool DijetPrompt= std::find(k_flags.begin(), k_flags.end(), "DijetPrompt") != k_flags.end();
 
+/*
   //==== Norm Cehck for each trigger
   if(DijetPrompt && !DoHighdXY){
 
@@ -319,6 +320,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
 
   }
+*/
 
   //==== tag jet collections
   //==== pt > 40 GeV
@@ -451,7 +453,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
           double bin_MaxSIP = MaxSIP + dMaxSIP/2.;
           double bin_MaxChi2 = MaxChi2 + dMaxChi2/2.;
 
-          double TightISO = 0.07;
+          double TightISO = 0.05;
           double conept = MuonConePt(muon,TightISO);
 
           TString SIP_Chi2 = TString::Itoa(MaxSIP*10,10)+"_"+TString::Itoa(MaxChi2,10);
@@ -518,7 +520,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
         TString TightID = "MUON_HN_TIGHT";
         if(DoHighdXY && !DoSmallHighdXY) TightID = "MUON_HN_Tight_HighdXY";
 
-        //TightID = "MUON_HN_TIGHT_8TeV";
+        TightID = "MUON_HN_TIGHT_8TeV";
 
         bool IsThisTight = PassID( muon, TightID );
 
@@ -548,7 +550,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
           HISTPREFIX = (it->first)+"_SingleMuonTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10);
           if(DoHighdXY) HISTPREFIX = (it->first)+"_SingleMuonTrigger_HighdXY";
 
-          double TightISO = 0.07;
+          double TightISO = 0.05;
           double conept = MuonConePt(muon,TightISO);
 
           FillHist(HISTPREFIX+"_events_pt_cone_vs_eta_F0", conept, fabs(muon.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
@@ -634,7 +636,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
                   cout << "EventNumber = " << Evt.EventNumber() << endl;
                   cout << "trigger = " << it->first << endl;
                   cout << "muon.Pt() = " << muon.Pt() << endl;
-                  cout << "muon.RelIso04() = " << muon.RelIso04() << endl;
+                  cout << "muon.RelIso03() = " << muon.RelIso03() << endl;
                   cout << "muon.dXYSig() = " << muon.dXYSig() << endl;
                   cout << "jet.Pt() = " << jet.Pt() << endl;
                   cout << "AwayjetPt = " << AwayjetPt << endl;
@@ -677,7 +679,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
                 HISTPREFIX = (it->first)+"_SingleMuonTrigger_Dijet_Awayjet_"+TString::Itoa(AwayjetPt,10);
                 if(DoHighdXY) HISTPREFIX = (it->first)+"_SingleMuonTrigger_HighdXY";
 
-                double TightISO = 0.07;
+                double TightISO = 0.05;
                 double conept = MuonConePt(muon,TightISO);
 
                 FillHist(HISTPREFIX+"_events_pt_cone_vs_eta_F0", conept, fabs(muon.Eta()), ptweight, ptarray, n_pt, etaarray, n_eta);
@@ -771,20 +773,20 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
       for(unsigned int j=0; j<muontriNodXYCutVLooseColl_raw.size(); j++){
         snu::KMuon this_muon = muontriNodXYCutVLooseColl_raw.at(j);
         //==== MaxRelIso for Loose
-        if( this_muon.RelIso04() >= RelIsoMaxs[bbb] ) continue;
+        if( this_muon.RelIso03() >= RelIsoMaxs[bbb] ) continue;
 
         //==== Fill NodXYCut
         muontriNodXYCutLooseColl_raw.push_back( this_muon ); 
-        if( this_muon.RelIso04() < TightISO ) muontriNodXYCutTightColl_raw.push_back( this_muon );
+        if( this_muon.RelIso03() < TightISO ) muontriNodXYCutTightColl_raw.push_back( this_muon );
         //==== Fill Small dXYSig
         if( fabs(this_muon.dXY()) < thisdXYCut && fabs(this_muon.dXYSig()) < 3.0 ){
           muontriLooseColl_raw.push_back( this_muon );
-          if( this_muon.RelIso04() < TightISO ) muontriTightColl_raw.push_back( this_muon );
+          if( this_muon.RelIso03() < TightISO ) muontriTightColl_raw.push_back( this_muon );
         }
         //==== Fill Large dXYSig
         if( fabs(this_muon.dXY()) < 1. && fabs(this_muon.dXYSig()) > dXYMins[aaa] ){
           muontriHighdXYLooseColl_raw.push_back( this_muon );
-          if( this_muon.RelIso04() < TightISO ) muontriHighdXYTightColl_raw.push_back( this_muon );
+          if( this_muon.RelIso03() < TightISO ) muontriHighdXYTightColl_raw.push_back( this_muon );
         }
 
         //==== for data, or QCD
@@ -792,16 +794,16 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
         if( k_isdata || k_sample_name.Contains("QCD") ){
           //==== Fill NodXYCut
           muontriNodXYCutLooseColl.push_back( this_muon );
-          if( this_muon.RelIso04() < TightISO ) muontriNodXYCutTightColl.push_back( this_muon );
+          if( this_muon.RelIso03() < TightISO ) muontriNodXYCutTightColl.push_back( this_muon );
           //==== Fill Small dXYSig
           if( fabs(this_muon.dXY()) < thisdXYCut && fabs(this_muon.dXYSig()) < 3.0 ){
             muontriLooseColl.push_back( this_muon );
-            if( this_muon.RelIso04() < TightISO ) muontriTightColl.push_back( this_muon );
+            if( this_muon.RelIso03() < TightISO ) muontriTightColl.push_back( this_muon );
           }
           //==== Fill Large dXYSig
           if( fabs(this_muon.dXY()) < 1. && fabs(this_muon.dXYSig()) > dXYMins[aaa] ){
             muontriHighdXYLooseColl.push_back( this_muon );
-            if( this_muon.RelIso04() < TightISO ) muontriHighdXYTightColl.push_back( this_muon );
+            if( this_muon.RelIso03() < TightISO ) muontriHighdXYTightColl.push_back( this_muon );
           }
         }
 
@@ -811,16 +813,16 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
           if( TruthMatched(this_muon) ){
             //==== Fill NodXYCut
             muontriNodXYCutLooseColl.push_back( this_muon );
-            if( this_muon.RelIso04() < TightISO ) muontriNodXYCutTightColl.push_back( this_muon );
+            if( this_muon.RelIso03() < TightISO ) muontriNodXYCutTightColl.push_back( this_muon );
             //==== Fill Small dXYSig
             if( fabs(this_muon.dXY()) < thisdXYCut && fabs(this_muon.dXYSig()) < 3.0 ){
               muontriLooseColl.push_back( this_muon );
-              if( this_muon.RelIso04() < TightISO ) muontriTightColl.push_back( this_muon );
+              if( this_muon.RelIso03() < TightISO ) muontriTightColl.push_back( this_muon );
             }
             //==== Fill Large dXYSig
             if( fabs(this_muon.dXY()) < 1. && fabs(this_muon.dXYSig()) > dXYMins[aaa] ){
               muontriHighdXYLooseColl.push_back( this_muon );
-              if( this_muon.RelIso04() < TightISO ) muontriHighdXYTightColl.push_back( this_muon );
+              if( this_muon.RelIso03() < TightISO ) muontriHighdXYTightColl.push_back( this_muon );
             }
           }
         }
@@ -839,7 +841,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
           if(fabs(this_muon.dXY()) < 1.){
             FillHist(str_dXYCut+"_prompt_Loose_dXYSig", fabs(this_muon.dXYSig()), 1., 0., 15., 150);
             FillHist(str_dXYCut+"_prompt_Loose_dXY", fabs(this_muon.dXY()), 1., 0., 0.1, 100);
-            if(this_muon.RelIso04()<TightISO){
+            if(this_muon.RelIso03()<TightISO){
               FillHist(str_dXYCut+"_prompt_Tight_dXYSig", fabs(this_muon.dXYSig()), 1., 0., 15., 150);
               FillHist(str_dXYCut+"_prompt_Tight_dXY", fabs(this_muon.dXY()), 1., 0., 0.1, 100);
             }
@@ -854,7 +856,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
           if( fabs(this_muon.dXY()) < 1. && !TruthMatched(this_muon) ){
             FillHist(str_dXYCut+"_fake_Loose_dXYSig", fabs(this_muon.dXYSig()), 1., 0., 15., 150);
             FillHist(str_dXYCut+"_fake_Loose_dXY", fabs(this_muon.dXY()), 1., 0., 0.1, 100);
-            if(this_muon.RelIso04()<TightISO){
+            if(this_muon.RelIso03()<TightISO){
               FillHist(str_dXYCut+"_fake_Tight_dXYSig", fabs(this_muon.dXYSig()), 1., 0., 15., 150);
               FillHist(str_dXYCut+"_fake_Tight_dXY", fabs(this_muon.dXY()), 1., 0., 0.1, 100);
             }
@@ -884,7 +886,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
         if( muontriLooseColl.size() == 1 ){
           snu::KMuon muon = muontriLooseColl.at(0);
-          double LeptonRelIso = muon.RelIso04();
+          double LeptonRelIso = muon.RelIso03();
           double conept = MuonConePt(muon,TightISO);
           FillHistByTrigger(str_dXYCut+"_LooseMuon_eta", muon.Eta(), this_weight_Loose, -3., 3., 30);
           FillHistByTrigger(str_dXYCut+"_LooseMuon_pt", muon.Pt(), this_weight_Loose, 0., 200., 200);
@@ -901,7 +903,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
         if( muontriHighdXYLooseColl.size() == 1 ){
           snu::KMuon muon = muontriHighdXYLooseColl.at(0);
-          double LeptonRelIso = muon.RelIso04();
+          double LeptonRelIso = muon.RelIso03();
           double conept = MuonConePt(muon,TightISO);
           FillHistByTrigger(str_dXYCut+"_HighdXY_LooseMuon_eta", muon.Eta(), this_weight_Loose, -3., 3., 30);
           FillHistByTrigger(str_dXYCut+"_HighdXY_LooseMuon_pt", muon.Pt(), this_weight_Loose, 0., 200., 200);
@@ -917,7 +919,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
         //==== 2') SingleMuon NodXY Loose Muon study
         if( muontriNodXYCutLooseColl.size() == 1 ){
           snu::KMuon muon = muontriNodXYCutLooseColl.at(0);
-          double LeptonRelIso = muon.RelIso04();
+          double LeptonRelIso = muon.RelIso03();
           double conept = MuonConePt(muon,TightISO);
           FillHistByTrigger(str_dXYCut+"_NodXY_LooseMuon_eta", muon.Eta(), this_weight_Loose, -3., 3., 30);
           FillHistByTrigger(str_dXYCut+"_NodXY_LooseMuon_pt", muon.Pt(), this_weight_Loose, 0., 200., 200);
@@ -935,7 +937,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
 
         if(muontriHighdXYLooseColl.size()==1){
           snu::KMuon HighdXYmuon = muontriHighdXYLooseColl.at(0);
-          double LeptonRelIso = HighdXYmuon.RelIso04();
+          double LeptonRelIso = HighdXYmuon.RelIso03();
 
           //==== half sample test
           if(dXYMins[aaa]== dXYMin_central && RelIsoMaxs[bbb]==RelIsoMax_central){
@@ -1034,7 +1036,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
             //==== if prompt, skip
             if( TruthMatched(muon) ) continue;
 
-            double LeptonRelIso = muon.RelIso04();
+            double LeptonRelIso = muon.RelIso03();
             bool isThisTight = (LeptonRelIso < TightISO);
 
             //=================================================
@@ -1131,8 +1133,8 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
           for(unsigned i=0; i<n_nodxycut_loose-1; i++){
             for(unsigned j=i+1; j<n_nodxycut_loose; j++){
               if( muontriNodXYCutLooseColl.at(i).Charge() == muontriNodXYCutLooseColl.at(j).Charge() ) continue;
-          bool i_muon_tight =  fabs(muontriNodXYCutLooseColl.at(i).dXY())<thisdXYCut && fabs(muontriNodXYCutLooseColl.at(i).dXYSig())<3.0 && muontriNodXYCutLooseColl.at(i).RelIso04()<TightISO;
-          bool j_muon_tight =  fabs(muontriNodXYCutLooseColl.at(j).dXY())<thisdXYCut && fabs(muontriNodXYCutLooseColl.at(j).dXYSig())<3.0 && muontriNodXYCutLooseColl.at(j).RelIso04()<TightISO;
+          bool i_muon_tight =  fabs(muontriNodXYCutLooseColl.at(i).dXY())<thisdXYCut && fabs(muontriNodXYCutLooseColl.at(i).dXYSig())<3.0 && muontriNodXYCutLooseColl.at(i).RelIso03()<TightISO;
+          bool j_muon_tight =  fabs(muontriNodXYCutLooseColl.at(j).dXY())<thisdXYCut && fabs(muontriNodXYCutLooseColl.at(j).dXYSig())<3.0 && muontriNodXYCutLooseColl.at(j).RelIso03()<TightISO;
 
               double m_thisOS = ( muontriNodXYCutLooseColl.at(i)+muontriNodXYCutLooseColl.at(j) ).M();
               if(  i_muon_tight &&  j_muon_tight && fabs(m_thisOS-91.2) < fabs(m_OS_Zclosest-91.2) ){
@@ -1157,7 +1159,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
               FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Large_eta_F0", this_muon.Eta(), this_weight, -3, 3, 30);
               FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Large_pt_F0", this_muon.Pt(), this_weight, 0., 200., 200);
               FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Large_pt_cone_F0", conept, this_weight, 0., 200., 200);
-              FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Large_RelIso_F0", this_muon.RelIso04(), this_weight, 0., 1., 100);
+              FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Large_RelIso_F0", this_muon.RelIso03(), this_weight, 0., 1., 100);
               FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Large_Chi2_F0", this_muon.GlobalChi2(), this_weight, 0, 50., 50);
               FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Large_dXY_F0", fabs(this_muon.dXY()), this_weight, 0., 0.1, 100);
               FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Large_dXYSig_F0", fabs(this_muon.dXYSig()), this_weight, 0., 15., 150);
@@ -1167,13 +1169,13 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
               FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Large_events_pt_cone_vs_eta_F0", conept, fabs(this_muon.Eta()), this_weight, ptarray_2, 3, etaarray_2, 2);
 
 
-              if( this_muon.RelIso04() < TightISO ){
+              if( this_muon.RelIso03() < TightISO ){
                 FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Large_dXYSig", 1, this_weight, 0., 2., 2);
 
                 FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Large_eta_F", this_muon.Eta(), this_weight, -3, 3, 30);
                 FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Large_pt_F", this_muon.Pt(), this_weight, 0., 200., 200);
                 FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Large_pt_cone_F", conept, this_weight, 0., 200., 200);
-                FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Large_RelIso_F", this_muon.RelIso04(), this_weight, 0., 1., 100);
+                FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Large_RelIso_F", this_muon.RelIso03(), this_weight, 0., 1., 100);
                 FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Large_Chi2_F", this_muon.GlobalChi2(), this_weight, 0, 50., 50);
                 FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Large_dXY_F", fabs(this_muon.dXY()), this_weight, 0., 0.1, 100);
                 FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Large_dXYSig_F", fabs(this_muon.dXYSig()), this_weight, 0., 15., 150);
@@ -1192,7 +1194,7 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
               FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_eta_F0", this_muon.Eta(), this_weight, -3, 3, 30);
               FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_pt_F0", this_muon.Pt(), this_weight, 0., 200., 200);
               FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_pt_cone_F0", conept, this_weight, 0., 200., 200);
-              FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_RelIso_F0", this_muon.RelIso04(), this_weight, 0., 1., 100);
+              FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_RelIso_F0", this_muon.RelIso03(), this_weight, 0., 1., 100);
               FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_Chi2_F0", this_muon.GlobalChi2(), this_weight, 0, 50., 50);
               FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_dXY_F0", fabs(this_muon.dXY()), this_weight, 0., 0.1, 100);
               FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_dXYSig_F0", fabs(this_muon.dXYSig()), this_weight, 0., 15., 150);
@@ -1200,13 +1202,13 @@ void FRCalculator_Mu_dxysig_DILEP::ExecuteEvents()throw( LQError ){
               FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_onebin_F0", 0., this_weight, 0, 1., 1);
               FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_events_pt_vs_eta_F0", this_muon.Pt(), fabs(this_muon.Eta()), this_weight, ptarray_2, 3, etaarray_2, 2);
               FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_events_pt_cone_vs_eta_F0", conept, fabs(this_muon.Eta()), this_weight, ptarray_2, 3, etaarray_2, 2);
-              if( this_muon.RelIso04() < TightISO ){
+              if( this_muon.RelIso03() < TightISO ){
                 FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_dXYSig", 1, this_weight, 0., 2., 2);
 
                 FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_eta_F", this_muon.Eta(), this_weight, -3, 3, 30);
                 FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_pt_F", this_muon.Pt(), this_weight, 0., 200., 200);
                 FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_pt_cone_F", conept, this_weight, 0., 200., 200);
-                FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_RelIso_F", this_muon.RelIso04(), this_weight, 0., 1., 100);
+                FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_RelIso_F", this_muon.RelIso03(), this_weight, 0., 1., 100);
                 FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_Chi2_F", this_muon.GlobalChi2(), this_weight, 0, 50., 50);
                 FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_dXY_F", fabs(this_muon.dXY()), this_weight, 0., 0.1, 100);
                 FillHist(str_dXYCut+"_DiMuonTrigger_ZTag_Small_dXYSig_F", fabs(this_muon.dXYSig()), this_weight, 0., 15., 150);
@@ -1356,7 +1358,7 @@ double FRCalculator_Mu_dxysig_DILEP::GetTriggerWeightByPtRange(TString hltname, 
 
     if(SafePt && PassTrigger(hltname)){
 
-      double TightISO = 0.07;
+      double TightISO = 0.05;
       double conept = MuonConePt(muon,TightISO);
 
       if(conept >= min_cone_pt && conept < max_cone_pt){
@@ -1406,7 +1408,7 @@ void FRCalculator_Mu_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KMuon muon
   float ptarray[n_pt+1] = {5., 10., 15., 20., 25., 30., 40., 50., 60., 70.};
 */
 
-  double TightISO = 0.07;
+  double TightISO = 0.05;
   double conept = MuonConePt(muon,TightISO);
 
   TLorentzVector METvec;
@@ -1418,7 +1420,7 @@ void FRCalculator_Mu_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KMuon muon
   FillHist(prefix+"_pt_cone_F0", conept, thisweight, 0., 200., 200);
   FillHist(prefix+"_pt_cone_FRbinned_F0", conept, thisweight, ptarray, n_pt);
   FillHist(prefix+"_pt_cone_FRbinned_w1_F0", conept, 1., ptarray, n_pt);
-  FillHist(prefix+"_RelIso_F0", muon.RelIso04(), thisweight, 0., 1., 100);
+  FillHist(prefix+"_RelIso_F0", muon.RelIso03(), thisweight, 0., 1., 100);
   FillHist(prefix+"_Chi2_F0", muon.GlobalChi2(), thisweight, 0., 200., 200);
   FillHist(prefix+"_dXY_F0", fabs(muon.dXY()), thisweight, 0., 1., 1000);
   FillHist(prefix+"_dXYSig_F0", fabs(muon.dXYSig()), thisweight, 0., 40., 400);
@@ -1436,7 +1438,7 @@ void FRCalculator_Mu_dxysig_DILEP::FillDenAndNum(TString prefix, snu::KMuon muon
     FillHist(prefix+"_pt_cone_F", conept, thisweight, 0., 200., 200);
     FillHist(prefix+"_pt_cone_FRbinned_F", conept, thisweight, ptarray, n_pt);
     FillHist(prefix+"_pt_cone_FRbinned_w1_F", conept, 1., ptarray, n_pt);
-    FillHist(prefix+"_RelIso_F", muon.RelIso04(), thisweight, 0., 1., 100);
+    FillHist(prefix+"_RelIso_F", muon.RelIso03(), thisweight, 0., 1., 100);
     FillHist(prefix+"_Chi2_F", muon.GlobalChi2(), thisweight, 0., 200., 200);
     FillHist(prefix+"_dXY_F", fabs(muon.dXY()), thisweight, 0., 1., 1000);
     FillHist(prefix+"_dXYSig_F", fabs(muon.dXYSig()), thisweight, 0., 40., 400);

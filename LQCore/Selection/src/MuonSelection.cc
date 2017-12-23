@@ -97,7 +97,7 @@ void MuonSelection::Selection( std::vector<KMuon>& leptonColl, bool applyrochest
       if(applyrochester&&! muit->IsRochesterCorrected()) {
 	float origpt = muit->Pt();
 	float origreliso03=muit->RelIso03();
-	float origreliso04=muit->RelIso04();
+	float origreliso04=muit->RelIso03();
 	muit->SetPtEtaPhiM(muit->RochPt(), muit->Eta(), muit->Phi(), muit->M());
 	muit->SetRelIso(0.3, origreliso03*origpt/muit->RochPt());
 	muit->SetRelIso(0.4, origreliso04*origpt/muit->RochPt());
@@ -122,9 +122,9 @@ void MuonSelection::Selection( std::vector<KMuon>& leptonColl, bool applyrochest
 
       //// Calculate PF isolation
       /// https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Muon_Isolation
-      if     (apply_relisocut && RelIsoType.Contains("Default"))    LeptonRelIso=muit->RelIso04();
+      if     (apply_relisocut && RelIsoType.Contains("Default"))    LeptonRelIso=muit->RelIso03();
       else if(apply_relisocut && RelIsoType.Contains("PFRelIso03")) LeptonRelIso=muit->RelIso03();
-      else   LeptonRelIso=muit->RelIso04();
+      else   LeptonRelIso=muit->RelIso03();
       
       if(apply_relisocut && !( LeptonRelIso < relIso_cut)) pass_selection = false;
       if(DebugPrint && apply_relisocut && !( LeptonRelIso < relIso_cut))  cout << "Fails Selection::reliso cut " << endl;
@@ -234,7 +234,7 @@ void MuonSelection::SelectMuons(std::vector<KMuon>& leptonColl, TString muid,vec
     if(applyrochester&&! muit->IsRochesterCorrected()) {
       float origpt = muit->Pt();
       float origreliso03=muit->RelIso03();
-      float origreliso04=muit->RelIso04();
+      float origreliso04=muit->RelIso03();
 
       muit->SetPtEtaPhiM(muit->RochPt(), muit->Eta(), muit->Phi(), muit->M());
       
@@ -275,7 +275,7 @@ bool MuonSelection::PassUserID(TString id, snu::KMuon mu, vector<pair<TString, T
   }
   bool debug=false;
   if(debug) cout << "PassUserID(TString id, snu::KMuon mu, vector<pair<TString, TString> > vids, vector<pair<TString, float> > vidf" << endl;
-  LeptonRelIso = (mu.RelIso04());
+  LeptonRelIso = (mu.RelIso03());
   if(id.Contains("miniiso")) LeptonRelIso= mu.RelMiniIso();
   
   for(unsigned int idel =0; idel < vidf.size(); idel++){
@@ -370,7 +370,7 @@ bool MuonSelection::PassUserID(TString id, snu::KMuon mu){
 
   bool debug=false;
   //if(id.Contains("VETO")) debug=true;
-  LeptonRelIso = (mu.RelIso04());
+  LeptonRelIso = (mu.RelIso03());
   if(id.Contains("miniiso")) LeptonRelIso= mu.RelMiniIso();
 
   bool pass_selection=true;

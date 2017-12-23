@@ -38,6 +38,6 @@ webpage https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2
 | MUON_HN_LOOSEv11             | 10.     | 2.4      |   0.        | 0.40       | 0.40      | false          | false          |  true         | 0.2        | 0.1        | 0.1          | 100.      | 999.         | 10.0          |  true      |
 | MUON_HN_LOOSEv11_loosest     | 5.      | 2.4      |   0.        | 1.0        | 1.0       | false          | false          |  true         | 0.2        | 0.1        | 0.1          | 100.      | 999.         | 10.0          |  true      |
 ## 8 TeV ##
-| MUON_HN_TIGHT_8TeV  | 10.      | 2.4       |   0.        | 0.05    | 0.05  | true         | false          |  false         | 0.005   | 0.1       | 0.1      | 10.    | 999.  | 999.    | true |
-| MUON_HN_LOOSE_8TeV  | 10.      | 2.4       |   0.        | 0.4  | 0.4  | true         | false          |  false         | 0.2   | 0.1       | 0.1      | 50.    | 999.  | 999.    | true |
-| MUON_HN_LOOSE_8TeV_Loosest  | 5.      | 2.4       |   0.        | 1.0  | 1.0  | true         | false          |  false         | 0.2   | 0.1       | 0.1      | 50.    | 999.  | 999.    | true |
+| MUON_HN_TIGHT_8TeV          | 10.      | 2.4       |   0.        | 0.05    | 0.05  | true         | false          |  false         | 0.005   | 0.1       | 0.1      | 10.    | 999.  | 999.    | true |
+| MUON_HN_LOOSE_8TeV          | 10.      | 2.4       |   0.        | 0.6     | 0.6   | true         | false          |  false         | 0.2     | 0.1       | 0.1      | 50.    | 999.  | 999.    | true |
+| MUON_HN_LOOSE_8TeV_Loosest  | 5.       | 2.4       |   0.        | 1.0     | 1.0   | true         | false          |  false         | 0.2     | 0.1       | 0.1      | 50.    | 999.  | 999.    | true |
