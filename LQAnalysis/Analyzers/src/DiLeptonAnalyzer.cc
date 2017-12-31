@@ -147,7 +147,7 @@ void DiLeptonAnalyzer::InitialiseAnalysis() throw( LQError ) {
 
   TString CantralAwayJet = "40";
 
-  TString btag_wp = "_Loose";
+  TString btag_wp = "_Medium";
   //TString btag_wp = "";
 
   hist_Muon_FR                 = (TH2D*)file_Muon_FR->Get("Muon_Data_"+MuonFRType_Data+"FR_Awayjet"+CantralAwayJet)->Clone();
@@ -216,6 +216,13 @@ void DiLeptonAnalyzer::InitialiseAnalysis() throw( LQError ) {
 
 void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
+/*
+  std::vector<snu::KFatJet> testfatjets = GetFatJets("FATJET_HN_loosest");
+  for(unsigned int i=0; i<testfatjets.size(); i++){
+    FillHist("test", testfatjets.at(i).L1JetCorr(), 1., 0., 2., 200);
+  }
+  return;
+*/
 /*
   std::vector< snu::KElectron > testelectrons = GetElectrons(false, true, "ELECTRON_HN_TIGHTv4");
   if(testelectrons.size()==2){
@@ -631,7 +638,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
   w_cutflow["DiMuon"] = weight*WeightByTrigger(triggerlist_DiMuon, TargetLumi)*pileup_reweight;
   w_cutflow["DiElectron"] = weight*WeightByTrigger(triggerlist_DiElectron, TargetLumi)*pileup_reweight;
-  w_cutflow["EMu"] = weight*pileup_reweight; //FIXME
+  w_cutflow["EMu"] = weight*35863.3*pileup_reweight; //FIXME
 
   FillCutFlowByName("DiMuon", "NoCut", w_cutflow["DiMuon"], isData);
   FillCutFlowByName("DiElectron", "NoCut", w_cutflow["DiElectron"], isData);
@@ -750,7 +757,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   }
 
   bool DoFRBJET = std::find(k_flags.begin(), k_flags.end(), "DoFRBJET") != k_flags.end();
-  snu::KJet::WORKING_POINT btag_wp = snu::KJet::Loose;
+  snu::KJet::WORKING_POINT btag_wp = snu::KJet::Medium;
 
   bool NonPromptRun = std::find(k_flags.begin(), k_flags.end(), "RunFake") != k_flags.end();
   RunNtp = std::find(k_flags.begin(), k_flags.end(), "RunNtp") != k_flags.end();
