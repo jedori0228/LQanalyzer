@@ -1938,9 +1938,13 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
 
       }
-      if( RunningChargeFlipData && Suffix.Contains("DiElectron") && !isSS ){
-        GetCFWeight(electrons_before_shift.at(0), electrons_before_shift.at(1));
-
+      if( RunningChargeFlipData && !isSS ){
+        if( Suffix.Contains("DiElectron") ){
+          GetCFWeight(electrons_before_shift.at(0), electrons_before_shift.at(1));
+        }
+        if( Suffix.Contains("EMu") ){
+          GetCFWeight(electrons_before_shift.at(0));
+        }
         this_weight *= weight_cf;
         this_weight_err = this_weight*weight_err_cf;
       }
@@ -2524,7 +2528,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
           else{
             //==== using OS event, weight CF and estimate SS
-            if(Suffix.Contains("DiElectron") && !isSS){
+            if( (Suffix.Contains("DiElectron")||Suffix.Contains("EMu")) && !isSS){
 
               //=========================
               //==== Filling Histograms
@@ -2884,6 +2888,18 @@ void DiLeptonAnalyzer::GetCFWeight(KLepton lep1, KLepton lep2){
 
   weight_cf = cf1/(1.-cf1) + cf2/(1.-cf2);
   weight_err_cf = sqrt( cf1_err/( (1.-cf1)*(1.-cf1) ) + cf2_err/( (1.-cf2)*(1.-cf2) ) );
+
+}
+
+void DiLeptonAnalyzer::GetCFWeight(KLepton lep1){
+
+  //==== Okay, now lep1 and lep2 are OS
+
+  double cf1 = GetCF(lep1, false);
+  double cf1_err = GetCF(lep1, true);
+
+  weight_cf = cf1/(1.-cf1);
+  weight_err_cf = sqrt( cf1_err/( (1.-cf1)*(1.-cf1) ) );
 
 }
 

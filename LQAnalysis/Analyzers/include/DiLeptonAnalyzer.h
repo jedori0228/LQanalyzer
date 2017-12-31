@@ -66,6 +66,7 @@ class DiLeptonAnalyzer : public AnalyzerCore {
 
   //==== CF
   void GetCFWeight(KLepton lep1, KLepton lep2);
+  void GetCFWeight(KLepton lep1);
   double GetCF(KLepton lep, bool geterr);
   double weight_cf, weight_err_cf;
 
