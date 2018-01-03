@@ -422,32 +422,148 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   }
   return;
 */
+
 /*
   //==== DZ filter
+
+  std::vector< snu::KMuon > test_vetomuons = GetMuons("MUON_HN_VETO", true);
+  std::vector< snu::KElectron > test_vetoelectrons = GetElectrons(true, true, "ELECTRON_HN_VETO");
+
   vector<TString> dimuontriggers_NonDZ, dimuontriggers_DZ;
   dimuontriggers_NonDZ.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v");
   dimuontriggers_NonDZ.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v");
   dimuontriggers_DZ.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
   dimuontriggers_DZ.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
   std::vector< snu::KMuon > testmuons = GetMuons("MUON_HN_TIGHT", true);
-  if(testmuons.size() == 2){
+
+  float etabins_muon_dz[] = {0., 0.9, 1.2, 2.1, 2.4};
+  if(testmuons.size() == 2 && test_vetomuons.size() == 2 && test_vetoelectrons.size() == 0){
 
     snu::KMuon mu1 = testmuons.at(0);
     snu::KMuon mu2 = testmuons.at(1);
 
     if( PassTriggerOR(dimuontriggers_NonDZ) ){
 
-      if( fabs( (mu1+mu2).M() - 91.1876 ) < 15. ){
+      bool UseEvent = false;
+      UseEvent = ( fabs( (mu1+mu2).M() - 91.1876 ) < 15. ) && (mu1.Pt() > 20.) && (mu2.Pt() > 10.) && (mu1.Charge()!=mu2.Charge());
 
-        FillHist("DiMuonNonDZFired", 0., 1., 0., 1., 1);
+      if( UseEvent ){
+
+        FillHist("DiMuonNonDZFired_onebin", 0., 1., 0., 1., 1);
+        FillHist("DiMuonNonDZFired_mZ", (mu1+mu2).M(), 1., 50., 150., 100);
+        FillHist("DiMuonNonDZFired_eta1_vs_eta2", fabs(mu1.Eta()), fabs(mu2.Eta()), 1., etabins_muon_dz, 4, etabins_muon_dz, 4);
+        FillHist("DiMuonNonDZFired_dZ", fabs(mu1.dZ()-mu2.dZ()), 1., 0., 1., 1000);
         if( PassTriggerOR(dimuontriggers_DZ) ){
-          FillHist("DiMuonDZFired", 0., 1., 0., 1., 1);
+          FillHist("DiMuonDZFired_onebin", 0., 1., 0., 1., 1);
+          FillHist("DiMuonDZFired_mZ", (mu1+mu2).M(), 1., 50., 150., 100);
+          FillHist("DiMuonDZFired_eta1_vs_eta2", fabs(mu1.Eta()), fabs(mu2.Eta()), 1., etabins_muon_dz, 4, etabins_muon_dz, 4);
+          FillHist("DiMuonDZFired_dZ", fabs(mu1.dZ()-mu2.dZ()), 1., 0., 1., 1000);
         }
 
       }
 
     }
   }
+
+  vector<TString> dielectrontriggers_NonDZ, dielectrontriggers_DZ;
+  dielectrontriggers_NonDZ.push_back("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v");
+  dielectrontriggers_DZ.push_back("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v");
+  std::vector< snu::KElectron > testelectrons = GetElectrons(true, true, "ELECTRON_HN_TIGHTv4");
+
+  float etabins_electron_dz[] = {0.0, 0.8, 1.4442, 1.566, 2.0, 2.5};
+  if(testelectrons.size() == 2 && test_vetomuons.size() == 0 && test_vetoelectrons.size() == 2){
+
+    snu::KElectron el1 = testelectrons.at(0);
+    snu::KElectron el2 = testelectrons.at(1);
+
+    if( PassTriggerOR(dielectrontriggers_NonDZ) ){
+
+      bool UseEvent = false;
+      UseEvent = ( fabs( (el1+el2).M() - 91.1876 ) < 15. ) && (el1.Pt() > 25.) && (el2.Pt() > 15.) && (el1.Charge()!=el2.Charge());
+
+      if( UseEvent ){
+
+        FillHist("DiElectronNonDZFired_onebin", 0., 1., 0., 1., 1);
+        FillHist("DiElectronNonDZFired_mZ", (el1+el2).M(), 1., 50., 150., 100);
+        FillHist("DiElectronNonDZFired_eta1_vs_eta2", fabs(el1.Eta()), fabs(el2.Eta()), 1., etabins_electron_dz, 5, etabins_electron_dz, 5);
+        FillHist("DiElectronNonDZFired_dZ", fabs(el1.dZ()-el2.dZ()), 1., 0., 1., 1000);
+        if( PassTriggerOR(dielectrontriggers_DZ) ){
+          FillHist("DiElectronDZFired_onebin", 0., 1., 0., 1., 1);
+          FillHist("DiElectronDZFired_mZ", (el1+el2).M(), 1., 50., 150., 100);
+          FillHist("DiElectronDZFired_eta1_vs_eta2", fabs(el1.Eta()), fabs(el2.Eta()), 1., etabins_electron_dz, 5, etabins_electron_dz, 5);
+          FillHist("DiElectronDZFired_dZ", fabs(el1.dZ()-el2.dZ()), 1., 0., 1., 1000);
+        }
+
+      }
+
+    }
+  }
+
+
+  vector<TString> emutriggers_Mu8Ele23_NonDZ, emutriggers_Mu8Ele23_DZ;
+  emutriggers_Mu8Ele23_NonDZ.push_back("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v");
+  emutriggers_Mu8Ele23_DZ.push_back("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v");
+  if(testmuons.size() == 1 && testelectrons.size() == 1 && test_vetomuons.size() == 1 && test_vetoelectrons.size() == 1){
+
+    snu::KMuon mu = testmuons.at(0);
+    snu::KElectron el = testelectrons.at(0);
+
+    if( PassTriggerOR(emutriggers_Mu8Ele23_NonDZ) ){
+
+      bool UseEvent = false;
+      UseEvent = (mu.Pt() > 10.) && (el.Pt() > 25.) && (mu.Charge()!=el.Charge());
+
+      if( UseEvent ){
+
+        FillHist("Mu8Ele23_EMuNonDZFired_onebin", 0., 1., 0., 1., 1);
+        FillHist("Mu8Ele23_EMuNonDZFired_mZ", (mu+el).M(), 1., 50., 150., 100);
+        FillHist("Mu8Ele23_EMuNonDZFired_eta1_vs_eta2", fabs(mu.Eta()), fabs(el.Eta()), 1., etabins_electron_dz, 5, etabins_electron_dz, 5);
+        FillHist("Mu8Ele23_EMuNonDZFired_dZ", fabs(mu.dZ()-el.dZ()), 1., 0., 1., 1000);
+        if( PassTriggerOR(emutriggers_Mu8Ele23_DZ) ){
+          FillHist("Mu8Ele23_EMuDZFired_onebin", 0., 1., 0., 1., 1);
+          FillHist("Mu8Ele23_EMuDZFired_mZ", (mu+el).M(), 1., 50., 150., 100);
+          FillHist("Mu8Ele23_EMuDZFired_eta1_vs_eta2", fabs(mu.Eta()), fabs(el.Eta()), 1., etabins_electron_dz, 5, etabins_electron_dz, 5);
+          FillHist("Mu8Ele23_EMuDZFired_dZ", fabs(mu.dZ()-el.dZ()), 1., 0., 1., 1000);
+        }
+      }
+
+    }
+
+  }
+
+  vector<TString> emutriggers_Mu23Ele8_NonDZ, emutriggers_Mu23Ele8_DZ;
+  emutriggers_Mu23Ele8_NonDZ.push_back("HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_v");
+  emutriggers_Mu23Ele8_DZ.push_back("HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_DZ_v");
+  if(testmuons.size() == 1 && testelectrons.size() == 1 && test_vetomuons.size() == 1 && test_vetoelectrons.size() == 1){
+
+    snu::KMuon mu = testmuons.at(0);
+    snu::KElectron el = testelectrons.at(0);
+
+    if( PassTriggerOR(emutriggers_Mu23Ele8_NonDZ) ){
+
+      bool UseEvent = false;
+      UseEvent = (mu.Pt() > 25.) && (el.Pt() > 10.) && (mu.Charge()!=el.Charge());
+
+      if( UseEvent ){
+
+        FillHist("Mu23Ele8_EMuNonDZFired_onebin", 0., 1., 0., 1., 1);
+        FillHist("Mu23Ele8_EMuNonDZFired_mZ", (mu+el).M(), 1., 50., 150., 100);
+        FillHist("Mu23Ele8_EMuNonDZFired_eta1_vs_eta2", fabs(mu.Eta()), fabs(el.Eta()), 1., etabins_electron_dz, 5, etabins_electron_dz, 5);
+        FillHist("Mu23Ele8_EMuNonDZFired_dZ", fabs(mu.dZ()-el.dZ()), 1., 0., 1., 1000);
+        if( PassTriggerOR(emutriggers_Mu23Ele8_DZ) ){
+          FillHist("Mu23Ele8_EMuDZFired_onebin", 0., 1., 0., 1., 1);
+          FillHist("Mu23Ele8_EMuDZFired_mZ", (mu+el).M(), 1., 50., 150., 100);
+          FillHist("Mu23Ele8_EMuDZFired_eta1_vs_eta2", fabs(mu.Eta()), fabs(el.Eta()), 1., etabins_electron_dz, 5, etabins_electron_dz, 5);
+          FillHist("Mu23Ele8_EMuDZFired_dZ", fabs(mu.dZ()-el.dZ()), 1., 0., 1., 1000);
+        }
+      }
+
+    }
+
+  }
+
+
+
   return;
 */
 /*
