@@ -819,6 +819,7 @@ double MCDataCorrections::TriggerEfficiencyLegByLegPeriodDependant(std::vector<s
     if(catperiod==8){
       if(DataOrMC==0) DZFilterEff = 0.981384;
       else DZFilterEff = 0.989614;
+      DZFilterEff *= 1.+double(direction)*0.01; //FIXME 1% systematic for dz filter eff
     }
 
     for(unsigned int i=0; i<mu.size()-1; i++){
@@ -851,6 +852,7 @@ double MCDataCorrections::TriggerEfficiencyLegByLegPeriodDependant(std::vector<s
     double DZFilterEff(1.);
     if(DataOrMC==0) DZFilterEff = 0.989356;
     else DZFilterEff = 0.987438;
+    DZFilterEff *= 1.+double(direction)*0.01; //FIXME 1% systematic for dz filter eff
 
     for(unsigned int i=0; i<el.size()-1; i++){
       snu::KElectron el1 = el.at(i);
@@ -883,6 +885,7 @@ double MCDataCorrections::TriggerEfficiencyLegByLegPeriodDependant(std::vector<s
     if(catperiod==8){
       if(DataOrMC==0) DZFilterEff = 0.967446;
       else DZFilterEff = 0.991455;
+      DZFilterEff *= 1.+double(direction)*0.01; //FIXME 1% systematic for dz filter eff
     }
 
     double mu23ele8eff = TriggerEfficiency_EMu_passing_EMuTrigger(mu1, el1, "MU23", "ELE8", muid, elid, DataOrMC, catperiod, direction);
