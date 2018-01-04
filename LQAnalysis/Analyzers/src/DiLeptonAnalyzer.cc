@@ -1920,7 +1920,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
       FillCutFlowByName(Suffix, "TwoLeptons", this_weight, isData);
 
-      if(!DoConversion && !DoMCClosure && !isSSForCF) continue;
+      //if(!DoConversion && !DoMCClosure && !isSSForCF) continue;
 
       double m_Z = 91.1876;
       bool isOffZ = fabs( (lep.at(0)+lep.at(1)).M() - m_Z ) > 10.;
@@ -2167,7 +2167,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
 
       //==== Z-seleciton
-      map_Region_to_Bool[Suffix+"_Z_CR"] = (nbjets_nolepveto==0) && (!isSSForCF) && (!isOffZ);
+      map_Region_to_Bool[Suffix+"_Z_CR"] = (!isSSForCF) && ((lep.at(0)+lep.at(1)).M()>81.) && ((lep.at(0)+lep.at(1)).M()<101.);
 
       //==== W+W+ CR
       if(jets_eta5.size() >= 2){
