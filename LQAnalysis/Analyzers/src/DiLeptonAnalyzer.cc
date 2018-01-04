@@ -1395,7 +1395,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       FillCutFlowByName(Suffix, "MET_PV", w_cutflow[Suffix], isData);
 
       //==== Trigger pass
-      if(!PassTriggerOR( Triggers.at(i) )) continue;
+      //if(!PassTriggerOR( Triggers.at(i) )) continue; //FIXME ee test
 
       double DiMuon_MCTriggerWeight = 0.;
       double EMu_MCTriggerWeight = 0.;
@@ -1528,10 +1528,10 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
         if(PassTriggerOR(triggerlist_DiElectron_Ele23Ele12)){
           if(isTT){
-            if((electrons_tight.at(0).Pt() > 25.) && (electrons_tight.at(1).Pt() > 15.)) PtOkay = true;
+            if((electrons_tight.at(0).Pt() > 20.) && (electrons_tight.at(1).Pt() > 15.)) PtOkay = true; //FIXME ee test
           }
           else{
-            if((electrons.at(0).Pt() > 25.) && (electrons.at(1).Pt() > 15.)) PtOkay = true;
+            if((electrons.at(0).Pt() > 20.) && (electrons.at(1).Pt() > 15.)) PtOkay = true; //FIXME ee test
           }
         }
 /*
