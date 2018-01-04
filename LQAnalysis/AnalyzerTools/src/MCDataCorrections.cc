@@ -767,14 +767,20 @@ double MCDataCorrections::TriggerEfficiencyLegByLeg(std::vector<snu::KElectron> 
 
     double WeightBtoF = (lumi_periodB+lumi_periodC+lumi_periodD+lumi_periodE+lumi_periodF)/total_lumi;
     double WeightGtoH = (lumi_periodG+lumi_periodH)/total_lumi;
-    double Eff_bf = TriggerEfficiencyLegByLegPeriodDependant(el, elid, mu, muid, TriggerCategory, 1, DataOrMC, direction);
-    double Eff_gh = TriggerEfficiencyLegByLegPeriodDependant(el, elid, mu, muid, TriggerCategory, 7, DataOrMC, direction);
+    double WeightG = (lumi_periodG)/total_lumi;
+    double WeightH = (lumi_periodH)/total_lumi;
 
-    double Eff_weight = WeightBtoF*Eff_bf + WeightGtoH*Eff_gh;
+    double Eff_bf = TriggerEfficiencyLegByLegPeriodDependant(el, elid, mu, muid, TriggerCategory, 1, DataOrMC, direction);
+    double Eff_g = TriggerEfficiencyLegByLegPeriodDependant(el, elid, mu, muid, TriggerCategory, 7, DataOrMC, direction); //FIXME it should be 6..
+    double Eff_h = TriggerEfficiencyLegByLegPeriodDependant(el, elid, mu, muid, TriggerCategory, 8, DataOrMC, direction); //FIXME it should be 7.. but abusing it for now
+
+    double Eff_weight = WeightBtoF*Eff_bf + WeightG*Eff_g + WeightH*Eff_h;
     //cout << "[MCDataCorrections::TriggerEfficiencyLegByLeg] WeightBtoF = " << WeightBtoF << endl;
-    //cout << "[MCDataCorrections::TriggerEfficiencyLegByLeg] WeightGtoH = " << WeightGtoH << endl;
+    //cout << "[MCDataCorrections::TriggerEfficiencyLegByLeg] WeightG = " << WeightG << endl;
+    //cout << "[MCDataCorrections::TriggerEfficiencyLegByLeg] WeightH = " << WeightH << endl;
     //cout << "[MCDataCorrections::TriggerEfficiencyLegByLeg] Eff_bf = " << Eff_bf << endl;
-    //cout << "[MCDataCorrections::TriggerEfficiencyLegByLeg] Eff_gh = " << Eff_gh << endl;
+    //cout << "[MCDataCorrections::TriggerEfficiencyLegByLeg] Eff_g = " << Eff_g << endl;
+    //cout << "[MCDataCorrections::TriggerEfficiencyLegByLeg] Eff_h = " << Eff_h << endl;
 
     return Eff_weight;
   }
@@ -809,12 +815,20 @@ double MCDataCorrections::TriggerEfficiencyLegByLegPeriodDependant(std::vector<s
 
     double faileff(1.);
 
+    double DZFilterEff(1.);
+    if(catperiod==8){
+      if(DataOrMC==0) DZFilterEff = 0.981384;
+      else DZFilterEff = 0.989614;
+      DZFilterEff *= 1.+double(direction)*0.01; //FIXME 1% systematic for dz filter eff
+    }
+
     for(unsigned int i=0; i<mu.size()-1; i++){
       snu::KMuon mu1 = mu.at(i);
       for(unsigned j=i+1; j<mu.size(); j++){
         snu::KMuon mu2 = mu.at(j);
         double dimueff = TriggerEfficiency_DiMuon_passing_DoubleMuonTrigger(mu1, mu2, "MU17", "MU8_OR_TKMU8", muid, DataOrMC, catperiod, direction);
         //cout << "[MCDataCorrections::TriggerEfficiencyLegByLegPeriodDependant] dimueff = " << dimueff << endl;
+        dimueff *= DZFilterEff;
         
         faileff *= (1.-dimueff);
       }
@@ -835,12 +849,18 @@ double MCDataCorrections::TriggerEfficiencyLegByLegPeriodDependant(std::vector<s
 
     double faileff(1.);
 
+    double DZFilterEff(1.);
+    if(DataOrMC==0) DZFilterEff = 0.989356;
+    else DZFilterEff = 0.987438;
+    DZFilterEff *= 1.+double(direction)*0.01; //FIXME 1% systematic for dz filter eff
+
     for(unsigned int i=0; i<el.size()-1; i++){
       snu::KElectron el1 = el.at(i);
       for(unsigned j=i+1; j<el.size(); j++){
         snu::KElectron el2 = el.at(j);
         double dieleff = TriggerEfficiency_DiElectron_passing_DoubleElectronTrigger(el1, el2, "ELE23", "ELE12", elid, DataOrMC, catperiod, direction);
         //cout << "[MCDataCorrections::TriggerEfficiencyLegByLegPeriodDependant] dimueff = " << dimueff << endl;
+        dieleff *= DZFilterEff;
 
         faileff *= (1.-dieleff);
       }
@@ -861,11 +881,21 @@ double MCDataCorrections::TriggerEfficiencyLegByLegPeriodDependant(std::vector<s
     snu::KMuon mu1 = mu.at(0);
     snu::KElectron el1 = el.at(0);
 
+    double DZFilterEff(1.);
+    if(catperiod==8){
+      if(DataOrMC==0) DZFilterEff = 0.967446;
+      else DZFilterEff = 0.991455;
+      DZFilterEff *= 1.+double(direction)*0.01; //FIXME 1% systematic for dz filter eff
+    }
+
     double mu23ele8eff = TriggerEfficiency_EMu_passing_EMuTrigger(mu1, el1, "MU23", "ELE8", muid, elid, DataOrMC, catperiod, direction);
     double mu8ele23eff = TriggerEfficiency_EMu_passing_EMuTrigger(mu1, el1, "MU8", "ELE23", muid, elid, DataOrMC, catperiod, direction);
 
     //cout << "[MCDataCorrections::TriggerEfficiencyLegByLegPeriodDependant] mu23ele8eff = " << mu23ele8eff << endl;
     //cout << "[MCDataCorrections::TriggerEfficiencyLegByLegPeriodDependant] mu8ele23eff = " << mu8ele23eff << endl;
+
+    mu23ele8eff *= DZFilterEff;
+    mu8ele23eff *= DZFilterEff;
 
     faileff *= (1.-mu23ele8eff);
     faileff *= (1.-mu8ele23eff);
