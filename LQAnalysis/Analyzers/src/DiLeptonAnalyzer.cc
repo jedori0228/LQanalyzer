@@ -1920,7 +1920,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
       FillCutFlowByName(Suffix, "TwoLeptons", this_weight, isData);
 
-      //if(!DoConversion && !DoMCClosure && !isSSForCF) continue;
+      if(!DoConversion && !DoMCClosure && !isSSForCF) continue;
 
       double m_Z = 91.1876;
       bool isOffZ = fabs( (lep.at(0)+lep.at(1)).M() - m_Z ) > 10.;
