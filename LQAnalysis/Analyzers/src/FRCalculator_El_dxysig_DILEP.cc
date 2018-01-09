@@ -455,7 +455,8 @@ void FRCalculator_El_dxysig_DILEP::ExecuteEvents()throw( LQError ){
       for(unsigned int j=0; j<jetColl_nolepveto.size(); j++){
 
         snu::KJet jet = jetColl_nolepveto.at(j);
-        if( electron.DeltaR( jet ) < dr ){
+        //if( electron.DeltaR( jet ) < dr ){ //FIXME
+        if(1){ //FIXME
           if(IsBTagged(jet, snu::KJet::CSVv2, snu::KJet::Medium)){
             HasCloseBjet_Medium = true;
           }
