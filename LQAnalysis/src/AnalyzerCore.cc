@@ -62,7 +62,7 @@ AnalyzerCore::AnalyzerCore() : LQCycleBase(), MCweight(-999.) {
   
   string lqdir = getenv("LQANALYZER_DIR");
 
-  m_fakeobj = new HNCommonLeptonFakes(lqdir+"/HNCommonLeptonFakes/share/");
+  //m_fakeobj = new HNCommonLeptonFakes(lqdir+"/HNCommonLeptonFakes/share/");
   rmcor = new rochcor2012();
 
   bool Check_jecSrc = true;

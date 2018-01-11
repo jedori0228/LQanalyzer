@@ -58,162 +58,87 @@ void ExampleAnalyzer::InitialiseAnalysis() throw( LQError ) {
  }
 
 
- void ExampleAnalyzer::ExecuteEvents()throw( LQError ){
+void ExampleAnalyzer::ExecuteEvents()throw( LQError ){
 
-   m_logger << DEBUG << "RunNumber/Event Number = "  << eventbase->GetEvent().RunNumber() << " : " << eventbase->GetEvent().EventNumber() << LQLogger::endmsg;
-   m_logger << DEBUG << "isData = " << isData << LQLogger::endmsg;
-   
-   FillCutFlow("NoCut", weight);
-   if(!PassBasicEventCuts()) return;     /// Initial event cuts  
-   
-   FillCutFlow("EventCut", weight);
-      
-   /// Trigger List (specific to muons channel)
-   std::vector<TString> triggerslist;
-   //triggerslist.push_back("HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v");
-   triggerslist.push_back("HLT_Mu17_TkMu8_v");
-
-   if(!PassTrigger(triggerslist, prescale)) return;
-
-   FillCutFlow("TriggerCut", weight);
-   /// Correct MC for pileup
-   m_logger << DEBUG << "passedTrigger "<< LQLogger::endmsg;
-   
-   numberVertices = eventbase->GetEvent().nVertices();   
-
-   if (!eventbase->GetEvent().HasGoodPrimaryVertex()) return; //// Make cut on event wrt vertex
-
-   FillCutFlow("VertexCut", weight);
-
-   FillHist("h_nvtx_norw_ee", numberVertices, weight, 0., 60.,60); 
-   
-   if (MC_pu&&!k_isdata) {
-     /// Here is an alternative method to Fill a histogram. 
-     /// The histogram with name "h_nvtx_norw"/"h_nvtx_rw" were not declared in the MakeHistogram code. 
-     /// To avoid adding this by hand we can just use FillHist() function with 3 additional inputs i.e., xmin, xmax and nbinsx          
-     weight = weight*reweightPU->GetWeight(eventbase->GetEvent().PileUpInteractionsTrue())* MCweight;
-   }
-
-   FillHist("h_nvtx_rw_ee",numberVertices,weight, 0., 60.,60 );
-   
-   //////////////////////////////////////////////////////
-   //////////// Select objetcs
-   //////////////////////////////////////////////////////   
-
-
-   //// We will speicfy the following collection of objects
-   /// 1) Tight Muons
-   /// 2) Loose Muons
-   /// 3) LooseButNOTight Muons
-   /// 4) Loose Muons for veto
-   /// 5) TightElectrons
-   /// 6) Jets(with lepton veto)
-   
-   /// 1) Tight Muons       
-   std::vector<snu::KMuon> muonTightColl;
-   eventbase->GetMuonSel()->SetPt(20.); 
-   eventbase->GetElectronSel()->SetID(BaseSelection::MUON_TIGHT);
-   eventbase->GetMuonSel()->SetEta(2.4);
-   eventbase->GetMuonSel()->SetRelIso(0.1);
-   eventbase->GetMuonSel()->SetChiNdof(10.); 
-   eventbase->GetMuonSel()->SetBSdxy(0.005);
-   eventbase->GetMuonSel()->SetBSdz(0.10);
-   eventbase->GetMuonSel()->SetDeposits(4.0,6.0);
-   eventbase->GetMuonSel()->Selection(muonTightColl);
-   
-   /// 2) Loose Muons  
-   std::vector<snu::KMuon> muonLooseColl;
-   eventbase->GetMuonSel()->SetPt(20.);
-   eventbase->GetMuonSel()->SetEta(2.4);
-   eventbase->GetMuonSel()->SetRelIso(0.40);
-   eventbase->GetMuonSel()->SetChiNdof(50.);
-   eventbase->GetMuonSel()->SetBSdxy(0.20);
-   eventbase->GetMuonSel()->SetBSdz(0.10);
-   eventbase->GetMuonSel()->SetDeposits(4.0,6.0);
-   eventbase->GetMuonSel()->Selection(muonLooseColl);
-   
-   
-   /// 3) LooseButNOTight Muons      
-   std::vector<snu::KMuon> muonLooseButNOTightColl;
-   eventbase->GetMuonSel()->SetPt(20.);
-   eventbase->GetMuonSel()->SetEta(2.4);
-   eventbase->GetMuonSel()->SetRelIso(0.1, 0.4);
-   eventbase->GetMuonSel()->SetChiNdof(10.,50.);
-   eventbase->GetMuonSel()->SetBSdxy(0.005,0.20);
-   eventbase->GetMuonSel()->SetBSdz(0.10);
-   eventbase->GetMuonSel()->SetDeposits(4.0,6.0);
-   eventbase->GetMuonSel()->Selection(muonLooseButNOTightColl);
-   
-   /// 4) Loose Muons for veto
-   std::vector<snu::KMuon> muonVetoColl;
-   eventbase->GetMuonSel()->SetPt(10.);
-   eventbase->GetMuonSel()->SetEta(2.4);
-   eventbase->GetMuonSel()->SetRelIso(0.20);
-   eventbase->GetMuonSel()->SetChiNdof(500.);
-   eventbase->GetMuonSel()->SetBSdxy(2000.);
-   eventbase->GetMuonSel()->SetBSdz(100.00);
-   eventbase->GetMuonSel()->SetDeposits(400.0,600.0);
-   eventbase->GetMuonSel()->Selection(muonVetoColl);
-   
-   /// 5) TightElectrons                                                                                                                                                     
-   std::vector<snu::KElectron> electronTightColl;
-   eventbase->GetElectronSel()->SetID(BaseSelection::EGAMMA_MEDIUM);
-   eventbase->GetElectronSel()->SetPt(25);
-   eventbase->GetElectronSel()->SetEta(2.5);
-   eventbase->GetElectronSel()->SetRelIso(0.15);
-   eventbase->GetElectronSel()->SetBSdxy(0.02);
-   eventbase->GetElectronSel()->SetBSdz(0.10);
-   eventbase->GetElectronSel()->SetCheckCharge(true);
-   eventbase->GetElectronSel()->SetApplyConvVeto(true);
-   eventbase->GetElectronSel()->Selection(electronTightColl);
-
-  
-   /// 6) Jets(with lepton veto) 
-   std::vector<snu::KJet> jetColl_lepveto;
-   eventbase->GetJetSel()->SetPt(20.);
-   eventbase->GetJetSel()->SetEta(2.5);
-   eventbase->GetJetSel()->JetSelectionLeptonVeto(jetColl_lepveto, muonTightColl, electronTightColl);
-
-   ///// SOME STANDARD PLOTS /////
-   ////  Z-> mumu            //////
-
-   if (muonTightColl.size() == 2) {                   
-     snu::KParticle Z = muonTightColl.at(0) + muonTightColl.at(1);
-     if(muonTightColl.at(0).Charge() != muonTightColl.at(1).Charge()){      
-       FillHist("zpeak_mumu", Z.M(), weight, 0., 200.,400);
-       FillCLHist(sighist, "Zmuons_jlv", eventbase->GetEvent(), muonTightColl,electronTightColl,jetColl_lepveto, weight);
-     } 
-     else{
-       FillCLHist(sighist, "Sigmuons", eventbase->GetEvent(), muonTightColl,electronTightColl,jetColl_lepveto, weight);
+ //==== TEST 8 TeV DiMuon 
+  std::vector<snu::KMuon> testmuons = GetMuons("tight");
+  std::vector<snu::KMuon> testloosemuons = GetMuons("loose");
+  std::vector<snu::KJet> testjets = GetJets("ApplyPileUpID");
+  int n_bjets = NBJet(testjets);
+  if(testmuons.size()>=1){
+    FillHist("jets_size", testjets.size(), weight, 0., 10., 10);
+    FillHist("jets_nbjet", n_bjets, weight, 0., 10., 10);
+    int n_genpu=0;
+    for(int i=0; i<testjets.size(); i++){
+      FillHist("jets_PartonFlavour", testjets.at(i).PartonFlavour(), weight, -50, 50, 100);
+      FillHist("jets_pt", testjets.at(i).Pt(), weight, 0., 200., 200);
+      FillHist("jets_eta", testjets.at(i).Eta(), weight, -3., 3., 60);
+      FillHist("jets_PUMVA", testjets.at(i).PileupJetIDMVA(), weight, -1., 1., 200);
+      if(testjets.at(i).PartonFlavour()==0){
+        n_genpu++;
+        FillHist("GENPU_jets_pt", testjets.at(i).Pt(), weight, 0., 200., 200);
+        FillHist("GENPU_jets_eta", testjets.at(i).Eta(), weight, -3., 3., 60);
+        FillHist("GENPU_jets_PUMVA", testjets.at(i).PileupJetIDMVA(), weight, -1., 1., 200);
+      }
     }
-   }
-   
-   
-   
+    FillHist("GENPU_jets_size", n_genpu, weight, 0., 10., 10);
 
+    if(testloosemuons.size()==2){
 
-  ///// SOME STANDARD PLOTS /////
-  ////  Z-> ee              //////
-   if (electronTightColl.size() == 2) {      
-     
-     if(!isData){
-       weight *=  ElectronScaleFactor(electronTightColl.at(0).Eta(), electronTightColl.at(0).Pt(), true);
-       weight *=  ElectronScaleFactor(electronTightColl.at(1).Eta(), electronTightColl.at(1).Pt(), true);
-     }
-       
-     snu::KParticle Z = electronTightColl.at(0) + electronTightColl.at(1);
-     if(electronTightColl.at(0).Charge() != electronTightColl.at(1).Charge()){      
-       FillHist("h_nvtx_rw_tight_ee",numberVertices,weight, 0., 60.,60 );
-       FillCutFlow("DiEl_tight",weight);
-       FillHist("zpeak_ee", Z.M(), weight, 0., 200.,400);      
-       FillCLHist(sighist, "Zelectrons_jlv", eventbase->GetEvent(), muonTightColl,electronTightColl,jetColl_lepveto, weight);
-     } 
-     else {
-       FillCLHist(sighist, "Sigelectrons", eventbase->GetEvent(), muonTightColl,electronTightColl,jetColl_lepveto, weight);
-     }
+      bool IsSS = (testloosemuons.at(0).Charge())==(testloosemuons.at(1).Charge());
+      if(k_sample_name.Contains("Wjets")) IsSS = true;
+
+      //==== SS
+      if(IsSS && testloosemuons.at(0).Pt() >= 20. && testloosemuons.at(1).Pt() >= 15.){
+
+        FillHist("TL_jets_size", testjets.size(), weight, 0., 10., 10);
+        FillHist("TL_jets_nbjet", n_bjets, weight, 0., 10., 10);
+
+        //==== SS+2jet
+        if(testjets.size()>=2){
+          FillHist("TL2jet_jets_size", testjets.size(), weight, 0., 10., 10);
+          FillHist("TL2jet_jets_nbjet", n_bjets, weight, 0., 10., 10);
+          for(int i=0; i<testjets.size(); i++){
+            FillHist("TL2jet_jets_PartonFlavour", testjets.at(i).PartonFlavour(), weight, -50, 50, 100);
+            FillHist("TL2jet_jets_pt", testjets.at(i).Pt(), weight, 0., 200., 200);
+            FillHist("TL2jet_jets_eta", testjets.at(i).Eta(), weight, -3., 3., 60);
+            FillHist("TL2jet_jets_PUMVA", testjets.at(i).PileupJetIDMVA(), weight, -1., 1., 200);
+          }
+
+          //==== TT
+          if(testmuons.size()==2){
+            FillHist("TT2jet_jets_size", testjets.size(), weight, 0., 10., 10);
+            FillHist("TT2jet_jets_nbjet", n_bjets, weight, 0., 10., 10);
+            for(int i=0; i<testjets.size(); i++){
+              FillHist("TT2jet_jets_PartonFlavour", testjets.at(i).PartonFlavour(), weight, -50, 50, 100);
+              FillHist("TT2jet_jets_pt", testjets.at(i).Pt(), weight, 0., 200., 200);
+              FillHist("TT2jet_jets_eta", testjets.at(i).Eta(), weight, -3., 3., 60);
+              FillHist("TT2jet_jets_PUMVA", testjets.at(i).PileupJetIDMVA(), weight, -1., 1., 200);
+            }
+          }
+
+        }
+        n_genpu=0;
+        for(int i=0; i<testjets.size(); i++){
+          FillHist("TL_jets_PartonFlavour", testjets.at(i).PartonFlavour(), weight, -50, 50, 100);
+          FillHist("TL_jets_pt", testjets.at(i).Pt(), weight, 0., 200., 200);
+          FillHist("TL_jets_eta", testjets.at(i).Eta(), weight, -3., 3., 60);
+          FillHist("TL_jets_PUMVA", testjets.at(i).PileupJetIDMVA(), weight, -1., 1., 200);
+          if(testjets.at(i).PartonFlavour()==0){
+            n_genpu++;
+            FillHist("TL_GENPU_jets_pt", testjets.at(i).Pt(), weight, 0., 200., 200);
+            FillHist("TL_GENPU_jets_eta", testjets.at(i).Eta(), weight, -3., 3., 60);
+            FillHist("TL_GENPU_jets_PUMVA", testjets.at(i).PileupJetIDMVA(), weight, -1., 1., 200);
+          }
+        }
+        FillHist("TL_GENPU_jets_size", n_genpu, weight, 0., 10., 10);
+
+      }
+    }
+
   }
-  
   return;
+  
 }// End of execute event loop
   
 

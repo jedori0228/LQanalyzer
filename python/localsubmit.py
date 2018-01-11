@@ -81,43 +81,7 @@ nsubjobs=  options.nsubjobs
 new_channel = channel.replace(":", "")
 original_channel = new_channel
 
-queue_command = ""
-if queue  == "exclude_1":
-    queue_command = " -q allbut1 "
-elif queue  == "exclude_2":
-    queue_command = " -q allbut2 "
-elif queue  == "exclude_3":
-    queue_command = " -q allbut3 "
-elif queue  == "exclude_4":
-    queue_command = " -q allbut4 "
-elif queue  == "exclude_5":
-    queue_command = " -q allbut5 "
-elif queue  == "exclude_6":
-    queue_command = " -q allbut6 "
-elif queue  == "exclude_7":
-    queue_command = " -q allbut7 "
-elif queue  == "exclude_8":
-    queue_command = " -q allbut8 "
-elif  queue  == "node_1":
-    queue_command = " -q single1 "
-elif  queue  == "node_2":
-    queue_command = " -q single2 "
-elif  queue  == "node_3":
-    queue_command = " -q single3 "
-elif  queue  == "node_4":
-    queue_command = " -q single4 "
-elif  queue  == "node_5":
-    queue_command = " -q single5 "
-elif  queue  == "node_6":
-    queue_command = " -q single6 "
-elif  queue  == "node_7":
-    queue_command = " -q single7 "
-elif  queue  == "node_8":
-    queue_command = " -q single8 "
-elif  queue  == "all":
-    queue_command = ""
-else:
-    queue_command = " -q single1 "
+queue_command = " -q "+queue
 
 ##############################
 ### check output dir exists
@@ -214,7 +178,7 @@ if "cmscluster.snu.ac.kr" in str(os.getenv("HOSTNAME")):
 if number_of_cores == 1:
     running_batch=False
     
-    
+
 if str(usebatch) == "NULL":
     if str(running_batch) == "True":
         print "%%%%%%%%%%%%%%%%%%%%%%%%"
@@ -227,6 +191,8 @@ else:
         running_batch=False
     elif  str(usebatch) == "false":
         running_batch=False
+    else:
+      running_batch=True
 
 ##########################################################################################
 ###########################################################################################
@@ -249,7 +215,7 @@ if not str(cycle) == "SKTreeMaker":
 ### Make tmp directory for job
 ############################################################
 
-output_mounted="/data2"
+output_mounted="/data4"
 if "cmscluster.snu.ac.kr" in str(os.getenv("HOSTNAME")):
     output_mounted="/data4"
 
@@ -697,7 +663,7 @@ check_array = []
 ###################################################
 
 if not (os.path.exists(output_mounted+"/LQ_SKTreeOutput/")):
-    os.system("mkdir /data2/LQ_SKTreeOutput/")
+    os.system("mkdir /data4/LQ_SKTreeOutput/")
 workspace = output_mounted+"/LQ_SKTreeOutput/"+ getpass.getuser() + "/"
 if not (os.path.exists(workspace)):
         os.system("mkdir " + workspace)

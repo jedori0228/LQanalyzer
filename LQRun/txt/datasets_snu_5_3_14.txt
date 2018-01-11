@@ -234,11 +234,11 @@ SKDYmm            1.             sk_cluster_ntuple_path  sk_cms_ntuple_path_2014
 SKDYtt            1.             sk_cluster_ntuple_path  sk_cms_ntuple_path_2014        MC/DYtt/
 
 ### Wjets ###
-SKWjets           1538.562       sk_cluster_ntuple_path  sk_cms_ntuple_path_2014        MC/Wjets/
+SKWjets           1538.562       sk_cluster_ntuple_path  sk_cluster_ntuple_path        MC/Wjets/
 SKWbb             517443.59      sk_cluster_ntuple_path  sk_cms_ntuple_path_2014        MC/Wbb/
 
 ### Top ###
-SKttbar           29588.256      sk_cluster_ntuple_path  sk_cms_ntuple_path_2014        MC/ttbar/
+SKttbar           29588.256      sk_cluster_ntuple_path  sk_cluster_ntuple_path        MC/ttbar/
 SKstbar_sch       79530.6821     sk_cluster_ntuple_path  sk_cms_ntuple_path_2014        MC/stbar_sch/
 SKstbar_tch       63031.661      sk_cluster_ntuple_path  sk_cms_ntuple_path_2014        MC/stbar_tch/
 SKstbar_tW        44455.856      sk_cluster_ntuple_path  sk_cms_ntuple_path_2014        MC/stbar_tW/

@@ -93,7 +93,7 @@ def make_batch_script(workdir, jname, lqdir, macroname):
     config+='#$ -e ' + workdir + ' \n'
 
     config+='echo "Job started at " `date` \n'
-    config+='cd /share/apps/root_v5_34_32/root/ \n'
+    config+='cd /share/apps/root_v5-34-32/root/ \n'
     config+='. bin/thisroot.sh \n'
     config+='cd ' + lqdir + '\n'
 

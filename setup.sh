@@ -37,7 +37,7 @@ if [ "$HOSTNAME" = "cms2.snu.ac.kr" ] || [ "$HOSTNAME" = "cms1.snu.ac.kr" ]; the
     export root_setup="/usr/local/bin/thisroot.sh"
 elif [ $HOSTNAME == "cmscluster.snu.ac.kr" ];
 then 
-    source /share/apps/root_v5_34_32/root/bin/thisroot.sh
+    source /share/apps/root_v5-34-32/root/bin/thisroot.sh
 else
     export root_setup=$HOME"/root/root/bin/thisroot.sh"
 fi    
@@ -47,7 +47,8 @@ fi
 export LQANALYZER_DIR=${PWD}
 
 
-export LQANALYZER_FILE_DIR="/data1/LQAnalyzer_rootfiles_for_analysis/Dec14/"
+#export LQANALYZER_FILE_DIR="/data1/LQAnalyzer_rootfiles_for_analysis/Dec14/"
+export LQANALYZER_FILE_DIR="/data4/LocalNtuples/LQAnalyzer_rootfiles_for_analysis/LQAnalysis/April15/"
 
 if [ $HOSTNAME == "cmscluster.snu.ac.kr" ];
 then
@@ -135,8 +136,8 @@ fi
 ### make directories that git does not allow to store
 
 
-export LQANALYZER_OUTPUT_PATH=/data2/LQ_SKTreeOutput/JobOutPut/${USER}/LQanalyzer/data/output/
-export LQANALYZER_LOG_PATH=/data2/LQ_SKTreeOutput/JobOutPut/${USER}/LQanalyzer/data/logfiles/
+export LQANALYZER_OUTPUT_PATH=/data4/LQ_SKTreeOutput/JobOutPut/${USER}/LQanalyzer/data/output/
+export LQANALYZER_LOG_PATH=/data4/LQ_SKTreeOutput/JobOutPut/${USER}/LQanalyzer/data/logfiles/
 
 if [ $HOSTNAME == "cmscluster.snu.ac.kr" ];
     then
