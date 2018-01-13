@@ -1920,7 +1920,14 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
       FillCutFlowByName(Suffix, "TwoLeptons", this_weight, isData);
 
-      if(!DoConversion && !DoMCClosure && !isSSForCF) continue;
+      //if(!DoConversion && !DoMCClosure && !isSSForCF) continue; //FIXME
+
+      //FIXME for v2
+      if(k_sample_name.Contains("HeavyNeutrinoTo")){
+        //==== SS:OS = 0.4736:0.5264
+        if(isSSForCF) this_weight *= 0.5/0.4736;
+        else          this_weight *= 0.5/0.5264;
+      }
 
       double m_Z = 91.1876;
       bool isOffZ = fabs( (lep.at(0)+lep.at(1)).M() - m_Z ) > 10.;
@@ -2396,8 +2403,9 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
           bool ToSave = false;
           if(this_suffix.Contains("Preselection")) ToSave = true;
-          //if(this_suffix.Contains("Low")) ToSave = true;
-          //if(this_suffix.Contains("High")) ToSave = true;
+          if(this_suffix.Contains("Low")) ToSave = true;
+          if(this_suffix.Contains("High")) ToSave = true;
+          if(this_suffix.Contains("CR")) ToSave = false;
 
           if(!ToSave) it->second = false;
         }
