@@ -1920,7 +1920,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
       FillCutFlowByName(Suffix, "TwoLeptons", this_weight, isData);
 
-      //if(!DoConversion && !DoMCClosure && !isSSForCF) continue; //FIXME
+      if(!DoConversion && !DoMCClosure && !isSSForCF) continue; //FIXME
 
       //FIXME for v2
       if(k_sample_name.Contains("HeavyNeutrinoTo")){
