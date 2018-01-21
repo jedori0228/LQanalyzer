@@ -217,6 +217,62 @@ void DiLeptonAnalyzer::InitialiseAnalysis() throw( LQError ) {
 void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
 /*
+  //==== Ghent Test
+  std::vector< snu::KMuon > testmuons = GetMuons("MUON_HNGENT_TIGHT", true);
+  std::vector< snu::KElectron > testelectrons = GetElectrons(true, true, "ELECTRON_GENT_TIGHT");
+  std::vector< snu::KJet> testjets = GetJets("JET_GHENT");
+
+  int testnbjets = 0;
+  for(int j=0; j<testjets.size(); j++){
+    if( IsBTagged(testjets.at(j), snu::KJet::CSVv2, snu::KJet::Loose, -1, 0) && fabs(testjets.at(j).Eta())<2.4 ){
+      testnbjets++;
+    }
+  }
+  if(testnbjets!=0) return;
+
+  int n_muons = testmuons.size();
+  int n_electrons = testelectrons.size();
+
+  if(n_muons+n_electrons!=3) return; // lll
+  if(n_muons<2) return; // mm+(m,e)
+  if(testmuons.at(0).Pt() < 15) return;
+
+  if(n_muons==2&&n_electrons==1){
+    if(testmuons.at(1).Pt()<10){
+      if(testmuons.at(0).Pt()<23) return;
+    }
+  }
+
+  std::vector<KLepton> testlep;
+  for(unsigned int j=0; j<testmuons.size(); j++){
+    KLepton this_lep( testmuons.at(j) );
+    testlep.push_back( this_lep );
+  }
+  for(unsigned int j=0; j<testelectrons.size(); j++){
+    KLepton this_lep( testelectrons.at(j) );
+    testlep.push_back( this_lep );
+  }
+  std::sort(testlep.begin(), testlep.end(), LeptonPtComparing);
+
+  double testMET = eventbase->GetEvent().MET();
+  bool UseEvent = (testMET<75) && ((testlep.at(0)+testlep.at(1)+testlep.at(2)).M()<80) && (testlep.at(0).Pt()<55);
+
+  if(UseEvent){
+    FillHist("test_Pass", 0., 1., 0., 1., 1);
+  }
+  bool HighUseEvent = ( !(testMET<75) || !((testlep.at(0)+testlep.at(1)+testlep.at(2)).M()<80) ) && (testlep.at(0).Pt()<55);
+  if(HighUseEvent){
+    if(testlep.at(1).Pt()>15&&testlep.at(2).Pt()>10){
+      FillHist("test_Pass", 0., 1., 0., 1., 1);
+    }
+  }
+  return;
+*/
+
+
+
+
+/*
   std::vector<snu::KFatJet> testfatjets = GetFatJets("FATJET_HN_loosest");
   for(unsigned int i=0; i<testfatjets.size(); i++){
     FillHist("test", testfatjets.at(i).L1JetCorr(), 1., 0., 2., 200);
@@ -881,6 +937,8 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   ForTree_PdfWeights->clear();
   ForTree_ScaleWeights->clear();
   snu::KEvent Evt = eventbase->GetEvent();
+  int N_RunNumber = Evt.RunNumber();
+  int N_EventNumber = Evt.EventNumber();
   for(unsigned int i=0; i<Evt.PdfWeights().size(); i++){
     ForTree_PdfWeights->push_back(Evt.PdfWeights().at(i));
   }
@@ -2461,7 +2519,11 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       bool NtupleSkim = (map_Region_to_Bool[Suffix+"_Preselection"]) && isSSForCF;
 
       if(RunNtp && NtupleSkim){
-        double cutop[100];
+        int temp_n_ntuplevar = 51;
+        if(isData) temp_n_ntuplevar = 53;
+        const int n_ntuplevar = temp_n_ntuplevar;
+
+        double cutop[n_ntuplevar];
         cutop[0] = lep.at(0).Pt();
         cutop[1] = lep.at(1).Pt();
         cutop[2] = lep.at(0).DeltaR( lep.at(1) );
@@ -2583,6 +2645,11 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         cutop[49] = lep.at(1).Eta();
 
         cutop[50] = fatjets.size();
+
+        if(isData){
+          cutop[51] = N_RunNumber;
+          cutop[52] = N_EventNumber;
+        }
 
         FillNtp("Ntp_"+Suffix+this_syst+"_Preselection_SS",cutop);
 
@@ -2780,12 +2847,24 @@ void DiLeptonAnalyzer::MakeHistograms(){
 
   for(int i=0; i<N_sys; i++){
 
+    if(isData){
+
+  MakeNtp("Ntp_DiMuon"+systs[i]+"_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:leadingLepton_Eta:secondLepton_Eta:Nfatjets:N_RunNumber:N_EventNumber");
+
+  MakeNtp("Ntp_DiElectron"+systs[i]+"_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:leadingLepton_Eta:secondLepton_Eta:Nfatjets:N_RunNumber:N_EventNumber");
+
+  MakeNtp("Ntp_EMu"+systs[i]+"_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:leadingLepton_Eta:secondLepton_Eta:Nfatjets:N_RunNumber:N_EventNumber");
+
+    }
+    else{
+
   MakeNtp("Ntp_DiMuon"+systs[i]+"_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:leadingLepton_Eta:secondLepton_Eta:Nfatjets");
 
   MakeNtp("Ntp_DiElectron"+systs[i]+"_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:leadingLepton_Eta:secondLepton_Eta:Nfatjets");
 
   MakeNtp("Ntp_EMu"+systs[i]+"_Preselection_SS", "leadingLepton_Pt:secondLepton_Pt:DeltaRl1l2:m_ll:isSS:isOffZ:Njets:Nbjets:Njets_nolepveto:Nbjets_nolepveto:Nfwdjets:Nbfwdjets:leadingJet_Pt:secondJet_Pt:DeltaRjjptorder:m_jjptorder:m_Leadljjptorder:m_SubLeadljjptorder:m_lljjptorder:leadingJet_jjWclosest_pt:secondJet_jjWclosest_pt:m_jj_jjWclosest:m_Leadljj_jjWclosest:m_SubLeadljj_jjWclosest:m_lljj_jjWclosest:DeltaRjjWclosest:DeltaRLeadl_jjWclosest:DeltaRSubLeadl_jjWclosest:DeltaRLeadl_SubLeadljjWclosest:DeltaRSubLeadl_LeadljjWclosest:leadingJet_lljjWclosest_pt:secondJet_lljjWclosest_pt:m_jj_lljjWclosest:m_Leadljj_lljjWclosest:m_SubLeadljj_lljjWclosest:m_lljj_lljjWclosest:DeltaRlljjWclosest:DeltaRLeadl_lljjWclosest:DeltaRSubLeadl_lljjWclosest:DeltaRLeadl_SubLeadllljjWclosest:DeltaRSubLeadl_LeadllljjWclosest:fwd_dRjj:PFMET:ST:HT:LT:weight:weight_err:leadingLepton_Eta:secondLepton_Eta:Nfatjets");
 
+    }
 
     GetNtp("Ntp_DiMuon"+systs[i]+"_Preselection_SS")->Branch("PdfWeights", "vector<float>",&ForTree_PdfWeights);
     GetNtp("Ntp_DiMuon"+systs[i]+"_Preselection_SS")->Branch("ScaleWeights", "vector<float>",&ForTree_ScaleWeights);
