@@ -12,8 +12,29 @@ declare -a dilepton_Moriond=(
 )
 
 declare -a tmp=(
-'HeavyNeutrinoToEE_Schannel_M20v2'  'HeavyNeutrinoToEMu_Schannel_M20v2'  'HeavyNeutrinoToMuE_Schannel_M20v2'  'HeavyNeutrinoToMuMu_Schannel_M20v2'  'HeavyNeutrinoToEE_Schannel_M30v2'  'HeavyNeutrinoToEMu_Schannel_M30v2'  'HeavyNeutrinoToMuE_Schannel_M30v2'  'HeavyNeutrinoToMuMu_Schannel_M30v2'  'HeavyNeutrinoToEE_Schannel_M40v2'  'HeavyNeutrinoToEMu_Schannel_M40v2'  'HeavyNeutrinoToMuE_Schannel_M40v2'  'HeavyNeutrinoToMuMu_Schannel_M40v2'
+'HN_MuMuMu_40'
+'HN_MuMuMu_50'
+'HN_MuMuMu_60'
+'HN_MuMuMu_70'
+'HN_MuMuMu_90'
+'HN_MuMuMu_100'
+'HN_MuMuMu_150'
+'HN_SSSF_MuMuE_40'
+'HN_SSSF_MuMuE_50'
+'HN_SSSF_MuMuE_60'
+'HN_SSSF_MuMuE_70'
+'HN_SSSF_MuMuE_90'
+'HN_SSSF_MuMuE_100'
+'HN_SSSF_MuMuE_150'
 )
+#'Ghent_HN_MuMuMu_mu_mixing_40'
+#'Ghent_HN_MuMuMu_mu_mixing_50'
+#'Ghent_HN_MuMuMu_mu_mixing_60'
+#'Ghent_HN_MuMuMu_mu_mixing_80'
+#'Ghent_HN_MuMuMu_mu_mixing_100'
+#'Ghent_HN_MuMuMu_mu_mixing_130'
+#'Ghent_HN_MuMuMu_mu_mixing_150'
+#)
 
 declare -a newTchannel=(
 'HNDilepton_MuMu_Tchannel_M300'

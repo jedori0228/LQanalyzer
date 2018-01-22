@@ -10,4 +10,4 @@ webpage https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID
 | JET_HN_eta5_nolepveto           | 20.     | 5.      | false  | true     |  false  |  false         | NONE                 | NONE                    |
 | JET_HN_eta5_loosest             | 10.     | 5.      | false  | true     |  false  |  false         | MUON_HN_VETO                 | ELECTRON_HN_VETO                    |
 | JET_HN_eta5_nolepveto_loosest   | 10.     | 5.      | false  | true     |  false  |  false         | NONE                 | NONE                    |
-
+| JET_GHENT          | 25.     | 2.5     | false  | true     |  false  |  false         | NONE      | NONE    |
