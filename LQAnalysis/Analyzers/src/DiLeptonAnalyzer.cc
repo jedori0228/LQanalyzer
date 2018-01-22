@@ -2163,21 +2163,21 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       //==== 2) OS/SS/All
 
       //==== SS-dilepton
-      map_Region_to_Bool[Suffix] = true;
+      map_Region_to_Bool[""] = true;
 
 /*
       //FIXME singleor
       if(Suffix.Contains("DiMuon")){
-        map_Region_to_Bool[Suffix+"_SingleButNotDouble"] = !PassTriggerOR(triggerlist_DiMuon_Mu17Mu8) && PassTriggerOR(triggerlist_DiMuon_Mu24);
+        map_Region_to_Bool["SingleButNotDouble"] = !PassTriggerOR(triggerlist_DiMuon_Mu17Mu8) && PassTriggerOR(triggerlist_DiMuon_Mu24);
       }
       else if(Suffix.Contains("DiElectron")){
-        map_Region_to_Bool[Suffix+"_SingleButNotDouble"] = !PassTriggerOR(triggerlist_DiElectron_Ele23Ele12) && PassTriggerOR(triggerlist_DiElectron_Ele27);
+        map_Region_to_Bool["SingleButNotDouble"] = !PassTriggerOR(triggerlist_DiElectron_Ele23Ele12) && PassTriggerOR(triggerlist_DiElectron_Ele27);
       }
       else if(Suffix.Contains("EMu")){
-        map_Region_to_Bool[Suffix+"_SingleButNotDouble"] = !PassTriggerOR(triggerlist_EMu_EMu) && (PassTriggerOR(triggerlist_DiMuon_Mu24) || PassTriggerOR(triggerlist_DiElectron_Ele27) );
+        map_Region_to_Bool["SingleButNotDouble"] = !PassTriggerOR(triggerlist_EMu_EMu) && (PassTriggerOR(triggerlist_DiMuon_Mu24) || PassTriggerOR(triggerlist_DiElectron_Ele27) );
       }
 
-      if(this_syst=="" && map_Region_to_Bool[Suffix+"_SingleButNotDouble"]){
+      if(this_syst=="" && map_Region_to_Bool["SingleButNotDouble"]){
         cout << "###########" << endl;
         cout << "## Event ##" << endl;
         cout << "###########" << endl << endl;
@@ -2215,24 +2215,24 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 */
 
       //==== # of jets
-      map_Region_to_Bool[Suffix+"_0jets"] = (jets.size()==0);
-      map_Region_to_Bool[Suffix+"_0jets_0nlbjets_dRllge2p5"] = (jets.size()==0) && (nbjets_nolepveto==0) && ( lep.at(0).DeltaR(lep.at(1)) > 2.5 );
+      map_Region_to_Bool["0jets"] = (jets.size()==0);
+      map_Region_to_Bool["0jets_0nlbjets_dRllge2p5"] = (jets.size()==0) && (nbjets_nolepveto==0) && ( lep.at(0).DeltaR(lep.at(1)) > 2.5 );
 
-      map_Region_to_Bool[Suffix+"_1jets"] = (jets.size()==1);
-      map_Region_to_Bool[Suffix+"_1jets_0nlbjets"] = (jets.size()==1) && (nbjets_nolepveto==0);
-      map_Region_to_Bool[Suffix+"_1jets_0nlbjets_mllge110"] = (jets.size()==1) && (nbjets_nolepveto==0) && (( lep.at(0)+lep.at(1) ).M() >= 110.);
+      map_Region_to_Bool["1jets"] = (jets.size()==1);
+      map_Region_to_Bool["1jets_0nlbjets"] = (jets.size()==1) && (nbjets_nolepveto==0);
+      map_Region_to_Bool["1jets_0nlbjets_mllge110"] = (jets.size()==1) && (nbjets_nolepveto==0) && (( lep.at(0)+lep.at(1) ).M() >= 110.);
 
       //==== # of b jet
-      map_Region_to_Bool[Suffix+"_0nlbjets"] = (nbjets_nolepveto==0);
-      map_Region_to_Bool[Suffix+"_Inclusive1nlbjets"] = (nbjets_nolepveto>=1);
+      map_Region_to_Bool["0nlbjets"] = (nbjets_nolepveto==0);
+      map_Region_to_Bool["Inclusive1nlbjets"] = (nbjets_nolepveto>=1);
 
       if(k_sample_name.Contains("HN")){
-        map_Region_to_Bool[Suffix+"_LegacyTwoJets"] = (jets_nonfatjetveto.size() >= 2);
+        map_Region_to_Bool["LegacyTwoJets"] = (jets_nonfatjetveto.size() >= 2);
       }
 
 
       //==== Z-seleciton
-      map_Region_to_Bool[Suffix+"_Z_CR"] = (!isSSForCF) && ((lep.at(0)+lep.at(1)).M()>81.) && ((lep.at(0)+lep.at(1)).M()<101.);
+      map_Region_to_Bool["Z_CR"] = (!isSSForCF) && ((lep.at(0)+lep.at(1)).M()>81.) && ((lep.at(0)+lep.at(1)).M()<101.);
 
       //==== W+W+ CR
       if(jets_eta5.size() >= 2){
@@ -2241,7 +2241,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         double dEtajj = fabs(j1.Eta()-j2.Eta());
         double MeanEtajj = (j1.Eta()+j2.Eta())/2.;
 
-        map_Region_to_Bool[Suffix+"_WpWp_CR"] = (j1.Pt() > 30.) && (j2.Pt() > 30.)
+        map_Region_to_Bool["WpWp_CR"] = (j1.Pt() > 30.) && (j2.Pt() > 30.)
                                                 && (( lep.at(0)+lep.at(1) ).M() >= 20.) && (MET>40.)
                                                 && (nbjets_nolepveto==0)
                                                 && ((j1+j2).M() > 500.)
@@ -2249,7 +2249,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
                                                 && ( (lep.at(0).Eta()-MeanEtajj)/dEtajj < 0.75 )
                                                 && ( (lep.at(1).Eta()-MeanEtajj)/dEtajj < 0.75 );
         if(Suffix.Contains("DiElectron")){
-          map_Region_to_Bool[Suffix+"_WpWp_CR"] = map_Region_to_Bool[Suffix+"_WpWp_CR"] && isOffZ;
+          map_Region_to_Bool["WpWp_CR"] = map_Region_to_Bool["WpWp_CR"] && isOffZ;
         }
 
       }
@@ -2294,11 +2294,11 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       bool OneJet_NoFatJet = (jets.size()==1) && (fatjets.size()==0) && ( (lep.at(0)+lep.at(1)).M() < 80 ); // has m(ll) < 80 GeV
       bool OneFatJet       =                     (fatjets.size()>=1);
 
-      map_Region_to_Bool[Suffix+"_Preselection"] = TwoJet_NoFatJet || OneJet_NoFatJet || OneFatJet;
-      map_Region_to_Bool[Suffix+"_Preselection_secondptge20"] = map_Region_to_Bool[Suffix+"_Preselection"] && (lep.at(1).Pt() >= 20.);
+      map_Region_to_Bool["Preselection"] = TwoJet_NoFatJet || OneJet_NoFatJet || OneFatJet;
+      map_Region_to_Bool["Preselection_secondptge20"] = map_Region_to_Bool["Preselection"] && (lep.at(1).Pt() >= 20.);
       //==== For DiElectron, remove Z peak (CF)
       if(Suffix.Contains("DiElectron")){
-        map_Region_to_Bool[Suffix+"_Preselection"] = map_Region_to_Bool[Suffix+"_Preselection"] && isOffZ;
+        map_Region_to_Bool["Preselection"] = map_Region_to_Bool["Preselection"] && isOffZ;
       }
 
       if(isSSForCF){
@@ -2312,7 +2312,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
       //==== If Preselection, then define Low/High
 
-      if(map_Region_to_Bool[Suffix+"_Preselection"]){
+      if(map_Region_to_Bool["Preselection"]){
 
         //==== Low Mass
         //==== 1) TwoJet_NoFatJet
@@ -2322,27 +2322,27 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         if(TwoJet_NoFatJet) mlljj_low = (lep.at(0)+lep.at(1)+jets.at(index_lljjW_j1)+jets.at(index_lljjW_j2)).M();
         else if(OneJet_NoFatJet) mlljj_low = (lep.at(0)+lep.at(1)+jets.at(0)).M();
 
-        map_Region_to_Bool[Suffix+"_Low"] = (TwoJet_NoFatJet || OneJet_NoFatJet) &&
+        map_Region_to_Bool["Low"] = (TwoJet_NoFatJet || OneJet_NoFatJet) &&
                                             (nbjets_nolepveto == 0) &&
                                             ( mlljj_low < 300.) &&
                                             (MET < 80.);
-        map_Region_to_Bool[Suffix+"_LowCR"] = (TwoJet_NoFatJet || OneJet_NoFatJet) &&
+        map_Region_to_Bool["LowCR"] = (TwoJet_NoFatJet || OneJet_NoFatJet) &&
                                               ( (nbjets_nolepveto >= 1) || (MET > 100.) ) &&
                                               ( mlljj_low < 300.);
 
-        map_Region_to_Bool[Suffix+"_Low_TwoJet_NoFatJet"] = TwoJet_NoFatJet &&
+        map_Region_to_Bool["Low_TwoJet_NoFatJet"] = TwoJet_NoFatJet &&
                                                             (nbjets_nolepveto == 0) &&
                                                             ( mlljj_low < 300.) &&
                                                             (MET < 80.);
-        map_Region_to_Bool[Suffix+"_LowCR_TwoJet_NoFatJet"] = TwoJet_NoFatJet &&
+        map_Region_to_Bool["LowCR_TwoJet_NoFatJet"] = TwoJet_NoFatJet &&
                                                               ( (nbjets_nolepveto >= 1) || (MET > 100.) ) &&
                                                               ( mlljj_low < 300.);
 
-        map_Region_to_Bool[Suffix+"_Low_OneJet_NoFatJet"] = OneJet_NoFatJet &&
+        map_Region_to_Bool["Low_OneJet_NoFatJet"] = OneJet_NoFatJet &&
                                                    (nbjets_nolepveto == 0) &&
                                                    ( mlljj_low < 300.) &&
                                                    (MET < 80.);
-        map_Region_to_Bool[Suffix+"_LowCR_OneJet_NoFatJet"] = OneJet_NoFatJet &&
+        map_Region_to_Bool["LowCR_OneJet_NoFatJet"] = OneJet_NoFatJet &&
                                                      ( (nbjets_nolepveto >= 1) || (MET > 100.) ) &&
                                                      ( mlljj_low < 300.);
 
@@ -2361,27 +2361,27 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
           
         }
 
-        map_Region_to_Bool[Suffix+"_High"] = ( TwoJet_NoFatJet || OneFatJet ) &&
+        map_Region_to_Bool["High"] = ( TwoJet_NoFatJet || OneFatJet ) &&
                                              (nbjets_nolepveto == 0) &&
                                              ( mjj_high < 150. ) &&
                                              ( MET*MET/ST < 15. );
-        map_Region_to_Bool[Suffix+"_HighCR"] = ( TwoJet_NoFatJet || OneFatJet ) &&
+        map_Region_to_Bool["HighCR"] = ( TwoJet_NoFatJet || OneFatJet ) &&
                                                ( (nbjets_nolepveto >= 1) || (MET*MET/ST > 20.) ) &&
                                                ( mjj_high < 150. );
 
-        map_Region_to_Bool[Suffix+"_High_TwoJet_NoFatJet"]   = map_Region_to_Bool[Suffix+"_High"] && TwoJet_NoFatJet;
-        map_Region_to_Bool[Suffix+"_HighCR_TwoJet_NoFatJet"] = map_Region_to_Bool[Suffix+"_HighCR"] && TwoJet_NoFatJet;
+        map_Region_to_Bool["High_TwoJet_NoFatJet"]   = map_Region_to_Bool["High"] && TwoJet_NoFatJet;
+        map_Region_to_Bool["HighCR_TwoJet_NoFatJet"] = map_Region_to_Bool["HighCR"] && TwoJet_NoFatJet;
 
-        map_Region_to_Bool[Suffix+"_High_OneFatJet"]   = map_Region_to_Bool[Suffix+"_High"] && OneFatJet;
-        map_Region_to_Bool[Suffix+"_HighCR_OneFatJet"] = map_Region_to_Bool[Suffix+"_HighCR"] && OneFatJet;
+        map_Region_to_Bool["High_OneFatJet"]   = map_Region_to_Bool["High"] && OneFatJet;
+        map_Region_to_Bool["HighCR_OneFatJet"] = map_Region_to_Bool["HighCR"] && OneFatJet;
 
 
         if(Suffix.Contains("EMu")){
           if(lep.at(1).LeptonFlavour()==KLepton::ELECTRON){
-            map_Region_to_Bool[Suffix+"_Preselection_ElectronSubLead"] = true;
+            map_Region_to_Bool["Preselection_ElectronSubLead"] = true;
           }
           else{
-            map_Region_to_Bool[Suffix+"_Preselection_MuonSubLead"] = true;
+            map_Region_to_Bool["Preselection_MuonSubLead"] = true;
           }
         }
       }
@@ -2389,7 +2389,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       //==== Test 1) Loose sample faking jet pt distribution
       if(LooseSampleFakeJetPt){
 
-        if(map_Region_to_Bool[Suffix+"_Preselection"] && jets_nolepveto.size() > 0){
+        if(map_Region_to_Bool["Preselection"] && jets_nolepveto.size() > 0){
 
           for(unsigned int j=0; j<lep.size(); j++){
 
@@ -2468,55 +2468,17 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
           if(!ToSave) it->second = false;
         }
 
-/*
-        bool tempbool_presel = map_Region_to_Bool[Suffix+"_Preselection"];
-        bool tempbool_low = map_Region_to_Bool[Suffix+"_Low"];
-        bool tempbool_low_twojet = map_Region_to_Bool[Suffix+"_Low_TwoJet_NoFatJet"];
-        bool tempbool_low_onejet = map_Region_to_Bool[Suffix+"_Low_OneJet_NoFatJet"];
-        bool tempbool_high = map_Region_to_Bool[Suffix+"_High"];
-        bool tempbool_high_twojet = map_Region_to_Bool[Suffix+"_High_TwoJet_NoFatJet"];
-        bool tempbool_high_fatjet = map_Region_to_Bool[Suffix+"_High_OneFatJet"];
-        bool tempbool_presel_emu_esublead = false;
-        bool tempbool_presel_emu_msublead = false;
-        if(Suffix.Contains("EMu")){
-          tempbool_presel_emu_esublead = map_Region_to_Bool[Suffix+"_Preselection_ElectronSubLead"];
-          tempbool_presel_emu_msublead = map_Region_to_Bool[Suffix+"_Preselection_MuonSubLead"];
-        }
-
-        map_Region_to_Bool.clear();
-        map_Region_to_Bool[Suffix+"_Preselection"] = tempbool_presel;
-        map_Region_to_Bool[Suffix+"_Low"] = tempbool_low;
-        map_Region_to_Bool[Suffix+"_Low_TwoJet_NoFatJet"] = tempbool_low_twojet;
-        map_Region_to_Bool[Suffix+"_Low_OneJet_NoFatJet"] = tempbool_low_onejet;
-        map_Region_to_Bool[Suffix+"_High"] = tempbool_high;
-        map_Region_to_Bool[Suffix+"_High_TwoJet_NoFatJet"] = tempbool_high_twojet;
-        map_Region_to_Bool[Suffix+"_High_OneFatJet"] = tempbool_high_fatjet;
-        map_Region_to_Bool[Suffix+"_Preselection_ElectronSubLead"] = tempbool_presel_emu_esublead;
-        map_Region_to_Bool[Suffix+"_Preselection_MuonSubLead"] = tempbool_presel_emu_msublead;
-
-        if(Suffix.Contains("EMu")){
-          if(lep.at(1).LeptonFlavour()==KLepton::ELECTRON){
-            map_Region_to_Bool[Suffix+"_Preselection_ElectronSubLead"] = true;
-          }
-          else{
-            map_Region_to_Bool[Suffix+"_Preselection_MuonSubLead"] = true;
-          }
-        }
-*/
-
-
-
         bool PositiveMCWeight = std::find(k_flags.begin(), k_flags.end(), "PositiveMCWeight") != k_flags.end();
         if(PositiveMCWeight) this_weight *= MCweight;
 
-        if( map_Region_to_Bool[Suffix+"_Preselection"] && isSSForCF ){
+        if( map_Region_to_Bool["Preselection"] && isSSForCF ){
           FillHist("NLooseNotTight_"+Suffix+"_Preselection_SS", n_triLoose_leptons-n_triTight_leptons, this_weight, 0., 3., 3);
           FillHist("NLooseNotTight_weight1_"+Suffix+"_Preselection_SS", n_triLoose_leptons-n_triTight_leptons, 1., 0., 3., 3);
         }
       }
 
       //==== Make Ntuple
-      bool NtupleSkim = (map_Region_to_Bool[Suffix+"_Preselection"]) && isSSForCF;
+      bool NtupleSkim = (map_Region_to_Bool["Preselection"]) && isSSForCF;
 
       if(RunNtp && NtupleSkim){
         int temp_n_ntuplevar = 51;
@@ -2656,8 +2618,27 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
       }
       if(RunNtp) continue;
 
+      //==== Add Suffix
+      std::map< TString, bool > ForPlot_map_Region_to_Bool;
+      ForPlot_map_Region_to_Bool.clear();
       for(std::map< TString, bool >::iterator it = map_Region_to_Bool.begin(); it != map_Region_to_Bool.end(); it++){
+        
         TString this_suffix = it->first;
+        if(this_suffix==""){
+          ForPlot_map_Region_to_Bool[Suffix] = it->second;
+          ForPlot_map_Region_to_Bool["DiLepton"] = it->second;
+        }
+        else{
+          ForPlot_map_Region_to_Bool[Suffix+"_"+this_suffix] = it->second;
+          ForPlot_map_Region_to_Bool["DiLepton_"+this_suffix] = it->second;
+        }
+
+      }
+
+
+      for(std::map< TString, bool >::iterator it = ForPlot_map_Region_to_Bool.begin(); it != ForPlot_map_Region_to_Bool.end(); it++){
+        TString this_suffix = it->first;
+        //cout << this_suffix << "\t" << it->second << endl;
         if(it->second){
 
           //=====================
