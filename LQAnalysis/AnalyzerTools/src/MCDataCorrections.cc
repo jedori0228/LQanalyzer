@@ -1732,6 +1732,32 @@ float MCDataCorrections::GetCorrectedMuonMomentum(snu::KMuon muon, std::vector<s
   return (scalefactor*muon.Pt());
 }
 
+float MCDataCorrections::GetRochesterMomentumWidth(snu::KMuon muon){
+
+  double u1 = gRandom->Rndm();
+  double u2 = gRandom->Rndm();
+
+  TH1D *hist_rms = new TH1D("hist_rms", "", 1000, 0.5, 1.5);
+  for(int i=0; i<100; i++){
+
+    double scalefactor = rc->kScaleAndSmearMC(float(muon.Charge()), muon.MiniAODPt(), muon.Eta(), muon.Phi(), muon.ActiveLayer(), u1, u2, 0,0);
+    hist_rms->Fill(scalefactor);
+
+    gRandom->SetSeed(u1);
+    u1 = gRandom->Rndm();
+    u2 = gRandom->Rndm();
+
+  }
+
+  //cout << "Mean = " << hist_rms->GetMean() << endl;
+  //cout << "RMS = " << hist_rms->GetRMS() << endl;
+
+  double RMSWidth = hist_rms->GetRMS();
+  delete hist_rms;
+  return RMSWidth;
+
+}
+
 vector<TLorentzVector> MCDataCorrections::MakeTLorentz(vector<snu::KElectron> el){
 
   vector<TLorentzVector> tl_el;

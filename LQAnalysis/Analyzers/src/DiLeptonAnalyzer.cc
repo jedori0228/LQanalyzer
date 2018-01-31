@@ -217,6 +217,14 @@ void DiLeptonAnalyzer::InitialiseAnalysis() throw( LQError ) {
 void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
 /*
+  //==== Check Rochestor Syst
+  std::vector< snu::KMuon > testmuons = GetMuons("MUON_HNGENT_TIGHT", true);
+  for(unsigned int i=0; i<testmuons.size(); i++){
+    double this_width = mcdata_correction->GetRochesterMomentumWidth(testmuons.at(i));
+  }
+  return;
+*/
+/*
   //==== Ghent Test
   std::vector< snu::KMuon > testmuons = GetMuons("MUON_HNGENT_TIGHT", true);
   std::vector< snu::KElectron > testelectrons = GetElectrons(true, true, "ELECTRON_GENT_TIGHT");
@@ -981,9 +989,10 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   //==== 12) Jet Mass Scale
   //==== 13) Jet Mass Res
   //==== 14) Tau21
+  //==== 15) Rochestor
   //====================================
 
-  int N_sys = 2*14+1;
+  int N_sys = 2*15+1;
   int it_sys_start = 0;
 
   if( isData || DoMCClosure || MCFakeSubtract ){
@@ -1093,6 +1102,12 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
     else if(it_sys==28){
       this_syst = "_Tau21_down";
     }
+    else if(it_sys==29){
+      this_syst = "_Rocc_up";
+    }
+    else if(it_sys==30){
+      this_syst = "_Rocc_down";
+    }
     else{
       Message("it_sys out of range!" , INFO);
       return;
@@ -1148,6 +1163,46 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         snu::KMuon this_muon = muons_veto_loosest.at(j);
         this_muon.SetPtEtaPhiM( this_muon.Pt()*this_muon.PtShiftedDown(), this_muon.Eta(), this_muon.Phi(), this_muon.M() );
         double new_RelIso = this_muon.RelIso04()/this_muon.PtShiftedDown();
+        this_muon.SetRelIso(0.4, new_RelIso);
+        if( this_muon.Pt() >= 5. && new_RelIso < this_MuonVetoRelIso ) muons_veto.push_back( this_muon );
+      }
+    }
+    else if(this_syst == "_Rocc_up"){
+      //==== Signal Leptons
+      for(unsigned int j=0; j<muons_loosest.size(); j++){
+        snu::KMuon this_muon = muons_loosest.at(j);
+        double scale = 1.+mcdata_correction->GetRochesterMomentumWidth(this_muon);
+        this_muon.SetPtEtaPhiM( this_muon.Pt()*scale, this_muon.Eta(), this_muon.Phi(), this_muon.M() );
+        double new_RelIso = this_muon.RelIso04()/scale;
+        this_muon.SetRelIso(0.4, new_RelIso);
+        if( this_muon.Pt() >= 10. && new_RelIso < this_MuonLooseRelIso ) muons.push_back( this_muon );
+      }
+      //==== Veto Leptons
+      for(unsigned int j=0; j<muons_veto_loosest.size(); j++){
+        snu::KMuon this_muon = muons_veto_loosest.at(j);
+        double scale = 1.+mcdata_correction->GetRochesterMomentumWidth(this_muon);
+        this_muon.SetPtEtaPhiM( this_muon.Pt()*scale, this_muon.Eta(), this_muon.Phi(), this_muon.M() );
+        double new_RelIso = this_muon.RelIso04()/scale;
+        this_muon.SetRelIso(0.4, new_RelIso);
+        if( this_muon.Pt() >= 5. && new_RelIso < this_MuonVetoRelIso ) muons_veto.push_back( this_muon );
+      }
+    }
+    else if(this_syst == "_Rocc_down"){
+      //==== Signal Leptons
+      for(unsigned int j=0; j<muons_loosest.size(); j++){
+        snu::KMuon this_muon = muons_loosest.at(j);
+        double scale = 1.-mcdata_correction->GetRochesterMomentumWidth(this_muon);
+        this_muon.SetPtEtaPhiM( this_muon.Pt()*scale, this_muon.Eta(), this_muon.Phi(), this_muon.M() );
+        double new_RelIso = this_muon.RelIso04()/scale;
+        this_muon.SetRelIso(0.4, new_RelIso);
+        if( this_muon.Pt() >= 10. && new_RelIso < this_MuonLooseRelIso ) muons.push_back( this_muon );
+      }
+      //==== Veto Leptons
+      for(unsigned int j=0; j<muons_veto_loosest.size(); j++){
+        snu::KMuon this_muon = muons_veto_loosest.at(j);
+        double scale = 1.-mcdata_correction->GetRochesterMomentumWidth(this_muon);
+        this_muon.SetPtEtaPhiM( this_muon.Pt()*scale, this_muon.Eta(), this_muon.Phi(), this_muon.M() );
+        double new_RelIso = this_muon.RelIso04()/scale;
         this_muon.SetRelIso(0.4, new_RelIso);
         if( this_muon.Pt() >= 5. && new_RelIso < this_MuonVetoRelIso ) muons_veto.push_back( this_muon );
       }
@@ -2823,9 +2878,11 @@ void DiLeptonAnalyzer::MakeHistograms(){
   AnalyzerCore::MakeHistograms();
   Message("Made histograms", INFO);
 
-  int N_sys = 2*14+1;
-  TString systs[] = {"", "_MuonEn_up", "_MuonEn_down", "_JetEn_up", "_JetEn_down", "_JetRes_up", "_JetRes_down", "_Unclustered_up", "_Unclustered_down", "_MuonIDSF_up", "_MuonIDSF_down", "_PU_down", "_PU_up", "_TriggerSF_down", "_TriggerSF_up", "_ElectronIDSF_up", "_ElectronIDSF_down", "_ElectronEn_up", "_ElectronEn_down", "_BTagSFEff_up", "_BTagSFEff_down", "_BTagSFMiss_up", "_BTagSFMiss_down", "_JetMass_up", "_JetMass_down", "_JetMassRes_up", "_JetMassRes_down", "_Tau21_up", "_Tau21_down"};
+  int N_sys = 2*15+1;
+  TString systs[] = {"", "_MuonEn_up", "_MuonEn_down", "_JetEn_up", "_JetEn_down", "_JetRes_up", "_JetRes_down", "_Unclustered_up", "_Unclustered_down", "_MuonIDSF_up", "_MuonIDSF_down", "_PU_down", "_PU_up", "_TriggerSF_down", "_TriggerSF_up", "_ElectronIDSF_up", "_ElectronIDSF_down", "_ElectronEn_up", "_ElectronEn_down", "_BTagSFEff_up", "_BTagSFEff_down", "_BTagSFMiss_up", "_BTagSFMiss_down", "_JetMass_up", "_JetMass_down", "_JetMassRes_up", "_JetMassRes_down", "_Tau21_up", "_Tau21_down", "_Rocc_up", "_Rocc_down"};
 
+  cout << "[JSKIM] isData = " << isData << endl;
+  cout << "[JSKIM] k_isdata = " << k_isdata << endl;
   for(int i=0; i<N_sys; i++){
 
     if(isData){

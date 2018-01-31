@@ -482,9 +482,10 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
   //==== 9) Electron Energy Scale
   //==== 10) BTagSF Eff
   //==== 11) BTagSF Miss 
+  //==== 12) Rochestor
   //====================================
 
-  int N_sys = 2*11+1;
+  int N_sys = 2*12+1;
   int it_sys_start = 0;
 
   if( isData ){
@@ -576,6 +577,12 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
     else if(it_sys==22){
       this_syst = "_BTagSFMiss_down";
     }
+    else if(it_sys==23){
+      this_syst = "_Rocc_up";
+    }
+    else if(it_sys==24){
+      this_syst = "_Rocc_down";
+    }
     else{
       Message("it_sys out of range!" , INFO);
       return;
@@ -631,6 +638,46 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
         snu::KMuon this_muon = muons_veto_loosest.at(j);
         this_muon.SetPtEtaPhiM( this_muon.Pt()*this_muon.PtShiftedDown(), this_muon.Eta(), this_muon.Phi(), this_muon.M() );
         double new_RelIso = this_muon.RelIso04()/this_muon.PtShiftedDown();
+        this_muon.SetRelIso(0.4, new_RelIso);
+        if( this_muon.Pt() >= 5. && new_RelIso < this_MuonVetoRelIso ) muons_veto.push_back( this_muon );
+      }
+    }
+    else if(this_syst == "_Rocc_up"){
+      //==== Signal Leptons
+      for(unsigned int j=0; j<muons_loosest.size(); j++){
+        snu::KMuon this_muon = muons_loosest.at(j);
+        double scale = 1.+mcdata_correction->GetRochesterMomentumWidth(this_muon);
+        this_muon.SetPtEtaPhiM( this_muon.Pt()*scale, this_muon.Eta(), this_muon.Phi(), this_muon.M() );
+        double new_RelIso = this_muon.RelIso04()/scale;
+        this_muon.SetRelIso(0.4, new_RelIso);
+        if( this_muon.Pt() >= 10. && new_RelIso < this_MuonLooseRelIso ) muons.push_back( this_muon );
+      }
+      //==== Veto Leptons
+      for(unsigned int j=0; j<muons_veto_loosest.size(); j++){
+        snu::KMuon this_muon = muons_veto_loosest.at(j);
+        double scale = 1.+mcdata_correction->GetRochesterMomentumWidth(this_muon);
+        this_muon.SetPtEtaPhiM( this_muon.Pt()*scale, this_muon.Eta(), this_muon.Phi(), this_muon.M() );
+        double new_RelIso = this_muon.RelIso04()/scale;
+        this_muon.SetRelIso(0.4, new_RelIso);
+        if( this_muon.Pt() >= 5. && new_RelIso < this_MuonVetoRelIso ) muons_veto.push_back( this_muon );
+      }
+    }
+    else if(this_syst == "_Rocc_down"){
+      //==== Signal Leptons
+      for(unsigned int j=0; j<muons_loosest.size(); j++){
+        snu::KMuon this_muon = muons_loosest.at(j);
+        double scale = 1.-mcdata_correction->GetRochesterMomentumWidth(this_muon);
+        this_muon.SetPtEtaPhiM( this_muon.Pt()*scale, this_muon.Eta(), this_muon.Phi(), this_muon.M() );
+        double new_RelIso = this_muon.RelIso04()/scale;
+        this_muon.SetRelIso(0.4, new_RelIso);
+        if( this_muon.Pt() >= 10. && new_RelIso < this_MuonLooseRelIso ) muons.push_back( this_muon );
+      }
+      //==== Veto Leptons
+      for(unsigned int j=0; j<muons_veto_loosest.size(); j++){
+        snu::KMuon this_muon = muons_veto_loosest.at(j);
+        double scale = 1.-mcdata_correction->GetRochesterMomentumWidth(this_muon);
+        this_muon.SetPtEtaPhiM( this_muon.Pt()*scale, this_muon.Eta(), this_muon.Phi(), this_muon.M() );
+        double new_RelIso = this_muon.RelIso04()/scale;
         this_muon.SetRelIso(0.4, new_RelIso);
         if( this_muon.Pt() >= 5. && new_RelIso < this_MuonVetoRelIso ) muons_veto.push_back( this_muon );
       }
