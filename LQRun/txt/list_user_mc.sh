@@ -34,7 +34,34 @@ declare -a privTch=(
 'HeavyNeutrinoToMumEm_Tchannel_M1700'  'HeavyNeutrinoToMumEm_Tchannel_M2000'
 )
 
+declare -a privTch1=(
+'HeavyNeutrinoToEpEp_Tchannel_M300' 'HeavyNeutrinoToEpEp_Tchannel_M400'  
+'HeavyNeutrinoToEpEp_Tchannel_M500'  'HeavyNeutrinoToEpEp_Tchannel_M600'  'HeavyNeutrinoToEpEp_Tchannel_M700'  'HeavyNeutrinoToEpEp_Tchannel_M800'  
+'HeavyNeutrinoToEpEp_Tchannel_M900'  'HeavyNeutrinoToEpEp_Tchannel_M1000'  'HeavyNeutrinoToEpEp_Tchannel_M1100'  'HeavyNeutrinoToEpEp_Tchannel_M1200'  
+'HeavyNeutrinoToEpEp_Tchannel_M1300'  'HeavyNeutrinoToEpEp_Tchannel_M1400'  'HeavyNeutrinoToEpEp_Tchannel_M1500'  'HeavyNeutrinoToEpEp_Tchannel_M1700'  
+'HeavyNeutrinoToEpEp_Tchannel_M2000'  'HeavyNeutrinoToEmEm_Tchannel_M300'  'HeavyNeutrinoToEmEm_Tchannel_M400'  'HeavyNeutrinoToEmEm_Tchannel_M500'  
+'HeavyNeutrinoToEmEm_Tchannel_M600'  'HeavyNeutrinoToEmEm_Tchannel_M700'  'HeavyNeutrinoToEmEm_Tchannel_M800'  'HeavyNeutrinoToEmEm_Tchannel_M900'  
+'HeavyNeutrinoToEmEm_Tchannel_M1000'  'HeavyNeutrinoToEmEm_Tchannel_M1100'  'HeavyNeutrinoToEmEm_Tchannel_M1200'  'HeavyNeutrinoToEmEm_Tchannel_M1300'  
+'HeavyNeutrinoToEmEm_Tchannel_M1400'  'HeavyNeutrinoToEmEm_Tchannel_M1500'  'HeavyNeutrinoToEmEm_Tchannel_M1700'  'HeavyNeutrinoToEmEm_Tchannel_M2000'  
+'HeavyNeutrinoToEpMup_Tchannel_M300'  'HeavyNeutrinoToEpMup_Tchannel_M400'  'HeavyNeutrinoToEpMup_Tchannel_M500'  'HeavyNeutrinoToEpMup_Tchannel_M600'  
+'HeavyNeutrinoToEpMup_Tchannel_M700'  'HeavyNeutrinoToEpMup_Tchannel_M800'  'HeavyNeutrinoToEpMup_Tchannel_M900'  'HeavyNeutrinoToEpMup_Tchannel_M1000'  
+'HeavyNeutrinoToEpMup_Tchannel_M1100'  'HeavyNeutrinoToEpMup_Tchannel_M1200'  'HeavyNeutrinoToEpMup_Tchannel_M1300'  'HeavyNeutrinoToEpMup_Tchannel_M1400'  
+'HeavyNeutrinoToEpMup_Tchannel_M1500'  'HeavyNeutrinoToEpMup_Tchannel_M1700'  'HeavyNeutrinoToEpMup_Tchannel_M2000'  'HeavyNeutrinoToEmMum_Tchannel_M300'  
+)
 declare -a privTch2=(
+'HeavyNeutrinoToEmMum_Tchannel_M400'  'HeavyNeutrinoToEmMum_Tchannel_M500'  'HeavyNeutrinoToEmMum_Tchannel_M600'  'HeavyNeutrinoToEmMum_Tchannel_M700'  
+'HeavyNeutrinoToEmMum_Tchannel_M800'  'HeavyNeutrinoToEmMum_Tchannel_M900'  'HeavyNeutrinoToEmMum_Tchannel_M1000'  'HeavyNeutrinoToEmMum_Tchannel_M1100'  
+'HeavyNeutrinoToEmMum_Tchannel_M1200'  'HeavyNeutrinoToEmMum_Tchannel_M1300'  'HeavyNeutrinoToEmMum_Tchannel_M1400'  'HeavyNeutrinoToEmMum_Tchannel_M1500'  
+'HeavyNeutrinoToEmMum_Tchannel_M1700'  'HeavyNeutrinoToEmMum_Tchannel_M2000'  'HeavyNeutrinoToMupMup_Tchannel_M300'  'HeavyNeutrinoToMupMup_Tchannel_M400'  
+'HeavyNeutrinoToMupMup_Tchannel_M500'  'HeavyNeutrinoToMupMup_Tchannel_M600'  'HeavyNeutrinoToMupMup_Tchannel_M700'  'HeavyNeutrinoToMupMup_Tchannel_M800'  
+'HeavyNeutrinoToMupMup_Tchannel_M900'  'HeavyNeutrinoToMupMup_Tchannel_M1000'  'HeavyNeutrinoToMupMup_Tchannel_M1100'  'HeavyNeutrinoToMupMup_Tchannel_M1200'  
+'HeavyNeutrinoToMupMup_Tchannel_M1300'  'HeavyNeutrinoToMupMup_Tchannel_M1400'  'HeavyNeutrinoToMupMup_Tchannel_M1500'  'HeavyNeutrinoToMupMup_Tchannel_M1700'  
+'HeavyNeutrinoToMupMup_Tchannel_M2000'  'HeavyNeutrinoToMumMum_Tchannel_M300'  'HeavyNeutrinoToMumMum_Tchannel_M400'  'HeavyNeutrinoToMumMum_Tchannel_M500'  
+'HeavyNeutrinoToMumMum_Tchannel_M600'  'HeavyNeutrinoToMumMum_Tchannel_M700'  'HeavyNeutrinoToMumMum_Tchannel_M800'  'HeavyNeutrinoToMumMum_Tchannel_M900'  
+'HeavyNeutrinoToMumMum_Tchannel_M1000'  'HeavyNeutrinoToMumMum_Tchannel_M1100'  'HeavyNeutrinoToMumMum_Tchannel_M1200'  'HeavyNeutrinoToMumMum_Tchannel_M1300'  
+'HeavyNeutrinoToMumMum_Tchannel_M1400'  'HeavyNeutrinoToMumMum_Tchannel_M1500'  'HeavyNeutrinoToMumMum_Tchannel_M1700'  'HeavyNeutrinoToMumMum_Tchannel_M2000'  
+)
+declare -a privTch3=(
 'HeavyNeutrinoToMupEp_Tchannel_M300'  'HeavyNeutrinoToMupEp_Tchannel_M400'  'HeavyNeutrinoToMupEp_Tchannel_M500'  'HeavyNeutrinoToMupEp_Tchannel_M600'  
 'HeavyNeutrinoToMupEp_Tchannel_M700'  'HeavyNeutrinoToMupEp_Tchannel_M800'  'HeavyNeutrinoToMupEp_Tchannel_M900'  'HeavyNeutrinoToMupEp_Tchannel_M1000'  
 'HeavyNeutrinoToMupEp_Tchannel_M1100'  'HeavyNeutrinoToMupEp_Tchannel_M1200'  'HeavyNeutrinoToMupEp_Tchannel_M1300'  'HeavyNeutrinoToMupEp_Tchannel_M1400'  
@@ -43,6 +70,10 @@ declare -a privTch2=(
 'HeavyNeutrinoToMumEm_Tchannel_M800'  'HeavyNeutrinoToMumEm_Tchannel_M900'  'HeavyNeutrinoToMumEm_Tchannel_M1000'  'HeavyNeutrinoToMumEm_Tchannel_M1100'  
 'HeavyNeutrinoToMumEm_Tchannel_M1200'  'HeavyNeutrinoToMumEm_Tchannel_M1300'  'HeavyNeutrinoToMumEm_Tchannel_M1400'  'HeavyNeutrinoToMumEm_Tchannel_M1500'  
 'HeavyNeutrinoToMumEm_Tchannel_M1700'  'HeavyNeutrinoToMumEm_Tchannel_M2000'
+)
+
+declare -a mass7585=(
+'HeavyNeutrinoToEpEp_Schannel_M75' 'HeavyNeutrinoToEpEp_Schannel_M85' 'HeavyNeutrinoToEmEm_Schannel_M75' 'HeavyNeutrinoToEmEm_Schannel_M85' 'HeavyNeutrinoToEpMup_Schannel_M75' 'HeavyNeutrinoToEpMup_Schannel_M85' 'HeavyNeutrinoToEmMum_Schannel_M75' 'HeavyNeutrinoToEmMum_Schannel_M85' 'HeavyNeutrinoToMupMup_Schannel_M75' 'HeavyNeutrinoToMupMup_Schannel_M85' 'HeavyNeutrinoToMumMum_Schannel_M75' 'HeavyNeutrinoToMumMum_Schannel_M85' 'HeavyNeutrinoToMupEp_Schannel_M75' 'HeavyNeutrinoToMupEp_Schannel_M85' 'HeavyNeutrinoToMumEm_Schannel_M75' 'HeavyNeutrinoToMumEm_Schannel_M85'
 )
 
 declare -a dilepton_Moriond=(
@@ -321,7 +352,10 @@ declare -a ghent=(
 
 
 declare -a test=(
-'qcd_15to20_bctoe' 'qcd_170to250_bctoe' 'qcd_20to30_bctoe' 'qcd_250toinf_bctoe' 'qcd_30to80_bctoe' 'qcd_80to170_bctoe'
+'TG' 'TTG'
+'WWW' 'WWZ' 'WZZ' 'ZZZ'
+'ttW' 'ttZ' 'ttH_nonbb'
+'WWTo2L2Nu_DS' 'WpWpEWK' 'WpWpQCD'
 )
 
 declare -a test2=(
