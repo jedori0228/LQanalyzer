@@ -672,6 +672,44 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   return;
 */
 
+  //==== Signal PDF VERY FISRT
+
+  float pileup_reweight=(1.0);
+  if(!isData){
+    //==== CATTools reweight
+    pileup_reweight = mcdata_correction->CatPileupWeight(eventbase->GetEvent(),0);
+    //==== John reweight
+    //pileup_reweight = mcdata_correction->PileupWeightByPeriod(eventbase->GetEvent());
+  }
+
+  ForTree_PdfWeights->clear();
+  ForTree_ScaleWeights->clear();
+  snu::KEvent Evt = eventbase->GetEvent();
+  int N_RunNumber = Evt.RunNumber();
+  int N_EventNumber = Evt.EventNumber();
+  bool SignalPDFSyst = std::find(k_flags.begin(), k_flags.end(), "SignalPDFSyst") != k_flags.end();
+
+  //==== PDF weight has MCweight applied
+  //==== MCweight will be applied later
+  double weight_for_pdf_den = weight*pileup_reweight*35863.3;
+  for(unsigned int i=0; i<Evt.PdfWeights().size(); i++){
+    ForTree_PdfWeights->push_back(Evt.PdfWeights().at(i));
+    if(SignalPDFSyst){
+      FillHist("ForTree_PdfWeights", i, weight_for_pdf_den*Evt.PdfWeights().at(i), 0., 1.*Evt.PdfWeights().size(), Evt.PdfWeights().size());
+    }
+  }
+  for(unsigned int i=0; i<Evt.ScaleWeights().size(); i++){
+    ForTree_ScaleWeights->push_back(Evt.ScaleWeights().at(i));
+    if(SignalPDFSyst){
+      FillHist("ForTree_ScaleWeights", i, weight_for_pdf_den*Evt.ScaleWeights().at(i), 0., 1.*Evt.ScaleWeights().size(), Evt.ScaleWeights().size());
+    }
+  }
+  if(SignalPDFSyst){
+    FillHist("ForTree_Central", 0, weight_for_pdf_den*MCweight, 0., 1., 1);
+    return;
+  }
+  n_vtx = Evt.nVertices();
+
   //==== Initializing
 
   AUTO_N_syst = 0;
@@ -808,14 +846,6 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
   triggerlist_EMu_Mu23Ele8.push_back("HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_v");
   triggerlist_EMu_Mu23Ele8.push_back("HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_DZ_v");
 
-  float pileup_reweight=(1.0);
-  if(!isData){
-    //==== CATTools reweight
-    pileup_reweight = mcdata_correction->CatPileupWeight(eventbase->GetEvent(),0);
-    //==== John reweight
-    //pileup_reweight = mcdata_correction->PileupWeightByPeriod(eventbase->GetEvent());
-  }
-
   w_cutflow["DiMuon"] = weight*WeightByTrigger(triggerlist_DiMuon, TargetLumi)*pileup_reweight;
   w_cutflow["DiElectron"] = weight*WeightByTrigger(triggerlist_DiElectron, TargetLumi)*pileup_reweight;
   w_cutflow["EMu"] = weight*35863.3*pileup_reweight; //FIXME
@@ -941,19 +971,6 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
   bool NonPromptRun = std::find(k_flags.begin(), k_flags.end(), "RunFake") != k_flags.end();
   RunNtp = std::find(k_flags.begin(), k_flags.end(), "RunNtp") != k_flags.end();
-
-  ForTree_PdfWeights->clear();
-  ForTree_ScaleWeights->clear();
-  snu::KEvent Evt = eventbase->GetEvent();
-  int N_RunNumber = Evt.RunNumber();
-  int N_EventNumber = Evt.EventNumber();
-  for(unsigned int i=0; i<Evt.PdfWeights().size(); i++){
-    ForTree_PdfWeights->push_back(Evt.PdfWeights().at(i));
-  }
-  for(unsigned int i=0; i<Evt.ScaleWeights().size(); i++){
-    ForTree_ScaleWeights->push_back(Evt.ScaleWeights().at(i));
-  }
-  n_vtx = Evt.nVertices();
 
   //==== Define Analysis Region
 
@@ -2181,8 +2198,10 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         if( Suffix.Contains("EMu") ){
           GetCFWeight(electrons_before_shift.at(0));
         }
-        this_weight *= weight_cf;
-        this_weight_err = this_weight*weight_err_cf;
+        double tmp_weight = this_weight;
+        this_weight     = tmp_weight*weight_cf;
+        this_weight_err = tmp_weight*weight_err_cf;
+
       }
 
       //==== Now,
@@ -3124,11 +3143,21 @@ void DiLeptonAnalyzer::GetCFWeight(KLepton lep1, KLepton lep2){
 
   double cf1 = GetCF(lep1, false);
   double cf2 = GetCF(lep2, false);
-  double cf1_err = GetCF(lep1, true);
-  double cf2_err = GetCF(lep2, true);
-
   weight_cf = cf1/(1.-cf1) + cf2/(1.-cf2);
-  weight_err_cf = sqrt( cf1_err/( (1.-cf1)*(1.-cf1) ) + cf2_err/( (1.-cf2)*(1.-cf2) ) );
+
+  double cf1_scale_up = 1.;
+  if(1./lep1.Pt() < 0.013) cf1_scale_up = 2.;
+  else cf1_scale_up = 1.2;
+
+  double cf2_scale_up = 1.;
+  if(1./lep2.Pt() < 0.013) cf2_scale_up = 2.;
+  else cf2_scale_up = 1.2;
+
+  cf1 *= cf1_scale_up;
+  cf2 *= cf2_scale_up;
+  weight_err_cf = cf1/(1.-cf1) + cf2/(1.-cf2);
+  weight_err_cf = weight_err_cf-weight_cf;
+
 
 }
 
@@ -3141,6 +3170,7 @@ void DiLeptonAnalyzer::GetCFWeight(KLepton lep1){
 
   weight_cf = cf1/(1.-cf1);
   weight_err_cf = sqrt( cf1_err/( (1.-cf1)*(1.-cf1) ) );
+  
 
 }
 
