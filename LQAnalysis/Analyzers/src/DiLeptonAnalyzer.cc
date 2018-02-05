@@ -1356,7 +1356,9 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         if(this_syst == "_JetMass_up") this_mass_scaling = this_jet.ScaledMassUp();
         if(this_syst == "_JetMassRes_up") this_mass_scaling = this_jet.SmearedMassResUp()/this_jet.SmearedMassRes();
         this_jet *= this_scaling;
-        this_jet.SetPrunedMass(this_jet.PrunedMass()*this_mass_scaling);
+        this_jet.SetSoftDropMass(this_jet.SoftDropMass()*this_mass_scaling);
+
+        this_jet.SetPtEtaPhiE(this_jet.PuppiPt(), this_jet.PuppiEta(), this_jet.PuppiPhi(), this_jet.E());
 
         if(JSFatJetID(this_jet) && this_jet.Pt() >= 200.) fatjets.push_back(this_jet);
       }
@@ -1372,7 +1374,9 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         if(this_syst == "_JetMass_down") this_mass_scaling = this_jet.ScaledMassDown();
         if(this_syst == "_JetMassRes_down") this_mass_scaling = this_jet.SmearedMassResDown()/this_jet.SmearedMassRes();
         this_jet *= this_scaling;
-        this_jet.SetPrunedMass(this_jet.PrunedMass()*this_mass_scaling);
+        this_jet.SetSoftDropMass(this_jet.SoftDropMass()*this_mass_scaling);
+
+        this_jet.SetPtEtaPhiE(this_jet.PuppiPt(), this_jet.PuppiEta(), this_jet.PuppiPhi(), this_jet.E());
 
         if(JSFatJetID(this_jet) && this_jet.Pt() >= 200.) fatjets.push_back(this_jet);
       }
@@ -1380,6 +1384,8 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
     else{
       for(unsigned int j=0; j<fatjets_loosest.size(); j++){
         snu::KFatJet this_jet = fatjets_loosest.at(j);
+
+        this_jet.SetPtEtaPhiE(this_jet.PuppiPt(), this_jet.PuppiEta(), this_jet.PuppiPhi(), this_jet.E());
 
         if(JSFatJetID(this_jet) && this_jet.Pt() >= 200.) fatjets.push_back(this_jet);
       }
@@ -2429,7 +2435,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
           mjj_high = (jets.at(index_jjW_j1)+jets.at(index_jjW_j2)).M();
         }
         else if(OneFatJet){
-          mjj_high = fatjets.at(index_fjW).PrunedMass();
+          mjj_high = fatjets.at(index_fjW).SoftDropMass();
         }
         else{
           
@@ -2621,7 +2627,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
           cutop[12] = fatjets.at(0).Pt();
           cutop[13] = -999.;
           cutop[14] = -999.;
-          cutop[15] = (fatjets.at(0)).PrunedMass();
+          cutop[15] = (fatjets.at(0)).SoftDropMass();
           cutop[16] = (lep.at(0)+fatjets.at(0)).M();
           cutop[17] = (lep.at(1)+fatjets.at(0)).M();
           cutop[18] = (lep.at(0)+lep.at(1)+fatjets.at(0)).M();
@@ -2629,7 +2635,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
           //==== m(fj)~W (high mass)
           cutop[19] = fatjets.at(index_fjW).Pt();
           cutop[20] = -999.;
-          cutop[21] = (fatjets.at(index_fjW)).PrunedMass();
+          cutop[21] = (fatjets.at(index_fjW)).SoftDropMass();
           cutop[22] = (lep.at(0)+fatjets.at(index_fjW)).M();
           cutop[23] = (lep.at(1)+fatjets.at(index_fjW)).M();
           cutop[24] = (lep.at(0)+lep.at(1)+fatjets.at(index_fjW)).M();
@@ -3505,9 +3511,15 @@ void DiLeptonAnalyzer::get_eventweight(std::vector<snu::KMuon> muons, std::vecto
 
 bool DiLeptonAnalyzer::JSFatJetID(snu::KFatJet fatjet){
 
+/*
   if( !(fatjet.PrunedMass() > 40) ) return false;
   if( !(fatjet.PrunedMass() < 130) ) return false;
   if( !( fatjet.Tau2()/fatjet.Tau1() < 0.60 ) ) return false;
+*/
+
+  if( !(fatjet.SoftDropMass() > 60) ) return false;
+  if( !(fatjet.SoftDropMass() < 140) ) return false;
+  if( !( fatjet.PuppiTau2()/fatjet.PuppiTau1() < 0.55 ) ) return false;
 
   return true;
 
