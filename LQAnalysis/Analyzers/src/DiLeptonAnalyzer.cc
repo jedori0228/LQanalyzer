@@ -1387,14 +1387,6 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
     //cout << "fatjets.size() = " << fatjets.size() << endl;
     double FatJetTau21_SF = 1.;
 
-    int FatJetTau21_dir = 0;
-    if(this_syst=="_Tau21_up") FatJetTau21_dir = 1;
-    if(this_syst=="_Tau21_down") FatJetTau21_dir = -1;
-
-    for(unsigned int j=0; j<fatjets.size(); j++){
-      FatJetTau21_SF *= GetFatJetSF(fatjets.at(j), 0.6, FatJetTau21_dir);
-    }
-
     JSCorrectedMETFatJet(fatjets, MET, METphi);
 
     //===============
@@ -2437,11 +2429,11 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
         map_Region_to_Bool["High"] = ( TwoJet_NoFatJet || OneFatJet ) &&
                                              (nbjets_nolepveto == 0) &&
-                                             ( mjj_high < 150. ) &&
+                                             //( mjj_high < 150. ) &&
                                              ( MET*MET/ST < 15. );
         map_Region_to_Bool["HighCR"] = ( TwoJet_NoFatJet || OneFatJet ) &&
-                                               ( (nbjets_nolepveto >= 1) || (MET*MET/ST > 20.) ) &&
-                                               ( mjj_high < 150. );
+                                               ( (nbjets_nolepveto >= 1) || (MET*MET/ST > 20.) );
+                                               //( mjj_high < 150. );
 
         map_Region_to_Bool["High_TwoJet_NoFatJet"]   = map_Region_to_Bool["High"] && TwoJet_NoFatJet;
         map_Region_to_Bool["HighCR_TwoJet_NoFatJet"] = map_Region_to_Bool["HighCR"] && TwoJet_NoFatJet;
@@ -3505,9 +3497,9 @@ void DiLeptonAnalyzer::get_eventweight(std::vector<snu::KMuon> muons, std::vecto
 
 bool DiLeptonAnalyzer::JSFatJetID(snu::KFatJet fatjet){
 
-  if( !(fatjet.PrunedMass() > 40) ) return false;
-  if( !(fatjet.PrunedMass() < 130) ) return false;
-  if( !( fatjet.Tau2()/fatjet.Tau1() < 0.60 ) ) return false;
+  //if( !(fatjet.PrunedMass() > 40) ) return false;
+  //if( !(fatjet.PrunedMass() < 130) ) return false;
+  //if( !( fatjet.Tau2()/fatjet.Tau1() < 0.60 ) ) return false;
 
   return true;
 
