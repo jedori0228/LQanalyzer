@@ -66,3 +66,5 @@ bin/submitSKTreeAll.sh
 python/jalmondsetup.sh
 scripts/Luminosity/log/
 scripts/Luminosity/logqstat
+test_v*
+runscript_v*
