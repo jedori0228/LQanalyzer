@@ -359,14 +359,14 @@ declare -a test=(
 )
 
 declare -a test2=(
-'HNMoriondLLMumMum_200'
-'HNMoriondLLMupMup_200'
-'HNMoriondLLEmEm_200'
-'HNMoriondLLEpEp_200'
-'HNMoriondLL_Tchannel_MumMum_200'
-'HNMoriondLL_Tchannel_MupMup_200'
-'HNMoriondLL_Tchannel_EmEm_200'
-'HNMoriondLL_Tchannel_EpEp_200'
+'HeavyNeutrinoToMupMup_Tchannel_M300'  'HeavyNeutrinoToMupMup_Tchannel_M400'  
+'HeavyNeutrinoToMupMup_Tchannel_M500'  'HeavyNeutrinoToMupMup_Tchannel_M600'  'HeavyNeutrinoToMupMup_Tchannel_M700'  'HeavyNeutrinoToMupMup_Tchannel_M800'  
+'HeavyNeutrinoToMupMup_Tchannel_M900'  'HeavyNeutrinoToMupMup_Tchannel_M1000'  'HeavyNeutrinoToMupMup_Tchannel_M1100'  'HeavyNeutrinoToMupMup_Tchannel_M1200'  
+'HeavyNeutrinoToMupMup_Tchannel_M1300'  'HeavyNeutrinoToMupMup_Tchannel_M1400'  'HeavyNeutrinoToMupMup_Tchannel_M1500'  'HeavyNeutrinoToMupMup_Tchannel_M1700'  
+'HeavyNeutrinoToMupMup_Tchannel_M2000'  'HeavyNeutrinoToMumMum_Tchannel_M300'  'HeavyNeutrinoToMumMum_Tchannel_M400'  'HeavyNeutrinoToMumMum_Tchannel_M500'  
+'HeavyNeutrinoToMumMum_Tchannel_M600'  'HeavyNeutrinoToMumMum_Tchannel_M700'  'HeavyNeutrinoToMumMum_Tchannel_M800'  'HeavyNeutrinoToMumMum_Tchannel_M900'  
+'HeavyNeutrinoToMumMum_Tchannel_M1000'  'HeavyNeutrinoToMumMum_Tchannel_M1100'  'HeavyNeutrinoToMumMum_Tchannel_M1200'  'HeavyNeutrinoToMumMum_Tchannel_M1300'  
+'HeavyNeutrinoToMumMum_Tchannel_M1400'  'HeavyNeutrinoToMumMum_Tchannel_M1500'  'HeavyNeutrinoToMumMum_Tchannel_M1700'  'HeavyNeutrinoToMumMum_Tchannel_M2000'
 )
 
 declare dilepbkg_use=(
