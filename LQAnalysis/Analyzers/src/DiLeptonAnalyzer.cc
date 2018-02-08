@@ -1557,8 +1557,13 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
         if(MCIsCF(electrons.at(j))){
           HasLooseCF = true;
-          if(fabs(electrons.at(j).SCEta())<1.4442) LooseCFSF = 0.7233*0.8444;
-          else LooseCFSF = 0.9120*0.8968;
+
+          if(fabs(electrons.at(j).SCEta())<1.4442) LooseCFSF = 0.7233;
+          else LooseCFSF = 0.9120;
+
+          //if(fabs(electrons.at(j).SCEta())<1.4442) LooseCFSF = 0.7233*0.8444;
+          //else LooseCFSF = 0.9120*0.8968;
+
         }
 
       }
@@ -1593,7 +1598,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
     else if(this_syst=="_MuonIDSF_down") MuonIDDir = -1;
     else MuonIDDir = 0;
 
-    double muon_id_iso_sf = mcdata_correction->MuonScaleFactor("MUON_HN_TIGHT", muons, MuonIDDir);
+    double muon_id_iso_sf = mcdata_correction->MuonScaleFactor("MUON_HN_TIGHT", muons_tight, MuonIDDir);
     double MuTrkEffSF =  mcdata_correction->MuonTrackingEffScaleFactor(muons);
     if(DoNoSF) muon_id_iso_sf = 1.;
 
@@ -1602,7 +1607,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
     else if(this_syst=="_ElectronIDSF_down") ElectronIDDir = -1;
     else ElectronIDDir = 0;
 
-    double electron_sf = mcdata_correction->ElectronScaleFactor(ElectronTightID, electrons, ElectronIDDir);
+    double electron_sf = mcdata_correction->ElectronScaleFactor(ElectronTightID, electrons_tight, ElectronIDDir);
     if(DoNoSF) electron_sf = 1.;
     double electron_RecoSF =  mcdata_correction->ElectronRecoScaleFactor(electrons);
 
@@ -3197,8 +3202,17 @@ double DiLeptonAnalyzer::GetCF(KLepton lep, bool geterr){
   }
 
   double sf(1.);
-  if(el_eta < 1.4442) sf = 0.7052*0.8251;
-  else sf = 0.8548*0.8673;
+
+  //if(el_eta < 1.4442) sf = 0.4912;
+  //else sf = 0.8128;
+
+  if(el_eta < 1.4442) sf = 0.7052;
+  else sf = 0.8548;
+
+  //==== Below using MC (CF)/(CF+type40)
+  //if(el_eta < 1.4442) sf = 0.7052*0.8251;
+  //else sf = 0.8548*0.8673;
+
 
 
 /*
