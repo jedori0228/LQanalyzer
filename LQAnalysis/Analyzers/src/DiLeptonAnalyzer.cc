@@ -963,7 +963,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 */
 
   if(!isData){
-    weight*=GetKFactor();
+    //weight*=GetKFactor();
   }
 
   bool DoFRBJET = std::find(k_flags.begin(), k_flags.end(), "DoFRBJET") != k_flags.end();

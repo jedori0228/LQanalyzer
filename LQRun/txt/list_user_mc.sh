@@ -1,5 +1,11 @@
 #!/bin/sh
 
+declare -a samples8TeV=(
+'WW' 'ZZ' 'WZ'
+'WWW' 'WWZ' 'WZZ' 'ZZZ'
+'ttW' 'ttZ' 'ttH_nonbb'
+)
+
 declare -a privTch=(
 'HeavyNeutrinoToEpEp_Tchannel_M300' 'HeavyNeutrinoToEpEp_Tchannel_M400'  
 'HeavyNeutrinoToEpEp_Tchannel_M500'  'HeavyNeutrinoToEpEp_Tchannel_M600'  'HeavyNeutrinoToEpEp_Tchannel_M700'  'HeavyNeutrinoToEpEp_Tchannel_M800'  
