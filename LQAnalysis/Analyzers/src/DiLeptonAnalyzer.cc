@@ -477,18 +477,23 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
     }
   }
-
+*/
+/*
   std::vector< snu::KMuon > testmuons = GetMuons("MUON_HN_LOOSEv7_SIP3", true);
+  std::vector<snu::KTruth> truthColl;
+  eventbase->GetTruthSel()->Selection(truthColl);
   //==== FRTEST
   for(unsigned int i=0; i<testmuons.size(); i++){
+    int leptype =  GetLeptonType(testmuons.at(i), truthColl);
     FillHist("TEST_MUON_FR_TYPE_F0", testmuons.at(i).GetType(), 1., 0., 50., 50);
+    FillHist("TEST_MUON_FR_LeptonType_F0", leptype, 1., -10., 10., 20);
     if(PassID(testmuons.at(i), "MUON_HN_TIGHT")){
       FillHist("TEST_MUON_FR_TYPE_F", testmuons.at(i).GetType(), 1., 0., 50., 50);
+      FillHist("TEST_MUON_FR_LeptonType_F", leptype, 1., -10., 10., 20);
     }
   }
   return;
 */
-
 /*
   //==== DZ filter
 
