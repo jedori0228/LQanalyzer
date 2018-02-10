@@ -182,6 +182,9 @@ void DiLeptonAnalyzer_CR::InitialiseAnalysis() throw( LQError ) {
 
   origDir->cd();
 
+  ForTree_PdfWeights = new vector<float>();
+  ForTree_ScaleWeights = new vector<float>();
+
   return;
 }
 
@@ -447,6 +450,15 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
   snu::KEvent Evt = eventbase->GetEvent();
 
   n_vtx = Evt.nVertices();
+  ForTree_PdfWeights->clear();
+  ForTree_ScaleWeights->clear();
+  for(unsigned int i=0; i<Evt.PdfWeights().size(); i++){
+    ForTree_PdfWeights->push_back(Evt.PdfWeights().at(i));
+  }
+  for(unsigned int i=0; i<Evt.ScaleWeights().size(); i++){
+    ForTree_ScaleWeights->push_back(Evt.ScaleWeights().at(i));
+  }
+
 
   //==== Define Analysis Region
 
@@ -482,10 +494,9 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
   //==== 9) Electron Energy Scale
   //==== 10) BTagSF Eff
   //==== 11) BTagSF Miss 
-  //==== 12) Rochestor
   //====================================
 
-  int N_sys = 2*12+1;
+  int N_sys = 2*11+1;
   int it_sys_start = 0;
 
   if( isData ){
@@ -577,12 +588,6 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
     else if(it_sys==22){
       this_syst = "_BTagSFMiss_down";
     }
-    else if(it_sys==23){
-      this_syst = "_Rocc_up";
-    }
-    else if(it_sys==24){
-      this_syst = "_Rocc_down";
-    }
     else{
       Message("it_sys out of range!" , INFO);
       return;
@@ -610,59 +615,23 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
       //==== Signal Leptons
       for(unsigned int j=0; j<muons_loosest.size(); j++){
         snu::KMuon this_muon = muons_loosest.at(j);
-        this_muon.SetPtEtaPhiM( this_muon.Pt()*this_muon.PtShiftedUp(), this_muon.Eta(), this_muon.Phi(), this_muon.M() );
-        double new_RelIso = this_muon.RelIso04()/this_muon.PtShiftedUp();
+        double scale = 1.+mcdata_correction->GetRochesterMomentumWidth(this_muon);
+        this_muon.SetPtEtaPhiM( this_muon.Pt()*scale, this_muon.Eta(), this_muon.Phi(), this_muon.M() );
+        double new_RelIso = this_muon.RelIso04()/scale;
         this_muon.SetRelIso(0.4, new_RelIso);
         if( this_muon.Pt() >= 10. && new_RelIso < this_MuonLooseRelIso ) muons.push_back( this_muon );
       }
       //==== Veto Leptons
       for(unsigned int j=0; j<muons_veto_loosest.size(); j++){
         snu::KMuon this_muon = muons_veto_loosest.at(j);
-        this_muon.SetPtEtaPhiM( this_muon.Pt()*this_muon.PtShiftedUp(), this_muon.Eta(), this_muon.Phi(), this_muon.M() );
-        double new_RelIso = this_muon.RelIso04()/this_muon.PtShiftedUp();
+        double scale = 1.+mcdata_correction->GetRochesterMomentumWidth(this_muon);
+        this_muon.SetPtEtaPhiM( this_muon.Pt()*scale, this_muon.Eta(), this_muon.Phi(), this_muon.M() );
+        double new_RelIso = this_muon.RelIso04()/scale;
         this_muon.SetRelIso(0.4, new_RelIso);
         if( this_muon.Pt() >= 5. && new_RelIso < this_MuonVetoRelIso ) muons_veto.push_back( this_muon );
       }
     }
     else if(this_syst == "_MuonEn_down"){
-      //==== Signal Leptons
-      for(unsigned int j=0; j<muons_loosest.size(); j++){
-        snu::KMuon this_muon = muons_loosest.at(j);
-        this_muon.SetPtEtaPhiM( this_muon.Pt()*this_muon.PtShiftedDown(), this_muon.Eta(), this_muon.Phi(), this_muon.M() );
-        double new_RelIso = this_muon.RelIso04()/this_muon.PtShiftedDown();
-        this_muon.SetRelIso(0.4, new_RelIso);
-        if( this_muon.Pt() >= 10. && new_RelIso < this_MuonLooseRelIso ) muons.push_back( this_muon );
-      }
-      //==== Veto Leptons
-      for(unsigned int j=0; j<muons_veto_loosest.size(); j++){
-        snu::KMuon this_muon = muons_veto_loosest.at(j);
-        this_muon.SetPtEtaPhiM( this_muon.Pt()*this_muon.PtShiftedDown(), this_muon.Eta(), this_muon.Phi(), this_muon.M() );
-        double new_RelIso = this_muon.RelIso04()/this_muon.PtShiftedDown();
-        this_muon.SetRelIso(0.4, new_RelIso);
-        if( this_muon.Pt() >= 5. && new_RelIso < this_MuonVetoRelIso ) muons_veto.push_back( this_muon );
-      }
-    }
-    else if(this_syst == "_Rocc_up"){
-      //==== Signal Leptons
-      for(unsigned int j=0; j<muons_loosest.size(); j++){
-        snu::KMuon this_muon = muons_loosest.at(j);
-        double scale = 1.+mcdata_correction->GetRochesterMomentumWidth(this_muon);
-        this_muon.SetPtEtaPhiM( this_muon.Pt()*scale, this_muon.Eta(), this_muon.Phi(), this_muon.M() );
-        double new_RelIso = this_muon.RelIso04()/scale;
-        this_muon.SetRelIso(0.4, new_RelIso);
-        if( this_muon.Pt() >= 10. && new_RelIso < this_MuonLooseRelIso ) muons.push_back( this_muon );
-      }
-      //==== Veto Leptons
-      for(unsigned int j=0; j<muons_veto_loosest.size(); j++){
-        snu::KMuon this_muon = muons_veto_loosest.at(j);
-        double scale = 1.+mcdata_correction->GetRochesterMomentumWidth(this_muon);
-        this_muon.SetPtEtaPhiM( this_muon.Pt()*scale, this_muon.Eta(), this_muon.Phi(), this_muon.M() );
-        double new_RelIso = this_muon.RelIso04()/scale;
-        this_muon.SetRelIso(0.4, new_RelIso);
-        if( this_muon.Pt() >= 5. && new_RelIso < this_MuonVetoRelIso ) muons_veto.push_back( this_muon );
-      }
-    }
-    else if(this_syst == "_Rocc_down"){
       //==== Signal Leptons
       for(unsigned int j=0; j<muons_loosest.size(); j++){
         snu::KMuon this_muon = muons_loosest.at(j);
@@ -1676,6 +1645,15 @@ void DiLeptonAnalyzer_CR::FillDiLeptonPlot(
   if(!NowRunningCentral) return;
 
   TString leporder[4] = {"leading", "second", "third", "fourth"};
+
+  int n_pdfweights = ForTree_PdfWeights->size();
+  for(unsigned int i=0; i<n_pdfweights; i++){
+    JSFillHist(histsuffix, "PdfWeights_"+histsuffix, i, thisweight*fabs(ForTree_PdfWeights->at(i)), 0., 1.*n_pdfweights, n_pdfweights);
+  }
+  int n_scaleweight = ForTree_ScaleWeights->size();
+  for(unsigned int i=0; i<n_scaleweight; i++){
+    JSFillHist(histsuffix, "ScaleWeights_"+histsuffix, i, thisweight*fabs(ForTree_ScaleWeights->at(i)), 0., 1.*n_scaleweight, n_scaleweight);
+  }
 
   JSFillHist(histsuffix, "Nevents_"+histsuffix, 0., thisweight, 0., 1., 1);
   JSFillHist(histsuffix, "weight_fr_"+histsuffix, weight_fr, 1., -2., 2., 400);
