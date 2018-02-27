@@ -352,10 +352,14 @@ declare -a ghent=(
 
 
 declare -a test=(
-'TG' 'TTG'
-'WWW' 'WWZ' 'WZZ' 'ZZZ'
-'ttW' 'ttZ' 'ttH_nonbb'
-'WWTo2L2Nu_DS' 'WpWpEWK' 'WpWpQCD'
+'HNMoriondLLMupMup_50' 'HNMoriondLLMupMup_500' 
+'HNMoriondLLMumMum_50' 'HNMoriondLLMumMum_500' 
+'HNMoriondLLEpEp_50' 'HNMoriondLLEpEp_500' 
+'HNMoriondLLEmEm_50' 'HNMoriondLLEmEm_500' 
+'HNMoriondLLMupEp_50' 'HNMoriondLLMupEp_500' 
+'HNMoriondLLMumEm_50' 'HNMoriondLLMumEm_500' 
+'HNMoriondLLEpMup_50' 'HNMoriondLLEpMup_500' 
+'HNMoriondLLEmMum_50' 'HNMoriondLLEmMum_500' 
 )
 
 declare -a test2=(

@@ -389,13 +389,9 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
     //pileup_reweight = mcdata_correction->PileupWeightByPeriod(eventbase->GetEvent());
   }
 
-  w_cutflow["DiMuon"] = weight*WeightByTrigger(triggerlist_DiMuon, TargetLumi)*pileup_reweight;
-  w_cutflow["DiElectron"] = weight*WeightByTrigger(triggerlist_DiElectron, TargetLumi)*pileup_reweight;
-  w_cutflow["EMu"] = weight*pileup_reweight; //FIXME
+  w_cutflow["DiMuon_ThreeLepton"] = weight*WeightByTrigger(triggerlist_DiMuon, TargetLumi)*pileup_reweight;
 
-  FillCutFlowByName("DiMuon", "NoCut", w_cutflow["DiMuon"], isData);
-  FillCutFlowByName("DiElectron", "NoCut", w_cutflow["DiElectron"], isData);
-  FillCutFlowByName("EMu", "NoCut", w_cutflow["EMu"], isData);
+  FillCutFlowByName("DiMuon_ThreeLepton", "NoCut", w_cutflow["DiMuon_ThreeLepton"], isData);
 
   //======================
   //==== [CUT] METFilter
@@ -975,8 +971,11 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
 
       TString Suffix = Suffixs.at(i);
 
+      FillCutFlowByName(Suffix, "MET_PV", w_cutflow[Suffix], isData);
+
       //==== Trigger pass
       if(!PassTriggerOR( Triggers.at(i) )) continue;
+      FillCutFlowByName(Suffix, "Trigger", w_cutflow[Suffix], isData);
 
       double DiMuon_MCTriggerWeight = 0.;
       double EMu_MCTriggerWeight = 0.;
@@ -1141,6 +1140,8 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
       //==== No Extra different flavour lepton
       if(!isNoExtraOtherFlavour) continue;
 
+      FillCutFlowByName(Suffix, "NumberOfLeptons", w_cutflow[Suffix], isData);
+
       //==== DiMuon-DoubleMuon PD / ...
       if(isData && !k_channel.Contains("DoubleMuon_CF")){
         if(Suffix.Contains("DiMuon")){
@@ -1286,6 +1287,8 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
         if( fabs( (lep.at(0)+lep.at(1)+lep.at(2)).M() - m_Z ) < 15. ) WithOS_lll_OnZ = true;
       }
 
+      if(WithOSSF_OnZ) FillCutFlowByName(Suffix, "OnZ", w_cutflow[Suffix], isData);
+
       //==== Three
       KLepton extralepton;
       KLepton Z_lead, Z_sublead;
@@ -1331,7 +1334,7 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
 
       //==== Four
       bool WithTwoZPair = false;
-      vector<double> ZZ_zmasses;
+      vector<double> ZZ_zmasses, ZZ_zpts;
       if(Suffix.Contains("Four")){
 
         //==== IsOSSF_OnZs;
@@ -1342,16 +1345,25 @@ void DiLeptonAnalyzer_CR::ExecuteEvents()throw( LQError ){
           WithTwoZPair = true;
           ZZ_zmasses.push_back( (lep.at(0)+lep.at(1)).M() );
           ZZ_zmasses.push_back( (lep.at(2)+lep.at(3)).M() );
+
+          ZZ_zpts.push_back( (lep.at(0)+lep.at(1)).Pt() );
+          ZZ_zpts.push_back( (lep.at(2)+lep.at(3)).Pt() );
         }
         if(IsOSSF_OnZs.at(1)&&IsOSSF_OnZs.at(4)){
           WithTwoZPair = true;
           ZZ_zmasses.push_back( (lep.at(0)+lep.at(2)).M() );
           ZZ_zmasses.push_back( (lep.at(1)+lep.at(3)).M() );
+
+          ZZ_zpts.push_back( (lep.at(0)+lep.at(2)).Pt() );
+          ZZ_zpts.push_back( (lep.at(1)+lep.at(3)).Pt() );
         }
         if(IsOSSF_OnZs.at(2)&&IsOSSF_OnZs.at(3)){
           WithTwoZPair = true;
           ZZ_zmasses.push_back( (lep.at(0)+lep.at(3)).M() );
           ZZ_zmasses.push_back( (lep.at(1)+lep.at(2)).M() );
+
+          ZZ_zpts.push_back( (lep.at(0)+lep.at(3)).Pt() );
+          ZZ_zpts.push_back( (lep.at(1)+lep.at(2)).Pt() );
         }
 
       }
@@ -1586,6 +1598,8 @@ void DiLeptonAnalyzer_CR::FillCutFlow(TString cut, float w){
 }
 
 void DiLeptonAnalyzer_CR::FillCutFlowByName(TString histname, TString cut, float w, bool IsDATA){
+
+  if(AUTO_syst_type!="") return;
 
   TString this_histname = "Cutflow_"+histname;
 

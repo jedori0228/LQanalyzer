@@ -289,9 +289,9 @@ HNMupMup_Tchannel_600  30000.00000 30000.00000 0.00000 6345177600.00000  /data2/
 HNMupMup_Tchannel_700  30000.00000 30000.00000 0.00000 8305647616.00000  /data2/DATA/cattoflat/MC/v8-0-7/MajoranaNeutrinoToMupMup_Tchannel_M-700/
 HNMupMup_Tchannel_800  30000.00000 30000.00000 0.00000 10578279424.00000  /data2/DATA/cattoflat/MC/v8-0-7/MajoranaNeutrinoToMupMup_Tchannel_M-800/
 HNMupMup_Tchannel_900  29000.00000 29000.00000 0.00000 13122171904.00000  /data2/DATA/cattoflat/MC/v8-0-7/MajoranaNeutrinoToMupMup_Tchannel_M-900/
-DYJets_MG_10to50_TrigInfoSample  35291560.00000 35291560.00000 18610.00000 1896.37610  /data2/DATA/cattoflat/MC/v8-0-7/DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_TrigInfoSample/
-DYJets_MG_TrigInfoSample  96527072.00000 96527072.00000 5765.40000 16742.47656  /data2/DATA/cattoflat/MC/v8-0-7/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_TrigInfoSample/
-TT_powheg_TrigInfoSample  76375344.00000 76375344.00000 831.76000 91823.77344  /data2/DATA/cattoflat/MC/v8-0-7/TT_TuneCUETP8M2T4_13TeV-powheg-pythia_TrigInfoSample/
+DYJets_MG_10to50_TrigInfoSample  34690276.0 34690276.0 18610.0 1864.1  /data2/DATA/cattoflat/MC/v8-0-7/DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_TrigInfoSample/
+DYJets_MG_TrigInfoSample  95153632.0 95153632.0 5765.4 16504.3  /data2/DATA/cattoflat/MC/v8-0-7/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_TrigInfoSample/
+TT_powheg_TrigInfoSample  72018832.0 72018832.0 831.8 86586.1  /data2/DATA/cattoflat/MC/v8-0-7/TT_TuneCUETP8M2T4_13TeV-powheg-pythia_TrigInfoSample/
 WWtoEMu_Schannel_v1  953000.00000 953000.00000 1.00000 953000.00000  /data2/DATA/cattoflat/MC/v8-0-7/WWtoEMu_Schannel__ver1/
 WWtoEMu_WWmass0to200_v1  479000.00000 479000.00000 0.54148 884612.56250  /data2/DATA/cattoflat/MC/v8-0-7/WWtoEMu_WWmass0to200__ver1/
 WWtoEMu_WWmass1000to2000_v1  475000.00000 475000.00000 0.00984 48295572.00000  /data2/DATA/cattoflat/MC/v8-0-7/WWtoEMu_WWmass1000to2000__ver1/
@@ -2107,9 +2107,9 @@ SKHeavyNeutrinoToMupMup_Tchannel_M600_hnfake  32000.00000 15150.00000 0.00002 84
 SKHeavyNeutrinoToMupMup_Tchannel_M700_hnfake  31000.00000 14766.00000 0.00001 1123744256.00000 /data2/CatNtuples/v8-0-7/SKTrees/MCHNFake/HeavyNeutrinoToMupMup_Tchannel_M700/
 SKHeavyNeutrinoToMupMup_Tchannel_M800_hnfake  33000.00000 15864.00000 0.00001 1622749568.00000 /data2/CatNtuples/v8-0-7/SKTrees/MCHNFake/HeavyNeutrinoToMupMup_Tchannel_M800/
 SKHeavyNeutrinoToMupMup_Tchannel_M900_hnfake  29000.00000 14162.00000 0.00001 1908882560.00000 /data2/CatNtuples/v8-0-7/SKTrees/MCHNFake/HeavyNeutrinoToMupMup_Tchannel_M900/
-SKDYJets_MG_10to50_TrigInfoSample  35291560.00000 35291560.00000 18610.00000 1896.37610 /data2/CatNtuples/v8-0-7/SKTrees/MC/DYJets_MG_10to50_TrigInfoSample/
-SKDYJets_MG_TrigInfoSample  96527072.00000 96527072.00000 5765.40000 16742.47656 /data2/CatNtuples/v8-0-7/SKTrees/MC/DYJets_MG_TrigInfoSample/
-SKTT_powheg_TrigInfoSample  76375344.00000 76375344.00000 831.76000 91823.77344 /data2/CatNtuples/v8-0-7/SKTrees/MC/TT_powheg_TrigInfoSample/
+SKDYJets_MG_10to50_TrigInfoSample  34690276.0 34690276.0 18610.0 1864.1 /data2/CatNtuples/v8-0-7/SKTrees/MC/DYJets_MG_10to50_TrigInfoSample/
+SKDYJets_MG_TrigInfoSample  95153632.0 95153632.0 5765.4 16504.3 /data2/CatNtuples/v8-0-7/SKTrees/MC/DYJets_MG_TrigInfoSample/
+SKTT_powheg_TrigInfoSample  72018832.0 72018832.0 831.8 86586.1 /data2/CatNtuples/v8-0-7/SKTrees/MC/TT_powheg_TrigInfoSample/
 SKWWtoEMu_Schannel_v1  953000.00000 953000.00000 1.00000 953000.00000 /data2/CatNtuples/v8-0-7/SKTrees/MC/WWtoEMu_Schannel_v1/
 SKWWtoEMu_WWmass0to200_v1  479000.00000 479000.00000 0.54148 884612.56250 /data2/CatNtuples/v8-0-7/SKTrees/MC/WWtoEMu_WWmass0to200_v1/
 SKWWtoEMu_WWmass1000to2000_v1  475000.00000 475000.00000 0.00984 48295572.00000 /data2/CatNtuples/v8-0-7/SKTrees/MC/WWtoEMu_WWmass1000to2000_v1/
@@ -3660,9 +3660,9 @@ SKHNMupMup_Tchannel_600_dilep  30000.00000 30000.00000 0.00000 6345177600.00000 
 SKHNMupMup_Tchannel_700_dilep  30000.00000 30000.00000 0.00000 8305647616.00000 /data2/CatNtuples/v8-0-7/SKTrees/MCDiLep/HNMupMup_Tchannel_700/
 SKHNMupMup_Tchannel_800_dilep  30000.00000 30000.00000 0.00000 10578279424.00000 /data2/CatNtuples/v8-0-7/SKTrees/MCDiLep/HNMupMup_Tchannel_800/
 SKHNMupMup_Tchannel_900_dilep  29000.00000 29000.00000 0.00000 13122171904.00000 /data2/CatNtuples/v8-0-7/SKTrees/MCDiLep/HNMupMup_Tchannel_900/
-SKDYJets_MG_10to50_TrigInfoSample_dilep  35291560.00000 35291560.00000 18610.00000 1896.37610 /data2/CatNtuples/v8-0-7/SKTrees/MCDiLep/DYJets_MG_10to50_TrigInfoSample/
-SKDYJets_MG_TrigInfoSample_dilep  96527072.00000 96527072.00000 5765.40000 16742.47656 /data2/CatNtuples/v8-0-7/SKTrees/MCDiLep/DYJets_MG_TrigInfoSample/
-SKTT_powheg_TrigInfoSample_dilep  76375344.00000 76375344.00000 831.76000 91823.77344 /data2/CatNtuples/v8-0-7/SKTrees/MCDiLep/TT_powheg_TrigInfoSample/
+SKDYJets_MG_10to50_TrigInfoSample_dilep  34690276.0 34690276.0 18610.0 1864.1 /data2/CatNtuples/v8-0-7/SKTrees/MCDiLep/DYJets_MG_10to50_TrigInfoSample/
+SKDYJets_MG_TrigInfoSample_dilep  95153632.0 95153632.0 5765.4 16504.3 /data2/CatNtuples/v8-0-7/SKTrees/MCDiLep/DYJets_MG_TrigInfoSample/
+SKTT_powheg_TrigInfoSample_dilep  72018832.0 72018832.0 831.8 86586.1 /data2/CatNtuples/v8-0-7/SKTrees/MCDiLep/TT_powheg_TrigInfoSample/
 SKWWtoEMu_Schannel_v1_dilep  953000.00000 953000.00000 1.00000 953000.00000 /data2/CatNtuples/v8-0-7/SKTrees/MCDiLep/WWtoEMu_Schannel_v1/
 SKWWtoEMu_WWmass0to200_v1_dilep  479000.00000 479000.00000 0.54148 884612.56250 /data2/CatNtuples/v8-0-7/SKTrees/MCDiLep/WWtoEMu_WWmass0to200_v1/
 SKWWtoEMu_WWmass1000to2000_v1_dilep  475000.00000 475000.00000 0.00984 48295572.00000 /data2/CatNtuples/v8-0-7/SKTrees/MCDiLep/WWtoEMu_WWmass1000to2000_v1/
@@ -4837,9 +4837,9 @@ SKHNMupMup_Tchannel_600_trilep  30000.00000 30000.00000 0.00000 6345177600.00000
 SKHNMupMup_Tchannel_700_trilep  30000.00000 30000.00000 0.00000 8305647616.00000 /data2/CatNtuples/v8-0-7/SKTrees/MCTriLep/HNMupMup_Tchannel_700/
 SKHNMupMup_Tchannel_800_trilep  30000.00000 30000.00000 0.00000 10578279424.00000 /data2/CatNtuples/v8-0-7/SKTrees/MCTriLep/HNMupMup_Tchannel_800/
 SKHNMupMup_Tchannel_900_trilep  29000.00000 29000.00000 0.00000 13122171904.00000 /data2/CatNtuples/v8-0-7/SKTrees/MCTriLep/HNMupMup_Tchannel_900/
-SKDYJets_MG_10to50_TrigInfoSample_trilep  35291560.00000 35291560.00000 18610.00000 1896.37610 /data2/CatNtuples/v8-0-7/SKTrees/MCTriLep/DYJets_MG_10to50_TrigInfoSample/
-SKDYJets_MG_TrigInfoSample_trilep  96527072.00000 96527072.00000 5765.40000 16742.47656 /data2/CatNtuples/v8-0-7/SKTrees/MCTriLep/DYJets_MG_TrigInfoSample/
-SKTT_powheg_TrigInfoSample_trilep  76375344.00000 76375344.00000 831.76000 91823.77344 /data2/CatNtuples/v8-0-7/SKTrees/MCTriLep/TT_powheg_TrigInfoSample/
+SKDYJets_MG_10to50_TrigInfoSample_trilep  34690276.0 34690276.0 18610.0 1864.1 /data2/CatNtuples/v8-0-7/SKTrees/MCTriLep/DYJets_MG_10to50_TrigInfoSample/
+SKDYJets_MG_TrigInfoSample_trilep  95153632.0 95153632.0 5765.4 16504.3 /data2/CatNtuples/v8-0-7/SKTrees/MCTriLep/DYJets_MG_TrigInfoSample/
+SKTT_powheg_TrigInfoSample_trilep  72018832.0 72018832.0 831.8 86586.1 /data2/CatNtuples/v8-0-7/SKTrees/MCTriLep/TT_powheg_TrigInfoSample/
 SKWWtoEMu_Schannel_v1_trilep  953000.00000 953000.00000 1.00000 953000.00000 /data2/CatNtuples/v8-0-7/SKTrees/MCTriLep/WWtoEMu_Schannel_v1/
 SKWWtoEMu_WWmass0to200_v1_trilep  479000.00000 479000.00000 0.54148 884612.56250 /data2/CatNtuples/v8-0-7/SKTrees/MCTriLep/WWtoEMu_WWmass0to200_v1/
 SKWWtoEMu_WWmass1000to2000_v1_trilep  475000.00000 475000.00000 0.00984 48295572.00000 /data2/CatNtuples/v8-0-7/SKTrees/MCTriLep/WWtoEMu_WWmass1000to2000_v1/
@@ -5738,9 +5738,9 @@ SKSingleTop_tW_noHadron_hnfake  5372991.00000 5372991.00000 19.55450 274770.0625
 SKSingleTop_tW_hnfake  6952830.00000 6952830.00000 35.85000 193942.26562 /data2/CatNtuples/v8-0-7/SKTrees/MCHNFake/SingleTop_tW/
 
 #### HNDiLep skims: SKTrees
-SKDYJets_MG_10to50_TrigInfoSample_hndilep  35291560.00000 35291560.00000 18610.00000 1896.37610 /data2/CatNtuples/v8-0-7/SKTrees/MCHNDiLep/DYJets_MG_10to50_TrigInfoSample/
-SKDYJets_MG_TrigInfoSample_hndilep  96527072.00000 96527072.00000 5765.40000 16742.47656 /data2/CatNtuples/v8-0-7/SKTrees/MCHNDiLep/DYJets_MG_TrigInfoSample/
-SKTT_powheg_TrigInfoSample_hndilep  76375344.00000 76375344.00000 831.76000 91823.77344 /data2/CatNtuples/v8-0-7/SKTrees/MCHNDiLep/TT_powheg_TrigInfoSample/
+SKDYJets_MG_10to50_TrigInfoSample_hndilep  34690276.0 34690276.0 18610.0 1864.1 /data2/CatNtuples/v8-0-7/SKTrees/MCHNDiLep/DYJets_MG_10to50_TrigInfoSample/
+SKDYJets_MG_TrigInfoSample_hndilep  95153632.0 95153632.0 5765.4 16504.3 /data2/CatNtuples/v8-0-7/SKTrees/MCHNDiLep/DYJets_MG_TrigInfoSample/
+SKTT_powheg_TrigInfoSample_hndilep  72018832.0 72018832.0 831.8 86586.1 /data2/CatNtuples/v8-0-7/SKTrees/MCHNDiLep/TT_powheg_TrigInfoSample/
 SKDYJets_10to50_hndilep  40381392.00000 29386528.00000 18610.00000 1579.07190 /data2/CatNtuples/v8-0-7/SKTrees/MCHNDiLep/DYJets_10to50/
 SKDYJets_hndilep  122055416.00000 81781112.00000 5765.40000 14184.81152 /data2/CatNtuples/v8-0-7/SKTrees/MCHNDiLep/DYJets/
 SKTT_powheg_hndilep  76375312.00000 76375312.00000 831.76000 91823.73438 /data2/CatNtuples/v8-0-7/SKTrees/MCHNDiLep/TT_powheg/

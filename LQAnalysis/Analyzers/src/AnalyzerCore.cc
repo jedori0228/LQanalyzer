@@ -4632,7 +4632,7 @@ vector<snu::KElectron> AnalyzerCore::GetTruePrompt(vector<snu::KElectron> electr
 bool  AnalyzerCore::MCIsCF(snu::KElectron el){
   
   if(el.GetType() == 4) return true;
-  if(el.GetType() == 5) return true;
+  //if(el.GetType() == 5) return true;
   if(el.GetType() == 6) return true;
   if(el.GetType() == 13) return true;
   if(el.GetType() == 19) return true;

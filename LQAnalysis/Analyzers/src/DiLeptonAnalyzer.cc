@@ -171,9 +171,9 @@ void DiLeptonAnalyzer::InitialiseAnalysis() throw( LQError ) {
     hist_Muon_FR_syst["Awayjet_"+awayjetpt[i]]     = (TH2D*)file_Muon_FR_suoh->Get("FR_ptcone_awayjet_pt_"+awayjetpt[i])->Clone();
     hist_Electron_FR_syst["Awayjet_"+awayjetpt[i]] = (TH2D*)file_Electron_FR_suoh->Get("FR_ptcone_awayjet_pt_"+awayjetpt[i])->Clone();
   }
-  cout << "60" << endl;
+  cout << "40" << endl;
   hist_Muon_FR_syst["Awayjet_40"]     = (TH2D*)file_Muon_FR_suoh->Get("FR_ptcone_central")->Clone();
-  hist_Electron_FR_syst["Awayjet_40"] = (TH2D*)file_Electron_FR_suoh->Get("FR_ptcone_central")->Clone();
+  hist_Electron_FR_syst["Awayjet_40"] = (TH2D*)file_Electron_FR_suoh->Get("FR_ptcone_central_EC50syst")->Clone(); //Updated in 18/02/12, EC prompt syst increased to 50%
 
 
   TString Muon_FRsystsources[5] = {"dphi_1p5", "dphi_1", "dphi_3", "pj_over_pl_1", "pj_over_pl_2"};
@@ -215,6 +215,58 @@ void DiLeptonAnalyzer::InitialiseAnalysis() throw( LQError ) {
 
 
 void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
+/*
+  std::vector< snu::KMuon > testmuons = GetMuons("MUON_HN_TIGHT", true);
+  std::vector< snu::KElectron > testelectrons = GetElectrons(true, true, "ELECTRON_HN_TIGHTv4");
+
+  if(testmuons.size()>=2){
+    if(testmuons.at(0).Pt() > 20 && testmuons.at(1).Pt() > 10){
+      FillHist("TEST_DiMuon_NoCut", 0., 1., 0., 1., 1);
+
+      vector<TString> triggerlists;
+      triggerlists.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v");
+      triggerlists.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v");
+
+      if(PassTriggerOR(triggerlists)){
+        FillHist("TEST_DiMuon_TriggerFired", 0., 1., 0., 1., 1);
+      }
+    }
+  }
+  if(testelectrons.size()>=2){
+    if(testelectrons.at(0).Pt() > 25 && testelectrons.at(1).Pt() > 15){
+      FillHist("TEST_DiElectron_NoCut", 0., 1., 0., 1., 1);
+
+      vector<TString> triggerlists;
+      triggerlists.push_back("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v");
+
+      if(PassTriggerOR(triggerlists)){
+        FillHist("TEST_DiElectron_TriggerFired", 0., 1., 0., 1., 1);
+      }
+    }
+  }
+  if(testmuons.size()>=1 && testelectrons.size()>=1){
+    if( (testmuons.at(0).Pt() > 25 && testelectrons.at(0).Pt() > 10) ||
+        (testmuons.at(0).Pt() > 10 && testelectrons.at(0).Pt() > 25)
+      ){
+
+      FillHist("TEST_EMu_NoCut", 0., 1., 0., 1., 1);
+
+      if(PassTrigger("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v")){
+        FillHist("TEST_Mu8Ele23_TriggerFired", 0., 1., 0., 1., 1);
+      }
+      if(PassTrigger("HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_v")){
+        FillHist("TEST_Mu23Ele8_TriggerFired", 0., 1., 0., 1., 1);
+      }
+
+      if(PassTrigger("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v") || PassTrigger("HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_v")){
+        FillHist("TEST_EMu_TriggerFired", 0., 1., 0., 1., 1);
+      }
+
+    }
+  }
+  return;
+*/
+
 
 /*
   //==== Check Rochestor Syst
@@ -223,6 +275,97 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
     double this_width = mcdata_correction->GetRochesterMomentumWidth(testmuons.at(i));
     cout << testmuons.at(i).Pt() << " -> " << this_width << endl;
     FillHist("RochDiff", this_width, 1., 0., 0.5, 500);
+  }
+  return;
+*/
+/*
+  std::vector< snu::KMuon > testmuons = GetMuons("MUON_HN_TIGHT", true, 0, 2.4);
+  std::vector< snu::KElectron > testelectrons = GetElectrons(true, true, "ELECTRON_HN_TIGHTv4", 0, 2.5);
+  if(testmuons.size()==2){
+    FillHist("DiMuon_lep1_pt", testmuons.at(0).Pt(), 1., 0., 200., 200);
+    FillHist("DiMuon_lep2_pt", testmuons.at(1).Pt(), 1., 0., 200., 200);
+  }
+  return;
+*/
+/*
+  //==== ZCR
+  std::vector< snu::KMuon > testmuons = GetMuons("MUON_HN_TIGHT", true);
+  std::vector< snu::KMuon > testmuons_veto = GetMuons("MUON_HN_VETO", true);
+  std::vector< snu::KElectron > testelectrons = GetElectrons(true, true, "ELECTRON_HN_TIGHTv4");
+  std::vector< snu::KElectron > testelectrons_veto = GetElectrons(true, true, "ELECTRON_HN_VETO");
+
+  TString LepChannel = "";
+  KLepton lep1, lep2;
+  double IDSF = 1.;
+  double TriggerSF = 1.;
+  vector<TString> triggerlists;
+
+  double test_weight = weight;
+  if(!isData){
+    test_weight *= mcdata_correction->CatPileupWeight(eventbase->GetEvent(),0);
+    test_weight *= MCweight;
+  }
+
+  //==== DiMuon
+  if(testmuons.size()==2 && testmuons_veto.size()==2 && testelectrons_veto.size()==0){
+
+    LepChannel = "DiMuon";
+
+    lep1 = testmuons.at(0);
+    lep2 = testmuons.at(1);
+
+    IDSF = mcdata_correction->MuonScaleFactor("MUON_HN_TIGHT", testmuons, 0);
+    test_weight *= mcdata_correction->MuonTrackingEffScaleFactor(testmuons);
+
+    double trigger_eff_Data = mcdata_correction->TriggerEfficiencyLegByLeg(testelectrons, "", testmuons, "MUON_HN_TIGHT", 0, 0, 0);
+    double trigger_eff_MC   = mcdata_correction->TriggerEfficiencyLegByLeg(testelectrons, "", testmuons, "MUON_HN_TIGHT", 0, 1, 0);
+    TriggerSF = trigger_eff_Data/trigger_eff_MC;
+
+
+    triggerlists.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
+    triggerlists.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
+
+    if( !( lep1.Pt()>20. && lep2.Pt() >10. ) ) return;
+
+  }
+  else if(testelectrons.size()==2 && testelectrons_veto.size()==2 && testmuons_veto.size()==0){
+
+    LepChannel = "DiElectron";
+
+    lep1 = testelectrons.at(0);
+    lep2 = testelectrons.at(1);
+
+    IDSF = mcdata_correction->ElectronScaleFactor("ELECTRON_HN_TIGHTv4", testelectrons, 0);
+    test_weight *= mcdata_correction->ElectronRecoScaleFactor(testelectrons);
+
+    double trigger_eff_Data = mcdata_correction->TriggerEfficiencyLegByLeg(testelectrons, "", testmuons, "MUON_HN_TIGHT", 1, 0, 0);
+    double trigger_eff_MC   = mcdata_correction->TriggerEfficiencyLegByLeg(testelectrons, "", testmuons, "MUON_HN_TIGHT", 1, 1, 0);
+    TriggerSF = trigger_eff_Data/trigger_eff_MC;
+
+    triggerlists.push_back("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v");
+
+    if( !( lep1.Pt()>25. && lep2.Pt() >15. ) ) return;
+  }
+  else{
+    return;
+  }
+  test_weight *= WeightByTrigger(triggerlists, TargetLumi);
+  double m_ll = (lep1+lep2).M();
+
+  double weights[3] = {1., IDSF, IDSF*TriggerSF};
+  TString str_weights[3] = {"NoSF", "IDSF", "IDandTrigSF"};
+
+  cout << WeightByTrigger(triggerlists, TargetLumi) << endl;
+  if(lep1.Charge()!=lep2.Charge() && fabs(m_ll-91.1876) < 20. && PassTriggerOR(triggerlists)){
+    for(int i=0; i<3; i++){
+      FillHist(LepChannel+"_"+str_weights[i]+"_Nevents", 0., test_weight*weights[i], 0., 1., 1);
+      FillHist(LepChannel+"_"+str_weights[i]+"_m_ll", m_ll, test_weight*weights[i], 60., 120., 60);
+      FillHist(LepChannel+"_"+str_weights[i]+"_lep1_pt", lep1.Pt(), test_weight*weights[i], 0., 200., 200);
+      FillHist(LepChannel+"_"+str_weights[i]+"_lep1_eta", lep1.Eta(), test_weight*weights[i], -3., 3., 60);
+      FillHist(LepChannel+"_"+str_weights[i]+"_lep2_pt", lep2.Pt(), test_weight*weights[i], 0., 200., 200);
+      FillHist(LepChannel+"_"+str_weights[i]+"_lep2_eta", lep2.Eta(), test_weight*weights[i], -3., 3., 60);
+    }
+
   }
   return;
 */
@@ -1522,9 +1665,15 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         if(MCIsCF(electrons.at(j))){
           HasLooseCF = true;
 
-          if(fabs(electrons.at(j).SCEta())<1.4442) LooseCFSF = 0.7138;
-          else LooseCFSF = 0.9151;
 
+          if(fabs(electrons.at(j).SCEta())<1.4442) LooseCFSF = 0.7370;
+          else LooseCFSF = 0.9190;
+
+          //==== With Wrong CF type definition..
+          //if(fabs(electrons.at(j).SCEta())<1.4442) LooseCFSF = 0.7138;
+          //else LooseCFSF = 0.9151;
+
+          //==== CF/(CF+40)
           //if(fabs(electrons.at(j).SCEta())<1.4442) LooseCFSF = 0.7233*0.8444;
           //else LooseCFSF = 0.9120*0.8968;
 
@@ -1562,7 +1711,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
     else if(this_syst=="_MuonIDSF_down") MuonIDDir = -1;
     else MuonIDDir = 0;
 
-    double muon_id_iso_sf = mcdata_correction->MuonScaleFactor("MUON_HN_TIGHT", muons_tight, MuonIDDir);
+    double muon_id_iso_sf = mcdata_correction->MuonScaleFactor("MUON_HN_TIGHT", muons, MuonIDDir);
     double MuTrkEffSF =  mcdata_correction->MuonTrackingEffScaleFactor(muons);
     if(DoNoSF) muon_id_iso_sf = 1.;
 
@@ -1571,7 +1720,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
     else if(this_syst=="_ElectronIDSF_down") ElectronIDDir = -1;
     else ElectronIDDir = 0;
 
-    double electron_sf = mcdata_correction->ElectronScaleFactor(ElectronTightID, electrons_tight, ElectronIDDir);
+    double electron_sf = mcdata_correction->ElectronScaleFactor(ElectronTightID, electrons, ElectronIDDir);
     if(DoNoSF) electron_sf = 1.;
     double electron_RecoSF =  mcdata_correction->ElectronRecoScaleFactor(electrons);
 
@@ -1909,6 +2058,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         trigger_sf = trigger_eff_Data/trigger_eff_MC;
 
         //cout << "## Calculating DiElectron Trigger SF ##" << endl;
+        //cout << "TriggerSFDir = " << TriggerSFDir << endl;
         //cout << "1) Data" << endl;
         //cout << "trigger_eff_Data = " << trigger_eff_Data << endl;
         //cout << "2) MC" << endl;
@@ -2019,7 +2169,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
       FillCutFlowByName(Suffix, "TwoLeptons", this_weight, isData);
 
-      if(!DoConversion && !DoMCClosure && !isSSForCF) continue; //FIXME
+      if(!DoConversion && !DoMCClosure && !isSSForCF) continue;
 
       //FIXME for v2
       if(k_sample_name.Contains("HeavyNeutrinoTo")){
@@ -2059,6 +2209,10 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
         if(isSS) FillHist("CutStudy_m_ll_SS_"+Suffix, ( lep.at(0)+lep.at(1) ).M(), 1., 0., 40., 400);
         else FillHist("CutStudy_m_ll_OS_"+Suffix, ( lep.at(0)+lep.at(1) ).M(), 1., 0., 40., 400);
 
+        if( lep.at(0).Pt()>=20 && lep.at(1).Pt() >= 15){
+          FillHist("CutStudy_m_ll_pt2015"+Suffix, ( lep.at(0)+lep.at(1) ).M(), 1., 0., 40., 400);
+        }
+
         if( lep.at(0).DeltaR( lep.at(1) ) < 0.1 ){
 
           FillHist("CutStudy_m_ll_dR0p1_"+Suffix, ( lep.at(0)+lep.at(1) ).M(), 1., 0., 40., 400);
@@ -2092,7 +2246,6 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
         if(DoFakeSyst){
 
-
           ElFR_key = "";
           MuFR_key = "";
           get_eventweight(muons, electrons, isT, NearBjet, 0);
@@ -2100,9 +2253,17 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
           FRweights_name.push_back("Central");
           //cout << "Central : " << weight_fr << endl;
 
-          FRweights.push_back(weight_fr+this_weight_err);
+          FRweights.push_back(weight_fr+weight_fr*weight_err_fr);
+          FRweights_name.push_back("StatUp");
+
+          ElFR_key = "Awayjet_40";
+          MuFR_key = "Awayjet_40";
+          get_eventweight(muons, electrons, isT, NearBjet, 0);
+          FRweights.push_back(weight_fr+weight_fr*weight_err_fr);
           FRweights_name.push_back("PromptUp");
 
+          ElFR_key = "";
+          MuFR_key = "";
           get_eventweight(muons, electrons, isT, NearBjet_TRUE, 0);
           //cout << "-> " << NearBjet_TRUE.at(0) << "\t" << NearBjet_TRUE.at(1) << " : " << weight_fr << endl;
           FRweights.push_back(weight_fr);
@@ -2275,7 +2436,7 @@ void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
 
 
       //==== Z-seleciton
-      map_Region_to_Bool["Z_CR"] = (!isSSForCF) && ((lep.at(0)+lep.at(1)).M()>81.) && ((lep.at(0)+lep.at(1)).M()<101.);
+      map_Region_to_Bool["Z_CR"] = (!isSSForCF) && ((lep.at(0)+lep.at(1)).M()>60.) && ((lep.at(0)+lep.at(1)).M()<12.);
 
       //==== W+W+ CR
       if(jets_eta5.size() >= 2){
@@ -3151,27 +3312,27 @@ double DiLeptonAnalyzer::GetCF(KLepton lep, bool geterr){
   double invPt = 1./lep.Pt();
   double a = 999., b= 999.;
   if(el_eta < 0.8){
-    if(invPt< 0.023){a=(-0.001196); b=(3.806e-05);}
-    else{a=(0.0008751); b=(-9.844e-06);}
+    if(invPt< 0.023){a=(-0.001008); b=(3.055e-05);}
+    else{a=(-0.0002274); b=(1.208e-05);}
   }
   else if(el_eta < 1.4442){
-    if(invPt< 0.015){a=(-0.03537); b=(0.0007231);}
-    else if(invPt< 0.023){a=(-0.01381); b=(0.0004019);}
-    else{a=(-0.0007848); b=(0.0000972);}
+    if(invPt< 0.015){a=(-0.03484); b=(0.0007158);}
+    else if(invPt< 0.023){a=(-0.01439); b=(0.0004098);}
+    else{a=(-0.002442); b=(0.0001343);}
   }
   else{
-    if(invPt< 0.012){a=(-0.4109); b=(0.006406);}
-    else if(invPt< 0.021){a=(-0.1107); b=(0.002916);}
-    else{a=(-0.01974); b=(0.00103);}
+    if(invPt< 0.012){a=(-0.4065); b=(0.006359);}
+    else if(invPt< 0.021){a=(-0.1111); b=(0.002914);}
+    else{a=(-0.02092); b=(0.001051);}
   }
 
   double sf(1.);
 
-  //if(el_eta < 1.4442) sf = 0.4912;
-  //else sf = 0.8128;
+  if(el_eta < 1.4442) sf = 0.8014;
+  else sf = 0.8658;
 
-  if(el_eta < 1.4442) sf = 0.7146;
-  else sf = 0.8555;
+  //if(el_eta < 1.4442) sf = 0.7146;
+  //else sf = 0.8555;
 
   //==== Below using MC (CF)/(CF+type40)
   //if(el_eta < 1.4442) sf = 0.7052*0.8251;
