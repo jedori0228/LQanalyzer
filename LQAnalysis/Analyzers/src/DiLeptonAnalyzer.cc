@@ -215,6 +215,42 @@ void DiLeptonAnalyzer::InitialiseAnalysis() throw( LQError ) {
 
 
 void DiLeptonAnalyzer::ExecuteEvents()throw( LQError ){
+
+/*
+  //==== Trigger SF MC Closure
+  std::vector< snu::KMuon > testmuons = GetMuons("MUON_HN_TIGHT", true);
+  std::vector< snu::KElectron > testelectrons;
+
+  if(testmuons.size()==2){
+
+    snu::KMuon mu1 = testmuons.at(0);
+    snu::KMuon mu2 = testmuons.at(1);
+
+    if(mu1.Pt() >= 20. && mu2.Pt() >= 10.){
+
+      FillHist("TEST_Den", 0., 1., 0., 1., 1);
+
+      vector<TString> triggerlists;
+      triggerlists.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v");
+      triggerlists.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v");
+      triggerlists.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
+      triggerlists.push_back("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
+
+      double mc_eff = mcdata_correction->TriggerEfficiencyLegByLeg(testelectrons, "", testmuons, "MUON_HN_TIGHT", 0, 1, 0);
+      FillHist("Formula_1", 0, mc_eff, 0., 1., 1);
+
+      if(PassTriggerOR(triggerlists)){
+
+        FillHist("TEST_Num", 0., 1., 0., 1., 1);
+
+      }
+
+    }
+
+  }
+  return;
+*/
+
 /*
   std::vector< snu::KMuon > testmuons = GetMuons("MUON_HN_TIGHT", true);
   std::vector< snu::KElectron > testelectrons = GetElectrons(true, true, "ELECTRON_HN_TIGHTv4");
