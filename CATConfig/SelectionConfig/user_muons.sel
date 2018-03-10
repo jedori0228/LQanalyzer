@@ -43,3 +43,6 @@ webpage https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2
 ## GHENT ##
 | MUON_HNGENT_TIGHT                 | 5.     | 2.4      |   0.        | 0.10     | 0.1        | false          | true          | true         | 0.05      | 0.1       | 0.1      | 999.     | 999.    | 4.         |  true      |
 | MUON_HNGENT_LOOSE                 | 5.     | 2.4      |   0.        | 0.60     | 0.6        | false          | true          | true         | 0.05      | 0.1       | 0.1      | 999.     | 999.    | 4.         |  true      |
+## HNPair ##
+| ID                          |  ptmin | |etamax| |  isomin04   | isomax04_b | isomax04_ec | IsTight(POG)  | IsMedium(POG)  | IsLoose(POG)   | |dxymax|  |  |dzmax_b| |  |dzmax_ec|  | chi2max | |dxysigmin|  |  |dxysigmax| |  ApplyRoch |
+| MUON_SUSY_TIGHT             | 10.    | 2.4      |   0.        | 999.       | 999.        | false         | true           | true           | 0.05      | 0.1        | 0.1          | 999.    | 999.         | 4.           |  true      |

@@ -36,5 +36,6 @@
 #pragma link C++ class trilepton_mumumu_MCClosure+;
 #pragma link C++ class DiLeptonAnalyzer+;
 #pragma link C++ class DiLeptonAnalyzer_CR+;
+#pragma link C++ class PairNAnalyzer+;
 
 #endif // __CINT__

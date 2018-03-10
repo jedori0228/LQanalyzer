@@ -926,8 +926,8 @@ snu::KJet AnalyzerCore::GetCorrectedJetCloseToLepton(snu::KMuon mu, snu::KJet je
 
 float AnalyzerCore::GetPtRelLepTJet(snu::KElectron electron, std::vector<snu::KJet> jets, bool usecorrectedpt){
 
-  if(jets.size() == 0) return -999.;
-  if(electron.Pt() < 10.) return -999.;
+  if(jets.size() == 0) return 1.;
+  if(electron.Pt() < 10.) return 1.;
   snu::KParticle closejet;
   float mindR=0.7;
 
@@ -939,15 +939,15 @@ float AnalyzerCore::GetPtRelLepTJet(snu::KElectron electron, std::vector<snu::KJ
     }
   }
 
-  if(mindR==0.7) return 0.;
+  if(mindR==0.7) return 1.;
 
-  FillHist(("ptrel_dr"),mindR, weight, 0., 4., 100);
+  //FillHist(("ptrel_dr"),mindR, weight, 0., 4., 100);
 
   TVector3 el3=  electron.Vect();
   TVector3 jet3= closejet.Vect();
   TVector3 lepjetrel = jet3-el3;
-  FillHist(("ptrel_lepjetmag"),lepjetrel.Mag(), weight, 0., 100., 100);
-  FillHist(("ptrel_crosslepjetmag"), (lepjetrel.Cross(el3)).Mag(), weight, 0., 100., 100);
+  //FillHist(("ptrel_lepjetmag"),lepjetrel.Mag(), weight, 0., 100., 100);
+  //FillHist(("ptrel_crosslepjetmag"), (lepjetrel.Cross(el3)).Mag(), weight, 0., 100., 100);
   float ptrel = (lepjetrel.Cross(el3)).Mag()/ lepjetrel.Mag();
 
   return ptrel;
@@ -956,8 +956,8 @@ float AnalyzerCore::GetPtRelLepTJet(snu::KElectron electron, std::vector<snu::KJ
 
 float AnalyzerCore::GetPtRelLepTJet(snu::KMuon muon, std::vector<snu::KJet> jets,bool usecorrectedpt){
 
-  if(jets.size() == 0) return -999.;
-  if(muon.Pt() < 10.) return -999.;
+  if(jets.size() == 0) return 1.;
+  if(muon.Pt() < 10.) return 1.;
   snu::KParticle closejet;
   float mindR=0.7;
 
@@ -969,15 +969,15 @@ float AnalyzerCore::GetPtRelLepTJet(snu::KMuon muon, std::vector<snu::KJet> jets
     }
   }
   
-  if(mindR==0.7) return 0.;
+  if(mindR==0.7) return 1.;
   
-  FillHist(("ptrel_dr"),mindR, weight, 0., 4., 100);
+  //FillHist(("ptrel_dr"),mindR, weight, 0., 4., 100);
   
   TVector3 el3=  muon.Vect();
   TVector3 jet3= closejet.Vect();
   TVector3 lepjetrel = jet3-el3;
-  FillHist(("ptrel_lepjetmag"),lepjetrel.Mag(), weight, 0., 100., 100);
-  FillHist(("ptrel_crosslepjetmag"), (lepjetrel.Cross(el3)).Mag(), weight, 0., 100., 100);
+  //FillHist(("ptrel_lepjetmag"),lepjetrel.Mag(), weight, 0., 100., 100);
+  //FillHist(("ptrel_crosslepjetmag"), (lepjetrel.Cross(el3)).Mag(), weight, 0., 100., 100);
   float ptrel = (lepjetrel.Cross(el3)).Mag()/ lepjetrel.Mag();
   
   return ptrel;
@@ -5815,3 +5815,80 @@ int AnalyzerCore::GetPhotonType(int PhotonIdx, std::vector<snu::KTruth> TruthCol
 }
 
 //------------------------------------------------------------------------------------------//
+
+bool AnalyzerCore::PassMultiIso(TString WP, double mini, double ptratio, double ptrel){
+
+  double I1 = 0.4;
+  double I2 = 0;
+  double I3 = 0;
+
+  //==== SUS-16-003
+  //==== AN2015_133
+
+  if(WP.Contains("veto")){
+    I1 = 0.4;
+    I2 = 0.;
+    I3 = 0.;
+  }
+  if(WP.Contains("loose")){
+    I1 = 0.4;
+    I2 = 0.;
+    I3 = 0.;
+  }
+
+  //==== Muon
+  if(WP.Contains("Muon")){
+
+    if(WP.Contains("tight")){
+      I1 = 0.16;
+      I2 = 0.69;
+      I3 = 6.0;
+    }
+
+  }
+  else if(WP.Contains("Electron")){
+
+    if(WP.Contains("tight")){
+      I1 = 0.12;
+      I2 = 0.76;
+      I3 = 7.2;
+    }
+
+  }
+  else{
+  }
+
+  if( (mini<I1) && ( (ptratio>I2) || (ptrel>I3) )  ) return true;
+  else return false;
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

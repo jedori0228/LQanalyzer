@@ -449,9 +449,14 @@ class AnalyzerCore : public LQCycleBase {
   void SetPlotHNTriBJet(int nbjet);
   std::vector<snu::KMuon> sort_muons_ptorder(std::vector<snu::KMuon> muons);
   std::vector<snu::KElectron> sort_electrons_ptorder(std::vector<snu::KElectron> electrons);
+
   inline static bool MuonPtComparing(const snu::KMuon& m1, const snu::KMuon& m2){ return (m1.Pt() > m2.Pt()); }
   inline static bool ElectronPtComparing(const snu::KElectron& e1, const snu::KElectron& e2){ return (e1.Pt() > e2.Pt()); }
   inline static bool LeptonPtComparing(const KLepton& l1, const KLepton& l2){ return (l1.Pt() > l2.Pt()); }
+
+  inline static bool FatjetPrunedMassComparing(const snu::KFatJet& j1, const snu::KFatJet& j2){ return (j1.PrunedMass() > j2.PrunedMass()); }
+  inline static bool FatjetSoftDropMassComparing(const snu::KFatJet& j1, const snu::KFatJet& j2){ return (j1.SoftDropMass() > j2.SoftDropMass()); }
+
   std::vector<KLepton> sort_leptons_ptorder(std::vector<KLepton> leptons);
   int find_genmatching(snu::KTruth gen, std::vector<KLepton> recos, std::vector<int>& used_index);
   double MuonConePt(snu::KMuon muon, double tightiso);
@@ -489,6 +494,8 @@ class AnalyzerCore : public LQCycleBase {
   int  GetLeptonType(snu::KElectron El, std::vector<snu::KTruth>& TruthColl, TString Option="");
   int  GetLeptonType(snu::KMuon Mu, std::vector<snu::KTruth>& TruthColl, TString Option="");
   int  GetPhotonType(int PhotonIdx, std::vector<snu::KTruth> TruthColl);
+
+  bool PassMultiIso(TString WP, double mini, double ptratio, double ptrel);
   
 };
 #endif
