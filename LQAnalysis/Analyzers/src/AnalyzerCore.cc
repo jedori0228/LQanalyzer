@@ -5176,7 +5176,7 @@ snu::KParticle AnalyzerCore::SubtractLeptonFromJet(snu::KJet jet, vector<KLepton
 
   //snu::KParticle out_jet = GetCorrectedJetCloseToLepton(summed_leps_inside, jet)-summed_leps_inside;
 
-  out_jet = jet-summed_leps_inside;
+  snu::KParticle out_jet = jet-summed_leps_inside;
 
   return out_jet;
 
@@ -5195,7 +5195,7 @@ snu::KParticle AnalyzerCore::SubtractLeptonFromFatJet(snu::KFatJet fatjet, vecto
   //snu::KParticle out_jet = GetCorrectedJetCloseToLepton(summed_leps_inside, fatjet)-summed_leps_inside;
   //cout << "[AnalyzerCore::SubtractLeptonFromFatJet] --> M = " << out_jet.M() << endl;
 
-  out_jet = fatjet-summed_leps_inside;
+  snu::KParticle out_jet = fatjet-summed_leps_inside;
 
   return out_jet;
 
