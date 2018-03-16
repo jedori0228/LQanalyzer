@@ -5486,6 +5486,68 @@ bool AnalyzerCore::IsAwayFromFatJet(snu::KJet jet, vector<snu::KFatJet> fatjets,
 
 
 }
+TH1* AnalyzerCore::JSGetHist(TString suffix, TString hname){
+
+  TH1* h = NULL;
+  std::map< TString, std::map<TString, TH1*> >::iterator it = JSmaphist.find(suffix);
+  if(it == JSmaphist.end()) m_logger << DEBUG << "Suffix:"<<suffix << " was not found in JSmaphist" << LQLogger::endmsg;
+  else{
+
+    std::map<TString, TH1*> this_maphist = it->second;
+    std::map<TString, TH1*>::iterator itit = this_maphist.find(hname);
+    if(itit != this_maphist.end()) return itit->second;
+    else m_logger << DEBUG  << hname << " was not found in JSmaphist" << LQLogger::endmsg;
+
+  }
+
+  return h;
+}
+
+void AnalyzerCore::JSMakeHistograms(TString suffix, TString hname, int nbins, float xmin, float xmax){
+
+  (JSmaphist[suffix])[hname] = new TH1D(hname.Data(),hname.Data(),nbins,xmin,xmax);
+
+}
+
+void AnalyzerCore::JSFillHist(TString suffix, TString histname, float value, float w, float xmin, float xmax, int nbins){
+
+  m_logger << DEBUG << "JSFillHist : " << suffix << "\t" << histname << LQLogger::endmsg;
+  if(JSGetHist(suffix, histname)) JSGetHist(suffix,histname)->Fill(value, w);
+  else{
+    if (nbins < 0) {
+      m_logger << ERROR << histname << " was NOT found. Nbins was not set also... please configure histogram maker correctly" << LQLogger::endmsg;
+      exit(0);
+    }
+    m_logger << DEBUG << "Making the histogram" << LQLogger::endmsg;
+    JSMakeHistograms(suffix, histname, nbins, xmin, xmax);
+    if(JSGetHist(suffix, histname)) JSGetHist(suffix, histname)->Fill(value, w);
+  }
+
+}
+
+bool AnalyzerCore::HasLeptonInsideJet(snu::KJet jet, std::vector<snu::KMuon> mus, std::vector<snu::KElectron> els){
+
+
+  for(unsigned int i=0; i<mus.size(); i++){
+    if( jet.DeltaR( mus.at(i) ) < 0.4 ) return true;
+  }
+  for(unsigned int i=0; i<els.size(); i++){
+    if( jet.DeltaR( els.at(i) ) < 0.4 ) return true;
+  }
+
+  return false;
+
+}
+
+
+
+
+
+
+
+
+
+
 
 
 
