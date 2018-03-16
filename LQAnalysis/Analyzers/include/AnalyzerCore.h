@@ -451,5 +451,23 @@ class AnalyzerCore : public LQCycleBase {
   int  GetLeptonType(snu::KMuon Mu, std::vector<snu::KTruth>& TruthColl, TString Option="");
   int  GetPhotonType(int PhotonIdx, std::vector<snu::KTruth> TruthColl);
   
+  //==== PairN Analysis
+  snu::KParticle SubtractLeptonFromJet(snu::KJet jet, vector<KLepton> leps);
+  snu::KParticle SubtractLeptonFromFatJet(snu::KFatJet fatjet, vector<KLepton> leps);
+  vector<snu::KParticle> MakeNPair(int WhichAlgo, vector<KLepton> leps, vector<snu::KFatJet> fatjets_to_add, vector<snu::KJet> jets_to_add, bool DoDebug=false);
+
+
+
+
 };
 #endif
+
+
+
+
+
+
+
+
+
+

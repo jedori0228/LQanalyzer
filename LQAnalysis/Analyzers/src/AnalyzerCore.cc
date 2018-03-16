@@ -5164,3 +5164,165 @@ int AnalyzerCore::GetPhotonType(int PhotonIdx, std::vector<snu::KTruth> TruthCol
 }
 
 //------------------------------------------------------------------------------------------//
+
+snu::KParticle AnalyzerCore::SubtractLeptonFromJet(snu::KJet jet, vector<KLepton> leps){
+
+  snu::KParticle out_jet = jet;
+  for(unsigned int i=0; i<leps.size(); i++){
+
+    if(jet.DeltaR( leps.at(i) ) < 0.8){
+
+      out_jet = out_jet - leps.at(i);
+
+    }
+
+  }
+
+  return out_jet;
+
+}
+
+snu::KParticle AnalyzerCore::SubtractLeptonFromFatJet(snu::KFatJet fatjet, vector<KLepton> leps){
+
+  snu::KParticle out_jet = fatjet;
+  for(unsigned int i=0; i<leps.size(); i++){
+
+    if(fatjet.DeltaR( leps.at(i) ) < 0.8){
+
+      out_jet = out_jet - leps.at(i);
+
+    }
+
+  }
+
+  return out_jet;
+
+}
+
+
+
+vector<snu::KParticle> AnalyzerCore::MakeNPair(int WhichAlgo, vector<KLepton> leps, vector<snu::KFatJet> fatjets_to_add, vector<snu::KJet> jets_to_add, bool DoDebug){
+
+  int N_FatJet = fatjets_to_add.size();
+  int N_Jet = jets_to_add.size();
+
+  int total_loop = pow(2,N_FatJet+N_Jet);
+
+  double min_Diff = 99999;
+
+  snu::KParticle out_N[2];
+
+  int int_combination=-999;
+  TString combination = "";
+
+  for(int i=0; i<total_loop; i++){
+
+    snu::KParticle N_temp[2] = {leps.at(0), leps.at(1)};
+
+    int n_Merged_FatJet_temp[2] = {0,0};
+    int n_Merged_Jet_temp[2] = {0,0};
+
+    TString this_combination = "";
+
+    if(DoDebug){
+      cout << endl;
+      cout << "// Trying " << i << endl;
+      cout << endl;
+    }
+
+    for(int j=0; j<(N_FatJet+N_Jet); j++){
+
+      int this_unit = pow(2,j);
+      int this_N_index = 0;
+      if(i&this_unit) this_N_index = 1;
+      //==== j'th jet is added to N[this_N_index]
+      //==== If N[this_N_index] has jets>=2, go to next jet
+      if(n_Merged_FatJet_temp[this_N_index]+n_Merged_Jet_temp[this_N_index]>=2){
+        this_combination = "X"+this_combination;
+        continue;
+      }
+
+
+      this_combination = TString::Itoa(this_N_index,10)+this_combination;
+
+      int jet_index = j;
+      if(j<N_FatJet){
+
+        if(DoDebug){
+          cout << "## Printing Current N["<<this_N_index<<"] ##" << endl;
+          cout << "Pt\tEta\tPhi\tM" << endl;
+          cout << N_temp[this_N_index].Pt() << "\t" << N_temp[this_N_index].Eta() << "\t" << N_temp[this_N_index].Phi() << "\t" << N_temp[this_N_index].M() << endl;
+          cout << "  Adding fatjet as follows" << endl;
+          cout << "  Pt\tEta\tPhi\tM\tSD" << endl;
+          cout << "  " << fatjets_to_add.at(jet_index).Pt() << "\t" << fatjets_to_add.at(jet_index).Eta() << "\t" << fatjets_to_add.at(jet_index).Phi() << "\t" << fatjets_to_add.at(jet_index).M() << "\t" << fatjets_to_add.at(jet_index).SoftDropMass() << endl;
+        }
+
+        N_temp[this_N_index] = N_temp[this_N_index] + SubtractLeptonFromFatJet(fatjets_to_add.at(jet_index),leps);
+        n_Merged_FatJet_temp[this_N_index]++;
+
+        if(DoDebug){
+          cout << "--> Resulting in" << endl;
+          cout << "Pt\tEta\tPhi\tM" << endl;
+          cout << N_temp[this_N_index].Pt() << "\t" << N_temp[this_N_index].Eta() << "\t" << N_temp[this_N_index].Phi() << "\t" << N_temp[this_N_index].M() << endl;
+          cout << endl;
+        }
+
+      }
+      else{
+        jet_index = jet_index-N_FatJet;
+
+        if(DoDebug){
+          cout << "## Printing Current N["<<this_N_index<<"] ##" << endl;
+          cout << "Pt\tEta\tPhi\tM" << endl;
+          cout << N_temp[this_N_index].Pt() << "\t" << N_temp[this_N_index].Eta() << "\t" << N_temp[this_N_index].Phi() << "\t" << N_temp[this_N_index].M() << endl;
+          cout << "  Adding jet as follows" << endl;
+          cout << "  Pt\tEta\tPhi\tM" << endl;
+          cout << "  " << jets_to_add.at(jet_index).Pt() << "\t" << jets_to_add.at(jet_index).Eta() << "\t" << jets_to_add.at(jet_index).Phi() << "\t" << jets_to_add.at(jet_index).M() << "\t" << endl;
+        }
+
+        N_temp[this_N_index] = N_temp[this_N_index] + SubtractLeptonFromJet(jets_to_add.at(jet_index),leps);
+        n_Merged_Jet_temp[this_N_index]++;
+
+        if(DoDebug){
+          cout << "--> Resulting in" << endl;
+          cout << "Pt\tEta\tPhi\tM" << endl;
+          cout << N_temp[this_N_index].Pt() << "\t" << N_temp[this_N_index].Eta() << "\t" << N_temp[this_N_index].Phi() << "\t" << N_temp[this_N_index].M() << endl;
+          cout << endl;
+        }
+
+      }
+
+    } // END Loop jets
+
+    double this_diff = fabs(N_temp[0].M()-N_temp[1].M());
+    if(this_diff<min_Diff){
+      min_Diff = this_diff;
+      int_combination = i;
+      combination = this_combination;
+      out_N[0] = N_temp[0];
+      out_N[1] = N_temp[1];
+    }
+
+  }
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
