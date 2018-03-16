@@ -5208,7 +5208,7 @@ vector<snu::KParticle> AnalyzerCore::MakeNPair(int WhichAlgo, vector<KLepton> le
   int N_FatJet = fatjets_to_add.size();
   int N_Jet = jets_to_add.size();
 
-  int total_loop = pow(2,N_FatJet+N_Jet);
+  int total_loop = pow(3,N_FatJet+N_Jet);
 
   double min_Diff = 99999;
 
@@ -5217,7 +5217,7 @@ vector<snu::KParticle> AnalyzerCore::MakeNPair(int WhichAlgo, vector<KLepton> le
   int int_combination=-999;
   TString combination = "";
 
-  for(int i=0; i<total_loop; i++){
+  for(int i=1; i<total_loop-1; i++){
 
     snu::KParticle N_temp[2] = {leps.at(0), leps.at(1)};
 
@@ -5234,16 +5234,19 @@ vector<snu::KParticle> AnalyzerCore::MakeNPair(int WhichAlgo, vector<KLepton> le
 
     for(int j=0; j<(N_FatJet+N_Jet); j++){
 
-      int this_unit = pow(2,j);
-      int this_N_index = 0;
-      if(i&this_unit) this_N_index = 1;
-      //==== j'th jet is added to N[this_N_index]
-      //==== If N[this_N_index] has jets>=2, go to next jet
-      if(n_Merged_FatJet_temp[this_N_index]+n_Merged_Jet_temp[this_N_index]>=2){
+      int this_unit = pow(3,j);
+      int this_N_index = (i&this_unit)/this_unit;
+
+      //==== If 2, don't use this jet.
+      //==== Go to next jet
+      if(this_N_index>=2){
         this_combination = "X"+this_combination;
         continue;
       }
-
+/*
+      //==== Here we require conditions
+      if( n_Merged_FatJet_temp[this_N_index]+n_Merged_Jet_temp[this_N_index] >= 2 ) continue;
+*/
 
       this_combination = TString::Itoa(this_N_index,10)+this_combination;
 
@@ -5296,7 +5299,9 @@ vector<snu::KParticle> AnalyzerCore::MakeNPair(int WhichAlgo, vector<KLepton> le
 
     } // END Loop jets
 
-    double this_diff = fabs(N_temp[0].M()-N_temp[1].M());
+    double M1 = N_temp[0].M();
+    double M2 = N_temp[1].M();
+    double this_diff = fabs(M1-M2);
     if(this_diff<min_Diff){
       min_Diff = this_diff;
       int_combination = i;

@@ -4,3 +4,4 @@ webpage https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID
 ###  -999. or 999. means no cut applied
 ###--------------------------------------------------------------------------------------------------------------------------------------------------------
 | ID                 |  ptmin  | |etamax| | tau21 |  pileup | LooseID  | TightID | TightIDLepVeto | remove_near_muonID   | remove_near_electronID   |
+| FATJET_HN_nolepveto  | 200.    | 2.7      | 999.  | false   | true     |  false  |  false         | NONE                 | NONE                     |  0.        |  99999.     |
