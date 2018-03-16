@@ -467,6 +467,11 @@ class AnalyzerCore : public LQCycleBase {
   void JSFillHist(TString suffix, TString histname, float value, float w, float xmin, float xmax, int nbins);
   void JSMakeHistograms(TString suffix, TString hname, int nbins, float xmin, float xmax);
   bool HasLeptonInsideJet(snu::KJet jet, std::vector<snu::KMuon> mus, std::vector<snu::KElectron> els);
+  double MuonConePt(snu::KMuon muon, double tightiso);
+  double ElectronConePt(snu::KElectron electron, double tightiso);
+  bool LeptonInsideFatJet(snu::KFatJet fj, double dr, std::vector<KLepton> lep);
+  int HasCloseBjet(KLepton lep, std::vector<snu::KJet> jets, snu::KJet::WORKING_POINT wp);
+
   inline static bool MuonPtComparing(const snu::KMuon& m1, const snu::KMuon& m2){ return (m1.Pt() > m2.Pt()); }
   inline static bool ElectronPtComparing(const snu::KElectron& e1, const snu::KElectron& e2){ return (e1.Pt() > e2.Pt()); }
   inline static bool LeptonPtComparing(const KLepton& l1, const KLepton& l2){ return (l1.Pt() > l2.Pt()); }
