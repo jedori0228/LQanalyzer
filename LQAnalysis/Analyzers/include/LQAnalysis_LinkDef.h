@@ -22,5 +22,6 @@
 #pragma link C++ class HNEMu+;
 #pragma link C++ class GetFakeSF+;
 #pragma link C++ class PileupValidation+;
+#pragma link C++ class PairNAnalyzer+;
 
 #endif // __CINT__

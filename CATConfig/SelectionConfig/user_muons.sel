@@ -14,3 +14,4 @@ webpage https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2
 | MUON_HN_EFF_8TeViso      | 5.      | 2.4       |   0.        | 0.05    | 0.05  | true         | false          |  false         | 0.005  | 0.04       | 0.04      | 10.    | 999.      | 3.         | true |
 | MUON_HN_TIGHT_8TeV  | 5.      | 2.4       |   0.        | 0.05    | 0.05  | true         | false          |  false         | 0.005   | 0.1       | 0.1      | 10.    | 999.  | 999.    | true |
 | MUON_HN_LOOSE_8TeV  | 5.      | 2.4       |   0.        | 0.4  | 0.4  | true         | false          |  false         | 0.2   | 0.1       | 0.1      | 50.    | 999.  | 999.    | true |
+| MUON_SUSY_TIGHT             | 10.    | 2.4      |   0.        | 999.       | 999.        | false         | true           | true           | 0.05      | 0.1        | 0.1          | 999.    | 999.         | 4.           |  true      |
