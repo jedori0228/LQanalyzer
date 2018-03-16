@@ -5539,7 +5539,238 @@ bool AnalyzerCore::HasLeptonInsideJet(snu::KJet jet, std::vector<snu::KMuon> mus
 
 }
 
+void AnalyzerCore::JSCorrectedMETRochester(std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi){
 
+  //cout << "[AnalyzerCore::CorrectedMETRochester] OrignialMET = " << OrignialMET << endl;
+  //cout << "[AnalyzerCore::CorrectedMETRochester] OriginalMETPhi = " << OriginalMETPhi << endl;
+
+  float met_x = OrignialMET*TMath::Cos(OriginalMETPhi);
+  float met_y = OrignialMET*TMath::Sin(OriginalMETPhi);
+
+  //cout << "[AnalyzerCore::CorrectedMETRochester] met_x = " << met_x << endl;
+  //cout << "[AnalyzerCore::CorrectedMETRochester] met_y = " << met_y << endl;
+
+  float px_orig(0.), py_orig(0.),px_corrected(0.), py_corrected(0.);
+  for(unsigned int im=0; im < muall.size() ; im++){
+
+      px_orig+= muall.at(im).MiniAODPt()*TMath::Cos(muall.at(im).Phi());
+      py_orig+= muall.at(im).MiniAODPt()*TMath::Sin(muall.at(im).Phi());
+
+      px_corrected += muall.at(im).Px();
+      py_corrected += muall.at(im).Py();
+
+    //cout << "[AnalyzerCore::CorrectedMETRochester] px_orig = " << px_orig << endl;
+    //cout << "[AnalyzerCore::CorrectedMETRochester] py_orig = " << py_orig << endl;
+    //cout << "[AnalyzerCore::CorrectedMETRochester] px_corrected = " << px_corrected << endl;
+    //cout << "[AnalyzerCore::CorrectedMETRochester] py_corrected = " << py_corrected << endl;
+
+
+  }
+  met_x = met_x + px_orig - px_corrected;
+  met_y = met_y + py_orig - py_corrected;
+
+  OrignialMET =  sqrt(met_x*met_x + met_y*met_y);
+  OriginalMETPhi = TMath::ATan2(met_y,met_x);
+
+  //cout << "[AnalyzerCore::CorrectedMETRochester] New MET = " << OrignialMET << endl;
+  //cout << "[AnalyzerCore::CorrectedMETRochester] New METPhi = " << OriginalMETPhi << endl;
+
+}
+
+void AnalyzerCore::JSCorrectedMETMuon(int sys, std::vector<snu::KMuon> muall, double& OrignialMET, double& OriginalMETPhi){
+
+  if(sys==0) return;
+
+  float met_x = OrignialMET*TMath::Cos(OriginalMETPhi);
+  float met_y = OrignialMET*TMath::Sin(OriginalMETPhi);
+
+  float px_orig(0.), py_orig(0.),px_shifted(0.), py_shifted(0.);
+  for(unsigned int imu=0; imu < muall.size() ; imu++){
+
+    px_orig+= muall.at(imu).Px();
+    py_orig+= muall.at(imu).Py();
+    if(sys==1){
+      px_shifted += muall.at(imu).Px()*muall.at(imu).PtShiftedUp();
+      py_shifted += muall.at(imu).Py()*muall.at(imu).PtShiftedUp();
+    }
+    if(sys==-1){
+      px_shifted += muall.at(imu).Px()*muall.at(imu).PtShiftedDown();
+      py_shifted += muall.at(imu).Py()*muall.at(imu).PtShiftedDown();
+    }
+  }
+  met_x = met_x + px_orig - px_shifted;
+  met_y = met_y + py_orig - py_shifted;
+
+  OrignialMET =  sqrt(met_x*met_x + met_y*met_y);
+  OriginalMETPhi = TMath::ATan2(met_y,met_x);
+
+}
+
+void AnalyzerCore::JSCorrectedMETElectron(int sys, std::vector<snu::KElectron> elall, double& OrignialMET, double& OriginalMETPhi){
+
+  if(sys==0) return;
+
+  float met_x = OrignialMET*TMath::Cos(OriginalMETPhi);
+  float met_y = OrignialMET*TMath::Sin(OriginalMETPhi);
+
+  float px_orig(0.), py_orig(0.),px_shifted(0.), py_shifted(0.);
+  for(unsigned int imu=0; imu < elall.size() ; imu++){
+
+    px_orig+= elall.at(imu).Px();
+    py_orig+= elall.at(imu).Py();
+    if(sys==1){
+      px_shifted += elall.at(imu).Px()*elall.at(imu).PtShiftedUp();
+      py_shifted += elall.at(imu).Py()*elall.at(imu).PtShiftedUp();
+    }
+    if(sys==-1){
+      px_shifted += elall.at(imu).Px()*elall.at(imu).PtShiftedDown();
+      py_shifted += elall.at(imu).Py()*elall.at(imu).PtShiftedDown();
+    }
+  }
+  met_x = met_x + px_orig - px_shifted;
+  met_y = met_y + py_orig - py_shifted;
+
+  OrignialMET =  sqrt(met_x*met_x + met_y*met_y);
+  OriginalMETPhi = TMath::ATan2(met_y,met_x);
+
+}
+
+void AnalyzerCore::JSCorrectedMETFatJet(std::vector<snu::KFatJet> fjetall, double& OrignialMET, double& OriginalMETPhi){
+
+  float met_x = OrignialMET*TMath::Cos(OriginalMETPhi);
+  float met_y = OrignialMET*TMath::Sin(OriginalMETPhi);
+
+  float px_orig(0.), py_orig(0.),px_shifted(0.), py_shifted(0.);
+  for(unsigned int ij=0; ij < fjetall.size() ; ij++){
+
+    px_orig += fjetall.at(ij).MiniAODPt()*TMath::Cos(fjetall.at(ij).Phi());
+    py_orig += fjetall.at(ij).MiniAODPt()*TMath::Sin(fjetall.at(ij).Phi());
+
+    px_shifted += fjetall.at(ij).Px();
+    py_shifted += fjetall.at(ij).Py();
+
+  }
+
+  met_x = met_x + px_orig - px_shifted;
+  met_y = met_y + py_orig - py_shifted;
+
+  OrignialMET =  sqrt(met_x*met_x + met_y*met_y);
+  OriginalMETPhi = TMath::ATan2(met_y,met_x);
+
+}
+
+void AnalyzerCore::JSCorrectedMETJetInsideFatJet(std::vector<snu::KJet> jets ,double& OrignialMET, double& OriginalMETPhi){
+
+  float met_x = OrignialMET*TMath::Cos(OriginalMETPhi);
+  float met_y = OrignialMET*TMath::Sin(OriginalMETPhi);
+
+  float px_orig(0.), py_orig(0.),px_shifted(0.), py_shifted(0.);
+  for(unsigned int ij=0; ij < jets.size() ; ij++){
+
+    //==== pt which is used to calculate current MET
+    px_orig += jets.at(ij).Px();
+    py_orig += jets.at(ij).Py();
+
+    //==== Now we want to unsmear this jet
+    px_shifted += jets.at(ij).Px()/jets.at(ij).SmearedRes();
+    py_shifted += jets.at(ij).Py()/jets.at(ij).SmearedRes();
+
+
+
+
+  }
+
+  met_x = met_x + px_orig - px_shifted;
+  met_y = met_y + py_orig - py_shifted;
+
+  OrignialMET =  sqrt(met_x*met_x + met_y*met_y);
+  OriginalMETPhi = TMath::ATan2(met_y,met_x);
+
+}
+
+void AnalyzerCore::FillLeptonKinematicPlot(std::vector<KLepton> lep, TString suffix, double w){
+
+  //==== prefix : "ZLepton"
+  //==== suffix : "WZ"
+
+  TString OrderStr[5] = {"leading", "second", "third", "fourth", "fifth"};
+
+  int counter_muon(0), counter_electron(0);
+
+  for(unsigned int i=0; i<lep.size(); i++){
+
+    //==== return more than 5 leptons
+    if(i>=5) break;
+
+    //==== if lepton flavour is not set, return
+    if(lep.at(i).LeptonFlavour()==KLepton::NOTSET){
+      m_logger << INFO << "lepton flavour not set" << LQLogger::endmsg;
+      continue;
+    }
+
+
+    //==== Lepton plot
+
+    TString this_order = OrderStr[i];
+
+    FillHist(this_order+"Lepton_Pt_"+suffix, lep.at(i).Pt(), w, 0., 200., 200);
+    FillHist(this_order+"Lepton_Eta_"+suffix, lep.at(i).Eta(), w, -3., 3., 60);
+    FillHist(this_order+"Lepton_RelIso_"+suffix, lep.at(i).RelIso(), w, 0., 1.0, 100);
+    FillHist(this_order+"Lepton_dXY_"+suffix, fabs(lep.at(i).dXY()), w, 0., 0.01, 100);
+    FillHist(this_order+"Lepton_dXYSig_"+suffix, fabs(lep.at(i).dXYSig()), w, 0., 8., 80);
+    FillHist(this_order+"Lepton_dZ_"+suffix, fabs(lep.at(i).dZ()), w, 0., 0.5, 500);
+
+    //==== Muon plot
+
+    if(lep.at(i).LeptonFlavour()==KLepton::MUON){
+
+      const snu::KMuon* this_muon = lep.at(i).GetMuonPtr();
+      TString this_muon_order = OrderStr[counter_muon];
+
+      FillHist(this_muon_order+"Muon_Pt_"+suffix, this_muon->Pt(), w, 0., 200., 200);
+      FillHist(this_muon_order+"Muon_Eta_"+suffix, this_muon->Eta(), w, -3., 3., 60);
+      FillHist(this_muon_order+"Muon_RelIso_"+suffix, this_muon->RelIso04(), w, 0., 1.0, 100);
+      FillHist(this_muon_order+"Muon_dXY_"+suffix, fabs(this_muon->dXY()), w, 0., 0.01, 100);
+      FillHist(this_muon_order+"Muon_dXYSig_"+suffix, fabs(this_muon->dXYSig()), w, 0., 8., 80);
+      FillHist(this_muon_order+"Muon_dZ_"+suffix, fabs(this_muon->dZ()), w, 0., 0.5, 500);
+      FillHist(this_muon_order+"Muon_GlobalChi2_"+suffix, this_muon->GlobalChi2(), w, 0., 100., 100);
+
+      counter_muon++;
+    }
+
+    //==== Electron plot
+
+    else if(lep.at(i).LeptonFlavour()==KLepton::ELECTRON){
+
+      const snu::KElectron* this_electron = lep.at(i).GetElectronPtr();
+      TString this_electron_order = OrderStr[counter_electron];
+
+      FillHist(this_electron_order+"Electron_Pt_"+suffix, this_electron->Pt(), w, 0., 200., 200);
+      FillHist(this_electron_order+"Electron_Eta_"+suffix, this_electron->Eta(), w, -3., 3., 60);
+      FillHist(this_electron_order+"Electron_RelIso_"+suffix, this_electron->PFRelIso(0.3), w, 0., 1.0, 100);
+      FillHist(this_electron_order+"Electron_dXY_"+suffix, fabs(this_electron->dxy()), w, 0., 0.01, 100);
+      FillHist(this_electron_order+"Electron_dXYSig_"+suffix, fabs(this_electron->dxySig()), w, 0., 8., 80);
+      FillHist(this_electron_order+"Electron_dZ_"+suffix, fabs(this_electron->dz()), w, 0., 0.5, 500);
+
+      counter_electron++;
+
+    }
+
+    else{
+
+    }
+
+  }
+
+}
+
+void AnalyzerCore::FillUpDownLeptonKinematicPlot(std::vector<KLepton> lep, TString suffix, double w, double w_err){
+
+  FillLeptonKinematicPlot(lep, suffix+"_up", w+w_err);
+  FillLeptonKinematicPlot(lep, suffix+"_down", w-w_err);
+  FillLeptonKinematicPlot(lep, suffix, w);
+
+}
 
 
 
