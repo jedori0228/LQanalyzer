@@ -78,7 +78,7 @@ class PairNAnalyzer : public AnalyzerCore {
   int index_fjW;
 
   bool JSFatJetID(snu::KFatJet fatjet);
-  bool IsAwayFromFatJet(snu::KJet jet, vector<snu::KFatJet> fatjets);
+  bool IsAwayFromFatJet(snu::KJet jet, vector<snu::KFatJet> fatjets, double dRCut=0.8);
 
   bool RunNtp;
   bool NowRunningCentral;

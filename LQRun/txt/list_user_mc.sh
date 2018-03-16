@@ -1,6 +1,12 @@
 #!/bin/sh
 
 # HNpair_ElEl_WR5000_Zp4000_HN1600_official is missing
+
+declare -a pairN_test=(
+'HNpair_ElEl_WR5000_Zp4000_HN400_official' 'HNpair_ElEl_WR5000_Zp4000_HN1500_official' 'HNpair_ElEl_WR5000_Zp500_HN100_official'
+'HNpair_MuMu_WR5000_Zp4000_HN400_official' 'HNpair_MuMu_WR5000_Zp4000_HN1500_official' 'HNpair_MuMu_WR5000_Zp500_HN100_official'
+)
+
 declare -a pairN_elel=(
 'HNpair_ElEl_WR5000_Zp1000_HN100_official'
 'HNpair_ElEl_WR5000_Zp1000_HN200_official'
@@ -498,14 +504,7 @@ declare -a ghent=(
 
 
 declare -a test=(
-'HeavyNeutrinoToMupMup_Tchannel_M300'  'HeavyNeutrinoToMupMup_Tchannel_M400'  
-'HeavyNeutrinoToMupMup_Tchannel_M500'  'HeavyNeutrinoToMupMup_Tchannel_M600'  'HeavyNeutrinoToMupMup_Tchannel_M700'  'HeavyNeutrinoToMupMup_Tchannel_M800'  
-'HeavyNeutrinoToMupMup_Tchannel_M900'  'HeavyNeutrinoToMupMup_Tchannel_M1000'  'HeavyNeutrinoToMupMup_Tchannel_M1100'  'HeavyNeutrinoToMupMup_Tchannel_M1200'  
-'HeavyNeutrinoToMupMup_Tchannel_M1300'  'HeavyNeutrinoToMupMup_Tchannel_M1400'  'HeavyNeutrinoToMupMup_Tchannel_M1500'  'HeavyNeutrinoToMupMup_Tchannel_M1700'  
-'HeavyNeutrinoToMupMup_Tchannel_M2000'  'HeavyNeutrinoToMumMum_Tchannel_M300'  'HeavyNeutrinoToMumMum_Tchannel_M400'  'HeavyNeutrinoToMumMum_Tchannel_M500'  
-'HeavyNeutrinoToMumMum_Tchannel_M600'  'HeavyNeutrinoToMumMum_Tchannel_M700'  'HeavyNeutrinoToMumMum_Tchannel_M800'  'HeavyNeutrinoToMumMum_Tchannel_M900'  
-'HeavyNeutrinoToMumMum_Tchannel_M1000'  'HeavyNeutrinoToMumMum_Tchannel_M1100'  'HeavyNeutrinoToMumMum_Tchannel_M1200'  'HeavyNeutrinoToMumMum_Tchannel_M1300'  
-'HeavyNeutrinoToMumMum_Tchannel_M1400'  'HeavyNeutrinoToMumMum_Tchannel_M1500'  'HeavyNeutrinoToMumMum_Tchannel_M1700'  'HeavyNeutrinoToMumMum_Tchannel_M2000'
+'WW' 'WZ' 'ZZ'
 )
 
 declare -a test2=(

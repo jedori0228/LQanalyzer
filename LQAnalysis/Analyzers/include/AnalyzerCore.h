@@ -496,6 +496,9 @@ class AnalyzerCore : public LQCycleBase {
   int  GetPhotonType(int PhotonIdx, std::vector<snu::KTruth> TruthColl);
 
   bool PassMultiIso(TString WP, double mini, double ptratio, double ptrel);
-  
+  snu::KParticle SubtractLeptonFromJet(snu::KJet jet, vector<KLepton> leps);
+  snu::KParticle SubtractLeptonFromFatJet(snu::KFatJet fatjet, vector<KLepton> leps);
+  bool TEMP_PassJSElectronID(snu::KElectron el, TString IDstring);
+
 };
 #endif

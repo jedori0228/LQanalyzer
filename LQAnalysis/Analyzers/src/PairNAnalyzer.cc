@@ -216,41 +216,71 @@ void PairNAnalyzer::InitialiseAnalysis() throw( LQError ) {
 
 void PairNAnalyzer::ExecuteEvents()throw( LQError ){
 
+  double testMET = eventbase->GetEvent().MET();
   std::vector< snu::KMuon > testmuons_all = GetMuons("MUON_NOCUT", true, 10., 2.4);
   std::vector< snu::KMuon > testmuons;
   std::vector<snu::KMuon> SUSYmuons;
 
   std::vector< snu::KElectron > testelectrons_all = GetElectrons(true, true, "ELECTRON_NOCUT", 10, 2.5);
   std::vector< snu::KElectron > testelectrons;
+  std::vector<snu::KElectron> SUSYelectrons;
 
-  bool isHNPairSignal = k_sample_name.Contains("HNpair");
+  bool DoDebug = std::find(k_flags.begin(), k_flags.end(), "DoDebug") != k_flags.end();
+  bool ForceTruth = std::find(k_flags.begin(), k_flags.end(), "ForceTruth") != k_flags.end();
+  bool UseFakeLeptonOnly = std::find(k_flags.begin(), k_flags.end(), "UseFakeLeptonOnly") != k_flags.end();
+
+  std::vector<snu::KTruth> truthColl;
+  eventbase->GetTruthSel()->Selection(truthColl);
+  bool HasTop=false;
+  for(unsigned int i=2; i<truthColl.size(); i++){
+
+    if(truthColl.at(i).PdgId()==9900016) return;
+    if(abs(truthColl.at(i).PdgId())==6) HasTop = true;
+
+  }
+  FillHist("HasTop", HasTop, 1., 0., 2., 2);
+
   for(unsigned int i=0; i<testmuons_all.size(); i++){
-    if(isHNPairSignal)  testmuons.push_back( testmuons_all.at(i) );
-    else{
-      if( !TruthMatched( testmuons_all.at(i) ) ) testmuons.push_back( testmuons_all.at(i) );
+
+    bool isthis_prompt = TruthMatched( testmuons_all.at(i) );
+
+    if(UseFakeLeptonOnly){
+      if(!isthis_prompt) testmuons.push_back( testmuons_all.at(i) );
     }
+    else{
+      testmuons.push_back( testmuons_all.at(i) );
+    }
+
   }
   for(unsigned int i=0; i<testelectrons_all.size(); i++){
-    if(isHNPairSignal)  testelectrons.push_back( testelectrons_all.at(i) );
-    else{
-      if( !TruthMatched( testelectrons_all.at(i),true ) ) testelectrons.push_back( testelectrons_all.at(i) );
+
+    bool isthis_prompt = TruthMatched( testelectrons_all.at(i),true );
+
+    if(UseFakeLeptonOnly){
+      if(!isthis_prompt) testelectrons.push_back( testelectrons_all.at(i) );
     }
+    else{
+      testelectrons.push_back( testelectrons_all.at(i) );
+    }
+
   }
 
   std::vector<snu::KJet> test_jets = GetJets("JET_HN_eta5_nolepveto");
   std::vector<snu::KFatJet> test_fatjets_chs = GetFatJets("FATJET_HN_nolepveto");
   std::vector<snu::KFatJet> test_fatjets; // Puppi + SD
 
-  cout << "####### Making Puppi #######" << endl;
-  cout << "Pt\tEta\tPhi\tM\tSD" << endl;
+  if(DoDebug) cout << "####### AK8Jets #######" << endl;
+  if(DoDebug) cout << "Pt\tEta\tPhi\tM\tE\tSD" << endl;
   for(unsigned int i=0; i < test_fatjets_chs.size(); i++){
     snu::KFatJet tmpj = test_fatjets_chs[i];
 
-    cout << i << "th fatjet" << endl; 
-    cout << "  " << tmpj.Pt() << "\t" << tmpj.Eta() << "\t" << tmpj.Phi() << "\t" << tmpj.M() << "\t" << tmpj.SoftDropMass() << endl;
+    if(tmpj.PuppiPt()>9999 || tmpj.PuppiEta()<-9999) continue;
 
-	  tmpj.SetPtEtaPhiE(tmpj.PuppiPt(), tmpj.PuppiEta(),tmpj.PuppiPhi(),tmpj.E());
-    cout << "->" << tmpj.Pt() << "\t" << tmpj.Eta() << "\t" << tmpj.Phi() << "\t" << tmpj.M() << "\t" << tmpj.SoftDropMass() << endl;
+    //if(DoDebug) cout << i << "th fatjet" << endl; 
+    //if(DoDebug) cout << tmpj.Pt() << "\t" << tmpj.Eta() << "\t" << tmpj.Phi() << "\t" << tmpj.M() << "\t" << tmpj.E() << "\t" << tmpj.SoftDropMass() << endl;
+
+    tmpj.SetPtEtaPhiM(tmpj.PuppiPt(), tmpj.PuppiEta(),tmpj.PuppiPhi(),tmpj.PuppiM());
+    if(DoDebug) cout << tmpj.Pt() << "\t" << tmpj.Eta() << "\t" << tmpj.Phi() << "\t" << tmpj.M() << "\t" << tmpj.E() << "\t" << tmpj.SoftDropMass() << endl;
 
     test_fatjets.push_back(tmpj);
   }
@@ -279,7 +309,7 @@ void PairNAnalyzer::ExecuteEvents()throw( LQError ){
   test_triggerlists_histnames.push_back("IsoMu24");
   test_triggerlists_histnames.push_back("Mu50");
 
-  FillHist("Muon_Size", testmuons.size(), 1., 0., 10., 10);
+  FillHist("Muon_Size", testmuons.size(), 1., 0., 30., 30);
   for(unsigned int i=0; i<testmuons.size(); i++){
 
     snu::KMuon muon = testmuons.at(i);
@@ -292,6 +322,7 @@ void PairNAnalyzer::ExecuteEvents()throw( LQError ){
     FillHist("Muon_"+TString::Itoa(i,10)+"_RelIso04", muon.RelIso04(), 1., 0., 1.0, 100);
     FillHist("Muon_"+TString::Itoa(i,10)+"_RelMiniIso", muon.RelMiniIso(), 1., 0., 1.0, 100);
 
+/*
     //==== j    0      1      2               18       19
     //==== pt 10-20, 20-30, 30-40, ... ,    190-200, 200-
     for(int j=0; j<20; j++){
@@ -307,6 +338,7 @@ void PairNAnalyzer::ExecuteEvents()throw( LQError ){
       }
 
     }
+*/
 
     bool isFound = false;
     double dR = 0.4;
@@ -332,11 +364,11 @@ void PairNAnalyzer::ExecuteEvents()throw( LQError ){
     if(isFound){
       FillHist("Muon_"+TString::Itoa(i,10)+"_PtRatio", ptratio, 1., 0., 3.0, 300);
       FillHist("Muon_"+TString::Itoa(i,10)+"_PtRel", ptrel, 1., 0., 100., 100);
-      FillHist("Muon_"+TString::Itoa(i,10)+"_PtRel_vs_PtRatio", ptrel, ptratio, 1., 0., 30., 30, 0., 1.5, 150);
+      //FillHist("Muon_"+TString::Itoa(i,10)+"_PtRel_vs_PtRatio", ptrel, ptratio, 1., 0., 30., 30, 0., 1.5, 150);
 
       FillHist("Muon_PtRatio", ptratio, 1., 0., 3.0, 300);
       FillHist("Muon_PtRel", ptrel, 1., 0., 100., 100);
-      FillHist("Muon_PtRel_vs_PtRatio", ptrel, ptratio, 1., 0., 30., 30, 0., 1.5, 150);
+      //FillHist("Muon_PtRel_vs_PtRatio", ptrel, ptratio, 1., 0., 30., 30, 0., 1.5, 150);
 
     }
     double reliso04 = muon.RelIso04();
@@ -369,12 +401,13 @@ void PairNAnalyzer::ExecuteEvents()throw( LQError ){
 
       if(PassID(muon, "MUON_SUSY_TIGHT")){
         SUSYmuons.push_back( muon );
+        FillHist("Muon_IsolationPass", 7, 1., 0., 20., 20);
       }
 
     }
 
-    FillHist("Muon_"+TString::Itoa(i,10)+"_RelIso04_vs_Pt", muon.RelIso04(), muon.Pt(),     1., 0., 1.0, 100, 0, 500, 50);
-    FillHist("Muon_"+TString::Itoa(i,10)+"_RelMiniIso_vs_Pt", muon.RelMiniIso(), muon.Pt(), 1., 0., 1.0, 100, 0, 500, 50);
+    //FillHist("Muon_"+TString::Itoa(i,10)+"_RelIso04_vs_Pt", muon.RelIso04(), muon.Pt(),     1., 0., 1.0, 100, 0, 500, 50);
+    //FillHist("Muon_"+TString::Itoa(i,10)+"_RelMiniIso_vs_Pt", muon.RelMiniIso(), muon.Pt(), 1., 0., 1.0, 100, 0, 500, 50);
 
     FillHist("Muon_"+TString::Itoa(i,10)+"_IsPF", muon.IsPF(), 1., 0., 2., 2);
     FillHist("Muon_"+TString::Itoa(i,10)+"_IsGlobal", muon.IsGlobal(), 1., 0., 2., 2);
@@ -416,7 +449,7 @@ void PairNAnalyzer::ExecuteEvents()throw( LQError ){
     }
   }
 
-  FillHist("Electron_Size", testelectrons.size(), 1., 0., 10., 10);
+  FillHist("Electron_Size", testelectrons.size(), 1., 0., 30., 30);
   for(unsigned int i=0; i<testelectrons.size(); i++){
 
     snu::KElectron electron = testelectrons.at(i);
@@ -428,6 +461,7 @@ void PairNAnalyzer::ExecuteEvents()throw( LQError ){
     FillHist("Electron_"+TString::Itoa(i,10)+"_RelIso03", electron.PFRelIso(0.3), 1., 0., 1.0, 100);
     FillHist("Electron_"+TString::Itoa(i,10)+"_RelMiniIso", electron.PFRelMiniIso(), 1., 0., 1.0, 100);
 
+/*
     //==== j    0      1      2               18       19
     //==== pt 10-20, 20-30, 30-40, ... ,    190-200, 200-
     for(int j=0; j<20; j++){
@@ -443,6 +477,7 @@ void PairNAnalyzer::ExecuteEvents()throw( LQError ){
       }
 
     }
+*/
 
     bool isFound = false;
     double dR = 0.4;
@@ -499,6 +534,15 @@ void PairNAnalyzer::ExecuteEvents()throw( LQError ){
     }
     if( PassMultiIso("Electron_tight", minireliso, ptratio, ptrel) ){
       FillHist("Electron_IsolationPass", 6, 1., 0., 20., 20);
+
+      if( TEMP_PassJSElectronID(electron,"SUSY_Tight") ){
+        SUSYelectrons.push_back( electron );
+        FillHist("Electron_IsolationPass", 7, 1., 0., 20., 20);
+      }
+
+    }
+    if( electron.PassHEEP() ){
+      FillHist("Electron_IsolationPass", 8, 1., 0., 20., 20);
     }
 
     TString EtaRegion = "InnerBarrel";
@@ -507,12 +551,14 @@ void PairNAnalyzer::ExecuteEvents()throw( LQError ){
     else EtaRegion = "InnerBarrel";
 
 
-    FillHist("Electron_"+TString::Itoa(i,10)+"_RelIso03_vs_Pt", electron.PFRelIso(0.3), electron.Pt(),     1., 0., 1.0, 100, 0, 500, 50);
-    FillHist("Electron_"+TString::Itoa(i,10)+"_RelMiniIso_vs_Pt", electron.PFRelMiniIso(), electron.Pt(), 1., 0., 1.0, 100, 0, 500, 50);
+    //FillHist("Electron_"+TString::Itoa(i,10)+"_RelIso03_vs_Pt", electron.PFRelIso(0.3), electron.Pt(),     1., 0., 1.0, 100, 0, 500, 50);
+    //FillHist("Electron_"+TString::Itoa(i,10)+"_RelMiniIso_vs_Pt", electron.PFRelMiniIso(), electron.Pt(), 1., 0., 1.0, 100, 0, 500, 50);
 
+    FillHist("Electron_"+TString::Itoa(i,10)+"_MissingHits", electron.MissingHits(), 1., 0., 20., 20);
     FillHist("Electron_"+TString::Itoa(i,10)+"_GsfCtfScPixChargeConsistency", electron.GsfCtfScPixChargeConsistency(), 1., 0., 2., 2);
     FillHist("Electron_"+TString::Itoa(i,10)+"_PassesConvVeto", electron.PassesConvVeto(), 1., 0., 2., 2);
     FillHist("Electron_"+TString::Itoa(i,10)+"_MVA_"+EtaRegion, electron.MVA(), 1., -1., 1., 200);
+    FillHist("Electron_"+TString::Itoa(i,10)+"_ZZMVA_"+EtaRegion, electron.ZZMVA(), 1., -1., 1., 200);
 
 
 
@@ -523,10 +569,18 @@ void PairNAnalyzer::ExecuteEvents()throw( LQError ){
     FillHist("Electron_dZ", fabs(electron.dZ()), 1., 0., 0.5, 500);
     FillHist("Electron_RelIso03", electron.PFRelIso(0.3), 1., 0., 1.0, 100);
     FillHist("Electron_RelMiniIso", electron.PFRelMiniIso(), 1., 0., 1.0, 100);
+    FillHist("Electron_MissingHits", electron.MissingHits(), 1., 0., 20., 20);
     FillHist("Electron_GsfCtfScPixChargeConsistency", electron.GsfCtfScPixChargeConsistency(), 1., 0., 2., 2);
+
+    FillHist("Electron_Pt_GsfCtfScPixChargeConsistency_Den", electron.Pt(), 1., 0., 5000., 5000);
+    if( electron.GsfCtfScPixChargeConsistency() ){
+      FillHist("Electron_Pt_GsfCtfScPixChargeConsistency_Num", electron.Pt(), 1., 0., 5000., 5000);
+    }
+
+
     FillHist("Electron_PassesConvVeto", electron.PassesConvVeto(), 1., 0., 2., 2);
     FillHist("Electron_MVA_"+EtaRegion, electron.MVA(), 1., -1., 1., 200);
-
+    FillHist("Electron_ZZMVA_"+EtaRegion, electron.ZZMVA(), 1., -1., 1., 200);
 
   }
 
@@ -585,14 +639,14 @@ void PairNAnalyzer::ExecuteEvents()throw( LQError ){
     FillHist("FatJet_PuppiTau31", jet.PuppiTau3()/jet.PuppiTau1(), 1., 0., 1.5, 150);
     FillHist("FatJet_PuppiTau32", jet.PuppiTau3()/jet.PuppiTau2(), 1., 0., 1.5, 150);
 
-    FillHist("FatJet_Mass_vs_SoftDropMass", jet.M(), jet.SoftDropMass(), 1., 0., 5000., 5000, 0., 5000., 5000);
+    //FillHist("FatJet_Mass_vs_SoftDropMass", jet.M(), jet.SoftDropMass(), 1., 0., 5000., 5000, 0., 5000., 5000);
 
   }
 
   vector<bool> test_jets_IsLeptonInside, test_jets_PassPUMVA, test_jets_AwayFromFatJet;
   FillHist("Jet_Size", test_jets.size(), 1., 0., 10., 10);
-  cout << "####### AK4 Jet #######" << endl;
-  cout << "Pt\tEta\tPhi\tM" << endl;
+  if(DoDebug) cout << "####### AK4 Jet #######" << endl;
+  if(DoDebug) cout << "Pt\tEta\tPhi\tM\tAwayAK8\tPUMVA" << endl;
   for(unsigned int i=0; i<test_jets.size(); i++){
 
     snu::KJet jet = test_jets.at(i);
@@ -613,9 +667,12 @@ void PairNAnalyzer::ExecuteEvents()throw( LQError ){
 
     test_jets_IsLeptonInside.push_back(this_leptoninside);
     test_jets_PassPUMVA.push_back( jet.PassPileUpMVA("Loose") );
-    test_jets_AwayFromFatJet.push_back( IsAwayFromFatJet(jet, test_fatjets) );
+    test_jets_AwayFromFatJet.push_back( IsAwayFromFatJet(jet, test_fatjets,1.0) );
 
-    cout << jet.Pt() << "\t" << jet.Eta() << "\t" << jet.Phi() << "\t" << jet.M() << "\t" << endl;
+    if(DoDebug){
+      cout << jet.Pt() << "\t" << jet.Eta() << "\t" << jet.Phi() << "\t" << jet.M() << "\t" << test_jets_AwayFromFatJet.at(i) << "\t" << test_jets_PassPUMVA.at(i) << endl;
+      //if(test_jets_AwayFromFatJet.at(i)&&test_jets_PassPUMVA.at(i)) cout << jet.Pt() << "\t" << jet.Eta() << "\t" << jet.Phi() << "\t" << jet.M() << "\t" << endl;
+    }
  
 
     FillHist("Jet_"+TString::Itoa(i,10)+"_Pt", jet.Pt(), 1., 0., 5000., 5000);
@@ -625,126 +682,318 @@ void PairNAnalyzer::ExecuteEvents()throw( LQError ){
     FillHist("Jet_Eta", jet.Eta(), 1., -3., 3., 60);
 
   }
-  cout << endl;
+  if(DoDebug) cout << endl;
 
   //==== Event Selection test
   FillCutFlow("NoCut", 1.);
-  if(SUSYmuons.size()==2){
 
-    FillCutFlow("DiMuon",1);
+  if(SUSYmuons.size()==2|| SUSYelectrons.size()==2){
 
-    snu::KMuon mu[2] = {SUSYmuons.at(0), SUSYmuons.at(1)};
-    snu::KParticle N[2] = {mu[0], mu[1]};
+    FillCutFlow("DiLepton",1);
+
+    KLepton lep[2];
+    if(SUSYmuons.size()==2 && SUSYelectrons.size()!=2){
+      lep[0] = SUSYmuons.at(0);
+      lep[1] = SUSYmuons.at(1);
+    }
+    else if(SUSYmuons.size()!=2 && SUSYelectrons.size()==2){
+      lep[0] = SUSYelectrons.at(0);
+      lep[1] = SUSYelectrons.at(1);
+    }
+
+    if(lep[0].Charge()==lep[1].Charge()) FillCutFlow("SS", 1);
+
+    vector<KLepton> SUSYleps;
+    SUSYleps.push_back( lep[0] );
+    SUSYleps.push_back( lep[1] );
+
+    snu::KParticle N[2] = {lep[0], lep[1]};
+
     int n_Merged_FatJet[2] = {0, 0};
     double dR_Max_FatJet = 3.0;
+
+    TString ThisAlgoName = "MergeJetToClosestN_";
+
+    if(DoDebug){
+      cout << endl;
+      cout << "######################################################" << endl;
+      cout << "############ " << ThisAlgoName << " ############" << endl;
+      cout << "######################################################" << endl;
+      cout << endl;
+    }
 
     for(unsigned int i=0; i<test_fatjets.size(); i++){
 
       snu::KFatJet fatjet = test_fatjets.at(i);
       int CloserIndex = -1;
-      double dR = 999;
 
-      if(mu[0].DeltaR(fatjet) < mu[1].DeltaR(fatjet)){
+      if(N[0].DeltaR(fatjet) < N[1].DeltaR(fatjet)){
         CloserIndex = 0;
-        dR = mu[0].DeltaR(fatjet);
       }
       else{
         CloserIndex = 1;
-        dR = mu[1].DeltaR(fatjet);
       }
 
-      cout << "## Printing Current N["<<CloserIndex<<"] ##" << endl;
-      cout << "Pt\tEta\tPhi\tM" << endl;
-      cout << N[CloserIndex].Pt() << "\t" << N[CloserIndex].Eta() << "\t" << N[CloserIndex].Phi() << "\t" << N[CloserIndex].M() << endl;
-      cout << "  Adding fatjet as follows" << endl;
-      cout << "  Pt\tEta\tPhi\tM\tSD" << endl;
-      cout << "  " << fatjet.Pt() << "\t" << fatjet.Eta() << "\t" << fatjet.Phi() << "\t" << fatjet.M() << "\t" << fatjet.SoftDropMass() << endl;
+      //==== Adding i'th jet to N[CloserIndex]
+      //==== If this N[CloserIndex] already has jets>=2, go to next jet
+      if(n_Merged_FatJet[CloserIndex]>=2) continue;
 
-      N[CloserIndex] = N[CloserIndex]+fatjet;
+      if(DoDebug){
+        cout << "## Printing Current N["<<CloserIndex<<"] ##" << endl;
+        cout << "Pt\tEta\tPhi\tM" << endl;
+        cout << N[CloserIndex].Pt() << "\t" << N[CloserIndex].Eta() << "\t" << N[CloserIndex].Phi() << "\t" << N[CloserIndex].M() << endl;
+        cout << "  Adding fatjet as follows" << endl;
+        cout << "  Pt\tEta\tPhi\tM\tSD" << endl;
+        cout << "  " << fatjet.Pt() << "\t" << fatjet.Eta() << "\t" << fatjet.Phi() << "\t" << fatjet.M() << "\t" << fatjet.SoftDropMass() << endl;
+      }
+
+      N[CloserIndex] += SubtractLeptonFromFatJet(fatjet, SUSYleps);
       n_Merged_FatJet[CloserIndex]++;
 
-      cout << "--> Resulting in" << endl;
-      cout << "Pt\tEta\tPhi\tM" << endl;
-      cout << N[CloserIndex].Pt() << "\t" << N[CloserIndex].Eta() << "\t" << N[CloserIndex].Phi() << "\t" << N[CloserIndex].M() << endl;
-      cout << endl;
-
-/*
-      //==== Lepton Inside FatJet
-      snu::KMuon CloseMuon = mu[CloserIndex];
-      if(CloseMuon.DeltaR(fatjet) < 0.8){
-        N[CloserIndex] = fatjet;
-        n_Merged_FatJet[CloserIndex]++;
+      if(DoDebug){
+        cout << "--> Resulting in" << endl;
+        cout << "Pt\tEta\tPhi\tM" << endl;
+        cout << N[CloserIndex].Pt() << "\t" << N[CloserIndex].Eta() << "\t" << N[CloserIndex].Phi() << "\t" << N[CloserIndex].M() << endl;
+        cout << endl;
       }
-      else if(dR < dR_Max_FatJet){
-        N[CloserIndex] = N[CloserIndex]+fatjet;
-        n_Merged_FatJet[CloserIndex]++;
-      }
-*/
 
     }
 
     double dR_Max_Jet = 4.0;
+    int n_Merged_Jet[2] = {0, 0};
+
+    vector<snu::KJet> test_jets_use;
+
     for(unsigned int i=0; i<test_jets.size(); i++){
 
       snu::KJet jet = test_jets.at(i);
 
       if(!test_jets_AwayFromFatJet.at(i)) continue;
-      if(test_jets_PassPUMVA.at(i)) continue;
+      if(!test_jets_PassPUMVA.at(i)) continue;
+      if(!(  fabs(jet.Eta()) < 2.7  )) continue;
+
+      test_jets_use.push_back(jet);
 
       int CloserIndex = -1;
-      double dR = 999;
 
-      if(mu[0].DeltaR(jet) < mu[1].DeltaR(jet)){
+     if(N[0].DeltaR(jet) < N[1].DeltaR(jet)){
         CloserIndex = 0;
-        dR = mu[0].DeltaR(jet);
       }
       else{
         CloserIndex = 1;
-        dR = mu[1].DeltaR(jet);
       }
 
-      //==== Lepton Inside Jet
-      snu::KMuon CloseMuon = mu[CloserIndex];
+      //==== Adding i'th jet to N[CloserIndex]
+      //==== If this N[CloserIndex] already has jets>=2, go to next jet
+      if(n_Merged_FatJet[CloserIndex]+n_Merged_Jet[CloserIndex]==2) continue;
 
-      //==== TEST FIXME
-
-      cout << "## Printing Current N["<<CloserIndex<<"] ##" << endl;
-      cout << "Pt\tEta\tPhi\tM" << endl;
-      cout << N[CloserIndex].Pt() << "\t" << N[CloserIndex].Eta() << "\t" << N[CloserIndex].Phi() << "\t" << N[CloserIndex].M() << endl;
-      cout << "  Adding jet as follows" << endl;
-      cout << "  Pt\tEta\tPhi\tM" << endl;
-      cout << "  " << jet.Pt() << "\t" << jet.Eta() << "\t" << jet.Phi() << "\t" << jet.M() << "\t" << endl;
-
-      N[CloserIndex] = N[CloserIndex]+jet; 
-      n_Merged_FatJet[CloserIndex]++;
-
-      cout << "--> Resulting in" << endl;
-      cout << "Pt\tEta\tPhi\tM" << endl;
-      cout << N[CloserIndex].Pt() << "\t" << N[CloserIndex].Eta() << "\t" << N[CloserIndex].Phi() << "\t" << N[CloserIndex].M() << endl;
-
-/*
-      if(CloseMuon.DeltaR(jet) < 0.4){
-        N[CloserIndex] = jet;
-        n_Merged_FatJet[CloserIndex]++;
+      if(DoDebug){
+        cout << "## Printing Current N["<<CloserIndex<<"] ##" << endl;
+        cout << "Pt\tEta\tPhi\tM" << endl;
+        cout << N[CloserIndex].Pt() << "\t" << N[CloserIndex].Eta() << "\t" << N[CloserIndex].Phi() << "\t" << N[CloserIndex].M() << endl;
+        cout << "  Adding jet as follows" << endl;
+        cout << "  Pt\tEta\tPhi\tM" << endl;
+        cout << "  " << jet.Pt() << "\t" << jet.Eta() << "\t" << jet.Phi() << "\t" << jet.M() << "\t" << endl;
       }
-      else if(dR < dR_Max_Jet){
-        N[CloserIndex] = N[CloserIndex]+jet;
-        n_Merged_FatJet[CloserIndex]++;
+
+
+      N[CloserIndex] += SubtractLeptonFromJet(jet, SUSYleps);
+      n_Merged_Jet[CloserIndex]++;
+
+      if(DoDebug){ 
+        cout << "--> Resulting in" << endl;
+        cout << "Pt\tEta\tPhi\tM" << endl;
+        cout << N[CloserIndex].Pt() << "\t" << N[CloserIndex].Eta() << "\t" << N[CloserIndex].Phi() << "\t" << N[CloserIndex].M() << endl;
+        cout << endl;
       }
-*/
+
     }
 
-    if(N[0].M()<10. || N[1].M()<10.){
-      TruthPrintOut();
+    if(ForceTruth){
+      PrintTruth();
+    }
+    else{
+      if(N[0].M()<10. || N[1].M()<10.){
+        if(DoDebug) PrintTruth();
+      }
     }
 
-    FillHist("TEST_N", N[0].M(), 1., 0., 3000., 3000);
-    FillHist("TEST_N", N[1].M(), 1., 0., 3000., 3000);
+    if(DoDebug){
+      cout << "------------------------" << endl;
+      cout << "N[0] : " << N[0].Pt() << "\t" << N[0].Eta() << "\t" << N[0].Phi() << "\t" << N[0].M() << endl;
+      cout << "N[1] : " << N[1].Pt() << "\t" << N[1].Eta() << "\t" << N[1].Phi() << "\t" << N[1].M() << endl;
+      cout << "MET = " << testMET << endl;
+      cout << "===========================================================" << endl << endl;
+    }
 
-    FillHist("TEST_n_Merged_FatJet", n_Merged_FatJet[0], 1., 0., 20., 20);
-    FillHist("TEST_n_Merged_FatJet", n_Merged_FatJet[1], 1., 0., 20., 20);
+    FillHist(ThisAlgoName+"N", N[0].M(), 1., 0., 3000., 3000);
+    FillHist(ThisAlgoName+"N", N[1].M(), 1., 0., 3000., 3000);
+    FillHist(ThisAlgoName+"Z", (N[0]+N[1]).M(), 1., 0., 6000., 6000);
 
-  }
+    double N_max = max(N[0].M(),N[1].M());
+    double N_min = min(N[0].M(),N[1].M());
+    FillHist(ThisAlgoName+"Nmin_vs_Nmax", N_min, N_max, 1., 0., 2000., 200, 0., 2000., 200);
+    FillHist(ThisAlgoName+"N_diff", fabs(N[0].M()-N[1].M()), 1., 0., 3000., 3000);
+    FillHist(ThisAlgoName+"N_reldiff_DIVmin", fabs(N[0].M()-N[1].M())/N_min, 1., 0., 10., 100);
+    FillHist(ThisAlgoName+"N_reldiff_DIVmax", fabs(N[0].M()-N[1].M())/N_max, 1., 0., 10., 100);
+
+
+    FillHist(ThisAlgoName+"n_Merged_FatJet", n_Merged_FatJet[0], 1., 0., 20., 20);
+    FillHist(ThisAlgoName+"n_Merged_FatJet", n_Merged_FatJet[1], 1., 0., 20., 20);
+    FillHist(ThisAlgoName+"n_Merged_Jet", n_Merged_Jet[0], 1., 0., 20., 20);
+    FillHist(ThisAlgoName+"n_Merged_Jet", n_Merged_Jet[1], 1., 0., 20., 20);
+
+    FillHist(ThisAlgoName+"MET", testMET, 1., 0., 1000., 1000);
+
+
+    //==== Mass Balance
+
+    //==== N fatjets + n jets
+    //==== make N+n binary number
+    //==== e.g., N=4, n=1
+    //==== B = 1010,01
+
+    ThisAlgoName = "MinimumMDiff_";
+
+    if(DoDebug){
+      cout << endl;
+      cout << "######################################################" << endl;
+      cout << "############ " << ThisAlgoName << " ############" << endl; 
+      cout << "######################################################" << endl;
+      cout << endl;
+    }
+
+    int N_FatJet = test_fatjets.size();
+    int N_Jet = test_jets_use.size();
+
+    int total_loop = pow(2,N_FatJet+N_Jet);
+
+    double min_Diff = 99999;
+
+    int int_combination=-999;
+    TString combination = "";
+
+    for(int i=0; i<total_loop; i++){
+
+      snu::KParticle N_temp[2] = {lep[0], lep[1]};
+
+      int n_Merged_FatJet_temp[2] = {0,0};
+      int n_Merged_Jet_temp[2] = {0,0};
+
+      TString this_combination = "";
+
+      if(DoDebug){
+        cout << endl;
+        cout << "// Trying " << i << endl;
+        cout << endl;
+      }
+
+      for(int j=0; j<(N_FatJet+N_Jet); j++){
+
+        int this_unit = pow(2,j);
+        int this_N_index = 0;
+        if(i&this_unit) this_N_index = 1;
+        //==== j'th jet is added to N[this_N_index]
+        //==== If N[this_N_index] has jets>=2, go to next jet
+        if(n_Merged_FatJet_temp[this_N_index]+n_Merged_Jet_temp[this_N_index]>=2){
+          this_combination = "X"+this_combination;
+          continue;
+        }
+
+
+        this_combination = TString::Itoa(this_N_index,10)+this_combination;
+
+        int jet_index = j;
+        if(j<N_FatJet){
+
+          if(DoDebug){
+            cout << "## Printing Current N["<<this_N_index<<"] ##" << endl;
+            cout << "Pt\tEta\tPhi\tM" << endl;
+            cout << N_temp[this_N_index].Pt() << "\t" << N_temp[this_N_index].Eta() << "\t" << N_temp[this_N_index].Phi() << "\t" << N_temp[this_N_index].M() << endl;
+            cout << "  Adding fatjet as follows" << endl;
+            cout << "  Pt\tEta\tPhi\tM\tSD" << endl;
+            cout << "  " << test_fatjets.at(jet_index).Pt() << "\t" << test_fatjets.at(jet_index).Eta() << "\t" << test_fatjets.at(jet_index).Phi() << "\t" << test_fatjets.at(jet_index).M() << "\t" << test_fatjets.at(jet_index).SoftDropMass() << endl;
+          }
+
+          N_temp[this_N_index] = N_temp[this_N_index] + SubtractLeptonFromFatJet(test_fatjets.at(jet_index),SUSYleps);
+          n_Merged_FatJet_temp[this_N_index]++;
+
+          if(DoDebug){
+            cout << "--> Resulting in" << endl;
+            cout << "Pt\tEta\tPhi\tM" << endl;
+            cout << N_temp[this_N_index].Pt() << "\t" << N_temp[this_N_index].Eta() << "\t" << N_temp[this_N_index].Phi() << "\t" << N_temp[this_N_index].M() << endl;
+            cout << endl;
+          }
+
+        }
+        else{
+          jet_index = jet_index-N_FatJet;
+
+          if(DoDebug){
+            cout << "## Printing Current N["<<this_N_index<<"] ##" << endl;
+            cout << "Pt\tEta\tPhi\tM" << endl;
+            cout << N_temp[this_N_index].Pt() << "\t" << N_temp[this_N_index].Eta() << "\t" << N_temp[this_N_index].Phi() << "\t" << N_temp[this_N_index].M() << endl;
+            cout << "  Adding jet as follows" << endl;
+            cout << "  Pt\tEta\tPhi\tM" << endl;
+            cout << "  " << test_jets_use.at(jet_index).Pt() << "\t" << test_jets_use.at(jet_index).Eta() << "\t" << test_jets_use.at(jet_index).Phi() << "\t" << test_jets_use.at(jet_index).M() << "\t" << endl;
+          }
+
+          N_temp[this_N_index] = N_temp[this_N_index] + SubtractLeptonFromJet(test_jets_use.at(jet_index),SUSYleps);
+          n_Merged_Jet_temp[this_N_index]++;
+
+          if(DoDebug){
+            cout << "--> Resulting in" << endl;
+            cout << "Pt\tEta\tPhi\tM" << endl;
+            cout << N_temp[this_N_index].Pt() << "\t" << N_temp[this_N_index].Eta() << "\t" << N_temp[this_N_index].Phi() << "\t" << N_temp[this_N_index].M() << endl;
+            cout << endl;
+          }
+
+        }
+
+      } // END Loop jets
+
+      double this_diff = fabs(N_temp[0].M()-N_temp[1].M());
+      if(this_diff<min_Diff){
+        min_Diff = this_diff;
+        int_combination = i;
+        combination = this_combination;
+        N[0] = N_temp[0];
+        N[1] = N_temp[1];
+      }
+
+    }
+
+    FillHist(ThisAlgoName+"N", N[0].M(), 1., 0., 3000., 3000);
+    FillHist(ThisAlgoName+"N", N[1].M(), 1., 0., 3000., 3000);
+    FillHist(ThisAlgoName+"Z", (N[0]+N[1]).M(), 1., 0., 6000., 6000);
+
+    N_max = max(N[0].M(),N[1].M());
+    N_min = min(N[0].M(),N[1].M());
+    FillHist(ThisAlgoName+"Nmin_vs_Nmax", N_min, N_max, 1., 0., 2000., 200, 0., 2000., 200);
+    FillHist(ThisAlgoName+"N_diff", fabs(N[0].M()-N[1].M()), 1., 0., 3000., 3000);
+    FillHist(ThisAlgoName+"N_reldiff_DIVmin", fabs(N[0].M()-N[1].M())/N_min, 1., 0., 10., 100);
+    FillHist(ThisAlgoName+"N_reldiff_DIVmax", fabs(N[0].M()-N[1].M())/N_max, 1., 0., 10., 100);
+
+
+    FillHist(ThisAlgoName+"n_Merged_FatJet", n_Merged_FatJet[0], 1., 0., 20., 20);
+    FillHist(ThisAlgoName+"n_Merged_FatJet", n_Merged_FatJet[1], 1., 0., 20., 20);
+    FillHist(ThisAlgoName+"n_Merged_Jet", n_Merged_Jet[0], 1., 0., 20., 20);
+    FillHist(ThisAlgoName+"n_Merged_Jet", n_Merged_Jet[1], 1., 0., 20., 20);
+
+    FillHist(ThisAlgoName+"MET", testMET, 1., 0., 1000., 1000);
+
+    if(DoDebug){
+      cout << "------------------------" << endl;
+
+      cout << "("<<N_Jet<<")"<<"<"<<N_FatJet<<">"<<endl;
+      cout << "Combination = " << int_combination << "(" << combination << ")" << endl;
+      cout << "N[0] : " << N[0].Pt() << "\t" << N[0].Eta() << "\t" << N[0].Phi() << "\t" << N[0].M() << endl;
+      cout << "N[1] : " << N[1].Pt() << "\t" << N[1].Eta() << "\t" << N[1].Phi() << "\t" << N[1].M() << endl;
+      cout << "MET = " << testMET << endl;
+      cout << "===========================================================" << endl << endl;
+    }
+
+  } // If Dilepton event
 
   return;
 
@@ -4134,10 +4383,10 @@ bool PairNAnalyzer::JSFatJetID(snu::KFatJet fatjet){
 
 }
 
-bool PairNAnalyzer::IsAwayFromFatJet(snu::KJet jet, vector<snu::KFatJet> fatjets){
+bool PairNAnalyzer::IsAwayFromFatJet(snu::KJet jet, vector<snu::KFatJet> fatjets, double dRCut){
 
   for(unsigned int i=0; i<fatjets.size(); i++){
-    if( jet.DeltaR( fatjets.at(i) ) < 0.8 ) return false;
+    if( jet.DeltaR( fatjets.at(i) ) < dRCut ) return false;
   }
 
   return true;

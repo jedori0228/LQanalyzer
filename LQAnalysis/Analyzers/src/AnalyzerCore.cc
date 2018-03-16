@@ -3332,14 +3332,15 @@ std::vector<snu::KMuon> AnalyzerCore::GetHNTriMuonsByLooseRelIso(double LooseRel
 }
 
 void AnalyzerCore::PrintTruth(){
+  cout << "[AnalyzerCore::PrintTruth] RunNumber/Event Number = " << eventbase->GetEvent().RunNumber() << " : " << eventbase->GetEvent().EventNumber() << endl;
   std::vector<snu::KTruth> truthColl;
   eventbase->GetTruthSel()->Selection(truthColl);
   
   cout << "=========================================================" << endl;
   cout << "truth size = " << truthColl.size() << endl;
-  cout << "index" << '\t' << "pdgid" << '\t' << "status" << '\t' << "mother" << '\t' << "mother pid" << "\t" << "pt" << "\t" << "eta" << "\t" << "mass" << endl;
+  cout << "index" << '\t' << "pdgid" << '\t' << "status" << '\t' << "mother" << '\t' << "mother pid" << "\t" << "pt" << "\t" << "eta" << "\t" << "phi" << "\t" << "mass" << endl;
   for(int i=2; i<truthColl.size(); i++){
-    cout << i << '\t' << truthColl.at(i).PdgId() << '\t' << truthColl.at(i).GenStatus() << '\t' << truthColl.at(i).IndexMother() << '\t' << truthColl.at( truthColl.at(i).IndexMother() ).PdgId() << "\t" << truthColl.at(i).Pt() << "\t" << truthColl.at(i).Eta() << "\t" << truthColl.at(i).M() << endl;
+    cout << i << '\t' << truthColl.at(i).PdgId() << '\t' << truthColl.at(i).GenStatus() << '\t' << truthColl.at(i).IndexMother() << '\t' << truthColl.at( truthColl.at(i).IndexMother() ).PdgId() << "\t" << truthColl.at(i).Pt() << "\t" << truthColl.at(i).Eta() << "\t" << truthColl.at(i).Phi() << "\t" << truthColl.at(i).M() << endl;
   }
 
 }
@@ -5864,9 +5865,69 @@ bool AnalyzerCore::PassMultiIso(TString WP, double mini, double ptratio, double 
 
 }
 
+snu::KParticle AnalyzerCore::SubtractLeptonFromJet(snu::KJet jet, vector<KLepton> leps){
 
+  snu::KParticle out_jet = jet;
+  for(unsigned int i=0; i<leps.size(); i++){
 
+    if(jet.DeltaR( leps.at(i) ) < 0.8){
 
+      out_jet = out_jet - leps.at(i);
+
+    }
+
+  }
+
+  return out_jet;
+
+}
+
+snu::KParticle AnalyzerCore::SubtractLeptonFromFatJet(snu::KFatJet fatjet, vector<KLepton> leps){
+
+  snu::KParticle out_jet = fatjet;
+  for(unsigned int i=0; i<leps.size(); i++){
+
+    if(fatjet.DeltaR( leps.at(i) ) < 0.8){
+
+      out_jet = out_jet - leps.at(i);
+
+    }
+
+  }
+
+  return out_jet;
+
+}
+
+bool AnalyzerCore::TEMP_PassJSElectronID(snu::KElectron el, TString IDstring){
+
+  if( ! el.IsTrigMVAValid() ) return false;
+  if( ! el.PassesConvVeto() ) return false;
+  if( ! (fabs(el.dXY()) < 0.05) ) return false;
+  if( ! (fabs(el.dXYSig()) < 4.) ) return false;
+  if( ! (fabs(el.dZ()) < 0.1 ) ) return false;
+
+  double this_mva = el.MVA();
+
+  if(IDstring=="SUSY_Loose"){
+
+    if((fabs(el.SCEta()) < 0.8) && this_mva > -0.70) return true;
+    if((fabs(el.SCEta())  > 0.8) &&(fabs(el.SCEta())  < 1.479)  && this_mva > 0.83) return true;
+    if((fabs(el.SCEta())  < 2.5) &&(fabs(el.SCEta())  > 1.479) && this_mva > -0.92) return true;
+
+  }
+
+  if(IDstring=="SUSY_Tight"){
+
+    if((fabs(el.SCEta()) < 0.8) && this_mva > 0.87) return true;
+    if((fabs(el.SCEta())  > 0.8) &&(fabs(el.SCEta())  < 1.479)  && this_mva > 0.60) return true;
+    if((fabs(el.SCEta())  < 2.5) &&(fabs(el.SCEta())  > 1.479) && this_mva > 0.17) return true;
+
+  }
+
+  return false;
+
+}
 
 
 
