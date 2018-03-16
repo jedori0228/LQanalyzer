@@ -1485,6 +1485,83 @@ float MCDataCorrections::GetCorrectedMuonMomentum(snu::KMuon muon, std::vector<s
   return (scalefactor*muon.Pt());
 }
 
+float MCDataCorrections::GetRochesterMomentumWidth(snu::KMuon muon){
+
+  double u1 = gRandom->Rndm();
+  double u2 = gRandom->Rndm();
+
+  //double sf_central = muon.Pt()/muon.MiniAODPt();
+  double sf_central = rc->kScaleAndSmearMC(float(muon.Charge()), muon.MiniAODPt(), muon.Eta(), muon.Phi(), muon.ActiveLayer(), u1, u2, 0,0);
+
+  TH1D *hist_rms = new TH1D("hist_rms", "", 1000, 0.5, 1.5);
+  for(int i=0; i<100; i++){
+    //cout << "[RMS] i = " << i << endl;
+    double scalefactor = rc->kScaleAndSmearMC(float(muon.Charge()), muon.MiniAODPt(), muon.Eta(), muon.Phi(), muon.ActiveLayer(), u1, u2, 1,i);
+    hist_rms->Fill(scalefactor);
+  }
+  double RMSWidth = hist_rms->GetRMS();
+  delete hist_rms;
+  double Stat_syst = RMSWidth;
+
+  double Zpt_syst = fabs(rc->kScaleAndSmearMC(float(muon.Charge()), muon.MiniAODPt(), muon.Eta(), muon.Phi(), muon.ActiveLayer(), u1, u2, 2,0)-sf_central);
+  //double Ewk_syst = fabs(rc->kScaleAndSmearMC(float(muon.Charge()), muon.MiniAODPt(), muon.Eta(), muon.Phi(), muon.ActiveLayer(), u1, u2, 3,0)-sf_central);
+
+  double CorDm_syst=-999;
+  for(int i=0; i<5; i++){
+    //cout << "[CorDm] i = " << i << endl;
+    double scalefactor = rc->kScaleAndSmearMC(float(muon.Charge()), muon.MiniAODPt(), muon.Eta(), muon.Phi(), muon.ActiveLayer(), u1, u2, 4,i);
+    double diff = fabs(scalefactor-sf_central);
+    if(diff>CorDm_syst) CorDm_syst = diff;
+  }
+  double FitDm_syst=-999;
+  for(int i=0; i<5; i++){
+    //cout << "[FitDm] i = " << i << endl;
+    double scalefactor = rc->kScaleAndSmearMC(float(muon.Charge()), muon.MiniAODPt(), muon.Eta(), muon.Phi(), muon.ActiveLayer(), u1, u2, 5,i);
+    double diff = fabs(scalefactor-sf_central);
+    if(diff>FitDm_syst) FitDm_syst = diff;
+  }
+
+/*
+  double lumi_periodB = 5.929001722;
+  double lumi_periodC = 2.645968083;
+  double lumi_periodD = 4.35344881;
+  double lumi_periodE = 4.049732039;
+  double lumi_periodF = 3.157020934;
+  double lumi_periodG = 7.549615806;
+  double lumi_periodH = 8.545039549 + 0.216782873;
+  double lumis[7] = {
+    lumi_periodB,
+    lumi_periodC,
+    lumi_periodD,
+    lumi_periodE,
+    lumi_periodF,
+    lumi_periodG,
+    lumi_periodH
+  };
+  double total_lumi = (lumi_periodB+lumi_periodC+lumi_periodD+lumi_periodE+lumi_periodF+lumi_periodG+lumi_periodH);
+  double Run_syst = 0.;
+  for(int i=0; i<7; i++){
+    double scalefactor = rc->kScaleAndSmearMC(float(muon.Charge()), muon.MiniAODPt(), muon.Eta(), muon.Phi(), muon.ActiveLayer(), u1, u2, 7,i);
+    double diff = fabs(scalefactor-sf_central);
+    double this_syst = diff*lumis[i]/total_lumi;
+    Run_syst += this_syst*this_syst;
+  }
+  Run_syst = sqrt(Run_syst);
+*/
+
+  double tot_stat = 0.;
+  tot_stat += Stat_syst*Stat_syst;
+  tot_stat += Zpt_syst*Zpt_syst;
+  //tot_stat += Ewk_syst*Ewk_syst;
+  tot_stat += CorDm_syst*CorDm_syst;
+  tot_stat += FitDm_syst*FitDm_syst;
+  //tot_stat += Run_syst*Run_syst;
+
+  tot_stat = sqrt(tot_stat);
+  return tot_stat;
+
+}
+
 vector<TLorentzVector> MCDataCorrections::MakeTLorentz(vector<snu::KElectron> el){
 
   vector<TLorentzVector> tl_el;
