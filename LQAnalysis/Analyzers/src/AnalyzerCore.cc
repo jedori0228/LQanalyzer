@@ -5232,10 +5232,20 @@ vector<snu::KParticle> AnalyzerCore::MakeNPair(int WhichAlgo, vector<KLepton> le
       cout << endl;
     }
 
+    int counter=i;
+
     for(int j=0; j<(N_FatJet+N_Jet); j++){
 
-      int this_unit = pow(3,j);
-      int this_N_index = (i&this_unit)/this_unit;
+      int this_unit = 3;
+      //==== e.g.,
+      //==== counter = 14(dec) = 112(base3)
+      //==== counter%3 = 2(dec)
+      //==== --> this_N_index = 2
+      //==== Now, 112(base3)-2(base3) = 110(base3)
+      //==== 110(base3) / 3(dec) = 11(base3)
+
+      int this_N_index = counter%this_unit;
+      counter = (counter-this_N_index)/this_unit;
 
       //==== If 2, don't use this jet.
       //==== Go to next jet
@@ -5299,9 +5309,16 @@ vector<snu::KParticle> AnalyzerCore::MakeNPair(int WhichAlgo, vector<KLepton> le
 
     } // END Loop jets
 
+
     double M1 = N_temp[0].M();
     double M2 = N_temp[1].M();
     double this_diff = fabs(M1-M2);
+
+/*
+    double M1 = N_temp[0].Pt();
+    double M2 = N_temp[1].Pt();
+    double this_diff = fabs(M1-M2);
+*/
     if(this_diff<min_Diff){
       min_Diff = this_diff;
       int_combination = i;
@@ -5310,6 +5327,17 @@ vector<snu::KParticle> AnalyzerCore::MakeNPair(int WhichAlgo, vector<KLepton> le
       out_N[1] = N_temp[1];
     }
 
+  }
+
+
+  if(DoDebug){
+    cout << "------------------------" << endl;
+
+    cout << "("<<N_Jet<<")"<<"<"<<N_FatJet<<">"<<endl;
+    cout << "Combination = " << int_combination << "(dec) -> " << combination << endl;
+    cout << "N[0] : " << out_N[0].Pt() << "\t" << out_N[0].Eta() << "\t" << out_N[0].Phi() << "\t" << out_N[0].M() << endl;
+    cout << "N[1] : " << out_N[1].Pt() << "\t" << out_N[1].Eta() << "\t" << out_N[1].Phi() << "\t" << out_N[1].M() << endl;
+    cout << "===========================================================" << endl << endl;
   }
 
   vector<snu::KParticle> vec_outs;
