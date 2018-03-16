@@ -455,8 +455,12 @@ class AnalyzerCore : public LQCycleBase {
   snu::KParticle SubtractLeptonFromJet(snu::KJet jet, vector<KLepton> leps);
   snu::KParticle SubtractLeptonFromFatJet(snu::KFatJet fatjet, vector<KLepton> leps);
   vector<snu::KParticle> MakeNPair(int WhichAlgo, vector<KLepton> leps, vector<snu::KFatJet> fatjets_to_add, vector<snu::KJet> jets_to_add, bool DoDebug=false);
-
-
+  snu::KJet GetCorrectedJetCloseToLepton(snu::KParticle lep, snu::KJet jet);
+  snu::KFatJet GetCorrectedJetCloseToLepton(snu::KParticle lep, snu::KFatJet jet);
+  vector<double> GetPtRatioAndPtRel(KLepton lep, vector<snu::KJet> jets);
+  bool PassMultiIso(TString WP, double mini, double ptratio, double ptrel);
+  bool TEMP_PassJSElectronID(snu::KElectron el, TString IDstring);
+  bool IsAwayFromFatJet(snu::KJet jet, vector<snu::KFatJet> fatjets, double dRCut);
 
 
 };

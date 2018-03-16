@@ -5167,16 +5167,16 @@ int AnalyzerCore::GetPhotonType(int PhotonIdx, std::vector<snu::KTruth> TruthCol
 
 snu::KParticle AnalyzerCore::SubtractLeptonFromJet(snu::KJet jet, vector<KLepton> leps){
 
-  snu::KParticle out_jet = jet;
+  snu::KParticle summed_leps_inside;
   for(unsigned int i=0; i<leps.size(); i++){
-
-    if(jet.DeltaR( leps.at(i) ) < 0.8){
-
-      out_jet = out_jet - leps.at(i);
-
+    if(jet.DeltaR( leps.at(i) ) < 0.4){
+      summed_leps_inside = summed_leps_inside+leps.at(i);
     }
-
   }
+
+  //snu::KParticle out_jet = GetCorrectedJetCloseToLepton(summed_leps_inside, jet)-summed_leps_inside;
+
+  out_jet = jet-summed_leps_inside;
 
   return out_jet;
 
@@ -5184,16 +5184,18 @@ snu::KParticle AnalyzerCore::SubtractLeptonFromJet(snu::KJet jet, vector<KLepton
 
 snu::KParticle AnalyzerCore::SubtractLeptonFromFatJet(snu::KFatJet fatjet, vector<KLepton> leps){
 
-  snu::KParticle out_jet = fatjet;
+  snu::KParticle summed_leps_inside;
   for(unsigned int i=0; i<leps.size(); i++){
-
     if(fatjet.DeltaR( leps.at(i) ) < 0.8){
-
-      out_jet = out_jet - leps.at(i);
-
+      summed_leps_inside = summed_leps_inside+leps.at(i);
     }
-
   }
+
+  //cout << "[AnalyzerCore::SubtractLeptonFromFatJet] M = " << fatjet.M() << endl;
+  //snu::KParticle out_jet = GetCorrectedJetCloseToLepton(summed_leps_inside, fatjet)-summed_leps_inside;
+  //cout << "[AnalyzerCore::SubtractLeptonFromFatJet] --> M = " << out_jet.M() << endl;
+
+  out_jet = fatjet-summed_leps_inside;
 
   return out_jet;
 
@@ -5305,20 +5307,185 @@ vector<snu::KParticle> AnalyzerCore::MakeNPair(int WhichAlgo, vector<KLepton> le
 
   }
 
+  vector<snu::KParticle> vec_outs;
+  vec_outs.push_back(out_N[0]);
+  vec_outs.push_back(out_N[1]);
+  return vec_outs;
 
 }
 
+snu::KJet AnalyzerCore::GetCorrectedJetCloseToLepton(snu::KParticle lep, snu::KJet jet){
+
+  //==== jet_LepAwareJECv2 = (raw_jet * L1 - lepton) * L2L3Res + lepton                                                                                                          
+
+  float rawpt= jet.RawPt();
+  float rawe= jet.RawE();
+  float L1corr = jet.L1JetCorr();
+  float l2l3res = jet.L2L3ResJetCorr();
+  float leppt = lep.Pt();
+  float lepe = lep.E();
+  float corr_pt = (rawpt*L1corr - leppt)*l2l3res + leppt;
+  float corr_e = (rawe*L1corr - lepe)*l2l3res + lepe;
+
+  snu::KJet jet_corr(jet);
+  TLorentzVector v;
+  v.SetPtEtaPhiM(jet.Pt(), jet.Eta(), jet.Phi(), jet.M());
+  v=v*(corr_e/jet.E());
+  jet_corr.SetPtEtaPhiM(v.Pt(), v.Eta(), v.Phi(), v.M());
+  return jet_corr;
+}
+
+snu::KFatJet AnalyzerCore::GetCorrectedJetCloseToLepton(snu::KParticle lep, snu::KFatJet jet){
+
+  //==== jet_LepAwareJECv2 = (raw_jet * L1 - lepton) * L2L3Res + lepton                                                                                                          
+
+  float rawpt= jet.RawPt();
+  float rawe= jet.RawE();
+  float L1corr = jet.L1JetCorr();
+  float l2l3res = jet.L2L3ResJetCorr();
+  float leppt = lep.Pt();
+  float lepe = lep.E();
+  float corr_pt = (rawpt*L1corr - leppt)*l2l3res + leppt;
+  float corr_e = (rawe*L1corr - lepe)*l2l3res + lepe;
+
+  snu::KFatJet jet_corr(jet);
+  TLorentzVector v;
+  v.SetPtEtaPhiM(jet.Pt(), jet.Eta(), jet.Phi(), jet.M());
+  v=v*(corr_e/jet.E());
+  jet_corr.SetPtEtaPhiM(v.Pt(), v.Eta(), v.Phi(), v.M());
+  return jet_corr;
+}
+
+vector<double> AnalyzerCore::GetPtRatioAndPtRel(KLepton lep, vector<snu::KJet> jets){
+
+  double ptratio = 1.;
+  double ptrel = 0.;
+
+  bool isFound = false; // maybe not necessary
+
+  double dR_Closest = 0.4;
+  for(unsigned int j=0; j<jets.size(); j++){
+    double this_dR = lep.DeltaR( jets.at(j) );
+    if(this_dR < dR_Closest){
+      isFound = true;
+      dR_Closest = this_dR;
+      
+      snu::KJet corjet = GetCorrectedJetCloseToLepton(lep, jets.at(j));
+      
+      TVector3 lep3 =  lep.Vect();
+      TVector3 jet3 = corjet.Vect();
+      TVector3 lepjetrel = jet3-lep3;
+      
+      ptratio = lep.Pt()/corjet.Pt();
+      ptrel = (lepjetrel.Cross(lep3)).Mag()/ lepjetrel.Mag();
+    
+    }
+  }
+
+  vector<double> outs;
+  outs.push_back( lep.RelMiniIso() );
+  outs.push_back( ptratio );
+  outs.push_back( ptrel );
+  return outs;
+
+}
+
+bool AnalyzerCore::PassMultiIso(TString WP, double mini, double ptratio, double ptrel){
+
+  double I1 = 0.4;
+  double I2 = 0;
+  double I3 = 0;
+
+  //==== SUS-16-003
+  //==== AN2015_133
+
+  //==== veto
+
+  if(WP.Contains("veto")){
+    I1 = 0.4;
+    I2 = 0.;
+    I3 = 0.;
+  }
+
+  //==== loose
+
+  if(WP.Contains("loose")){
+    I1 = 0.4;
+    I2 = 0.;
+    I3 = 0.;
+  }
+
+  //==== tight
+
+  //==== Muon
+  if(WP.Contains("Muon")){
+
+    if(WP.Contains("tight")){
+      I1 = 0.16;
+      I2 = 0.69;
+      I3 = 6.0;
+    }
+
+  }
+  //==== Electron
+  else if(WP.Contains("Electron")){
+
+    if(WP.Contains("tight")){
+      I1 = 0.12;
+      I2 = 0.76;
+      I3 = 7.2;
+    }
+
+  }
+  else{
+  }
+
+  if( (mini<I1) && ( (ptratio>I2) || (ptrel>I3) )  ) return true;
+  else return false;
 
 
+}
+
+bool AnalyzerCore::TEMP_PassJSElectronID(snu::KElectron el, TString IDstring){
+
+  if( ! el.IsTrigMVAValid() ) return false;
+  if( ! el.PassesConvVeto() ) return false;
+  if( ! (fabs(el.dxy()) < 0.05) ) return false;
+  if( ! (fabs(el.dxySig()) < 4.) ) return false;
+  if( ! (fabs(el.dz()) < 0.1 ) ) return false;
+
+  double this_mva = el.MVA();
+
+  if(IDstring=="SUSY_Loose"){
+
+    if((fabs(el.SCEta()) < 0.8) && this_mva > -0.70) return true;
+    if((fabs(el.SCEta())  > 0.8) &&(fabs(el.SCEta())  < 1.479)  && this_mva > 0.83) return true;
+    if((fabs(el.SCEta())  < 2.5) &&(fabs(el.SCEta())  > 1.479) && this_mva > -0.92) return true;
+
+  }
+
+  if(IDstring=="SUSY_Tight"){
+
+    if((fabs(el.SCEta()) < 0.8) && this_mva > 0.87) return true;
+    if((fabs(el.SCEta())  > 0.8) &&(fabs(el.SCEta())  < 1.479)  && this_mva > 0.60) return true;
+    if((fabs(el.SCEta())  < 2.5) &&(fabs(el.SCEta())  > 1.479) && this_mva > 0.17) return true;
+
+  }
+
+  return false;
+
+}
+
+bool AnalyzerCore::IsAwayFromFatJet(snu::KJet jet, vector<snu::KFatJet> fatjets, double dRCut){
+
+  for(unsigned int i=0; i<fatjets.size(); i++){
+    if( jet.DeltaR( fatjets.at(i) ) < dRCut ) return false;
+  }
+
+  return true;
 
 
-
-
-
-
-
-
-
+}
 
 
 

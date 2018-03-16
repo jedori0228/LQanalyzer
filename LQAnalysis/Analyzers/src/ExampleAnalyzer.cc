@@ -63,6 +63,50 @@ void ExampleAnalyzer::InitialiseAnalysis() throw( LQError ) {
 
 
 void ExampleAnalyzer::ExecuteEvents()throw( LQError ){
+/*
+  //==== Test code for MakeN
+
+  std::vector<snu::KFatJet> fatjets_chs = GetFatJets("FATJET_HN_nolepveto");
+  std::vector<snu::KFatJet> fatjets; // Puppi + SD
+  for(unsigned int i=0; i<fatjets_chs.size(); i++){
+    snu::KFatJet tmpj = fatjets_chs.at(i);
+
+    if(tmpj.PuppiPt()>9999 || tmpj.PuppiEta()<-9999) continue;
+    tmpj.SetPtEtaPhiM(tmpj.PuppiPt(), tmpj.PuppiEta(),tmpj.PuppiPhi(),tmpj.PuppiM());
+    fatjets.push_back(tmpj);
+  }
+
+  std::vector<snu::KJet> jets_all = GetJets("JET_HN_eta5_nolepveto", 20, 2.7);
+  std::vector<snu::KJet> jets; // pass PUMVA and away from fatjet
+  for(unsigned int i=0; i<jets_all.size(); i++){
+    snu::KJet jet = jets_all.at(i);
+    if( jet.PassPileUpMVA("Loose") && IsAwayFromFatJet(jet, fatjets,1.0) ){
+      jets.push_back( jet );
+    }
+  }
+
+  vector<snu::KMuon> muons_noiso = GetMuons("MUON_SUSY_TIGHT", true, 10, 2.4);
+  vector<snu::KMuon> muons;
+  for(unsigned int i=0; i<muons_noiso.size(); i++){
+    if( muons_noiso.at(i).RelMiniIso() < 0.20 ){
+      muons.push_back( muons_noiso.at(i) );
+    }
+
+  }
+
+  if(muons.size()!=2) return;
+
+  vector<KLepton> leps;
+  leps.push_back( muons.at(0) );
+  leps.push_back( muons.at(1) );
+  vector<snu::KParticle> Ns = MakeNPair(0, leps, fatjets, jets);
+
+  FillHist("TEST_N", Ns.at(0).M(), 1., 0., 3000, 3000);
+  FillHist("TEST_N", Ns.at(1).M(), 1., 0., 3000, 3000);
+
+
+*/
+
 
   /// Apply the gen weight 
   if(!isData) weight*=MCweight;
