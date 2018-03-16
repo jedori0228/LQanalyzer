@@ -5204,6 +5204,51 @@ void AnalyzerCore::JSFillHist(TString suffix, TString histname, float value, flo
 
 }
 
+double AnalyzerCore::MuonConePt(snu::KMuon muon, double tightiso){
+
+  double mu_pt_corr = muon.Pt()*(1+max(0.,(muon.RelIso04()-tightiso))) ;
+
+  return mu_pt_corr;
+
+}
+
+double AnalyzerCore::ElectronConePt(snu::KElectron electron, double tightiso){
+
+  double el_pt_corr = electron.Pt()*(1+max(0.,(electron.PFRelIso(0.3)-tightiso))) ;
+
+  return el_pt_corr;
+
+}
+
+bool AnalyzerCore::LeptonInsideFatJet(snu::KFatJet fj, double dr, std::vector<KLepton> lep){
+
+  for(unsigned int i=0; i<lep.size(); i++){
+    if( fj.DeltaR( lep.at(i) ) < dr ) return true;
+  }
+
+  return false;
+
+}
+
+int AnalyzerCore::HasCloseBjet(KLepton lep, std::vector<snu::KJet> jets, snu::KJet::WORKING_POINT wp){
+
+  double dr = 0.5;
+  bool HasCloseBjet=false;
+  for(unsigned int j=0; j<jets.size(); j++){
+
+    snu::KJet jet = jets.at(j);
+    if( lep.DeltaR( jet ) < dr ){
+      if(IsBTagged(jet, snu::KJet::CSVv2, wp)){
+        HasCloseBjet = true;
+      }
+    }
+  }
+
+
+  return HasCloseBjet;
+
+}
+
 bool AnalyzerCore::HasLeptonInsideJet(snu::KJet jet, std::vector<snu::KMuon> mus, std::vector<snu::KElectron> els){
 
 
