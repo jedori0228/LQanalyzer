@@ -63,6 +63,7 @@ void ExampleAnalyzer::InitialiseAnalysis() throw( LQError ) {
 
 
 void ExampleAnalyzer::ExecuteEvents()throw( LQError ){
+
 /*
   //==== Test code for MakeN
 
@@ -99,15 +100,32 @@ void ExampleAnalyzer::ExecuteEvents()throw( LQError ){
   vector<KLepton> leps;
   leps.push_back( muons.at(0) );
   leps.push_back( muons.at(1) );
-  vector<snu::KParticle> Ns = MakeNPair(0, leps, fatjets, jets);
 
-  FillHist("TEST_N", Ns.at(0).M(), 1., 0., 3000, 3000);
-  FillHist("TEST_N", Ns.at(1).M(), 1., 0., 3000, 3000);
+  for(int i=0; i<=9; i++){
 
+    TString this_Algo = "Algo_"+TString::Itoa(i,10);
 
+    vector<snu::KParticle> Ns = MakeNPair(i, leps, fatjets, jets);
+
+    FillHist(this_Algo+"_N_Mass", Ns.at(0).M(), 1., 0., 5000, 5000);
+    FillHist(this_Algo+"_N_Mass", Ns.at(1).M(), 1., 0., 5000, 5000);
+    FillHist(this_Algo+"_Z_Mass", (Ns.at(0)+Ns.at(1)).M(), 1., 0., 8000, 8000);
+
+    FillHist(this_Algo+"_N_Pt", Ns.at(0).Pt(), 1., 0., 5000, 5000);
+    FillHist(this_Algo+"_N_Pt", Ns.at(1).Pt(), 1., 0., 5000, 5000);
+    FillHist(this_Algo+"_Z_Pt", (Ns.at(0)+Ns.at(1)).Pt(), 1., 0., 8000, 8000);
+
+    FillHist(this_Algo+"_dR_Ns", Ns.at(0).DeltaR(Ns.at(1)), 1., 0., 10., 100);
+    FillHist(this_Algo+"_dPhi_Ns", fabs(Ns.at(0).DeltaPhi(Ns.at(1))), 1., 0., 5., 50);
+
+    //cout << Ns.at(0).M() << "\t" << Ns.at(0).Pt() << endl;
+    //cout << Ns.at(1).M() << "\t" << Ns.at(1).Pt() << endl;
+    //cout << "--> dPt = " << fabs(Ns.at(0).Pt()-Ns.at(1).Pt()) << endl;
+
+  }
 */
 
-
+/*
   /// Apply the gen weight 
   if(!isData) weight*=MCweight;
     
@@ -146,6 +164,7 @@ void ExampleAnalyzer::ExecuteEvents()throw( LQError ){
 
    std::vector<snu::KElectron> electrons =  GetElectrons(false,false, "ELECTRON_NOCUT");
    std::vector<snu::KElectron> CFelectrons = GetElectrons(false,false, "ELECTRON_HN_TIGHTv4");
+*/
    /*
      
    std::vector<snu::KElectron> electrons =  GetElectrons(BaseSelection::ELECTRON_NOCUT);  ... WONT WORK
@@ -155,7 +174,7 @@ void ExampleAnalyzer::ExecuteEvents()throw( LQError ){
    std::vector<snu::KElectron> electrons =  GetElectrons("ELECTRON_POG_TIGHT");                ... WILL WORK  
    
    */
-
+/*
    //   std::vector<snu::KElectron> electrons2 =  GetElectrons(BaseSelection::ELECTRON_HN_FAKELOOSE_NOD0);
 
    std::vector<snu::KJet> jets =   GetJets("JET_HN");
@@ -209,7 +228,7 @@ void ExampleAnalyzer::ExecuteEvents()throw( LQError ){
        }
      }
    }
-
+*/
    
    return;
 }// End of execute event loop
