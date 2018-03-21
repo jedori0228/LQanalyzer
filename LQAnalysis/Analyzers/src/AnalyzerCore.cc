@@ -5208,9 +5208,9 @@ vector<snu::KParticle> AnalyzerCore::MakeNPair(int WhichAlgo, vector<KLepton> le
   int N_FatJet = fatjets_to_add.size();
   int N_Jet = jets_to_add.size();
 
-  int total_loop = pow(3,N_FatJet+N_Jet);
+  int total_loop = pow(2,N_FatJet)*pow(3,N_Jet);
 
-  double min_Diff = 99999;
+  double min_Diff = 9999999;
 
   snu::KParticle out_N[2];
 
@@ -5236,7 +5236,14 @@ vector<snu::KParticle> AnalyzerCore::MakeNPair(int WhichAlgo, vector<KLepton> le
 
     for(int j=0; j<(N_FatJet+N_Jet); j++){
 
-      int this_unit = 3;
+      bool IsThisFatJetLoop = true;
+      int this_unit = 2;
+
+      if(!(j<N_FatJet)){
+        IsThisFatJetLoop = false; 
+        this_unit = 3;
+      }
+
       //==== e.g.,
       //==== counter = 14(dec) = 112(base3)
       //==== counter%3 = 2(dec)
@@ -5261,7 +5268,7 @@ vector<snu::KParticle> AnalyzerCore::MakeNPair(int WhichAlgo, vector<KLepton> le
       this_combination = TString::Itoa(this_N_index,10)+this_combination;
 
       int jet_index = j;
-      if(j<N_FatJet){
+      if(IsThisFatJetLoop){
 
         if(DoDebug){
           cout << "## Printing Current N["<<this_N_index<<"] ##" << endl;
@@ -5309,16 +5316,34 @@ vector<snu::KParticle> AnalyzerCore::MakeNPair(int WhichAlgo, vector<KLepton> le
 
     } // END Loop jets
 
+    //==== At least one jet merged to leptons
+    if( (n_Merged_FatJet_temp[0]+n_Merged_Jet_temp[0]==0) || (n_Merged_FatJet_temp[1]+n_Merged_Jet_temp[1]==0) ) continue;
 
     double M1 = N_temp[0].M();
     double M2 = N_temp[1].M();
-    double this_diff = fabs(M1-M2);
+    double Pt1 = N_temp[0].Pt();
+    double Pt2 = N_temp[1].Pt();
+    double this_diff = 9999999;
 
-/*
-    double M1 = N_temp[0].Pt();
-    double M2 = N_temp[1].Pt();
-    double this_diff = fabs(M1-M2);
-*/
+    if(WhichAlgo==0) this_diff = fabs(M1-M2);
+    else if(WhichAlgo==1) this_diff = fabs(M1-M2)/fabs(N_temp[0].DeltaPhi(N_temp[1]));
+
+    else if(WhichAlgo==2) this_diff = fabs(Pt1-Pt2);
+    else if(WhichAlgo==3) this_diff = fabs(Pt1-Pt2)/fabs(N_temp[0].DeltaPhi(N_temp[1]));
+
+    else if(WhichAlgo==4) this_diff = fabs(M1-M2)*fabs(Pt1-Pt2);
+    else if(WhichAlgo==5) this_diff = fabs(M1-M2)*fabs(Pt1-Pt2)/fabs(N_temp[0].DeltaPhi(N_temp[1]));
+
+    else if(WhichAlgo==6) this_diff = min(fabs(M1-M2),fabs(Pt1-Pt2));
+    else if(WhichAlgo==7) this_diff = min(fabs(M1-M2),abs(Pt1-Pt2))/fabs(N_temp[0].DeltaPhi(N_temp[1]));
+
+    else if(WhichAlgo==8) this_diff = max(fabs(M1-M2),fabs(Pt1-Pt2));
+    else if(WhichAlgo==9) this_diff = max(fabs(M1-M2),fabs(Pt1-Pt2))/fabs(N_temp[0].DeltaPhi(N_temp[1]));
+
+    else{
+      this_diff = fabs(M1-M2);
+    }
+
     if(this_diff<min_Diff){
       min_Diff = this_diff;
       int_combination = i;
