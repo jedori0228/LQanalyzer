@@ -5323,8 +5323,9 @@ vector<snu::KParticle> AnalyzerCore::MakeNPair(int WhichAlgo, vector<KLepton> le
     double M2 = N_temp[1].M();
     double Pt1 = N_temp[0].Pt();
     double Pt2 = N_temp[1].Pt();
+    double this_diff = max( fabs(M1-M2), fabs(Pt1-Pt2) );
+/*
     double this_diff = 9999999;
-
     if(WhichAlgo==0) this_diff = fabs(M1-M2);
     else if(WhichAlgo==1) this_diff = fabs(M1-M2)/fabs(N_temp[0].DeltaPhi(N_temp[1]));
 
@@ -5343,6 +5344,7 @@ vector<snu::KParticle> AnalyzerCore::MakeNPair(int WhichAlgo, vector<KLepton> le
     else{
       this_diff = fabs(M1-M2);
     }
+*/
 
     if(this_diff<min_Diff){
       min_Diff = this_diff;
